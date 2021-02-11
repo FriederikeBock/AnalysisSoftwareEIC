@@ -2,6 +2,16 @@
 #define NELEMS(arr) (sizeof(arr)/sizeof(arr[0]))
 void split_canvas(TCanvas* &cPNG, TString canvName, Int_t numInputs);
 
+Bool_t checkPathFileAndAdd(TString pathtofile,TChain* &t_chaininp){
+  if(!gSystem->AccessPathName(pathtofile.Data())){
+    t_chaininp->Add(pathtofile.Data());
+    return kTRUE;
+  }else{
+    cout << pathtofile.Data() << " not found!" << endl;
+    return kFALSE;
+  }
+}
+
 void trackingreso(
     TString suffix            = "pdf"
 ){
@@ -24,28 +34,44 @@ void trackingreso(
   const static Double_t partE[]   = {3.0, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 7.5, 8.0, 9.0,  10., 11., 13., 15., 20., 25., 30., 40., 50., 60., 70., 80., 150.};
   Int_t useE[nEne]                = { 0};
   Int_t activeE = {0};
+  const Int_t nEta = 7;
+  const static Double_t etaBins[]   = {1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0};
 
   TH1F* h_tracks_pT_spectrum[nEne] 	    = {NULL};
   TH1F* h_tracks_truepT_spectrum[nEne] 	    = {NULL};
   TH1F* h_tracks_mean_eta_reso[nEne] 	    = {NULL};
+  TH1F* h_tracks_reso_EtaBin_Sigma[nEne] 	    = {NULL};
   TH1F* h_tracks_sigma_eta_reso[nEne] 	    = {NULL};
   TH2F* h_tracks_reso[nEne] 	    = {NULL};
+  TH2F* h_tracks_reso_EtaBin[nEta] 	    = {NULL};
   TH2F* h_tracks_reso_Eta[nEne] 	    = {NULL};
   TH2F* h_tracks_nhits_Eta[nEne] 	    = {NULL};
   TH2F* h_tracks_nhits_pT[nEne] 	    = {NULL};
   Double_t etalowdef = 3.0;
   Double_t etahighdef = 4.0;
 
+    for(Int_t etab=0; etab<NELEMS(etaBins); etab++){
+        h_tracks_reso_EtaBin[etab] 	= new TH2F(Form("h_tracks_reso_EtaBin_%d",etab), "", 400, 0, 40, 100, -0.3, 0.3);
+    }
+
     for(Int_t epart=0; epart<NELEMS(partE); epart++){
       cout << partE[epart] << endl;
 
       TChain* t_tracks = new TChain("tracks", "tracks");
-      t_tracks->Add(Form("/media/nschmidt/local/EIC_running/cluster_output/%s/800_%1.1f/G4EICDetector_g4tracking_eval.root","Fun4All_G4_FullDetector_Pythia_beampipe",partE[epart]));
+      if(partE[epart]==10){
+        for(Int_t ii=0; ii<27;ii++){
+          checkPathFileAndAdd(Form("/media/nschmidt/external2/EICsimulationOutputs/%s/5000_%d/G4EICDetector_g4tracking_eval.root","Fun4All_G4_FullDetector_DefaultGranHCAL_PythiaJET_beampipe",ii),t_tracks);
+          checkPathFileAndAdd(Form("/media/nschmidt/external2/EICsimulationOutputs/%s/5000_%d/G4EICDetector_g4tracking_eval.root","Fun4All_G4_FullDetector_HighGranHCAL_PythiaJET_beampipe",ii),t_tracks);
+          checkPathFileAndAdd(Form("/media/nschmidt/external2/EICsimulationOutputs/%s/5000_%d/G4EICDetector_g4tracking_eval.root","Fun4All_G4_FullDetector_MaxHighGranHCAL_PythiaJET_beampipe",ii),t_tracks);
+        }
+      }
+      checkPathFileAndAdd(Form("/media/nschmidt/local/EIC_running/cluster_output/%s/800_%1.1f/G4EICDetector_g4tracking_eval.root","Fun4All_G4_FullDetector_Pythia_beampipe",partE[epart]),t_tracks);
+      checkPathFileAndAdd(Form("/media/nschmidt/external2/EICsimulationOutputs/%s/10000_%1.1f/G4EICDetector_g4tracking_eval.root","Fun4All_G4_FullDetector_DefaultGranHCAL_beampipe",partE[epart]),t_tracks);
       for(Int_t ii=1; ii<4;ii++){
-          t_tracks->Add(Form("/media/nschmidt/external2/EICsimulationOutputs/%s/800_%d_%1.1f/G4EICDetector_g4tracking_eval.root","Fun4All_G4_FullDetector_Pythia_beampipe",ii,partE[epart]));
+          checkPathFileAndAdd(Form("/media/nschmidt/external2/EICsimulationOutputs/%s/800_%d_%1.1f/G4EICDetector_g4tracking_eval.root","Fun4All_G4_FullDetector_Pythia_beampipe",ii,partE[epart]),t_tracks);
       }
       for(Int_t ii=2; ii<3;ii++){
-          t_tracks->Add(Form("/media/nschmidt/external2/EICsimulationOutputs/%s/10000_%d_%1.1f/G4EICDetector_g4tracking_eval.root","Fun4All_G4_FullDetector_Pythia_beampipe",ii,partE[epart]));
+          checkPathFileAndAdd(Form("/media/nschmidt/external2/EICsimulationOutputs/%s/10000_%d_%1.1f/G4EICDetector_g4tracking_eval.root","Fun4All_G4_FullDetector_Pythia_beampipe",ii,partE[epart]),t_tracks);
       }
     // if(partE[epart]!=13) continue;
 
@@ -87,7 +113,13 @@ void trackingreso(
           // ){
             h_tracks_reso[epart]->Fill(TMath::Sqrt(TMath::Power(trk_px_true,2)+TMath::Power(trk_py_true,2)),(TMath::Sqrt(TMath::Power(trk_px,2)+TMath::Power(trk_py,2))-TMath::Sqrt(TMath::Power(trk_px_true,2)+TMath::Power(trk_py_true,2)))/TMath::Sqrt(TMath::Power(trk_px_true,2)+TMath::Power(trk_py_true,2)));
             h_tracks_reso_Eta[epart]->Fill(vec_mom_true.Eta(),(TMath::Sqrt(TMath::Power(trk_px,2)+TMath::Power(trk_py,2))-TMath::Sqrt(TMath::Power(trk_px_true,2)+TMath::Power(trk_py_true,2)))/TMath::Sqrt(TMath::Power(trk_px_true,2)+TMath::Power(trk_py_true,2)));
-
+            for(Int_t etabfill=0;etabfill<(nEta-1);etabfill++){
+              if(vec_mom_true.Eta()>etaBins[etabfill] && vec_mom_true.Eta()<etaBins[etabfill+1]){
+                // if(partE[epart]==10)
+                h_tracks_reso_EtaBin[etabfill]->Fill(TMath::Sqrt(TMath::Power(trk_px_true,2)+TMath::Power(trk_py_true,2)),(TMath::Sqrt(TMath::Power(trk_px,2)+TMath::Power(trk_py,2))-TMath::Sqrt(TMath::Power(trk_px_true,2)+TMath::Power(trk_py_true,2)))/TMath::Sqrt(TMath::Power(trk_px_true,2)+TMath::Power(trk_py_true,2)));
+              }
+              else continue;
+            }
             h_tracks_pT_spectrum[epart]->Fill(TMath::Sqrt(TMath::Power(trk_px,2)+TMath::Power(trk_py,2)));
             h_tracks_truepT_spectrum[epart]->Fill(TMath::Sqrt(TMath::Power(trk_px_true,2)+TMath::Power(trk_py_true,2)));
             h_tracks_nhits_Eta[epart]->Fill(TMath::Sqrt(TMath::Power(trk_px_true,2)+TMath::Power(trk_py_true,2)),trk_hits);
@@ -110,7 +142,16 @@ void trackingreso(
         }
       }
     }
+    for(Int_t etab=0; etab<NELEMS(etaBins); etab++){
+      h_tracks_reso_EtaBin[etab]->Scale(1 / h_tracks_reso_EtaBin[etab]->GetEntries());
 
+      h_tracks_reso_EtaBin_Sigma[etab] = new TH1F(Form("h_tracks_sigma_eta_reso%d",etab),"",400, 0, 40);
+      for (Int_t i=1; i < h_tracks_reso_EtaBin[etab]->GetNbinsX(); i++){
+        TH1D* projectionYdummy = (TH1D*)h_tracks_reso_EtaBin[etab]->ProjectionY(Form("projectionYdummy%d%d",i,etab), i,i+1,"e");
+        h_tracks_reso_EtaBin_Sigma[etab]->SetBinContent(i,projectionYdummy->GetStdDev()); //GetMeanError()
+        h_tracks_reso_EtaBin_Sigma[etab]->SetBinError(i,projectionYdummy->GetRMSError()); //GetMeanError()
+      }
+    }
 
 
   TCanvas* cPNG; // = new TCanvas("cPNG", "", gStyle->GetCanvasDefW() * 3,
@@ -129,6 +170,35 @@ void trackingreso(
     padnum++;
   }
   cPNG->Print(Form("%s/Tracking_Resolution.%s", outputDir.Data(), suffix.Data()));
+
+	split_canvas(cPNG, "cPNGx", NELEMS(etaBins)-1);
+  padnum =0;
+  for(Int_t ietabl=0; ietabl<NELEMS(etaBins)-1; ietabl++){
+    if(!useE[ietabl]) continue;
+    cPNG->SetLeftMargin(0.1);
+    cPNG->SetBottomMargin(0.1);
+    cPNG->SetTopMargin(0.01);
+    cPNG->SetRightMargin(0.01);
+    cPNG->cd(padnum+1);
+    (cPNG->cd(padnum+1))->SetLogx(1);
+    (cPNG->cd(padnum+1))->SetLogz(1);
+    // cPNG->SetLogx(1);
+    h_tracks_reso_EtaBin[ietabl]->GetXaxis()->SetRangeUser(0.05,40);
+    SetStyleHistoTH2ForGraphs(h_tracks_reso_EtaBin[ietabl], "#it{p}_{T}^{true} (GeV/#it{c})","(#it{p}_{T}^{rec}-#it{p}_{T}^{true})/#it{p}_{T}^{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.81);
+
+    // h_tracks_reso_EtaBin[ietabl]->GetXaxis()->SetRangeUser(0.5,4);
+    h_tracks_reso_EtaBin[ietabl]->Draw("col");
+
+    DrawGammaSetMarker(h_tracks_reso_EtaBin_Sigma[ietabl], 20, 1, kBlack, kBlack);
+
+    h_tracks_reso_EtaBin_Sigma[ietabl]->Draw("same");
+    drawLatexAdd(Form("%1.1f<#eta<%1.1f in FST",etaBins[ietabl],etaBins[ietabl+1]),0.90,0.85,1.3*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("#sigma in black",etaBins[ietabl],etaBins[ietabl+1]),0.90,0.15,1.3*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    DrawGammaLines(0.1,40, 0., 0., 1, kGray+2, 2);
+
+    padnum++;
+  }
+  cPNG->Print(Form("%s/Tracking_Resolution_EtaBins.%s", outputDir.Data(), suffix.Data()));
 
 	split_canvas(cPNG, "cPNG1", activeE);
   padnum =0;

@@ -3,6 +3,7 @@
 void split_canvas(TCanvas* &cPNG, TString canvName, Int_t numInputs);
 
 void plotetaphi(
+    Int_t plotEvent = 7,
     TString suffix            = "pdf"
 ){
 
@@ -18,14 +19,21 @@ void plotetaphi(
   Double_t textSizeLabelsPixel                    = 35;
   Double_t textSizeLabelsRel                    = 58./1300;
 
+  Int_t granularity = 4;
   TH2F* h_IEtaIPhiMapEvt_HCAL 	    = NULL;
+  TH2F* h_IEtaIPhiMapEvt_HCAL_Ecut 	    = NULL;
   TH2F* h_EtaPhiMapEvt_HCAL 	    = NULL;
   TChain* t_towers_HCAL = new TChain("ntp_tower", "ntp_tower");
-  t_towers_HCAL->Add("/media/nschmidt/local/EIC_running/cluster_output/Fun4All_G4_FullDetector_Pythia_beampipe/plotting/JET_EIC_FST1/G4EICDetector_g4fhcal_eval.root");
+  // t_towers_HCAL->Add("/media/nschmidt/local/EIC_running/cluster_output/Fun4All_G4_FullDetector_Pythia_beampipe/plotting/JET_EIC_FST1/G4EICDetector_g4fhcal_eval.root");
+  t_towers_HCAL->Add("/media/nschmidt/local/EIC_running/Fun4All_G4_FullDetector_MaxHighGranHCAL_Pions_beampipe/3000_50.0/G4EICDetector_g4fhcal_eval.root");
+  // t_towers_HCAL->Add("/media/nschmidt/local/EIC_running/Fun4All_G4_FullDetector_HighGranHCAL_Pions_beampipe/3000_50.0/G4EICDetector_g4fhcal_eval.root");
+  // t_towers_HCAL->Add("/media/nschmidt/local/EIC_running/Fun4All_G4_FullDetector_DefaultGranHCAL_beampipe/3000_50.0/G4EICDetector_g4fhcal_eval.root");
   if(t_towers_HCAL){
-    h_IEtaIPhiMapEvt_HCAL 	= new TH2F("h_IEtaIPhiMapEvt_HCAL", "",  55, -0.5, 54.5, 55, -0.5, 54.5);
-    h_EtaPhiMapEvt_HCAL 	= new TH2F("h_EtaPhiMapEvt_HCAL", "", 55, -3.14, 3.14,  55,1.2, 4.0);
-    Float_t phi_HCAL,eta_HCAL,iphi_HCAL,ieta_HCAL,e_HCAL;
+    h_IEtaIPhiMapEvt_HCAL 	= new TH2F("h_IEtaIPhiMapEvt_HCAL", "",  granularity*55, -0.5, granularity*55-0.5, granularity*55, -0.5, granularity*55-0.5);
+    h_IEtaIPhiMapEvt_HCAL_Ecut 	= new TH2F("h_IEtaIPhiMapEvt_HCAL_Ecut", "",  granularity*55, -0.5, granularity*55-0.5, granularity*55, -0.5, granularity*55-0.5);
+    h_EtaPhiMapEvt_HCAL 	= new TH2F("h_EtaPhiMapEvt_HCAL", "", granularity*55, -3.14, 3.14,  granularity*55,1.2, 4.0);
+    Float_t phi_HCAL,eta_HCAL,iphi_HCAL,ieta_HCAL,e_HCAL,event;
+    t_towers_HCAL->SetBranchAddress("event", &event);
     t_towers_HCAL->SetBranchAddress("phi", &phi_HCAL);
     t_towers_HCAL->SetBranchAddress("eta", &eta_HCAL);
     t_towers_HCAL->SetBranchAddress("iphi", &iphi_HCAL);
@@ -37,7 +45,11 @@ void plotetaphi(
       if (t_towers_HCAL->LoadTree(i) < 0)
         break;
       t_towers_HCAL->GetEntry(i);
+      if(event!=plotEvent) continue;
+
       h_IEtaIPhiMapEvt_HCAL->Fill(iphi_HCAL,ieta_HCAL,e_HCAL);
+      if(e_HCAL>0.1)h_IEtaIPhiMapEvt_HCAL_Ecut->Fill(iphi_HCAL,ieta_HCAL,e_HCAL);
+
       h_EtaPhiMapEvt_HCAL->Fill(phi_HCAL,eta_HCAL,e_HCAL);
     }
   }
@@ -67,7 +79,7 @@ void plotetaphi(
 
 
   // 2D PLOT
-  TCanvas* cReso = new TCanvas("cReso","",0,0,1000,1000);
+  TCanvas* cReso = new TCanvas("cReso","",0,0,1000,950);
   DrawGammaCanvasSettings( cReso, 0.1, 0.03, 0.01, 0.105);
   // cReso->SetLogz();
 
@@ -76,32 +88,80 @@ void plotetaphi(
   h_IEtaIPhiMapEvt_HCAL->GetZaxis()->SetTitleOffset(1.2);
   h_IEtaIPhiMapEvt_HCAL->Draw("lego2");
     drawLatexAdd("FHCAL, e-p: 10#times250 GeV^{2}",0.97,0.02,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-  cReso->Print(Form("%s/IEtaIPhiHCAL.%s", outputDir.Data(), suffix.Data()));
+  // cReso->Print(Form("%s/IEtaIPhiHCAL.%s", outputDir.Data(), suffix.Data()));
 
   // 1D PLOT
-  h_IEtaIPhiMapEvt_HCAL->Draw("col");
-   TEllipse *el4 = new TEllipse(27.0,27.0,27,27,0,360,0);
+  cReso->SetLeftMargin(0.12);
+  cReso->SetRightMargin(0.1);
+  cReso->SetBottomMargin(0.1);
+  SetStyleHistoTH2ForGraphs(h_IEtaIPhiMapEvt_HCAL, "tower #phi index","tower #eta index", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
+  h_IEtaIPhiMapEvt_HCAL->Draw("colz");
+   TEllipse *el4 = new TEllipse(granularity*27.0,granularity*27.0,granularity*27,granularity*27,0,360,0);
    el4->SetFillStyle(0);
    el4->SetLineColor(kGray+2);
    el4->SetLineWidth(2);
    el4->SetLineStyle(7);
    el4->Draw("same");
-  DrawGammaLines(24.5, 29.5, 29.5, 29.5, 2, kGray+2, 7);
-  DrawGammaLines(24.5, 29.5, 24.5, 24.5, 2, kGray+2, 7);
-  DrawGammaLines(24.5, 24.5, 24.5, 29.5, 2, kGray+2, 7);
-  DrawGammaLines(29.5, 29.5, 24.5, 29.5, 2, kGray+2, 7);
-    drawLatexAdd("FHCAL, e-p: 10#times250 GeV^{2}",0.93,0.15,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+   if(granularity==1){
+  DrawGammaLines(25.5, 28.5, 28.5, 28.5, 2, kGray+3, 7);
+  DrawGammaLines(25.5, 28.5, 25.5, 25.5, 2, kGray+3, 7);
+  DrawGammaLines(25.5, 25.5, 25.5, 28.5, 2, kGray+3, 7);
+  DrawGammaLines(28.5, 28.5, 25.5, 28.5, 2, kGray+3, 7);
+   }
+   if(granularity==2){
+  DrawGammaLines(granularity*25.5-1, granularity*28.5-1, granularity*28.5-1, granularity*28.5-1, 2, kGray+3, 7);
+  DrawGammaLines(granularity*25.5-1, granularity*28.5-1, granularity*25.5-1, granularity*25.5-1, 2, kGray+3, 7);
+  DrawGammaLines(granularity*25.5-1, granularity*25.5-1, granularity*25.5-1, granularity*28.5-1, 2, kGray+3, 7);
+  DrawGammaLines(granularity*28.5-1, granularity*28.5-1, granularity*25.5-1, granularity*28.5-1, 2, kGray+3, 7);
+   }
+  if(granularity==4){
+  TEllipse *el5 = new TEllipse(granularity*27.0-2,granularity*27.0-2,granularity*1.5,granularity*1.5,0,360,0);
+   el5->SetFillStyle(0);
+   el5->SetLineColor(kGray+3);
+   el5->SetLineWidth(2);
+   el5->SetLineStyle(7);
+   el5->Draw("same");
+   }
+    drawLatexAdd("FHCAL, e-p: 10#times250 GeV^{2}",0.88,0.15,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
 
-  cReso->Print(Form("%s/IEtaIPhiHCAL_1D.%s", outputDir.Data(), suffix.Data()));
+  cReso->Print(Form("%s/IEtaIPhiHCAL_1D%d.%s", outputDir.Data(),plotEvent, suffix.Data()));
+
+  // 1D PLOT
+  SetStyleHistoTH2ForGraphs(h_IEtaIPhiMapEvt_HCAL_Ecut, "tower #phi index","tower #eta index", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
+  h_IEtaIPhiMapEvt_HCAL_Ecut->Draw("colz");
+   el4->Draw("same");
+   if(granularity==1){
+  DrawGammaLines(25.5, 28.5, 28.5, 28.5, 2, kGray+3, 7);
+  DrawGammaLines(25.5, 28.5, 25.5, 25.5, 2, kGray+3, 7);
+  DrawGammaLines(25.5, 25.5, 25.5, 28.5, 2, kGray+3, 7);
+  DrawGammaLines(28.5, 28.5, 25.5, 28.5, 2, kGray+3, 7);
+   }
+   if(granularity==2){
+  DrawGammaLines(granularity*25.5-1, granularity*28.5-1, granularity*28.5-1, granularity*28.5-1, 2, kGray+3, 7);
+  DrawGammaLines(granularity*25.5-1, granularity*28.5-1, granularity*25.5-1, granularity*25.5-1, 2, kGray+3, 7);
+  DrawGammaLines(granularity*25.5-1, granularity*25.5-1, granularity*25.5-1, granularity*28.5-1, 2, kGray+3, 7);
+  DrawGammaLines(granularity*28.5-1, granularity*28.5-1, granularity*25.5-1, granularity*28.5-1, 2, kGray+3, 7);
+   }
+   if(granularity==4){
+  TEllipse *el5 = new TEllipse(granularity*27.0-2,granularity*27.0-2,granularity*1.5,granularity*1.5,0,360,0);
+   el5->SetFillStyle(0);
+   el5->SetLineColor(kGray+3);
+   el5->SetLineWidth(2);
+   el5->SetLineStyle(7);
+   el5->Draw("same");
+   }
+    drawLatexAdd("FHCAL, e-p: 10#times250 GeV^{2}",0.88,0.15,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+
+  cReso->Print(Form("%s/IEtaIPhiHCAL_1D%d_Ecut.%s", outputDir.Data(),plotEvent, suffix.Data()));
 
   SetStyleHistoTH2ForGraphs(h_EtaPhiMapEvt_HCAL, "tower #phi","tower #eta", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91);
   h_EtaPhiMapEvt_HCAL->GetZaxis()->SetTitle("tower #it{E}");
   h_EtaPhiMapEvt_HCAL->Draw("lego2");
-  cReso->Print(Form("%s/EtaPhiHCAL.%s", outputDir.Data(), suffix.Data()));
+  // cReso->Print(Form("%s/EtaPhiHCAL.%s", outputDir.Data(), suffix.Data()));
 
   // 1D PLOT
   h_EtaPhiMapEvt_HCAL->Draw("col");
-  cReso->Print(Form("%s/EtaPhiHCAL_1D.%s", outputDir.Data(), suffix.Data()));
+  // cReso->Print(Form("%s/EtaPhiHCAL_1D.%s", outputDir.Data(), suffix.Data()));
 
 
   // 2D PLOT
@@ -114,7 +174,7 @@ void plotetaphi(
   h_IEtaIPhiMapEvt_ECAL->GetZaxis()->SetTitleOffset(1.2);
   h_IEtaIPhiMapEvt_ECAL->Draw("lego2");
     drawLatexAdd("FECAL, e-p: 10#times250 GeV^{2}",0.97,0.02,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-  cReso->Print(Form("%s/IEtaIPhiECAL.%s", outputDir.Data(), suffix.Data()));
+  // cReso->Print(Form("%s/IEtaIPhiECAL.%s", outputDir.Data(), suffix.Data()));
 
   // 1D PLOT
   h_IEtaIPhiMapEvt_ECAL->Draw("col");
@@ -129,7 +189,7 @@ void plotetaphi(
   DrawGammaLines(28.5, 28.5, 28.5, 35.5, 2, kGray+2, 7);
   DrawGammaLines(35.5, 35.5, 28.5, 35.5, 2, kGray+2, 7);
     drawLatexAdd("FECAL, e-p: 10#times250 GeV^{2}",0.93,0.15,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-  cReso->Print(Form("%s/EtaPhiECAL_1D.%s", outputDir.Data(), suffix.Data()));
+  // cReso->Print(Form("%s/EtaPhiECAL_1D.%s", outputDir.Data(), suffix.Data()));
 
 
 }

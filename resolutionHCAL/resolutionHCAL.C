@@ -62,7 +62,7 @@ void resolutionHCAL(
   //************************** Read data **************************************************
   const Int_t nEne = 25;
   const static Double_t partE[]   = {1.0, 2.0, 3.0, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 7.5, 8.0, 9.0,  10., 11., 13., 15., 20., 25., 30., 40., 50., 60., 70., 80., 150.};
-  Int_t useE[nEne]                = {  0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1};
+  Int_t useE[nEne]                = {  0,   0,   0,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1};
   Int_t useEgamma[nEne]           = {  0,   0,   1,   1,   1,   1,   0,   1,   1,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   1};
   Double_t fitrange_low[nEne]     = {0.3, 0.3, 0.3, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.6, 0.6,0.65, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7};
   Double_t fitrange_hig[nEne]     = {0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 1.0, 1.0, 1.0};
@@ -76,7 +76,7 @@ void resolutionHCAL(
   Int_t activeE = 0;
   Int_t activeEgamma = 0;
 
-  Int_t useEBothCPion[nEne]       = {  0,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1};
+  Int_t useEBothCPion[nEne]       = {  0,   0,   0,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1};
   Int_t useEBothgamma[nEne]       = {  0,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   1,   1,   1,   1,   0};
   Int_t useEBothproton[nEne]      = {  0,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0};
   TH1F* h_pion__dEta_hcal_E[nEne] 	    = {NULL};
@@ -115,8 +115,8 @@ void resolutionHCAL(
   Int_t activeEboth_gamma = 0;
   Int_t activeEboth_proton = 0;
 
-  Double_t etalowdef = 1.4;
-  Double_t etahighdef = 3.5;
+  Double_t etalowdef = 1.3;
+  Double_t etahighdef = 3.0;
 
   Double_t calibconstECAL = 8.36627e-01;
   Double_t paramsHCALcalib[5]= {2.65428e+00,4.17288e-01,1.91848e+00,-5.35529e+02,6.82686e+02}; //shift
@@ -127,7 +127,7 @@ void resolutionHCAL(
   for(Int_t epart=0; epart<NELEMS(partE); epart++){
     cout << partE[epart] << endl;
     if(useE[epart]){
-      TTree *const t_pion_fhcal =  (TTree *) (new TFile(Form("/home/nschmidt/fun4all_ForwardAna/EICdetector/%1.1f/G4EICDetector_g4fhcal_eval.root",partE[epart]), "READ"))->Get("ntp_gshower"); //ntp_cluster
+      TTree *const t_pion_fhcal =  (TTree *) (new TFile(Form("/home/nschmidt/fun4all_ForwardAna/EICdetector/%1.1f/G4EICDetector_g4fhcal_eval.root",partE[epart]), "READ"))->Get("ntp_gshower"); //ntp_gshower
       if(t_pion_fhcal){
         activeE++;
         h_pion_fhcal_E[epart] 	= new TH1F(Form("h_pion_fhcal_E_%d",epart), "", 100, 0.0, 2.0);
@@ -156,10 +156,10 @@ void resolutionHCAL(
       }
     }
     if(useEBothCPion[epart]){
-      TTree *const t_pion_fecalfhcal =  (TTree *) (new TFile(Form("/media/nschmidt/local/EIC_afterburners/resolutionHCAL/EIC_simulation/FECAL_FHCAL_cpion/%1.1f/G4EICDetector_g4fhcal_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
-      TTree *const t_pion_fecal =  (TTree *) (new TFile(Form("/media/nschmidt/local/EIC_afterburners/resolutionHCAL/EIC_simulation/FECAL_FHCAL_cpion/%1.1f/G4EICDetector_g4femc_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
-      TTree *const t_pion_fecalfhcal_hcal =  (TTree *) (new TFile(Form("/media/nschmidt/local/EIC_afterburners/resolutionHCAL/EIC_simulation/FECAL_FHCAL_cpion/%1.1f/G4EICDetector_g4fhcal_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
-      TTree *const t_pion_fecalfhcal_ecal =  (TTree *) (new TFile(Form("/media/nschmidt/local/EIC_afterburners/resolutionHCAL/EIC_simulation/FECAL_FHCAL_cpion/%1.1f/G4EICDetector_g4femc_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
+      TTree *const t_pion_fecalfhcal =  (TTree *) (new TFile(Form("/media/nschmidt/local/AnalysisSoftwareEIC/resolutionHCAL/EIC_simulation/FECAL_FHCAL_cpion/%1.1f/G4EICDetector_g4fhcal_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
+      TTree *const t_pion_fecal =  (TTree *) (new TFile(Form("/media/nschmidt/local/AnalysisSoftwareEIC/resolutionHCAL/EIC_simulation/FECAL_FHCAL_cpion/%1.1f/G4EICDetector_g4femc_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
+      TTree *const t_pion_fecalfhcal_hcal =  (TTree *) (new TFile(Form("/media/nschmidt/local/AnalysisSoftwareEIC/resolutionHCAL/EIC_simulation/FECAL_FHCAL_cpion/%1.1f/G4EICDetector_g4fhcal_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
+      TTree *const t_pion_fecalfhcal_ecal =  (TTree *) (new TFile(Form("/media/nschmidt/local/AnalysisSoftwareEIC/resolutionHCAL/EIC_simulation/FECAL_FHCAL_cpion/%1.1f/G4EICDetector_g4femc_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
       if(t_pion_fecalfhcal){
         activeEboth++;
         h_pion_ecalfhcal_E[epart] 	= new TH1F(Form("h_pion_ecalfhcal_E_%d",epart), "", 100, 0.0, 2.0);
@@ -216,8 +216,8 @@ void resolutionHCAL(
 
           t_pion_fecalfhcal_hcal->GetEntry(i);
           t_pion_fecalfhcal_ecal->GetEntry(i);
-          if (((true_eta1 > 1.7 && true_eta1 < 3.0)
-            || (true_eta2 > 1.7 && true_eta2 < 3.0))  //1.7 < 3
+          if (((true_eta1 > 1.3 && true_eta1 < 3.0)
+            || (true_eta2 > 1.3 && true_eta2 < 3.0))  //1.7 < 3
           && (measured_energy1 > 0.35) // above MIP
           && (measured_energy1 > 0.35) // above MIP
           && nTowers1>=2 && nTowers2>=2 // actual cluster with >1 tower
@@ -254,10 +254,10 @@ void resolutionHCAL(
       }
     }
     if(useEBothgamma[epart]){
-      TTree *const t_gamma_fecalfhcal_hcal1 =  (TTree *) (new TFile(Form("/media/nschmidt/local/EIC_afterburners/resolutionHCAL/EIC_simulation/FECAL_FHCAL_gamma/%1.1f/G4EICDetector_g4fhcal_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
-      TTree *const t_gamma_fecalfhcal_ecal1 =  (TTree *) (new TFile(Form("/media/nschmidt/local/EIC_afterburners/resolutionHCAL/EIC_simulation/FECAL_FHCAL_gamma/%1.1f/G4EICDetector_g4femc_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
-      TTree *const t_gamma_fecalfhcal_hcal2 =  (TTree *) (new TFile(Form("/media/nschmidt/local/EIC_afterburners/resolutionHCAL/EIC_simulation/FECAL_FHCAL_gamma/%1.1f/G4EICDetector_g4fhcal_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
-      TTree *const t_gamma_fecalfhcal_ecal2 =  (TTree *) (new TFile(Form("/media/nschmidt/local/EIC_afterburners/resolutionHCAL/EIC_simulation/FECAL_FHCAL_gamma/%1.1f/G4EICDetector_g4femc_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
+      TTree *const t_gamma_fecalfhcal_hcal1 =  (TTree *) (new TFile(Form("/media/nschmidt/local/AnalysisSoftwareEIC/resolutionHCAL/EIC_simulation/FECAL_FHCAL_gamma/%1.1f/G4EICDetector_g4fhcal_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
+      TTree *const t_gamma_fecalfhcal_ecal1 =  (TTree *) (new TFile(Form("/media/nschmidt/local/AnalysisSoftwareEIC/resolutionHCAL/EIC_simulation/FECAL_FHCAL_gamma/%1.1f/G4EICDetector_g4femc_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
+      TTree *const t_gamma_fecalfhcal_hcal2 =  (TTree *) (new TFile(Form("/media/nschmidt/local/AnalysisSoftwareEIC/resolutionHCAL/EIC_simulation/FECAL_FHCAL_gamma/%1.1f/G4EICDetector_g4fhcal_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
+      TTree *const t_gamma_fecalfhcal_ecal2 =  (TTree *) (new TFile(Form("/media/nschmidt/local/AnalysisSoftwareEIC/resolutionHCAL/EIC_simulation/FECAL_FHCAL_gamma/%1.1f/G4EICDetector_g4femc_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
       if(t_gamma_fecalfhcal_hcal1){
         activeEboth_gamma++;
         h_gamma_ecalfhcal_E[epart] 	= new TH1F(Form("h_gamma_ecalfhcal_E_%d",epart), "", 200, 0.0, 2.0);
@@ -275,7 +275,7 @@ void resolutionHCAL(
         h2D_NTowers_HCAL_gamma[epart] 	= new TH2F(Form("h2D_NTowers_HCAL_gamma%d",epart), "", 100, 0,partE[epart]*1.15, 40, -0.5,39.5);
         h2D_NTowers_ECAL_gamma[epart] 	= new TH2F(Form("h2D_NTowers_ECAL_gamma%d",epart), "", 100, 0,partE[epart]*1.15, 40, -0.5,39.5);
         h2D_gamma_ecalfhcal_E[epart] 	= new TH2F(Form("h2D_gamma_ecalfhcal_E_%d",epart), "", 100, 0,partE[epart]*1.15, 100, 0,partE[epart]*1.15);
-        h_gamma_ecalfhcalcomb_E[epart] 	= new TH1F(Form("h_gamma_ecalfhcalcomb_E_%d",epart), "", 200, 0.0, 2.0);
+        h_gamma_ecalfhcalcomb_E[epart] 	= new TH1F(Form("h_gamma_ecalfhcalcomb_E_%d",epart), "", 600, 0.0, 2.0);
         Float_t measured_energy1,measured_energy2;
         t_gamma_fecalfhcal_hcal2->SetBranchAddress("e", &measured_energy1);
         t_gamma_fecalfhcal_ecal2->SetBranchAddress("e", &measured_energy2);
@@ -310,10 +310,10 @@ void resolutionHCAL(
       }
     }
     if(useEBothproton[epart]){
-      TTree *const t_proton_fecalfhcal_hcal1 =  (TTree *) (new TFile(Form("/media/nschmidt/local/EIC_afterburners/resolutionHCAL/EIC_simulation/FECAL_FHCAL_proton/%1.1f/G4EICDetector_g4fhcal_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
-      TTree *const t_proton_fecalfhcal_ecal1 =  (TTree *) (new TFile(Form("/media/nschmidt/local/EIC_afterburners/resolutionHCAL/EIC_simulation/FECAL_FHCAL_proton/%1.1f/G4EICDetector_g4femc_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
-      TTree *const t_proton_fecalfhcal_hcal2 =  (TTree *) (new TFile(Form("/media/nschmidt/local/EIC_afterburners/resolutionHCAL/EIC_simulation/FECAL_FHCAL_proton/%1.1f/G4EICDetector_g4fhcal_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
-      TTree *const t_proton_fecalfhcal_ecal2 =  (TTree *) (new TFile(Form("/media/nschmidt/local/EIC_afterburners/resolutionHCAL/EIC_simulation/FECAL_FHCAL_proton/%1.1f/G4EICDetector_g4femc_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
+      TTree *const t_proton_fecalfhcal_hcal1 =  (TTree *) (new TFile(Form("/media/nschmidt/local/AnalysisSoftwareEIC/resolutionHCAL/EIC_simulation/FECAL_FHCAL_proton/%1.1f/G4EICDetector_g4fhcal_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
+      TTree *const t_proton_fecalfhcal_ecal1 =  (TTree *) (new TFile(Form("/media/nschmidt/local/AnalysisSoftwareEIC/resolutionHCAL/EIC_simulation/FECAL_FHCAL_proton/%1.1f/G4EICDetector_g4femc_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
+      TTree *const t_proton_fecalfhcal_hcal2 =  (TTree *) (new TFile(Form("/media/nschmidt/local/AnalysisSoftwareEIC/resolutionHCAL/EIC_simulation/FECAL_FHCAL_proton/%1.1f/G4EICDetector_g4fhcal_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
+      TTree *const t_proton_fecalfhcal_ecal2 =  (TTree *) (new TFile(Form("/media/nschmidt/local/AnalysisSoftwareEIC/resolutionHCAL/EIC_simulation/FECAL_FHCAL_proton/%1.1f/G4EICDetector_g4femc_eval.root",partE[epart]), "READ"))->Get("ntp_gshower");
       if(t_proton_fecalfhcal_hcal1){
         activeEboth_proton++;
         h_proton_ecalfhcal_E[epart] 	= new TH1F(Form("h_proton_ecalfhcal_E_%d",epart), "", 200, 0.0, 2.0);
@@ -664,23 +664,23 @@ void resolutionHCAL(
 
     DrawGammaSetMarker(h_pion_ecalfhcalcomb_E[epart], 20, 2, kRed+2, kRed+2);
     h_pion_ecalfhcalcomb_E[epart]->Draw("same");
-    fit_resoBothComb[epart] = new TF1(Form("fit_resoBothComb_%d",epart), "gaus", partE[epart]<50 ? 0.3+0.008*partE[epart] : 0.65,0.9);
+    fit_resoBothComb[epart] = new TF1(Form("fit_resoBothComb_%d",epart), "gaus", partE[epart]<50 ? 0.35+0.008*partE[epart] : 0.65,0.9);
     h_pion_ecalfhcalcomb_E[epart]->Fit(fit_resoBothComb[epart],"L0RMEQ");
     fit_resoBothComb[epart]->SetNpx(10000);
     DrawGammaSetMarkerTF1(fit_resoBothComb[epart], 1, 2,  kRed+4);
     fit_resoBothComb[epart]->Draw("same");
 
     DrawGammaSetMarker(h_pion_ecalfhcalcomb_E_calib[epart], 20, 2, kMagenta+2, kMagenta+2);
-    h_pion_ecalfhcalcomb_E_calib[epart]->Draw("same");
+    // h_pion_ecalfhcalcomb_E_calib[epart]->Draw("same");
     fit_resoBothComb_calib[epart] = new TF1(Form("fit_resoBothComb_calib%d",epart), "gaus", partE[epart]<50 ? 0.3+0.008*partE[epart] : 0.65,0.9);
     h_pion_ecalfhcalcomb_E_calib[epart]->Fit(fit_resoBothComb_calib[epart],"L0RMEQ");
     fit_resoBothComb_calib[epart]->SetNpx(10000);
     DrawGammaSetMarkerTF1(fit_resoBothComb_calib[epart], 1, 2,  kMagenta+4);
-    fit_resoBothComb_calib[epart]->Draw("same");
+    // fit_resoBothComb_calib[epart]->Draw("same");
 
     DrawGammaSetMarker(h_pion_ecalfhcalcomb_E_calibrated[epart], 20, 2, kOrange+2, kOrange+2);
     h_pion_ecalfhcalcomb_E_calibrated[epart]->Draw("same");
-    fit_resoBothComb_calibrated[epart] = new TF1(Form("fit_resoBothComb_calibrated%d",epart), "gaus", partE[epart]<50 ? 0.4+0.008*partE[epart] : 0.75,partE[epart]<30 ? 1.3 : 1.15);
+    fit_resoBothComb_calibrated[epart] = new TF1(Form("fit_resoBothComb_calibrated%d",epart), "gaus", partE[epart]<50 ? 0.4+0.008*partE[epart] : 0.85,partE[epart]<30 ? 1.3 : 1.15);
     h_pion_ecalfhcalcomb_E_calibrated[epart]->Fit(fit_resoBothComb_calibrated[epart],"L0RMEQ");
     fit_resoBothComb_calibrated[epart]->SetNpx(10000);
     DrawGammaSetMarkerTF1(fit_resoBothComb_calibrated[epart], 1, 2,  kOrange+4);
@@ -810,7 +810,7 @@ void resolutionHCAL(
 
     DrawGammaSetMarker(h_gamma_ecalfhcalcomb_E[epart], 20, 2, kRed+2, kRed+2);
     h_gamma_ecalfhcalcomb_E[epart]->Draw("same");
-    fit_gamma_resoBothComb[epart] = new TF1(Form("fit_gamma_resoBothComb_%d",epart), "gaus", 0.8,0.9); //6+0.005*partE[epart]
+    fit_gamma_resoBothComb[epart] = new TF1(Form("fit_gamma_resoBothComb_%d",epart), "gaus", partE[epart]==60 ? 0.83 : 0.8,partE[epart]==60 ? 0.87 : 0.9); //6+0.005*partE[epart]
     h_gamma_ecalfhcalcomb_E[epart]->Fit(fit_gamma_resoBothComb[epart],"L0RMEQ");
     fit_gamma_resoBothComb[epart]->SetNpx(10000);
     DrawGammaSetMarkerTF1(fit_gamma_resoBothComb[epart], 1, 2,  kRed+4);
@@ -917,7 +917,7 @@ void resolutionHCAL(
 
     DrawGammaSetMarker(h_proton_ecalfhcalcomb_E[epart], 20, 2, kRed+2, kRed+2);
     h_proton_ecalfhcalcomb_E[epart]->Draw("same");
-    fit_proton_resoBothComb[epart] = new TF1(Form("fit_proton_resoBothComb_%d",epart), "gaus", 0.2+0.005*partE[epart],0.55+0.01*partE[epart]); //6+0.005*partE[epart]
+    fit_proton_resoBothComb[epart] = new TF1(Form("fit_proton_resoBothComb_%d",epart), "gaus", partE[epart]<40 ? 0.2+0.005*partE[epart] : 0.6,partE[epart]<40 ?0.55+0.01*partE[epart] : 0.8); //6+0.005*partE[epart]
     h_proton_ecalfhcalcomb_E[epart]->Fit(fit_proton_resoBothComb[epart],"L0RMEQ");
     fit_proton_resoBothComb[epart]->SetNpx(10000);
     DrawGammaSetMarkerTF1(fit_proton_resoBothComb[epart], 1, 2,  kRed+4);
@@ -955,6 +955,57 @@ void resolutionHCAL(
    padnum++;
  }
   cPNGBoth->Print(Form("%s/ECAL_HCAL_resolution_proton.%s", outputDir.Data(), suffix.Data()));
+
+  split_canvas(cPNGBoth, "cPNGBothProton", 1);
+  histEPlotDummyBoth                           = new TH2F("histEPlotDummyBoth","histEPlotDummyBoth",1000,0.3, 1.05,1000,0, 0.145);
+  SetStyleHistoTH2ForGraphs(histEPlotDummyBoth, "#it{E}_{rec} / #it{E}_{true}","norm. counts", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
+  histEPlotDummyBoth->GetXaxis()->SetNoExponent();
+  histEPlotDummyBoth->GetYaxis()->SetNdivisions(505,kTRUE);
+  histEPlotDummyBoth->GetXaxis()->SetMoreLogLabels(kTRUE);
+
+  for(Int_t epart=0; epart<NELEMS(partE); epart++){
+    if(!useEBothproton[epart]) continue;
+    if(!h_proton_ecal_E[epart]) continue;
+    if(partE[epart]!=60) continue;
+
+    TCanvas* canvasECCE = new TCanvas("canvasECCE","",0,0,1100,1000);
+    DrawGammaCanvasSettings( canvasECCE, 0.11, 0.01, 0.01, 0.105);
+    histEPlotDummyBoth->DrawCopy();
+
+    DrawGammaSetMarker(h_proton_ecalfhcalcomb_E[epart], 43, 4, kGray+2, kGray+2);
+    h_proton_ecalfhcalcomb_E[epart]->Draw("same");
+    DrawGammaSetMarkerTF1(fit_proton_resoBothComb[epart], 1, 3,  kGray+4);
+    fit_proton_resoBothComb[epart]->Draw("same");
+
+    // DrawGammaSetMarker(h_pion_fhcal_E_allclus[epart], 24, 2, kRed-8, kRed-8);
+    // h_pion_fhcal_E_allclus[epart]->Draw("same");
+    // DrawGammaSetMarkerTF1(fit_reso_NCell[epart], 1, 2, kRed-4);
+    // fit_reso_NCell[epart]->Draw("same");
+
+    DrawGammaSetMarker(h_pion_ecalfhcalcomb_E_calib[epart], 20, 3, kRed+2, kRed+2);
+    DrawGammaSetMarkerTF1(fit_resoBothComb_calib[epart], 1, 3,  kRed+4);
+    h_pion_ecalfhcalcomb_E_calib[epart]->Draw("same");
+    fit_resoBothComb_calib[epart]->Draw("same");
+
+    DrawGammaSetMarker(h_gamma_ecalfhcalcomb_E[epart], 47, 3, kOrange+2, kOrange+2);
+    DrawGammaSetMarkerTF1(fit_gamma_resoBothComb[epart], 1, 3,  kOrange+4);
+    h_gamma_ecalfhcalcomb_E[epart]->Draw("same");
+    fit_gamma_resoBothComb[epart]->Draw("same");
+
+    drawLatexAdd(Form("%1.1f GeV particles",partE[epart]),0.15,0.60,1.0*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+    drawLatexAdd(Form("in #eta > 1.2"),0.15,0.55,1.0*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+
+
+    legendHE_proton           = GetAndSetLegend2(0.15, 0.95-(4*textSizeLabelsRel), 0.7, 0.95,1.1*textSizeLabelsPixel, 1, "", 43, 0.15);
+    // legendHE_proton->AddEntry(h_pion_fhcal_E_allclus[epart],Form("#pi^{-} : mean: %1.2f, #sigma/#it{E}: %1.2f%%",fit_reso_NCell[epart]->GetParameter(1),100*fit_reso_NCell[epart]->GetParameter(2)/fit_reso_NCell[epart]->GetParameter(1)),"pl");
+    // legendHE_proton->AddEntry(h_proton_ecalfhcal_E[epart],Form("HCAL: no fit"),"pl");
+    legendHE_proton->AddEntry(h_pion_ecalfhcalcomb_E_calib[epart],Form("#pi^{-}: mean: %1.2f, #sigma/#it{E}: %1.2f%%",fit_resoBothComb_calib[epart]->GetParameter(1),100*fit_resoBothComb_calib[epart]->GetParameter(2)/fit_resoBothComb_calib[epart]->GetParameter(1)),"pl");
+    legendHE_proton->AddEntry(h_proton_ecalfhcalcomb_E[epart],Form("proton: mean: %1.2f, #sigma/#it{E}: %1.2f%%",fit_proton_resoBothComb[epart]->GetParameter(1),100*fit_proton_resoBothComb[epart]->GetParameter(2)/fit_proton_resoBothComb[epart]->GetParameter(1)),"pl");
+    legendHE_proton->AddEntry(h_gamma_ecalfhcalcomb_E[epart],Form("photon: mean: %1.2f, #sigma/#it{E}: %1.2f%%",fit_gamma_resoBothComb[epart]->GetParameter(1),100*fit_gamma_resoBothComb[epart]->GetParameter(2)/fit_gamma_resoBothComb[epart]->GetParameter(1)),"pl");
+    // legendNonLin->AddEntry((TObject*)0,"","");
+    legendHE_proton->Draw();
+    canvasECCE->Print(Form("%s/ECAL_HCAL_resolution_allpart.%s", outputDir.Data(), suffix.Data()));
+ }
 
 
   split_canvas(cPNGBoth, "cPNGPosition", activeEboth_gamma);
@@ -1684,6 +1735,47 @@ void resolutionHCAL(
   histResoDummy->GetYaxis()->SetNdivisions(505,kTRUE);
   histResoDummy->GetXaxis()->SetMoreLogLabels(kTRUE);
   histResoDummy->Draw();
+  DrawGammaSetMarker(h_proton_resolution_fecalfhcal_1oE, 46, 3, kGreen+2, kGreen+2);
+  h_proton_resolution_fecalfhcal_1oE->Draw("same,p");
+  DrawGammaSetMarkerTF1(fit_reso_proton_both_1oE, 3, 3, kGreen+2);
+  fit_reso_proton_both_1oE->Draw("same");
+
+  DrawGammaSetMarker(h_pion_resolution_fhcal_1oE, 24, 3, kRed-8, kRed-8);
+  h_pion_resolution_fhcal_1oE->Draw("same,p");
+  DrawGammaSetMarkerTF1(fit_reso_1oE, 3, 3, kRed-8);
+  fit_reso_1oE->Draw("same");
+
+  DrawGammaSetMarker(h_pion_resolution_comb_1oE, 20, 3, kRed+2, kRed+2);
+  h_pion_resolution_comb_1oE->Draw("same,p");
+  DrawGammaSetMarkerTF1(fit_resoboth_1oE, 3, 3, kRed+2);
+  fit_resoboth_1oE->Draw("same");
+
+  DrawGammaSetMarker(h_gamma_resolution_fecal_1oE, 33, 3, kOrange+2, kOrange+2);
+  h_gamma_resolution_fecal_1oE->Draw("same,p");
+  DrawGammaSetMarkerTF1(fit_reso_gamma_EMC_1oE, 3, 3, kOrange+2);
+  fit_reso_gamma_EMC_1oE->Draw("same");
+
+  // drawLatexAdd(Form("#pi^{-} in FHCAL(+FEMCAL): #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_resohcalmat_1oE->GetParameter(1),fit_resohcalmat_1oE->GetParameter(0)),0.15,0.90,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+  // drawLatexAdd(Form("#pi^{-} in FHCAL: #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_reso_1oE->GetParameter(1),fit_reso_1oE->GetParameter(0)),0.15,0.80,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+  // drawLatexAdd(Form("#gamma in FHCAL: #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_reso_gamma_1oE->GetParameter(1),fit_reso_gamma_1oE->GetParameter(0)),0.15,0.70,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+
+  legendNonLin           = GetAndSetLegend2(0.15, 0.95-(6*textSizeLabelsRel), 0.7, 0.95,0.9*textSizeLabelsPixel, 1, "", 43, 0.15);
+  legendNonLin->AddEntry(h_pion_resolution_fhcal_1oE,Form("#pi^{-} in HCAL (w/o mat): #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_reso_1oE->GetParameter(1),fit_reso_1oE->GetParameter(0)),"pl");
+  // legendNonLin->AddEntry(h_pion_resolution_fecalfhcal_1oE,Form("#pi^{-} in HCAL (w/ mat): #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_resohcalmat_1oE->GetParameter(1),fit_resohcalmat_1oE->GetParameter(0)),"pl");
+  legendNonLin->AddEntry(h_pion_resolution_comb_1oE,Form("#pi^{-} in HCAL+ECAL: #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_resoboth_1oE->GetParameter(1),fit_resoboth_1oE->GetParameter(0)),"pl");
+  legendNonLin->AddEntry(h_proton_resolution_fecalfhcal_1oE,Form("p in HCAL+ECAL: #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_reso_proton_both_1oE->GetParameter(1),fit_reso_proton_both_1oE->GetParameter(0)),"pl");
+  // legendNonLin->AddEntry(h_gamma_resolution_fhcal_1oE,Form("#gamma in HCAL (w/o mat): #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_reso_gamma_1oE->GetParameter(1),fit_reso_gamma_1oE->GetParameter(0)),"pl");
+  legendNonLin->AddEntry(h_gamma_resolution_fecal_1oE,Form("#gamma in HCAL+ECAL: #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_reso_gamma_EMC_1oE->GetParameter(1),fit_reso_gamma_EMC_1oE->GetParameter(0)),"pl");
+  // legendNonLin->AddEntry((TObject*)0,"","");
+  legendNonLin->Draw();
+  cReso2->Print(Form("%s/HCAL_resolution_ECCE_1oE_Fitted.%s", outputDir.Data(), suffix.Data()));
+
+  histResoDummy                           = new TH2F("histResoDummy","histResoDummy",1000,0, 0.49,1000,0, 45);
+  SetStyleHistoTH2ForGraphs(histResoDummy, "1 / #sqrt{#it{E} (GeV)}","#sigma / #it{E} (%)", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.81);
+  histResoDummy->GetXaxis()->SetNoExponent();
+  histResoDummy->GetYaxis()->SetNdivisions(505,kTRUE);
+  histResoDummy->GetXaxis()->SetMoreLogLabels(kTRUE);
+  histResoDummy->Draw();
 
   h_pion_resolution_comb_1oE->Draw("same,p");
   fit_resoboth_1oE->Draw("same");
@@ -1767,13 +1859,14 @@ void resolutionHCAL(
   // drawLatexAdd(Form("#gamma in FHCAL: #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_cpion_eta3_hcal->GetParameter(1),fit_cpion_eta3_hcal->GetParameter(0)),0.15,0.70,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
 
   legendNonLin           = GetAndSetLegend2(0.15, 0.95-(8*textSizeLabelsRel), 0.7, 0.95,0.9*textSizeLabelsPixel, 1, "", 43, 0.15);
-  legendNonLin->AddEntry(h_pion_resolution_fhcal_1oE,Form("#pi^{-} in 1.4<#eta<3.5: #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_reso_1oE->GetParameter(1),fit_reso_1oE->GetParameter(0)),"pl");
-  legendNonLin->AddEntry(h_cpion_eta1_resolution_fhcal_1oE,Form("#pi^{-} in 1.2<#eta<1.7: #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_cpion_eta1_hcal->GetParameter(1),fit_cpion_eta1_hcal->GetParameter(0)),"pl");
-  legendNonLin->AddEntry(h_cpion_eta2_resolution_fhcal_1oE,Form("#pi^{-} in 1.7<#eta<2.5: #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_cpion_eta2_hcal->GetParameter(1),fit_cpion_eta2_hcal->GetParameter(0)),"pl");
-  legendNonLin->AddEntry(h_cpion_eta3_resolution_fhcal_1oE,Form("#gamma in 2.5<#eta<3.0: #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_cpion_eta3_hcal->GetParameter(1),fit_cpion_eta3_hcal->GetParameter(0)),"pl");
-  legendNonLin->AddEntry(h_cpion_eta4_resolution_fhcal_1oE,Form("#gamma in 3.0<#eta<4.0: #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_cpion_eta4_hcal->GetParameter(1),fit_cpion_eta4_hcal->GetParameter(0)),"pl");
+  legendNonLin->AddEntry(h_pion_resolution_fhcal_1oE,Form("1.4<#eta<3.5: #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_reso_1oE->GetParameter(1),fit_reso_1oE->GetParameter(0)),"pl");
+  legendNonLin->AddEntry(h_cpion_eta1_resolution_fhcal_1oE,Form("1.2<#eta<1.7: #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_cpion_eta1_hcal->GetParameter(1),fit_cpion_eta1_hcal->GetParameter(0)),"pl");
+  legendNonLin->AddEntry(h_cpion_eta2_resolution_fhcal_1oE,Form("1.7<#eta<2.5: #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_cpion_eta2_hcal->GetParameter(1),fit_cpion_eta2_hcal->GetParameter(0)),"pl");
+  legendNonLin->AddEntry(h_cpion_eta3_resolution_fhcal_1oE,Form("2.5<#eta<3.0: #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_cpion_eta3_hcal->GetParameter(1),fit_cpion_eta3_hcal->GetParameter(0)),"pl");
+  legendNonLin->AddEntry(h_cpion_eta4_resolution_fhcal_1oE,Form("3.0<#eta<4.0: #frac{#sigma}{#it{E}} =  #frac{%1.2f}{#sqrt{#it{E}}} #oplus %1.2f",fit_cpion_eta4_hcal->GetParameter(1),fit_cpion_eta4_hcal->GetParameter(0)),"pl");
   // legendNonLin->AddEntry((TObject*)0,"","");
   legendNonLin->Draw();
+  drawLatexAdd("#pi^{-} in FHCAL",0.90,0.15,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
   cReso2->Print(Form("%s/HCAL_resolution_eta_1oE_Fitted.%s", outputDir.Data(), suffix.Data()));
 
 }

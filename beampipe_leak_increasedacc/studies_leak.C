@@ -61,7 +61,7 @@ void studies_leak(
     h2D_leakfrac_E_vs_Eta[epart] 	= new TH2F(Form("h2D_leakfrac_E_vs_Eta_%d",epart), "", 60, 2.5, 4.5,120,0,1.2);
     h2D_leakTruefrac_E_vs_Eta[epart] 	= new TH2F(Form("h2D_leakTruefrac_E_vs_Eta_%d",epart), "", 60, 2.5, 4.5,120,0,1.2);
     // if(partE[epart]<10 || partE[epart]>10) continue;
-    if(partE[epart]!=20) continue;
+    if(partE[epart]!=40) continue;
     if(t_clusters_fhcal_fulleta && t_towers_fhcal_fulleta){
         useE[epart] = 1;
         activeE++;
@@ -207,7 +207,8 @@ void studies_leak(
     h2D_leakfrac_E_vs_Eta[epart]->GetYaxis()->SetRangeUser(0,1.2);
     h2D_leakfrac_E_vs_Eta[epart]->Draw("colz");
     drawLatexAdd(Form("%1.1f GeV #pi^{-} on FHCAL",partE[epart]),0.85,0.85,1.3*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    drawLatexAdd("#it{E}_{leak} = #sum_{#eta>4} #it{E}_{tower}",0.15,0.85,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+    // drawLatexAdd("#it{E}_{leak} = #sum_{#eta>4} #it{E}_{tower}",0.15,0.85,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+    drawLatexAdd("#it{E}_{leak} = #it{E}^{#eta>4}_{shower}",0.15,0.85,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
     DrawGammaSetMarker(h_leakfrac_Mean_Eta[epart], 20, 1, kOrange+2, kOrange+2);
     h_leakfrac_Mean_Eta[epart]->Draw("same");
     padnum++;
@@ -218,25 +219,29 @@ void studies_leak(
   padnum =0;
   for(Int_t epart=0; epart<NELEMS(partE); epart++){
     if(!useE[epart]) continue;
-  	cPNG->SetLeftMargin(0.1);
-  	cPNG->SetRightMargin(0.1);
-  	cPNG->SetBottomMargin(0.1);
-  	cPNG->cd(padnum+1);
-    SetStyleHistoTH2ForGraphs(h2D_leakTruefrac_E_vs_Eta[epart], "#eta_{#pi}^{true}","#it{E}^{rec}_{leak} / #it{E}^{#pi}_{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.81);
+    TCanvas* cECCE = new TCanvas("cECCE","",0,0,1100,1000);
+    DrawGammaCanvasSettings( cECCE, 0.11, 0.01, 0.01, 0.105);
+  	// cPNG->SetLeftMargin(0.1);
+  	// cPNG->SetRightMargin(0.02);
+  	// cPNG->SetBottomMargin(0.11);
+  	// cPNG->cd(padnum+1);
+    SetStyleHistoTH2ForGraphs(h2D_leakTruefrac_E_vs_Eta[epart], "#eta_{#pi}^{true}","#it{E}^{rec}_{leak} / #it{E}^{#pi}_{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.99);
     // DrawGammaSetMarker(h2D_leakfrac_E_vs_Eta[epart], markerInput[0], 2, colorInput[0], colorInput[0]);
-    h2D_leakTruefrac_E_vs_Eta[epart]->GetYaxis()->SetRangeUser(0,1.2);
+    h2D_leakTruefrac_E_vs_Eta[epart]->GetYaxis()->SetRangeUser(0,0.79);
     h2D_leakTruefrac_E_vs_Eta[epart]->GetXaxis()->SetRangeUser(3.01,4.0);
-    h2D_leakTruefrac_E_vs_Eta[epart]->Draw("colz");
-    drawLatexAdd(Form("%1.1f GeV #pi^{-} on FHCAL",partE[epart]),0.85,0.85,1.3*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    drawLatexAdd("#it{E}_{leak} = #sum_{#eta>4} #it{E}_{tower}",0.15,0.85,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-    DrawGammaSetMarker(h_leakTruefrac_Mean_Eta[epart], 20, 1, kOrange+2, kOrange+2);
+    h2D_leakTruefrac_E_vs_Eta[epart]->Draw("col");
+    drawLatexAdd(Form("%1.1f GeV #pi^{-} on FHCAL",partE[epart]),0.15,0.90,1*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+    // drawLatexAdd("#it{E}_{leak} = #sum_{#eta>4} #it{E}_{tower}",0.15,0.85,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+    drawLatexAdd("#it{E}_{leak} = #it{E}^{#eta>4}_{shower}",0.15,0.83,1*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+    DrawGammaSetMarker(h_leakTruefrac_Mean_Eta[epart], 20, 3, kOrange+2, kOrange+2);
     h_leakTruefrac_Mean_Eta[epart]->Draw("same");
-    TLegend* legendJES  = GetAndSetLegend2(0.13, 0.83-(3*textSizeLabelsRel), 0.6, 0.83-(2*textSizeLabelsRel),0.9*textSizeLabelsPixel, 1, "", 43, 0.15);
-    legendJES->AddEntry(h_leakTruefrac_Mean_Eta[epart],"mean","p");
+    TLegend* legendJES  = GetAndSetLegend2(0.13, 0.83-(2*textSizeLabelsRel), 0.6, 0.83-(1*textSizeLabelsRel),textSizeLabelsPixel, 1, "", 43, 0.15);
+    legendJES->AddEntry(h_leakTruefrac_Mean_Eta[epart],"mean transverse leakage","p");
     legendJES->Draw();
     padnum++;
+    cECCE->Print(Form("%s/ELeakTrueFracTrueEta_E.%s", outputDir.Data(), suffix.Data()));
  }
-  cPNG->Print(Form("%s/ELeakTrueFracTrueEta_E.%s", outputDir.Data(), suffix.Data()));
+  // cPNG->Print(Form("%s/ELeakTrueFracTrueEta_E.%s", outputDir.Data(), suffix.Data()));
   // */
 }
           // h2D_NTowers_HCAL_pi[epart][iInp]->Fill(measured_energy1, nTowers1);
