@@ -1,49 +1,66 @@
-TString ReturnDateStringForOutput(){
-    TDatime today;
-    int iDate           = today.GetDate();
-    int iYear           = iDate/10000;
-    int iMonth          = (iDate%10000)/100;
-    int iDay            = iDate%100;
-    TString cMonth[12]  = {"Jan","Feb","Mar","Apr","May","Jun",
-                        "Jul","Aug","Sep","Oct","Nov","Dec"};
-    TString textDayth;
-    if (iDay== 11){
-        textDayth       = "th";
-    } else if  (iDay== 12){
-        textDayth       = "th";
-    } else if  (iDay== 13){
-        textDayth       = "th";
-    } else if  (iDay%10 == 1){
-        textDayth       = "st";
-    } else if (iDay%10 == 2){
-        textDayth       = "nd";
-    } else if (iDay%10 == 3){
-        textDayth       = "rd";
-    } else {
-        textDayth       = "th";
-    }
-    return Form("%i_%02d_%02d",iYear, iMonth, iDay);
-}
-
-    //__________________________________________________________________________________________________________
-    void DrawGammaCanvasSettings( TCanvas* c1,
-                                Double_t leftMargin,
-                                Double_t rightMargin,
-                                Double_t topMargin,
-                                Double_t bottomMargin){
-        c1->SetTickx();
-        c1->SetTicky();
-        c1->SetGridx(0);
-        c1->SetGridy(0);
-        c1->SetLogy(0);
-        c1->SetLeftMargin(leftMargin);
-        c1->SetRightMargin(rightMargin);
-        c1->SetTopMargin(topMargin);
-        c1->SetBottomMargin(bottomMargin);
-        c1->SetFillColor(0);
+    TString ReturnDateStringForOutput(){
+        TDatime today;
+        int iDate           = today.GetDate();
+        int iYear           = iDate/10000;
+        int iMonth          = (iDate%10000)/100;
+        int iDay            = iDate%100;
+        TString cMonth[12]  = {"Jan","Feb","Mar","Apr","May","Jun",
+                            "Jul","Aug","Sep","Oct","Nov","Dec"};
+        TString textDayth;
+        if (iDay== 11){
+            textDayth       = "th";
+        } else if  (iDay== 12){
+            textDayth       = "th";
+        } else if  (iDay== 13){
+            textDayth       = "th";
+        } else if  (iDay%10 == 1){
+            textDayth       = "st";
+        } else if (iDay%10 == 2){
+            textDayth       = "nd";
+        } else if (iDay%10 == 3){
+            textDayth       = "rd";
+        } else {
+            textDayth       = "th";
+        }
+        return Form("%i_%02d_%02d",iYear, iMonth, iDay);
     }
 
-TF1* DivideTF1(TF1* f1, TF1* f2, TString name) {
+  //__________________________________________________________________________________________________________
+  void DrawGammaCanvasSettings( TCanvas* c1,
+                              Double_t leftMargin,
+                              Double_t rightMargin,
+                              Double_t topMargin,
+                              Double_t bottomMargin){
+    c1->SetTickx();
+    c1->SetTicky();
+    c1->SetGridx(0);
+    c1->SetGridy(0);
+    c1->SetLogy(0);
+    c1->SetLeftMargin(leftMargin);
+    c1->SetRightMargin(rightMargin);
+    c1->SetTopMargin(topMargin);
+    c1->SetBottomMargin(bottomMargin);
+    c1->SetFillColor(0);
+  }
+  //__________________________________________________________________________________________________________
+  void DrawVirtualPadSettings( TVirtualPad* c1,
+                        Double_t leftMargin,
+                        Double_t rightMargin,
+                        Double_t topMargin,
+                        Double_t bottomMargin){
+    c1->SetTickx();
+    c1->SetTicky();
+    c1->SetGridx(0);
+    c1->SetGridy(0);
+    c1->SetLogy(0);
+    c1->SetLeftMargin(leftMargin);
+    c1->SetRightMargin(rightMargin);
+    c1->SetTopMargin(topMargin);
+    c1->SetBottomMargin(bottomMargin);
+    c1->SetFillColor(0);
+  }
+
+    TF1* DivideTF1(TF1* f1, TF1* f2, TString name) {
 
         if (!f1 || !f2) return NULL;
 
@@ -101,7 +118,7 @@ TF1* DivideTF1(TF1* f1, TF1* f2, TString name) {
         }
     }
 
-//__________________________________________________________________________________________________________
+    //__________________________________________________________________________________________________________
     void DrawGammaSetMarkerTGraphAsym(  TGraphAsymmErrors* graph,
                                         Style_t markerStyle,
                                         Size_t markerSize,
@@ -186,6 +203,43 @@ TF1* DivideTF1(TF1* f1, TF1* f2, TString name) {
         histo->GetYaxis()->SetNdivisions(yNDivisions,kTRUE);
     }
 
+      //__________________________________________________________________________________________________________
+    void SetStyleHistoTH1ForGraphs( TH1* histo,
+                                    TString XTitle,
+                                    TString YTitle,
+                                    Size_t xLableSize,
+                                    Size_t xTitleSize,
+                                    Size_t yLableSize,
+                                    Size_t yTitleSize,
+                                    Float_t xTitleOffset    = 1,
+                                    Float_t yTitleOffset    = 1,
+                                    Int_t xNDivisions       = 510,
+                                    Int_t yNDivisions       = 510,
+                                    Font_t textFontLabel    = 42,
+                                    Font_t textFontTitle    = 62
+                                  ){
+        histo->SetXTitle(XTitle);
+        histo->SetYTitle(YTitle);
+        histo->SetTitle("");
+
+        histo->GetXaxis()->SetLabelFont(textFontLabel);
+        histo->GetYaxis()->SetLabelFont(textFontLabel);
+        histo->GetXaxis()->SetTitleFont(textFontTitle);
+        histo->GetYaxis()->SetTitleFont(textFontTitle);
+
+        histo->GetXaxis()->SetLabelSize(xLableSize);
+        histo->GetXaxis()->SetTitleSize(xTitleSize);
+        histo->GetXaxis()->SetTitleOffset(xTitleOffset);
+        histo->GetXaxis()->SetNdivisions(xNDivisions,kTRUE);
+
+        histo->GetYaxis()->SetDecimals();
+        histo->GetYaxis()->SetLabelSize(yLableSize);
+        histo->GetYaxis()->SetTitleSize(yTitleSize);
+        histo->GetYaxis()->SetTitleOffset(yTitleOffset);
+        histo->GetYaxis()->SetNdivisions(yNDivisions,kTRUE);
+    }
+
+    
    void DrawGammaLines(Float_t startX, Float_t endX,
                     Float_t startY, Float_t endY,
                     Float_t linew, Float_t lineColor = 4, Style_t lineStyle = 1){

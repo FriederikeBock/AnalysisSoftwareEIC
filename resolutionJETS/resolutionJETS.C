@@ -127,7 +127,7 @@ Double_t xbinsDiff[16] = {0.,2.,4.,6.,8.,10.,12.,14.,16.,18.,  20.,25.,30.,35.,4
     }
   }
 
-// 2D PLOT
+  // 2D PLOT
   TCanvas* cReso = new TCanvas("cReso","",0,0,1100,1000);
   DrawGammaCanvasSettings( cReso, 0.11, 0.01, 0.01, 0.105);
   // cReso->SetLogz();
