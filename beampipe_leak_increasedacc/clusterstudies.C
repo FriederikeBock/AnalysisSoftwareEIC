@@ -37,7 +37,7 @@
 // #include "Math/BrentRootFinder.h"
 // #include "TFitResultPtr.h"
 // #include "TFitResult.h"
-#include "plottingheader.h"
+#include "../common/plottingheader.h"
 #define NELEMS(arr) (sizeof(arr)/sizeof(arr[0]))
 
 void fill_histogram(TH1F * const h, TTree * const t, const Float_t true_energy,

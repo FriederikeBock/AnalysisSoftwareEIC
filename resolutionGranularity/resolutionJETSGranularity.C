@@ -1,4 +1,4 @@
-#include "plottingheader.h"
+#include "../common/plottingheader.h"
 #define NELEMS(arr) (sizeof(arr)/sizeof(arr[0]))
 
 void resolutionJETSGranularity(
