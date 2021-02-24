@@ -10,7 +10,8 @@ void analyseTreeForTrackingResolAndPID(
                                         TString studyname           = "defaultLBL",
                                         TString singleFileName      = "/home/fbock/eic/Singularity/Fun4All_G4_LBLDetector_Org/10000/G4LBLDetector_g4tracking_eval.root",
                                         TString inputFileNameList   = "",
-                                        Bool_t isLANL               = kFALSE
+                                        Bool_t isLANL               = kFALSE,
+                                        Bool_t hasTiming            = kTRUE
                                       ){
 
   gROOT->Reset();
@@ -47,6 +48,25 @@ void analyseTreeForTrackingResolAndPID(
   Int_t layerOffsetLBL[3]         = {30, 10, 20 };
   Int_t layerTTLBEC[3]            = {2, 1, 2 };
   
+  if (studyname.Contains("FTTLS2LC")){
+    maxLayerTTL[2] = 2;
+  } else if( studyname.Contains("FTTLSE2LC")){
+    maxLayerTTL[2] = 2;
+    layerTTLBEC[2] = 1;
+  } else if (studyname.Contains("FTTLSE1") ){
+    maxLayerTTL[2] = 1;
+    layerTTLBEC[2] = 1;
+  }
+  
+  if (studyname.Contains("ETTLSE1")){
+    maxLayerTTL[0] = 1;
+    layerTTLBEC[0] = 1;
+  }
+  if (studyname.Contains("CTTLSE1")){
+    maxLayerTTL[1] = 1;
+    layerTTLBEC[1] = 1;
+  }
+    
   TString nameLayerLBL[3]         = {"BACKWARD", "CENTRAL", "FORWARD" };
   TString nameLayerTTL[3]         = {"ETTL", "CTTL", "FTTL" };
   
@@ -125,10 +145,10 @@ void analyseTreeForTrackingResolAndPID(
                                                200, 0, 20, 1000, 0.9, 1.5);
         h_Res_InvBetaAEMC_Eta_p[id][et]     = new TH2F(Form("h_Res_InvBetaAEMC_Eta_p_%s_%d",partName[id].Data(), et), 
                                                Form("%1.1f < #eta < %1.1f; #it{p}_{MC} (GeV/c); (1/#beta_{rec} - 1/#beta_{MC})/(1/#beta_{MC}) ", partEta[et], partEta[et+1]), 
-                                               200, 0, 20, 10000, -0.1, 0.1);
+                                               200, 0, 20, 500, -0.1, 0.1);
         h_Res_InvSmearBetaAEMC_Eta_p[id][et]= new TH2F(Form("h_Res_InvSmearBetaAEMC_Eta_p_%s_%d",partName[id].Data(), et), 
                                                Form("%1.1f < #eta < %1.1f; #it{p}_{MC} (GeV/c); (1/#beta_{smear} - 1/#beta_{MC})/(1/#beta_{MC}) ", partEta[et], partEta[et+1]), 
-                                               200, 0, 20, 10000, -0.1, 0.1);
+                                               200, 0, 20, 500, -0.1, 0.1);
       }
       h_tracks_resoEta_pT[et]     = new TH2F(Form("h_tracks_reso_Eta_pT_%d",et), Form("%1.1f < #eta < %1.1f; #it{p}_{T,MC} (GeV/c); (#eta_{rec}-#eta_{MC})/#eta_{MC}",
                                                                                       partEta[et], partEta[et+1]), 200, 0, 20, 1000, -0.1, 0.1);
@@ -171,10 +191,10 @@ void analyseTreeForTrackingResolAndPID(
                                                 200, 0, 20, 1000, 0.9, 1.5);
           h_Res_InvBetaAEMC_Eta_p[id][et]     = new TH2F(Form("h_Res_InvBetaAEMC_Eta_p_%s_%d",partName[id].Data(), et), 
                                                 Form("%1.1f < #eta < %1.1f; #it{p}_{MC} (GeV/c); (1/#beta_{rec} - 1/#beta_{MC})/(1/#beta_{MC}) ", partEta[0], partEta[et]), 
-                                                200, 0, 20, 10000, -0.1, 0.1);
+                                                200, 0, 20, 500, -0.1, 0.1);
           h_Res_InvSmearBetaAEMC_Eta_p[id][et]= new TH2F(Form("h_Res_InvSmearBetaAEMC_Eta_p_%s_%d",partName[id].Data(), et), 
                                                 Form("%1.1f < #eta < %1.1f; #it{p}_{MC} (GeV/c); (1/#beta_{smear} - 1/#beta_{MC})/(1/#beta_{MC}) ", partEta[0], partEta[et]), 
-                                                200, 0, 20, 10000, -0.1, 0.1);
+                                                200, 0, 20, 500, -0.1, 0.1);
         }
       }
       h_tracks_resoEta_pT[et]     = new TH2F(Form("h_tracks_reso_Eta_pT_%d",et), Form("%1.1f < #eta < %1.1f; #it{p}_{T,MC} (GeV/c); (#eta_{rec}-#eta_{MC})/#eta_{MC}",
@@ -261,21 +281,22 @@ void analyseTreeForTrackingResolAndPID(
       }
     }
 
-    for (Int_t eR = 0; eR < 3; eR++){
-      for (Int_t l = 0;  l < maxLayerTTL[eR]; l++){
-        TString nameCurrBase = Form("%s_%d", nameLayerTTL[eR].Data(), l);
-        std::cout << eR << "\t" << l << "\t" << nameCurrBase.Data() << std::endl;
-        t_tracks->SetBranchAddress(Form("%s_proj_x", nameCurrBase.Data()), &trueHitTTL[eR][l][0]);
-        t_tracks->SetBranchAddress(Form("%s_proj_y", nameCurrBase.Data()), &trueHitTTL[eR][l][1]);
-        t_tracks->SetBranchAddress(Form("%s_proj_z", nameCurrBase.Data()), &trueHitTTL[eR][l][2]);
-        t_tracks->SetBranchAddress(Form("%s_proj_t", nameCurrBase.Data()), &trueHitTTL[eR][l][3]);
-        t_tracks->SetBranchAddress(Form("%s_x", nameCurrBase.Data()), &recHitTTL[eR][l][0]);
-        t_tracks->SetBranchAddress(Form("%s_y", nameCurrBase.Data()), &recHitTTL[eR][l][1]);
-        t_tracks->SetBranchAddress(Form("%s_z", nameCurrBase.Data()), &recHitTTL[eR][l][2]);
-        t_tracks->SetBranchAddress(Form("%s_t", nameCurrBase.Data()), &recHitTTL[eR][l][3]);
+    if (hasTiming){
+      for (Int_t eR = 0; eR < 3; eR++){
+        for (Int_t l = 0;  l < maxLayerTTL[eR]; l++){
+          TString nameCurrBase = Form("%s_%d", nameLayerTTL[eR].Data(), l);
+          std::cout << eR << "\t" << l << "\t" << nameCurrBase.Data() << std::endl;
+          t_tracks->SetBranchAddress(Form("%s_proj_x", nameCurrBase.Data()), &trueHitTTL[eR][l][0]);
+          t_tracks->SetBranchAddress(Form("%s_proj_y", nameCurrBase.Data()), &trueHitTTL[eR][l][1]);
+          t_tracks->SetBranchAddress(Form("%s_proj_z", nameCurrBase.Data()), &trueHitTTL[eR][l][2]);
+          t_tracks->SetBranchAddress(Form("%s_proj_t", nameCurrBase.Data()), &trueHitTTL[eR][l][3]);
+          t_tracks->SetBranchAddress(Form("%s_x", nameCurrBase.Data()), &recHitTTL[eR][l][0]);
+          t_tracks->SetBranchAddress(Form("%s_y", nameCurrBase.Data()), &recHitTTL[eR][l][1]);
+          t_tracks->SetBranchAddress(Form("%s_z", nameCurrBase.Data()), &recHitTTL[eR][l][2]);
+          t_tracks->SetBranchAddress(Form("%s_t", nameCurrBase.Data()), &recHitTTL[eR][l][3]);
+        }
       }
     }
-    
     Int_t nentries = Int_t(t_tracks->GetEntries());
     Float_t lastEvt = 0;
     Int_t currEventID = -1;
@@ -337,30 +358,33 @@ void analyseTreeForTrackingResolAndPID(
           if (l < 2 && recHit[eR][l][3] > -9999 ) kHitFL = kTRUE;
         }
 
-        for (Int_t lt = 0; lt < maxLayerTTL[eR]; lt++){
-          if (recHitTTL[eR][lt][3] > -9999){ 
-            trk_hits[eR]++;  
-            trk_hitsTime[eR]++;
-            timeSmeared[eR][lt] = r3.Gaus(recHitTTL[eR][lt][3], sigmat);
-            beta[1] += c*recHitTTL[eR][lt][3]/trueHitTTL[eR][lt][3]; 
-            beta[2] += c*timeSmeared[eR][lt]/trueHitTTL[eR][lt][3]; 
+        if (hasTiming){
+          for (Int_t lt = 0; lt < maxLayerTTL[eR]; lt++){
+            if (recHitTTL[eR][lt][3] > -9999){ 
+              trk_hits[eR]++;  
+              trk_hitsTime[eR]++;
+              timeSmeared[eR][lt] = r3.Gaus(recHitTTL[eR][lt][3], sigmat);
+              beta[1] += c*recHitTTL[eR][lt][3]/trueHitTTL[eR][lt][3]; 
+              beta[2] += c*timeSmeared[eR][lt]/trueHitTTL[eR][lt][3]; 
+            }
+            if (lt < layerTTLBEC[eR] && recHitTTL[eR][lt][3] > -9999 ) kHitBEMC = kTRUE;
+            if (lt >= layerTTLBEC[eR] && recHitTTL[eR][lt][3] > -9999 ) kHitAEMC = kTRUE; 
           }
-          if (lt < layerTTLBEC[eR] && recHitTTL[eR][lt][3] > -9999 ) kHitBEMC = kTRUE;
-          if (lt >= layerTTLBEC[eR] && recHitTTL[eR][lt][3] > -9999 ) kHitAEMC = kTRUE; 
         }
       }
       for (Int_t eR = 0; eR < 3; eR++) totTimeHits += trk_hitsTime[eR];
       
-      beta[0] = sqrt(trueP*trueP + mass*mass)/trueP;
-      if (totTimeHits > 0){
-        beta[1] = beta[1]/totTimeHits;
-        beta[2] = beta[2]/totTimeHits;
-//         std::cout << beta[0] << "\t" << beta[1] << "\t" << beta[2] << std::endl;
-      } else {
-        beta[1] = -10000;
-        beta[2] = -10000;
+      if (hasTiming){
+        beta[0] = sqrt(trueP*trueP + mass*mass)/trueP;
+        if (totTimeHits > 0){
+          beta[1] = beta[1]/totTimeHits;
+          beta[2] = beta[2]/totTimeHits;
+  //         std::cout << beta[0] << "\t" << beta[1] << "\t" << beta[2] << std::endl;
+        } else {
+          beta[1] = -10000;
+          beta[2] = -10000;
+        }
       }
-      
       
       // determine eta bin
       Int_t et = 0;
@@ -398,51 +422,53 @@ void analyseTreeForTrackingResolAndPID(
         h_tracks_resoPhi_pT[nEta]->Fill(truePt,(recPhi-truePhi)/truePhi);
       }
       
-      // fill beta hists
-      if (totTimeHits > 0){
-        h_InvGenBeta_Eta_p[parIdx][et]->Fill(trueP, beta[0]);
-        h_InvBeta_Eta_p[parIdx][et]->Fill(trueP, beta[1]);
-        h_InvSmearBeta_Eta_p[parIdx][et]->Fill(trueP, beta[2]);
-        h_Res_InvBeta_Eta_p[parIdx][et]->Fill(trueP, (beta[1]-beta[0])/beta[0]);
-        h_Res_InvSmearBeta_Eta_p[parIdx][et]->Fill(trueP, (beta[2]-beta[0])/beta[0]);
-        h_InvGenBeta_Eta_p[parIdx][nEta]->Fill(trueP, beta[0]);
-        h_InvBeta_Eta_p[parIdx][nEta]->Fill(trueP, beta[1]);
-        h_InvSmearBeta_Eta_p[parIdx][nEta]->Fill(trueP, beta[2]);
-        h_Res_InvBeta_Eta_p[parIdx][nEta]->Fill(trueP, (beta[1]-beta[0])/beta[0]);
-        h_Res_InvSmearBeta_Eta_p[parIdx][nEta]->Fill(trueP, (beta[2]-beta[0])/beta[0]);
-        h_InvGenBeta_Eta_p[0][et]->Fill(trueP, beta[0]);
-        h_InvBeta_Eta_p[0][et]->Fill(trueP, beta[1]);
-        h_InvSmearBeta_Eta_p[0][et]->Fill(trueP, beta[2]);
-        h_Res_InvBeta_Eta_p[0][et]->Fill(trueP, (beta[1]-beta[0])/beta[0]);
-        h_Res_InvSmearBeta_Eta_p[0][et]->Fill(trueP, (beta[2]-beta[0])/beta[0]);
-        h_InvGenBeta_Eta_p[0][nEta]->Fill(trueP, beta[0]);
-        h_InvBeta_Eta_p[0][nEta]->Fill(trueP, beta[1]);
-        h_InvSmearBeta_Eta_p[0][nEta]->Fill(trueP, beta[2]);
-        h_Res_InvBeta_Eta_p[0][nEta]->Fill(trueP, (beta[1]-beta[0])/beta[0]);
-        h_Res_InvSmearBeta_Eta_p[0][nEta]->Fill(trueP, (beta[2]-beta[0])/beta[0]);
-      }
-      // fill beta hists after EMC
-      if (totTimeHits > 0 && kHitAEMC){
-        h_InvGenBetaAEMC_Eta_p[parIdx][et]->Fill(trueP, beta[0]);
-        h_InvBetaAEMC_Eta_p[parIdx][et]->Fill(trueP, beta[1]);
-        h_InvSmearBetaAEMC_Eta_p[parIdx][et]->Fill(trueP, beta[2]);
-        h_Res_InvBetaAEMC_Eta_p[parIdx][et]->Fill(trueP, (beta[1]-beta[0])/beta[0]);
-        h_Res_InvSmearBetaAEMC_Eta_p[parIdx][et]->Fill(trueP, (beta[2]-beta[0])/beta[0]);
-        h_InvGenBetaAEMC_Eta_p[parIdx][nEta]->Fill(trueP, beta[0]);
-        h_InvBetaAEMC_Eta_p[parIdx][nEta]->Fill(trueP, beta[1]);
-        h_InvSmearBetaAEMC_Eta_p[parIdx][nEta]->Fill(trueP, beta[2]);
-        h_Res_InvBetaAEMC_Eta_p[parIdx][nEta]->Fill(trueP, (beta[1]-beta[0])/beta[0]);
-        h_Res_InvSmearBetaAEMC_Eta_p[parIdx][nEta]->Fill(trueP, (beta[2]-beta[0])/beta[0]);
-        h_InvGenBetaAEMC_Eta_p[0][et]->Fill(trueP, beta[0]);
-        h_InvBetaAEMC_Eta_p[0][et]->Fill(trueP, beta[1]);
-        h_InvSmearBetaAEMC_Eta_p[0][et]->Fill(trueP, beta[2]);
-        h_Res_InvBetaAEMC_Eta_p[0][et]->Fill(trueP, (beta[1]-beta[0])/beta[0]);
-        h_Res_InvSmearBetaAEMC_Eta_p[0][et]->Fill(trueP, (beta[2]-beta[0])/beta[0]);
-        h_InvGenBetaAEMC_Eta_p[0][nEta]->Fill(trueP, beta[0]);
-        h_InvBetaAEMC_Eta_p[0][nEta]->Fill(trueP, beta[1]);
-        h_InvSmearBetaAEMC_Eta_p[0][nEta]->Fill(trueP, beta[2]);
-        h_Res_InvBetaAEMC_Eta_p[0][nEta]->Fill(trueP, (beta[1]-beta[0])/beta[0]);
-        h_Res_InvSmearBetaAEMC_Eta_p[0][nEta]->Fill(trueP, (beta[2]-beta[0])/beta[0]);
+      if (hasTiming){
+        // fill beta hists
+        if (totTimeHits > 0){
+          h_InvGenBeta_Eta_p[parIdx][et]->Fill(trueP, beta[0]);
+          h_InvBeta_Eta_p[parIdx][et]->Fill(trueP, beta[1]);
+          h_InvSmearBeta_Eta_p[parIdx][et]->Fill(trueP, beta[2]);
+          h_Res_InvBeta_Eta_p[parIdx][et]->Fill(trueP, (beta[1]-beta[0])/beta[0]);
+          h_Res_InvSmearBeta_Eta_p[parIdx][et]->Fill(trueP, (beta[2]-beta[0])/beta[0]);
+          h_InvGenBeta_Eta_p[parIdx][nEta]->Fill(trueP, beta[0]);
+          h_InvBeta_Eta_p[parIdx][nEta]->Fill(trueP, beta[1]);
+          h_InvSmearBeta_Eta_p[parIdx][nEta]->Fill(trueP, beta[2]);
+          h_Res_InvBeta_Eta_p[parIdx][nEta]->Fill(trueP, (beta[1]-beta[0])/beta[0]);
+          h_Res_InvSmearBeta_Eta_p[parIdx][nEta]->Fill(trueP, (beta[2]-beta[0])/beta[0]);
+          h_InvGenBeta_Eta_p[0][et]->Fill(trueP, beta[0]);
+          h_InvBeta_Eta_p[0][et]->Fill(trueP, beta[1]);
+          h_InvSmearBeta_Eta_p[0][et]->Fill(trueP, beta[2]);
+          h_Res_InvBeta_Eta_p[0][et]->Fill(trueP, (beta[1]-beta[0])/beta[0]);
+          h_Res_InvSmearBeta_Eta_p[0][et]->Fill(trueP, (beta[2]-beta[0])/beta[0]);
+          h_InvGenBeta_Eta_p[0][nEta]->Fill(trueP, beta[0]);
+          h_InvBeta_Eta_p[0][nEta]->Fill(trueP, beta[1]);
+          h_InvSmearBeta_Eta_p[0][nEta]->Fill(trueP, beta[2]);
+          h_Res_InvBeta_Eta_p[0][nEta]->Fill(trueP, (beta[1]-beta[0])/beta[0]);
+          h_Res_InvSmearBeta_Eta_p[0][nEta]->Fill(trueP, (beta[2]-beta[0])/beta[0]);
+        }
+        // fill beta hists after EMC
+        if (totTimeHits > 0 && kHitAEMC){
+          h_InvGenBetaAEMC_Eta_p[parIdx][et]->Fill(trueP, beta[0]);
+          h_InvBetaAEMC_Eta_p[parIdx][et]->Fill(trueP, beta[1]);
+          h_InvSmearBetaAEMC_Eta_p[parIdx][et]->Fill(trueP, beta[2]);
+          h_Res_InvBetaAEMC_Eta_p[parIdx][et]->Fill(trueP, (beta[1]-beta[0])/beta[0]);
+          h_Res_InvSmearBetaAEMC_Eta_p[parIdx][et]->Fill(trueP, (beta[2]-beta[0])/beta[0]);
+          h_InvGenBetaAEMC_Eta_p[parIdx][nEta]->Fill(trueP, beta[0]);
+          h_InvBetaAEMC_Eta_p[parIdx][nEta]->Fill(trueP, beta[1]);
+          h_InvSmearBetaAEMC_Eta_p[parIdx][nEta]->Fill(trueP, beta[2]);
+          h_Res_InvBetaAEMC_Eta_p[parIdx][nEta]->Fill(trueP, (beta[1]-beta[0])/beta[0]);
+          h_Res_InvSmearBetaAEMC_Eta_p[parIdx][nEta]->Fill(trueP, (beta[2]-beta[0])/beta[0]);
+          h_InvGenBetaAEMC_Eta_p[0][et]->Fill(trueP, beta[0]);
+          h_InvBetaAEMC_Eta_p[0][et]->Fill(trueP, beta[1]);
+          h_InvSmearBetaAEMC_Eta_p[0][et]->Fill(trueP, beta[2]);
+          h_Res_InvBetaAEMC_Eta_p[0][et]->Fill(trueP, (beta[1]-beta[0])/beta[0]);
+          h_Res_InvSmearBetaAEMC_Eta_p[0][et]->Fill(trueP, (beta[2]-beta[0])/beta[0]);
+          h_InvGenBetaAEMC_Eta_p[0][nEta]->Fill(trueP, beta[0]);
+          h_InvBetaAEMC_Eta_p[0][nEta]->Fill(trueP, beta[1]);
+          h_InvSmearBetaAEMC_Eta_p[0][nEta]->Fill(trueP, beta[2]);
+          h_Res_InvBetaAEMC_Eta_p[0][nEta]->Fill(trueP, (beta[1]-beta[0])/beta[0]);
+          h_Res_InvSmearBetaAEMC_Eta_p[0][nEta]->Fill(trueP, (beta[2]-beta[0])/beta[0]);
+        }
       }
       // all tracks "N"
       h_tracksTrue_Eta_pT[0][0]->Fill(truePt, trueEta);
@@ -591,19 +617,20 @@ void analyseTreeForTrackingResolAndPID(
         }
         h_tracks_reso_p[i][et]->Write();
       }
-      for (Int_t id = 0; id < 6; id++) {
-        h_InvBeta_Eta_p[id][et]->Write();
-        h_InvGenBeta_Eta_p[id][et]->Write();
-        h_InvSmearBeta_Eta_p[id][et]->Write();
-        h_Res_InvBeta_Eta_p[id][et]->Write();
-        h_Res_InvSmearBeta_Eta_p[id][et]->Write();
-        h_InvBetaAEMC_Eta_p[id][et]->Write();
-        h_InvGenBetaAEMC_Eta_p[id][et]->Write();
-        h_InvSmearBetaAEMC_Eta_p[id][et]->Write();
-        h_Res_InvBetaAEMC_Eta_p[id][et]->Write();
-        h_Res_InvSmearBetaAEMC_Eta_p[id][et]->Write();
+      if (hasTiming){
+        for (Int_t id = 0; id < 6; id++) {
+          h_InvBeta_Eta_p[id][et]->Write();
+          h_InvGenBeta_Eta_p[id][et]->Write();
+          h_InvSmearBeta_Eta_p[id][et]->Write();
+          h_Res_InvBeta_Eta_p[id][et]->Write();
+          h_Res_InvSmearBeta_Eta_p[id][et]->Write();
+          h_InvBetaAEMC_Eta_p[id][et]->Write();
+          h_InvGenBetaAEMC_Eta_p[id][et]->Write();
+          h_InvSmearBetaAEMC_Eta_p[id][et]->Write();
+          h_Res_InvBetaAEMC_Eta_p[id][et]->Write();
+          h_Res_InvSmearBetaAEMC_Eta_p[id][et]->Write();
+        }
       }
-      
       h_tracks_resoEta_pT[et]->Write();
       h_tracks_resoPhi_pT[et]->Write();
     }

@@ -160,6 +160,7 @@ void trackingreso(
   for(Int_t epart=0; epart<NELEMS(partE); epart++){
     if(!useE[epart]) continue;
     cPNG->cd(padnum+1);
+    DrawVirtualPadSettings( cPNG->cd(padnum+1), 0.1, 0.02, 0.015, 0.115);
 
     SetStyleHistoTH2ForGraphs(h_tracks_reso[epart], "#it{p}_{T}^{true}","(#it{p}_{T}^{rec}-#it{p}_{T}^{true})/#it{p}_{T}^{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.81);
 
@@ -175,13 +176,11 @@ void trackingreso(
   padnum =0;
   for(Int_t ietabl=0; ietabl<NELEMS(etaBins)-1; ietabl++){
     if(!useE[ietabl]) continue;
-    cPNG->SetLeftMargin(0.1);
-    cPNG->SetBottomMargin(0.1);
-    cPNG->SetTopMargin(0.01);
-    cPNG->SetRightMargin(0.01);
     cPNG->cd(padnum+1);
     (cPNG->cd(padnum+1))->SetLogx(1);
     (cPNG->cd(padnum+1))->SetLogz(1);
+    DrawVirtualPadSettings( cPNG->cd(padnum+1), 0.1, 0.01, 0.01, 0.1);
+
     // cPNG->SetLogx(1);
     h_tracks_reso_EtaBin[ietabl]->GetXaxis()->SetRangeUser(0.05,40);
     SetStyleHistoTH2ForGraphs(h_tracks_reso_EtaBin[ietabl], "#it{p}_{T}^{true} (GeV/#it{c})","(#it{p}_{T}^{rec}-#it{p}_{T}^{true})/#it{p}_{T}^{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.81);
@@ -204,11 +203,8 @@ void trackingreso(
   padnum =0;
   for(Int_t epart=0; epart<NELEMS(partE); epart++){
     if(!useE[epart]) continue;
-    cPNG->SetLeftMargin(0.1);
-    cPNG->SetBottomMargin(0.1);
-    cPNG->SetTopMargin(0.01);
-    cPNG->SetRightMargin(0.01);
     cPNG->cd(padnum+1);
+    DrawVirtualPadSettings( cPNG->cd(padnum+1), 0.1, 0.01, 0.01, 0.1);
     SetStyleHistoTH2ForGraphs(h_tracks_reso_Eta[epart], "#eta^{true}","(#it{p}_{T}^{rec}-#it{p}_{T}^{true})/#it{p}_{T}^{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.81);
 
     h_tracks_reso_Eta[epart]->GetXaxis()->SetRangeUser(0.5,4);
@@ -224,11 +220,8 @@ void trackingreso(
   padnum =0;
   for(Int_t epart=0; epart<NELEMS(partE); epart++){
     if(!useE[epart]) continue;
-    cPNG->SetLeftMargin(0.1);
-    cPNG->SetBottomMargin(0.1);
-    cPNG->SetTopMargin(0.01);
-    cPNG->SetRightMargin(0.01);
     cPNG->cd(padnum+1);
+    DrawVirtualPadSettings( cPNG->cd(padnum+1), 0.1, 0.01, 0.01, 0.1);
     SetStyleHistoTH2ForGraphs(h_tracks_nhits_Eta[epart], "#eta^{true}","num. hits", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.81);
 
     h_tracks_nhits_Eta[epart]->Draw("colz,same");
@@ -248,11 +241,8 @@ void trackingreso(
   padnum =0;
   for(Int_t epart=0; epart<NELEMS(partE); epart++){
     if(!useE[epart]) continue;
-    cPNG->SetLeftMargin(0.1);
-    cPNG->SetBottomMargin(0.1);
-    cPNG->SetTopMargin(0.01);
-    cPNG->SetRightMargin(0.01);
     cPNG->cd(padnum+1);
+    DrawVirtualPadSettings( cPNG->cd(padnum+1), 0.1, 0.01, 0.01, 0.1);
     histTrackResoMeanSigDummy->DrawCopy();
     TLegend* legendMeanSig  = GetAndSetLegend2(0.17, 0.83-(3*textSizeLabelsRel), 0.6, 0.83,1.0*textSizeLabelsPixel, 1, "", 43, 0.15);
 
@@ -309,36 +299,5 @@ void trackingreso(
   }
   cPNG->Print(Form("%s/TrackingEfficiency.%s", outputDir.Data(), suffix.Data()));
 
-
-}
-
-
-void split_canvas(TCanvas* &cPNG, TString canvName, Int_t numInputs)
-{
-  if(numInputs<2){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 1, gStyle->GetCanvasDefH()*1);
-	  // cPNG->Divide(2, 2);
-  }else if(numInputs<5){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 2, gStyle->GetCanvasDefH()*2);
-	  cPNG->Divide(2, 2);
-  }else if(numInputs<7){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 3, gStyle->GetCanvasDefH()*2);
-	  cPNG->Divide(3, 2);
-  }else if(numInputs<10){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 3, gStyle->GetCanvasDefH()*3);
-	  cPNG->Divide(3, 3);
-  } else if(numInputs<13){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 4, gStyle->GetCanvasDefH()*3);
-	  cPNG->Divide(4, 3);
-  } else if(numInputs<17){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 4, gStyle->GetCanvasDefH()*4);
-	  cPNG->Divide(4, 4);
-  } else if(numInputs<21){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 5, gStyle->GetCanvasDefH()*4);
-	  cPNG->Divide(5, 4);
-  } else {
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 5, gStyle->GetCanvasDefH()*5);
-	  cPNG->Divide(5, 5);
-  }
 
 }

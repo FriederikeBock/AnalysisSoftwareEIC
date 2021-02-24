@@ -489,37 +489,3 @@ void trackingreso_flatPt(
   outputFile->Close();
 }
 
-
-void split_canvas(TCanvas* &cPNG, TString canvName, Int_t numInputs)
-{
-  if(numInputs<5){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 2, gStyle->GetCanvasDefH()*2);
-    DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
-    cPNG->Divide(2, 2,0,0);
-  }else if(numInputs<7){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 3, gStyle->GetCanvasDefH()*2);
-    DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
-    cPNG->Divide(3, 2,0,0);
-  }else if(numInputs<10){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 3, gStyle->GetCanvasDefH()*3);
-    DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
-    cPNG->Divide(3, 3,0,0);
-  } else if(numInputs<13){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 4, gStyle->GetCanvasDefH()*3);
-    DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
-    cPNG->Divide(4, 3,0,0);
-  } else if(numInputs<17){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 4, gStyle->GetCanvasDefH()*4);
-    DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
-    cPNG->Divide(4, 4,0,0);
-  } else if(numInputs<21){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 5, gStyle->GetCanvasDefH()*4);
-    DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
-    cPNG->Divide(5, 4,0,0);
-  } else {
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 5, gStyle->GetCanvasDefH()*5);
-    DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
-    cPNG->Divide(5, 5,0,0);
-  }
-
-}
