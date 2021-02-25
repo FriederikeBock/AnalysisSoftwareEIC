@@ -1,9 +1,10 @@
 #include "jet_finder.cxx"
 #include "treeProcessing.h"
+#include "resolutionhistos.cxx"
 
 
 void treeProcessing(
-    TString fileName                = "/media/nschmidt/local/EIC_running/eventtree.root",
+    TString fileName                = "/media/nschmidt/local/EIC_running/Modular_ALLSILICON-FTTLS3LC-ETTL-CTTL_testing/eventtree.root",
     Double_t maxNEvent = -1,
     Int_t verbosity = 1
 ){
@@ -139,22 +140,25 @@ void treeProcessing(
 
         // ANCHOR JET FINDING
         // truth jets
-        auto jetsTrue = findJets(1.0, "anti-kt", jetf_truth_px, jetf_truth_py, jetf_truth_pz, jetf_truth_E);
-        if(verbosity>1)cout << "found " << std::get<1>(jetsTrue).size() << " true jets" << endl;        // printJets(std::get<1>(jetsTrue));
+        // auto jetsTrue = findJets(1.0, "anti-kt", jetf_truth_px, jetf_truth_py, jetf_truth_pz, jetf_truth_E);
+        // if(verbosity>1)cout << "found " << std::get<1>(jetsTrue).size() << " true jets" << endl;        // printJets(std::get<1>(jetsTrue));
 
-        // track-based jets (rec)
-        auto jetsTrackRec = findJets(1.0, "anti-kt", jetf_track_px, jetf_track_py, jetf_track_pz, jetf_track_E);
-        if(verbosity>1)cout << "found " << std::get<1>(jetsTrackRec).size() << " rec track jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
+        // // track-based jets (rec)
+        // auto jetsTrackRec = findJets(1.0, "anti-kt", jetf_track_px, jetf_track_py, jetf_track_pz, jetf_track_E);
+        // if(verbosity>1)cout << "found " << std::get<1>(jetsTrackRec).size() << " rec track jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
 
-        for (std::size_t i = 0; i < std::get<1>(jetsTrue).size(); i++) {
-            // std::cout << "jet " << i << ": "<< std::get<1>(jetsTrue)[i].pt() << " " << std::get<1>(jetsTrue)[i].rap() << " " << std::get<1>(jetsTrue)[i].phi() << endl;
-            for (std::size_t j = 0; j < std::get<1>(jetsTrackRec).size(); j++) {
-                Double_t deltaRTrueRec = std::get<1>(jetsTrue)[i].delta_R(std::get<1>(jetsTrackRec)[j]);
-                // cout << deltaRTrueRec << endl;
-                if(deltaRTrueRec<0.5){
-                    if(verbosity>1) cout << "true jet " << i << " matched with rec jet " << j << " with dR = " << deltaRTrueRec << endl;
-                }
-            }
-        }
-    }
+        // for (std::size_t i = 0; i < std::get<1>(jetsTrue).size(); i++) {
+        //     // std::cout << "jet " << i << ": "<< std::get<1>(jetsTrue)[i].pt() << " " << std::get<1>(jetsTrue)[i].rap() << " " << std::get<1>(jetsTrue)[i].phi() << endl;
+        //     for (std::size_t j = 0; j < std::get<1>(jetsTrackRec).size(); j++) {
+        //         Double_t deltaRTrueRec = std::get<1>(jetsTrue)[i].delta_R(std::get<1>(jetsTrackRec)[j]);
+        //         // cout << deltaRTrueRec << endl;
+        //         if(deltaRTrueRec<0.5){
+        //             if(verbosity>1) cout << "true jet " << i << " matched with rec jet " << j << " with dR = " << deltaRTrueRec << endl;
+        //         }
+        //     }
+        // } // jet loop end
+        resolutionhistos();
+
+    } // event loop end
+    resolutionhistosSave();
 }

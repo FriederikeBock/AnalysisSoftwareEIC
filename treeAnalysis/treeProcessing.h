@@ -20,14 +20,14 @@ int _nTowers_FHCAL;
 float* _tower_FHCAL_E            = new float[_maxNTowers];
 int* _tower_FHCAL_iEta         = new int[_maxNTowers];
 int* _tower_FHCAL_iPhi         = new int[_maxNTowers];
-float* _tower_FHCAL_trueID       = new float[_maxNTowers];
+int* _tower_FHCAL_trueID       = new int[_maxNTowers];
 
 // towers
 int _nTowers_FEMC;
 float* _tower_FEMC_E             = new float[_maxNTowers];
 int* _tower_FEMC_iEta          = new int[_maxNTowers];
 int* _tower_FEMC_iPhi          = new int[_maxNTowers];
-float* _tower_FEMC_trueID        = new float[_maxNTowers];
+int* _tower_FEMC_trueID        = new int[_maxNTowers];
 
 // clusters
 int _nclusters_FHCAL;
@@ -35,7 +35,7 @@ float* _cluster_FHCAL_E            = new float[_maxNclusters];
 float* _cluster_FHCAL_Eta         = new float[_maxNclusters];
 float* _cluster_FHCAL_Phi         = new float[_maxNclusters];
 int* _cluster_FHCAL_NTower         = new int[_maxNclusters];
-float* _cluster_FHCAL_trueID       = new float[_maxNclusters];
+int* _cluster_FHCAL_trueID       = new int[_maxNclusters];
 
 // clusters
 int _nclusters_FEMC;
@@ -43,7 +43,7 @@ float* _cluster_FEMC_E             = new float[_maxNclusters];
 float* _cluster_FEMC_Eta          = new float[_maxNclusters];
 float* _cluster_FEMC_Phi          = new float[_maxNclusters];
 int* _cluster_FEMC_NTower          = new int[_maxNclusters];
-float* _cluster_FEMC_trueID        = new float[_maxNclusters];
+int* _cluster_FEMC_trueID        = new int[_maxNclusters];
 
 // vertex
 int _vertex_x;
@@ -100,14 +100,14 @@ void SetBranchAddressesTree(TTree* inputTree){
     inputTree->SetBranchAddress("track_ProjTrackID",   _track_ProjTrackID);
     inputTree->SetBranchAddress("track_ProjLayer",     _track_ProjLayer);
 
-    inputTree->SetBranchAddress("track_Proj_x",           _track_Proj_x);
-    inputTree->SetBranchAddress("track_Proj_y",           _track_Proj_y);
-    inputTree->SetBranchAddress("track_Proj_z",           _track_Proj_z);
-    inputTree->SetBranchAddress("track_Proj_t",           _track_Proj_t);
-    inputTree->SetBranchAddress("track_Proj_true_x",      _track_Proj_true_x);
-    inputTree->SetBranchAddress("track_Proj_true_y",      _track_Proj_true_y);
-    inputTree->SetBranchAddress("track_Proj_true_z",      _track_Proj_true_z);
-    inputTree->SetBranchAddress("track_Proj_true_t",      _track_Proj_true_t);
+    inputTree->SetBranchAddress("track_TLP_x",           _track_Proj_x);
+    inputTree->SetBranchAddress("track_TLP_y",           _track_Proj_y);
+    inputTree->SetBranchAddress("track_TLP_z",           _track_Proj_z);
+    inputTree->SetBranchAddress("track_TLP_t",           _track_Proj_t);
+    inputTree->SetBranchAddress("track_TLP_true_x",      _track_Proj_true_x);
+    inputTree->SetBranchAddress("track_TLP_true_y",      _track_Proj_true_y);
+    inputTree->SetBranchAddress("track_TLP_true_z",      _track_Proj_true_z);
+    inputTree->SetBranchAddress("track_TLP_true_t",      _track_Proj_true_t);
 
     // towers HCAL
     inputTree->SetBranchAddress("tower_FHCAL_N",                &_nTowers_FHCAL);

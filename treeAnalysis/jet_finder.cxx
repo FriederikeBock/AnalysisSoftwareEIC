@@ -13,7 +13,7 @@
 //#include <fastjet/contrib/Centauro.hh>
 
 /**
-  * Perform jet finding on the given input four vectors.
+  * ANCHOR Perform jet finding on the given input four vectors.
   *
   * Note: We have to return the cluster sequence because the PseudoJet objects depend
   *       on the CS still being alive. Otherwise, you get:
@@ -84,7 +84,7 @@ std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea>, std::vector<fastjet::P
 }
 
 /**
-  * Trivial helper to print jets and consittuents.
+  * ANCHOR Trivial helper to print jets and consittuents.
   *
   * Based on fastjet example.
   *
@@ -100,7 +100,7 @@ void printJets(const std::vector<fastjet::PseudoJet> & jets) {
     }
 }
 /**
-  * Example of finding jets.
+  * ANCHOR Example of finding jets.
   *
   * Based on the fastjet example.
   *
