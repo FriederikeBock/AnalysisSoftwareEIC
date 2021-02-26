@@ -1,15 +1,20 @@
 #include "jet_finder.cxx"
 #include "treeProcessing.h"
 #include "resolutionhistos.cxx"
+#include "caloheader.h"
+#include "clusterizerNxN.cxx"
+#include "clusterizerV3.cxx"
 
 
 void treeProcessing(
-    TString fileName                = "/media/nschmidt/local/EIC_running/Modular_ALLSILICON-FTTLS3LC-ETTL-CTTL_testing/eventtree.root",
+    TString fileName                = "/media/nschmidt/local/EIC_running/eventtree.root",
     Double_t maxNEvent = -1,
     Int_t verbosity = 1
 ){
     // make output directory
-    gSystem->Exec("mkdir -p treeProcessing");
+    TString dateForOutput                       = ReturnDateStr();
+    outputDir 						                  = Form("treeProcessing/%s",dateForOutput.Data());
+    gSystem->Exec("mkdir -p "+outputDir);
 
     // load tree
     TTree *const tt_event =  (TTree *) (new TFile(fileName.Data(), "READ"))->Get("event_tree");
@@ -34,6 +39,9 @@ void treeProcessing(
 
         // processing progress info
         if(i>0 && i%(nEntriesTree/(10)) ==0) cout << "//processed " << 100*(i)/nEntriesTree << "%"  << endl;
+        // if(verbosity>1) cout << "event " << i << endl;
+        runNxNclusterizer();
+        runV3clusterizer();
 
         // ANCHOR Hits loop variables:
         // float* _hits_x[ihit]
@@ -86,7 +94,7 @@ void treeProcessing(
         // int* _cluster_FHCAL_NTower[iclus];
         // float* _cluster_FHCAL_trueID[iclus];
         for(Int_t iclus=0; iclus<_nclusters_FHCAL; iclus++){
-            if(verbosity>1) cout << "\tFHCAL: cluster " << iclus << "\twith E = " << _cluster_FHCAL_E[iclus] << " GeV" << endl;
+            // if(verbosity>1) cout << "\tcls " << iclus << "\tE " << _cluster_FHCAL_E[iclus] << "\tEta " << _cluster_FHCAL_Eta[iclus] << "\tPhi " << _cluster_FHCAL_Phi[iclus] << "\tntowers: " << _cluster_FHCAL_NTower[iclus] << "\ttrueID: " << _cluster_FHCAL_trueID[iclus] << endl;
         }
 
         // ANCHOR FEMC cluster loop variables:
@@ -161,4 +169,5 @@ void treeProcessing(
 
     } // event loop end
     resolutionhistosSave();
+    saveHistosNxNclusterizer();
 }

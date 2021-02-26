@@ -1,4 +1,4 @@
-
+TString outputDir;
 const int _maxNHits = 5000;
 const int _maxNTowers = 50*50;
 const int _maxNclusters = 100;
@@ -153,4 +153,14 @@ void SetBranchAddressesTree(TTree* inputTree){
     inputTree->SetBranchAddress("mcpart_px",     _mcpart_px);
     inputTree->SetBranchAddress("mcpart_py",     _mcpart_py);
     inputTree->SetBranchAddress("mcpart_pz",     _mcpart_pz);
+}
+
+//__________________________________________________________________________________________________________
+TString ReturnDateStr(){
+    TDatime today;
+    int iDate           = today.GetDate();
+    int iYear           = iDate/10000;
+    int iMonth          = (iDate%10000)/100;
+    int iDay            = iDate%100;
+    return Form("%i_%02d_%02d",iYear, iMonth, iDay);
 }

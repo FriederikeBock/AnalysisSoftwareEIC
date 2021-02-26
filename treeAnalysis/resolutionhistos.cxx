@@ -33,9 +33,11 @@ void resolutionhistos(){
 // ANCHOR save function after event loop
 void resolutionhistosSave(){
   // make output directory
-  gSystem->Exec("mkdir -p treeProcessing/resolutionhistos");
+    gSystem->Exec("mkdir -p "+outputDir + "/resolutionhistos");
+
+  // gSystem->Exec("mkdir -p treeProcessing/resolutionhistos");
   // define output file
-  TFile* fileOutput = new TFile("treeProcessing/resolutionhistos/output_RH.root","RECREATE");
+  TFile* fileOutput = new TFile(Form("%s/resolutionhistos/output_RH.root",outputDir.Data()),"RECREATE");
 
   // write histograms
   h_pion_fhcal_E->Write();
