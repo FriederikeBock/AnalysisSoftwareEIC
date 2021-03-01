@@ -6,7 +6,8 @@ void pidreso_Pythia(
                             TString inputFileName   = "file.root",
                             TString suffix          = "pdf",
                             TString addLabel        = "",
-                            Bool_t properFit        = kTRUE
+                            Bool_t properFit        = kTRUE,
+                            Int_t trackCuts         = 0
                             
 ){
 
@@ -14,7 +15,17 @@ void pidreso_Pythia(
   gROOT->SetStyle("Plain");
   StyleSettingsThesis();
   SetPlotStyle();
+
   TString dateForOutput             = ReturnDateStringForOutput();
+  TString readTrackClass            = "";
+  TString writeLabel                = "";
+  TString labelPlotCuts             = "";
+  if (trackCuts == 2){
+    readTrackClass                  = "LI3";
+    addLabel                        = addLabel+"-LI3";
+    writeLabel                      = "LI3";
+    labelPlotCuts                   = "#geq 3 tracker hits";
+  }
 
   TString outputDir                 = Form("plots/%s/%s",dateForOutput.Data(),addLabel.Data());
   TString outputDirBetaRes          = Form("plots/%s/%s/BetaRes",dateForOutput.Data(),addLabel.Data());
@@ -23,6 +34,16 @@ void pidreso_Pythia(
   gSystem->Exec("mkdir -p "+outputDirBetaRes);
   gSystem->Exec("mkdir -p "+outputDirBeta);
   TString detLabel = "";
+  
+  TString collisionSystem = "Pythia 6, e+p, 10+250 GeV";
+  TString pTHard = "";
+  Int_t nLinesCol = 1;
+  if (addLabel.Contains("pTHard5GeV")) {
+    pTHard = "#it{p}_{T}^{hard} #geq 5 GeV/#it{c}";
+    nLinesCol++;
+  }
+
+
   Bool_t enablePlot[20]        = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
                                   1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
   Int_t nActiveEta            = 8;
@@ -75,10 +96,30 @@ void pidreso_Pythia(
     enablePlot[1] = 0;
     enablePlot[2] = 0;
     nActiveEta    = 16;
-  } else if (addLabel.Contains("FSTwithLGAD") ){
-    detLabel  = "FST+TTL";
-//     enablePlot[6] = 0;
-    nActiveEta    = 8;
+  } else if (addLabel.Contains("LANLwithLGAD") ){
+    detLabel  = "LANL+TTL";
+    enablePlot[19] = 0;
+    enablePlot[18] = 0;
+    enablePlot[0] = 0;
+    enablePlot[1] = 0;
+    enablePlot[2] = 0;
+    nActiveEta    = 16;
+  } else if (addLabel.Contains("LANLwithACLGAD") ){
+    detLabel  = "LANL+TTL(AC-LGAD)";
+    enablePlot[19] = 0;
+    enablePlot[18] = 0;
+    enablePlot[0] = 0;
+    enablePlot[1] = 0;
+    enablePlot[2] = 0;
+    nActiveEta    = 16;
+  } else if (addLabel.Contains("LANLwithFTTLS3LVC-ETTLLC-CTTLLC") ){
+    detLabel  = "LANL+TTL(1.3mm)";
+    enablePlot[19] = 0;
+    enablePlot[18] = 0;
+    enablePlot[0] = 0;
+    enablePlot[1] = 0;
+    enablePlot[2] = 0;
+    nActiveEta    = 16;
   }
   if (addLabel.Contains("Hist")){
     maxBetaSigma         = 0.05;
@@ -89,7 +130,7 @@ void pidreso_Pythia(
   Bool_t debugOutput = kFALSE;
 
   TString partName[6]                   = {"All", "Pion", "Kaon", "Proton", "Electron", "Muon"};
-  TString partLabel[6]                  = {"h^{#pm}", "#pi^{#pm}", "K^{#pm}", "p/#bar{p}", "e^{#pm}", "#mu^{#pm}"};
+  TString partLabel[6]                  = {"(h/e)^{#pm}", "#pi^{#pm}", "K^{#pm}", "p/#bar{p}", "e^{#pm}", "#mu^{#pm}"};
   //************************** Read data **************************************************
   const Int_t nPt                  = 13;
   const static Double_t partPt[]     = {0., 0.5, 1.0,  2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 
@@ -102,8 +143,8 @@ void pidreso_Pythia(
   Double_t partEta[20]            = { -4.0, -3.5, -3.0, -2.5, -2.0, -1.5, -1.2, -1.0, -0.6, -0.2, 
                                        0.2, 0.6, 1.0, 1.2, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0};
 
-  const Int_t rebinEta_BetaResol[20]   = { 32, 32, 16, 16, 16, 16, 16, 16, 16, 16, 
-                                         16, 16, 16, 16, 16, 16, 16, 16, 32,  8};
+  const Int_t rebinEta_BetaResol[20]   = { 4, 4, 2, 2, 2, 2, 2, 2, 2, 2, 
+                                         2, 2, 2, 2, 2, 2, 2, 2, 4,  1};
   Float_t betaResolFit[20]    = { 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
                                 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05};                                    
   
@@ -143,33 +184,33 @@ void pidreso_Pythia(
   Long_t nEvents    = histNEvents->GetBinContent(1);
   for (Int_t iEta = 0; iEta < nEta+1; iEta++){
     for (Int_t pid = 0; pid < 6; pid++){    
-      h_beta_reso[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_Res_InvSmearBeta_Eta_p_%s_%d", partName[pid].Data(), iEta));
+      h_beta_reso[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_Res_InvSmearBeta%s_Eta_p_%s_%d", readTrackClass.Data(), partName[pid].Data(), iEta));
       h_beta_reso[pid][iEta]->Sumw2();
-      h_mean_p_betaReso[pid][iEta] = new TH1D(Form("histBetaResol_%s_mean_%d", partName[pid].Data(), iEta), 
+      h_mean_p_betaReso[pid][iEta] = new TH1D(Form("histBetaResol%s_%s_mean_%d", readTrackClass.Data(), partName[pid].Data(), iEta), 
                                             ";#it{p}^{MC} (GeV/#it{c}); #LT (1/#beta^{rec}-1/#beta^{MC})/1/#beta^{MC} #GT",
                                             nPt, partPt);
-      h_sigma_p_betaReso[pid][iEta] = new TH1D(Form("histBetaResol_%s_sigma_%d", partName[pid].Data(), iEta), 
+      h_sigma_p_betaReso[pid][iEta] = new TH1D(Form("histBetaResol%s_%s_sigma_%d", readTrackClass.Data(), partName[pid].Data(), iEta), 
                                               ";#it{p}^{MC} (GeV/#it{c}); #sigma( (1/#beta^{rec}-1/#beta^{MC})/1/#beta^{MC} )", 
                                               nPt, partPt);
-      h_beta_resoAEMC[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_Res_InvSmearBetaAEMC_Eta_p_%s_%d", partName[pid].Data(), iEta));
+      h_beta_resoAEMC[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_Res_InvSmearBeta%sAEMC_Eta_p_%s_%d", readTrackClass.Data(), partName[pid].Data(), iEta));
       h_beta_resoAEMC[pid][iEta]->Sumw2();
-      h_mean_p_betaResoAEMC[pid][iEta] = new TH1D(Form("histBetaResolAEMC_%s_mean_%d", partName[pid].Data(), iEta), 
+      h_mean_p_betaResoAEMC[pid][iEta] = new TH1D(Form("histBetaResol%sAEMC_%s_mean_%d", readTrackClass.Data(), partName[pid].Data(), iEta), 
                                             ";#it{p}^{MC} (GeV/#it{c}); #LT (1/#beta^{rec}-1/#beta^{MC})/1/#beta^{MC} #GT",
                                             nPt, partPt);
-      h_sigma_p_betaResoAEMC[pid][iEta] = new TH1D(Form("histBetaResolAEMC_%s_sigma_%d", partName[pid].Data(), iEta), 
+      h_sigma_p_betaResoAEMC[pid][iEta] = new TH1D(Form("histBetaResol%sAEMC_%s_sigma_%d", readTrackClass.Data(), partName[pid].Data(), iEta), 
                                               ";#it{p}^{MC} (GeV/#it{c}); #sigma( (1/#beta^{rec}-1/#beta^{MC})/1/#beta^{MC} )", 
                                               nPt, partPt);
-      h_betaTrack_p[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_InvBeta_Eta_p_%s_%d", partName[pid].Data(), iEta));
+      h_betaTrack_p[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_InvBeta%s_Eta_p_%s_%d", readTrackClass.Data(), partName[pid].Data(), iEta));
       h_betaTrack_p[pid][iEta]->Sumw2();
-      h_betaGen_p[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_InvGenBeta_Eta_p_%s_%d", partName[pid].Data(), iEta));
+      h_betaGen_p[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_InvGenBeta%s_Eta_p_%s_%d", readTrackClass.Data(), partName[pid].Data(), iEta));
       h_betaGen_p[pid][iEta]->Sumw2();
-      h_beta_p[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_InvSmearBeta_Eta_p_%s_%d", partName[pid].Data(), iEta));
+      h_beta_p[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_InvSmearBeta%s_Eta_p_%s_%d", readTrackClass.Data(), partName[pid].Data(), iEta));
       h_beta_p[pid][iEta]->Sumw2();
-      h_betaTrack_p_AEMC[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_InvBetaAEMC_Eta_p_%s_%d", partName[pid].Data(), iEta));
+      h_betaTrack_p_AEMC[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_InvBeta%sAEMC_Eta_p_%s_%d", readTrackClass.Data(), partName[pid].Data(), iEta));
       h_betaTrack_p_AEMC[pid][iEta]->Sumw2();
-      h_betaGen_p_AEMC[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_InvGenBetaAEMC_Eta_p_%s_%d", partName[pid].Data(), iEta));
+      h_betaGen_p_AEMC[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_InvGenBeta%sAEMC_Eta_p_%s_%d", readTrackClass.Data(), partName[pid].Data(), iEta));
       h_betaGen_p_AEMC[pid][iEta]->Sumw2();
-      h_beta_p_AEMC[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_InvSmearBetaAEMC_Eta_p_%s_%d", partName[pid].Data(), iEta));
+      h_beta_p_AEMC[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_InvSmearBeta%sAEMC_Eta_p_%s_%d", readTrackClass.Data(), partName[pid].Data(), iEta));
       h_beta_p_AEMC[pid][iEta]->Sumw2();
     }
   }
@@ -328,6 +369,7 @@ void pidreso_Pythia(
       }
       cPNG->Print(Form("%s/Beta_%s_Resolution_%d_%d.%s", outputDirBetaRes.Data(), partName[pid].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
       
+      padnum =0;
       for(Int_t iPt=0; iPt< nPt; iPt++){
         cPNG->cd(padnum+1);
         DrawVirtualPadSettings( cPNG->cd(padnum+1), 0.1, 0.02, 0.015, 0.115);
@@ -379,11 +421,11 @@ void pidreso_Pythia(
       cPNG->cd(padnum+1);
       DrawVirtualPadSettings( cPNG->cd(padnum+1), 0.11, 0.03, 0.045, 0.115);
       cPNG->cd(padnum+1)->SetLogz(1);
-      SetStyleHistoTH2ForGraphs(h_beta_reso[pid][iEta], "p (GeV/#it{c})", "(1/#beta^{rec}-1/#beta^{MC})/1/#beta^{MC}", 
+      SetStyleHistoTH2ForGraphs(h_beta_reso[pid][iEta], "#it{p} (GeV/#it{c})", "(1/#beta^{rec}-1/#beta^{MC})/1/#beta^{MC}", 
                                 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
       h_beta_reso[pid][iEta]->Scale(1./nEvents);
       h_beta_reso[pid][iEta]->GetYaxis()->SetRangeUser(-0.02,0.02);
-      h_beta_reso[pid][iEta]->GetZaxis()->SetRangeUser(1./nEvents/10,1./nEvents*100);
+      h_beta_reso[pid][iEta]->GetZaxis()->SetRangeUser(0.9/nEvents,1./nEvents*1e4);
       h_beta_reso[pid][iEta]->Draw("col");
       
       if(iEta == 0)  drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.86,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
@@ -405,11 +447,11 @@ void pidreso_Pythia(
       cPNG->cd(padnum+1);
       DrawVirtualPadSettings( cPNG->cd(padnum+1), 0.11, 0.03, 0.045, 0.115);
       cPNG->cd(padnum+1)->SetLogz(1);
-      SetStyleHistoTH2ForGraphs(h_beta_resoAEMC[pid][iEta], "p (GeV/#it{c})", "(1/#beta^{rec}-1/#beta^{MC})/1/#beta^{MC}", 
+      SetStyleHistoTH2ForGraphs(h_beta_resoAEMC[pid][iEta], "#it{p} (GeV/#it{c})", "(1/#beta^{rec}-1/#beta^{MC})/1/#beta^{MC}", 
                                 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
       h_beta_resoAEMC[pid][iEta]->Scale(1./nEvents);
       h_beta_resoAEMC[pid][iEta]->GetYaxis()->SetRangeUser(-0.02,0.02);
-      h_beta_resoAEMC[pid][iEta]->GetZaxis()->SetRangeUser(1./nEvents/10,1./nEvents*100);
+      h_beta_resoAEMC[pid][iEta]->GetZaxis()->SetRangeUser(0.9/nEvents,1./nEvents*1e4);
       h_beta_resoAEMC[pid][iEta]->Draw("col");
       
       if(iEta == 0)  drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.86,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
@@ -432,11 +474,12 @@ void pidreso_Pythia(
       cPNG->cd(padnum+1);
       DrawVirtualPadSettings( cPNG->cd(padnum+1), 0.095, 0.03, 0.045, 0.115);
       cPNG->cd(padnum+1)->SetLogz(1);
-      SetStyleHistoTH2ForGraphs(h_betaGen_p[pid][iEta], "p (GeV/#it{c})", "1/#beta^{MC}", 
+      SetStyleHistoTH2ForGraphs(h_betaGen_p[pid][iEta], "#it{p} (GeV/#it{c})", "1/#beta^{MC}", 
                                 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
       h_betaGen_p[pid][iEta]->Scale(1./nEvents);
 //       h_betaGen_p[pid][iEta]->GetYaxis()->SetRangeUser(-0.02,0.02);
-      h_betaGen_p[pid][iEta]->GetZaxis()->SetRangeUser(1./nEvents/10,1./nEvents*100);
+      h_betaGen_p[pid][iEta]->GetZaxis()->SetRangeUser(0.9/nEvents,1./nEvents*1e4);
+      h_betaGen_p[pid][iEta]->GetXaxis()->SetRangeUser(0,15.);
       h_betaGen_p[pid][iEta]->Draw("col");
       
       if(iEta == 0)  drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.86,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
@@ -445,9 +488,12 @@ void pidreso_Pythia(
       
       cSingle2D->cd();
         h_betaGen_p[pid][iEta]->Draw("colz");
-        
-        drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.91,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        drawLatexAdd(Form("%1.1f<#eta<%1.1f",etaMin,etaMax),0.85, 0.91,1.3*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  
+  
+        drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+        drawLatexAdd(collisionSystem,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+        drawLatexAdd(Form("%1.1f<#eta<%1.1f",etaMin,etaMax),0.85, 0.91-(nLinesCol*0.85*textSizeLabelsRel),0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       cSingle2D->cd();
       cSingle2D->SaveAs(Form("%s/GenBetaP_%s_Bin_%d_%d.%s", outputDirBeta.Data(), partName[pid].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
     }
@@ -468,11 +514,11 @@ void pidreso_Pythia(
       cPNG->cd(padnum+1);
       DrawVirtualPadSettings( cPNG->cd(padnum+1), 0.095, 0.03, 0.045, 0.115);
       cPNG->cd(padnum+1)->SetLogz(1);
-      SetStyleHistoTH2ForGraphs(h_betaGen_p_AEMC[pid][iEta], "p (GeV/#it{c})", "1/#beta^{MC}", 
+      SetStyleHistoTH2ForGraphs(h_betaGen_p_AEMC[pid][iEta], "#it{p} (GeV/#it{c})", "1/#beta^{MC}", 
                                 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
       h_betaGen_p_AEMC[pid][iEta]->Scale(1./nEvents);
-//       h_betaGen_p_AEMC[pid][iEta]->GetYaxis()->SetRangeUser(-0.02,0.02);
-      h_betaGen_p_AEMC[pid][iEta]->GetZaxis()->SetRangeUser(1./nEvents/10,1./nEvents*100);
+      h_betaGen_p_AEMC[pid][iEta]->GetZaxis()->SetRangeUser(0.9/nEvents,1./nEvents*1e4);
+      h_betaGen_p_AEMC[pid][iEta]->GetXaxis()->SetRangeUser(0,15.);
       h_betaGen_p_AEMC[pid][iEta]->Draw("col");
       
       if(iEta == 0)  drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.86,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
@@ -483,9 +529,11 @@ void pidreso_Pythia(
       cSingle2D->cd();
         h_betaGen_p_AEMC[pid][iEta]->Draw("colz");
         
-        drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.91,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        drawLatexAdd(Form("%1.1f<#eta<%1.1f",etaMin,etaMax),0.85, 0.91,1.3*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-        drawLatexAdd("w/ hit after ECal",0.16,0.91-1.3*textSizeLabelsRel,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+        drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+        drawLatexAdd(collisionSystem,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+        drawLatexAdd(Form("%1.1f<#eta<%1.1f",etaMin,etaMax),0.85, 0.91-(nLinesCol*0.85*textSizeLabelsRel),0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        drawLatexAdd("w/ hit after ECal",0.16,0.91-((nLinesCol+1)*0.85*textSizeLabelsRel),0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
       cSingle2D->cd();
       cSingle2D->SaveAs(Form("%s/GenBetaPWithHitAfterECal_%s_Bin_%d_%d.%s", outputDirBeta.Data(), partName[pid].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
     }
@@ -504,11 +552,11 @@ void pidreso_Pythia(
       cPNG->cd(padnum+1);
       DrawVirtualPadSettings( cPNG->cd(padnum+1), 0.095, 0.03, 0.045, 0.115);
       cPNG->cd(padnum+1)->SetLogz(1);
-      SetStyleHistoTH2ForGraphs(h_betaTrack_p[pid][iEta], "p (GeV/#it{c})", "1/#beta^{path}", 
+      SetStyleHistoTH2ForGraphs(h_betaTrack_p[pid][iEta], "#it{p} (GeV/#it{c})", "1/#beta^{path}", 
                                 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
       h_betaTrack_p[pid][iEta]->Scale(1./nEvents);
-//       h_betaTrack_p[pid][iEta]->GetYaxis()->SetRangeUser(-0.02,0.02);
-      h_betaTrack_p[pid][iEta]->GetZaxis()->SetRangeUser(1./nEvents/10,1./nEvents*100);
+      h_betaTrack_p[pid][iEta]->GetXaxis()->SetRangeUser(0,15.);
+      h_betaTrack_p[pid][iEta]->GetZaxis()->SetRangeUser(0.9/nEvents,1./nEvents*1e4);
       h_betaTrack_p[pid][iEta]->Draw("col");
       
       if(iEta == 0)  drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.86,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
@@ -518,8 +566,10 @@ void pidreso_Pythia(
       cSingle2D->cd();
         h_betaTrack_p[pid][iEta]->Draw("colz");
         
-        drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.91,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        drawLatexAdd(Form("%1.1f<#eta<%1.1f",etaMin,etaMax),0.85, 0.91,1.3*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+        drawLatexAdd(collisionSystem,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+        drawLatexAdd(Form("%1.1f<#eta<%1.1f",etaMin,etaMax),0.85, 0.91-(nLinesCol*0.85*textSizeLabelsRel),0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       cSingle2D->cd();
       cSingle2D->SaveAs(Form("%s/TrackBetaP_%s_Bin_%d_%d.%s", outputDirBeta.Data(), partName[pid].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
 
@@ -538,11 +588,11 @@ void pidreso_Pythia(
       cPNG->cd(padnum+1);
       DrawVirtualPadSettings( cPNG->cd(padnum+1), 0.095, 0.03, 0.045, 0.115);
       cPNG->cd(padnum+1)->SetLogz(1);
-      SetStyleHistoTH2ForGraphs(h_betaTrack_p_AEMC[pid][iEta], "p (GeV/#it{c})", "1/#beta^{path}", 
+      SetStyleHistoTH2ForGraphs(h_betaTrack_p_AEMC[pid][iEta], "#it{p} (GeV/#it{c})", "1/#beta^{path}", 
                                 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
       h_betaTrack_p_AEMC[pid][iEta]->Scale(1./nEvents);
-//       h_betaTrack_p_AEMC[pid][iEta]->GetYaxis()->SetRangeUser(-0.02,0.02);
-      h_betaTrack_p_AEMC[pid][iEta]->GetZaxis()->SetRangeUser(1./nEvents/10,1./nEvents*100);
+      h_betaTrack_p_AEMC[pid][iEta]->GetXaxis()->SetRangeUser(0,15.);
+      h_betaTrack_p_AEMC[pid][iEta]->GetZaxis()->SetRangeUser(0.9/nEvents,1./nEvents*1e4);
       h_betaTrack_p_AEMC[pid][iEta]->Draw("col");
       
       if(iEta == 0)  drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.86,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
@@ -552,10 +602,12 @@ void pidreso_Pythia(
       
       cSingle2D->cd();
         h_betaTrack_p_AEMC[pid][iEta]->Draw("colz");
-        
-        drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.91,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        drawLatexAdd(Form("%1.1f<#eta<%1.1f",etaMin,etaMax),0.85, 0.91,1.3*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-        drawLatexAdd("w/ hit after ECal",0.16,0.91-1.3*textSizeLabelsRel,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+
+        drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+        drawLatexAdd(collisionSystem,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+        drawLatexAdd(Form("%1.1f<#eta<%1.1f",etaMin,etaMax),0.85, 0.91-(nLinesCol*0.85*textSizeLabelsRel),0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        drawLatexAdd("w/ hit after ECal",0.16,0.91-((nLinesCol+1)*0.85*textSizeLabelsRel),0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
       cSingle2D->cd();
       cSingle2D->SaveAs(Form("%s/TrackBetaPWithHitAfterECal_%s_Bin_%d_%d.%s", outputDirBeta.Data(), partName[pid].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
     }
@@ -574,11 +626,11 @@ void pidreso_Pythia(
       cPNG->cd(padnum+1);
       DrawVirtualPadSettings( cPNG->cd(padnum+1), 0.095, 0.03, 0.045, 0.115);
       cPNG->cd(padnum+1)->SetLogz(1);
-      SetStyleHistoTH2ForGraphs(h_beta_p[pid][iEta], "p (GeV/#it{c})", "1/#beta^{rec}", 
+      SetStyleHistoTH2ForGraphs(h_beta_p[pid][iEta], "#it{p} (GeV/#it{c})", "1/#beta^{rec}", 
                                 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
       h_beta_p[pid][iEta]->Scale(1./nEvents);
-//       h_beta_p[pid][iEta]->GetYaxis()->SetRangeUser(-0.02,0.02);
-      h_beta_p[pid][iEta]->GetZaxis()->SetRangeUser(1./nEvents/10,1./nEvents*100);
+      h_beta_p[pid][iEta]->GetXaxis()->SetRangeUser(0,15.);
+      h_beta_p[pid][iEta]->GetZaxis()->SetRangeUser(0.9/nEvents,1./nEvents*1e4);
       h_beta_p[pid][iEta]->Draw("col");
       
       if(iEta == 0)  drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.86,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
@@ -588,8 +640,11 @@ void pidreso_Pythia(
       cSingle2D->cd();
         h_beta_p[pid][iEta]->Draw("colz");
         
-        drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.91,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        drawLatexAdd(Form("%1.1f<#eta<%1.1f",etaMin,etaMax),0.85, 0.91,1.3*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+        drawLatexAdd(collisionSystem,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+        drawLatexAdd(Form("%1.1f<#eta<%1.1f",etaMin,etaMax),0.85, 0.91-(nLinesCol*0.85*textSizeLabelsRel),0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+
       cSingle2D->cd();
       cSingle2D->SaveAs(Form("%s/BetaP_%s_Bin_%d_%d.%s", outputDirBeta.Data(), partName[pid].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
     }
@@ -607,11 +662,11 @@ void pidreso_Pythia(
       cPNG->cd(padnum+1);
       DrawVirtualPadSettings( cPNG->cd(padnum+1), 0.095, 0.03, 0.045, 0.115);
       cPNG->cd(padnum+1)->SetLogz(1);
-      SetStyleHistoTH2ForGraphs(h_beta_p_AEMC[pid][iEta], "p (GeV/#it{c})", "1/#beta^{rec}", 
+      SetStyleHistoTH2ForGraphs(h_beta_p_AEMC[pid][iEta], "#it{p} (GeV/#it{c})", "1/#beta^{rec}", 
                                 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
       h_beta_p_AEMC[pid][iEta]->Scale(1./nEvents);
-//       h_beta_p_AEMC[pid][iEta]->GetYaxis()->SetRangeUser(-0.02,0.02);
-      h_beta_p_AEMC[pid][iEta]->GetZaxis()->SetRangeUser(1./nEvents/10,1./nEvents*100);
+      h_beta_p_AEMC[pid][iEta]->GetXaxis()->SetRangeUser(0,15.);
+      h_beta_p_AEMC[pid][iEta]->GetZaxis()->SetRangeUser(0.9/nEvents,1./nEvents*1e4);
       h_beta_p_AEMC[pid][iEta]->Draw("col");
       
       if(iEta == 0)  drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.86,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
@@ -622,9 +677,11 @@ void pidreso_Pythia(
       cSingle2D->cd();
         h_beta_p_AEMC[pid][iEta]->Draw("colz");
         
-        drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.91,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        drawLatexAdd(Form("%1.1f<#eta<%1.1f",etaMin,etaMax),0.85, 0.91,1.3*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-        drawLatexAdd("w/ hit after ECal",0.16,0.91-1.3*textSizeLabelsRel,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+        drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+        drawLatexAdd(collisionSystem,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+        drawLatexAdd(Form("%1.1f<#eta<%1.1f",etaMin,etaMax),0.85, 0.91-(nLinesCol*0.85*textSizeLabelsRel),0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        drawLatexAdd("w/ hit after ECal",0.16,0.91-((nLinesCol+1)*0.85*textSizeLabelsRel),0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
       cSingle2D->cd();
       cSingle2D->SaveAs(Form("%s/BetaPWithHitAfterECal_%s_Bin_%d_%d.%s", outputDirBeta.Data(), partName[pid].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
     }
@@ -636,7 +693,7 @@ void pidreso_Pythia(
   DrawGammaCanvasSettings( cReso, 0.11, 0.02, 0.045, 0.105);
   // cReso->SetLogz();
 
-  TH2F* histoDummyBetaResMean   = new TH2F("histoDummyBetaResMean","histoDummyBetaResMean",1000,0, 20,1000,-0.02, 0.02);
+  TH2F* histoDummyBetaResMean   = new TH2F("histoDummyBetaResMean","histoDummyBetaResMean",1000,0, 20,1000,-0.01, 0.025);
   SetStyleHistoTH2ForGraphs(histoDummyBetaResMean, "#it{p}^{MC} (GeV/#it{c})","#LT (1/#beta^{rec} - 1/#beta^{MC}) / 1/#beta^{MC} #GT", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.05);
   histoDummyBetaResMean->GetXaxis()->SetNoExponent();
   histoDummyBetaResMean->GetYaxis()->SetNdivisions(510,kTRUE);
@@ -665,7 +722,10 @@ void pidreso_Pythia(
     }
     legendPtResM->Draw();
     DrawGammaLines(0, 20, 0., 0., 2, kGray+2, 7);
-    drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.88,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+   
+    drawLatexAdd(collisionSystem,0.95,0.88,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+    drawLatexAdd(Form("%s in %s",partLabel[pid].Data(), detLabel.Data()),0.95,0.88-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/BetaResolution_%s_Mean_p.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
     
     histoDummyBetaResSigma->Draw();
@@ -675,7 +735,9 @@ void pidreso_Pythia(
       h_sigma_p_betaReso[pid][iEta]->Draw("same,p");
     }
     legendPtResM->Draw();
-    drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.88,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(collisionSystem,0.95,0.88,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+    drawLatexAdd(Form("%s in %s",partLabel[pid].Data(), detLabel.Data()),0.95,0.88-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/BetaResolution_%s_Sigma_p.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
     
     histoDummyBetaResMean->Draw();
@@ -686,8 +748,11 @@ void pidreso_Pythia(
     }
     legendPtResM->Draw();
     DrawGammaLines(0, 20, 0., 0., 2, kGray+2, 7);
-    drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.88,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    drawLatexAdd("w/ hit after ECal",0.95,0.84,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+
+    drawLatexAdd(collisionSystem,0.95,0.88,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+    drawLatexAdd(Form("%s in %s",partLabel[pid].Data(), detLabel.Data()),0.95,0.88-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd("w/ hit after ECal",0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/BetaResolutionWithHitAfterECal_%s_Mean_p.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
     
     histoDummyBetaResSigma->Draw();
@@ -697,8 +762,10 @@ void pidreso_Pythia(
       h_sigma_p_betaResoAEMC[pid][iEta]->Draw("same,p");
     }
     legendPtResM->Draw();
-    drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.88,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    drawLatexAdd("w/ hit after ECal",0.95,0.84,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(collisionSystem,0.95,0.88,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+    drawLatexAdd(Form("%s in %s",partLabel[pid].Data(), detLabel.Data()),0.95,0.88-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd("w/ hit after ECal",0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/BetaResolutionWithHitAfterECal_%s_Sigma_p.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
   }
   
@@ -719,7 +786,10 @@ void pidreso_Pythia(
       legendPtResPID->AddEntry(h_sigma_p_betaReso[pid][iEta],partLabel[pid].Data(),"p");
     }
     legendPtResPID->Draw();
-    drawLatexAdd(Form("%1.1f<#eta<%1.1f, %s",etaMin,etaMax, detLabel.Data()),0.95,0.88,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+
+    drawLatexAdd(collisionSystem,0.95,0.88,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+    drawLatexAdd(Form("%1.1f<#eta<%1.1f, %s",etaMin,etaMax, detLabel.Data()),0.95,0.88-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/BetaResolutionPID_Sigma_p_%d_%d.%s", outputDir.Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
     
     histoDummyBetaResSigma->Draw();
@@ -728,9 +798,36 @@ void pidreso_Pythia(
       h_sigma_p_betaResoAEMC[pid][iEta]->Draw("same,p");      
     }
     legendPtResPID->Draw();
-    drawLatexAdd(Form("%1.1f<#eta<%1.1f, %s",etaMin,etaMax, detLabel.Data()),0.95,0.88,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    drawLatexAdd("w/ hit after ECal",0.95,0.84,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(collisionSystem,0.95,0.88,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+    drawLatexAdd(Form("%1.1f<#eta<%1.1f, %s",etaMin,etaMax, detLabel.Data()),0.95,0.88-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd("w/ hit after ECal",0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/BetaResolutionWithHitAfterECalPID_Sigma_p_%d_%d.%s", outputDir.Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
+
+    histoDummyBetaResMean->Draw();
+    for (Int_t pid =0; pid < 6; pid++){
+      
+      DrawGammaSetMarker(h_mean_p_betaReso[pid][iEta], markerStylePID[pid], markerSizePID[pid], colorPID[pid], colorPID[pid]);
+      h_mean_p_betaReso[pid][iEta]->Draw("same,p");      
+    }
+    legendPtResPID->Draw();
+
+    drawLatexAdd(collisionSystem,0.95,0.88,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+    drawLatexAdd(Form("%1.1f<#eta<%1.1f, %s",etaMin,etaMax, detLabel.Data()),0.95,0.88-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    cReso->Print(Form("%s/BetaResolutionPID_Mean_p_%d_%d.%s", outputDir.Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
+    
+    histoDummyBetaResMean->Draw();
+    for (Int_t pid =0; pid < 6; pid++){
+      DrawGammaSetMarker(h_mean_p_betaResoAEMC[pid][iEta], markerStylePID[pid], markerSizePID[pid], colorPID[pid], colorPID[pid]);
+      h_mean_p_betaResoAEMC[pid][iEta]->Draw("same,p");      
+    }
+    legendPtResPID->Draw();
+    drawLatexAdd(collisionSystem,0.95,0.88,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+    drawLatexAdd(Form("%1.1f<#eta<%1.1f, %s",etaMin,etaMax, detLabel.Data()),0.95,0.88-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd("w/ hit after ECal",0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    cReso->Print(Form("%s/BetaResolutionWithHitAfterECalPID_Mean_p_%d_%d.%s", outputDir.Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
   }
   
   
@@ -738,17 +835,17 @@ void pidreso_Pythia(
   for (Int_t iEta = 0; iEta < nEta+1; iEta++){
     if (properFit){
       for (Int_t pid = 0; pid < 6; pid++){
-        h_mean_p_betaReso[pid][iEta]->Write(Form("histBetaResol_%s_FitMean_%d", partName[pid].Data(),iEta),TObject::kOverwrite);
-        h_sigma_p_betaReso[pid][iEta]->Write(Form("histBetaResol_%s_FitSigma_%d", partName[pid].Data(), iEta),TObject::kOverwrite);
-        h_mean_p_betaResoAEMC[pid][iEta]->Write(Form("histBetaResolAEMC_%s_FitMean_%d", partName[pid].Data(),iEta),TObject::kOverwrite);
-        h_sigma_p_betaResoAEMC[pid][iEta]->Write(Form("histBetaResolAEMC_%s_FitSigma_%d", partName[pid].Data(), iEta),TObject::kOverwrite);
+        h_mean_p_betaReso[pid][iEta]->Write(Form("histBetaResol%s_%s_FitMean_%d", readTrackClass.Data(), partName[pid].Data(),iEta),TObject::kOverwrite);
+        h_sigma_p_betaReso[pid][iEta]->Write(Form("histBetaResol%s_%s_FitSigma_%d",readTrackClass.Data(),  partName[pid].Data(), iEta),TObject::kOverwrite);
+        h_mean_p_betaResoAEMC[pid][iEta]->Write(Form("histBetaResol%sAEMC_%s_FitMean_%d", readTrackClass.Data(), partName[pid].Data(),iEta),TObject::kOverwrite);
+        h_sigma_p_betaResoAEMC[pid][iEta]->Write(Form("histBetaResol%sAEMC_%s_FitSigma_%d", readTrackClass.Data(),  partName[pid].Data(), iEta),TObject::kOverwrite);
       }
     } else {
       for (Int_t pid = 0; pid < 6; pid++){
-        h_mean_p_betaReso[pid][iEta]->Write(Form("histBetaResol_%s_mean_%d", partName[pid].Data(), iEta),TObject::kOverwrite);
-        h_sigma_p_betaReso[pid][iEta]->Write(Form("histBetaResol_%s_sigma_%d", partName[pid].Data(), iEta),TObject::kOverwrite);      
-        h_mean_p_betaResoAEMC[pid][iEta]->Write(Form("histBetaResolAEMC_%s_mean_%d", partName[pid].Data(), iEta),TObject::kOverwrite);
-        h_sigma_p_betaResoAEMC[pid][iEta]->Write(Form("histBetaResolAEMC_%s_sigma_%d", partName[pid].Data(), iEta),TObject::kOverwrite);      
+        h_mean_p_betaReso[pid][iEta]->Write(Form("histBetaResol%s_%s_mean_%d", readTrackClass.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
+        h_sigma_p_betaReso[pid][iEta]->Write(Form("histBetaResol%s_%s_sigma_%d", readTrackClass.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);      
+        h_mean_p_betaResoAEMC[pid][iEta]->Write(Form("histBetaResol%sAEMC_%s_mean_%d", readTrackClass.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
+        h_sigma_p_betaResoAEMC[pid][iEta]->Write(Form("histBetaResol%sAEMC_%s_sigma_%d", readTrackClass.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);      
       }
     }
   }

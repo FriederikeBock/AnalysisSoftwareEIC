@@ -6,7 +6,8 @@ void trackingreso_Pythia(
                             TString inputFileName   = "file.root",
                             TString suffix          = "pdf",
                             TString addLabel        = "",
-                            Bool_t properFit        = kTRUE
+                            Bool_t properFit        = kTRUE,
+                            Int_t trackCuts         = 0
                             
 ){
 
@@ -15,6 +16,28 @@ void trackingreso_Pythia(
   StyleSettingsThesis();
   SetPlotStyle();
   TString dateForOutput             = ReturnDateStringForOutput();
+  TString readTrackClass            = "All";
+  TString writeLabel                = "";
+  TString labelPlotCuts             = "";
+  if (trackCuts == 1){
+    readTrackClass                  = "LI2";
+    addLabel                        = addLabel+"-LI2";
+    writeLabel                      = "LI2";
+    labelPlotCuts                   = "#geq 2 tracker hits";
+  } else if (trackCuts == 2){
+    readTrackClass                  = "LI3";
+    addLabel                        = addLabel+"-LI3";
+    writeLabel                      = "LI3";
+    labelPlotCuts                   = "#geq 3 tracker hits";
+  }
+  
+  TString collisionSystem = "Pythia 6, e+p, 10+250 GeV";
+  TString pTHard = "";
+  Int_t nLinesCol = 1;
+  if (addLabel.Contains("pTHard5GeV")) {
+    pTHard = "#it{p}_{T}^{hard} #geq 5 GeV/#it{c}";
+    nLinesCol++;
+  }
 
   TString outputDir                 = Form("plots/%s/%s",dateForOutput.Data(),addLabel.Data());
   TString outputDirPTRes            = Form("plots/%s/%s/PTRes",dateForOutput.Data(),addLabel.Data());
@@ -36,9 +59,12 @@ void trackingreso_Pythia(
   Double_t maxPhiSigma        = 0.01;
   if (addLabel.Contains("defaultLBL") ){
     detLabel  = "LBL";
-//     enablePlot[5] = 0;
-//     enablePlot[6] = 0;
-    nActiveEta    = 8;
+    enablePlot[19] = 0;
+    enablePlot[18] = 0;
+    enablePlot[0] = 0;
+    enablePlot[1] = 0;
+    enablePlot[2] = 0;
+    nActiveEta    = 16;
   } else if (addLabel.Contains("LBLwithLGAD") ){
     detLabel  = "LBL+TTL";
     enablePlot[19] = 0;
@@ -87,15 +113,38 @@ void trackingreso_Pythia(
     enablePlot[1] = 0;
     enablePlot[2] = 0;
     nActiveEta    = 16;
-
-  } else if (addLabel.Contains("defaultFST") ){
-    detLabel  = "FST";
-//     enablePlot[6] = 0;
-    nActiveEta    = 8;
-  } else if (addLabel.Contains("FSTwithLGAD") ){
-    detLabel  = "FST+TTL";
-//     enablePlot[6] = 0;
-    nActiveEta    = 8;
+  } else if (addLabel.Contains("defaultLANL") ){
+    detLabel  = "LANL";
+    enablePlot[19] = 0;
+    enablePlot[18] = 0;
+    enablePlot[0] = 0;
+    enablePlot[1] = 0;
+    enablePlot[2] = 0;
+    nActiveEta    = 16;
+  } else if (addLabel.Contains("LANLwithLGAD") ){
+    detLabel  = "LANL+TTL";
+    enablePlot[19] = 0;
+    enablePlot[18] = 0;
+    enablePlot[0] = 0;
+    enablePlot[1] = 0;
+    enablePlot[2] = 0;
+    nActiveEta    = 16;
+  } else if (addLabel.Contains("LANLwithACLGAD") ){
+    detLabel  = "LANL+TTL(AC-LGAD)";
+    enablePlot[19] = 0;
+    enablePlot[18] = 0;
+    enablePlot[0] = 0;
+    enablePlot[1] = 0;
+    enablePlot[2] = 0;
+    nActiveEta    = 16;
+  } else if (addLabel.Contains("LANLwithFTTLS3LVC-ETTLLC-CTTLLC") ){
+    detLabel  = "LANL+TTL(1.3mm)";
+    enablePlot[19] = 0;
+    enablePlot[18] = 0;
+    enablePlot[0] = 0;
+    enablePlot[1] = 0;
+    enablePlot[2] = 0;
+    nActiveEta    = 16;
   }
   if (addLabel.Contains("Hist")){
     maxPtSigma         = 0.42;
@@ -107,7 +156,7 @@ void trackingreso_Pythia(
   Double_t textSizeLabelsRel        = 58./1300;
   Bool_t debugOutput = kFALSE;
 
-  TString partLabel[6]                  = {"h^{#pm}", "#pi^{#pm}", "K^{#pm}", "p/#bar{p}", "e^{#pm}", "#mu^{#pm}"};
+  TString partLabel[6]                  = {"(h/e)^{#pm}", "#pi^{#pm}", "K^{#pm}", "p/#bar{p}", "e^{#pm}", "#mu^{#pm}"};
   //************************** Read data **************************************************
   const Int_t nPt                  = 13;
   const static Double_t partPt[]     = {0., 0.5, 1.0,  2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 
@@ -121,12 +170,12 @@ void trackingreso_Pythia(
                                        0.2, 0.6, 1.0, 1.2, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0};
 
   
-  const Int_t rebinEta_PtResol[20]   = { 16, 16, 8, 8, 8, 8, 8, 8, 8, 8, 
-                                         8, 8, 8, 8, 8, 8, 8, 8, 16,  4};
-  const Int_t rebinEta_EtaResol[20]   = { 16, 16, 8, 2, 2, 2, 2, 2, 2, 2,
-                                          2, 2, 2, 2, 2, 2, 2, 8, 16,  4};
-  const Int_t rebinEta_PhiResol[20]   = { 16, 16, 8, 2, 2, 2, 2, 2, 2, 2,
-                                          2, 2, 2, 2, 2, 2, 2, 8, 16,  4};
+  const Int_t rebinEta_PtResol[20]   = { 4, 4, 2, 2, 2, 2, 2, 2, 2, 2, 
+                                         2, 2, 2, 2, 2, 2, 2, 2, 4, 1};
+  const Int_t rebinEta_EtaResol[20]   = { 8, 8, 4, 1, 1, 1, 1, 1, 1, 1,
+                                          1, 1, 1, 1, 1, 1, 1, 4, 8,  1};
+  const Int_t rebinEta_PhiResol[20]   = { 8, 8, 4, 1, 1, 1, 1, 1, 1, 1,
+                                          1, 1, 1, 1, 1, 1, 1, 4, 8,  1};
   Float_t ptResolFit[20]    = { 0.3, 0.3, 0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
                                 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.3, 0.3, 0.2};                                    
   Float_t etaResolFit[20]   = { 0.02, 0.02, 0.02, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 
@@ -163,16 +212,16 @@ void trackingreso_Pythia(
   TH2F* h_tracks_resoEta[nEta+1]        = {NULL};
   TH2F* h_tracks_resoPhi[nEta+1]        = {NULL};
   
-  TString nameCuts[10]                  = {"N", "L3", "L3F", "LI", "LIF", "BE", "BEF", "AE", "AEF", "T" };
-  TString labelCuts[10]                 = {"no track cuts", "at least 3 hits", "#leq 3 hits & ( 1^{st} | 2^{nd} layer)", "only tracker", "only tracker & ( 1^{st} | 2^{nd} layer)", "tracker & only LGAD before ECal", "tracker & only LGAD before ECal & ( 1^{st} | 2^{nd} layer)", "tracker & LGAD after ECal", "tracker & only LGAD after ECal & ( 1^{st} | 2^{nd} layer)", "any timing hit" };
-  TH2F* h_trackMap_eta_pT[6][10]        = {{NULL}};
-  TH2F* h_trackMapRatio_eta_pT[6][10]    = {{NULL}};
-  TH2F* h_trackMapRec_eta_pT[6][10]        = {{NULL}};
-  TH2F* h_trackMapRecRatio_eta_pT[6][10]    = {{NULL}};
-  TH2F* h_trackMap_eta_p[6][10]        = {{NULL}};
-  TH2F* h_trackMapRatio_eta_p[6][10]    = {{NULL}};
-  TH2F* h_trackMapRec_eta_p[6][10]        = {{NULL}};
-  TH2F* h_trackMapRecRatio_eta_p[6][10]    = {{NULL}};
+  TString nameCuts[12]                  = {"N", "L3", "L3F", "LI", "LIF", "BE", "BEF", "AE", "AEF", "T", "LI2", "LI3" };
+  TString labelCuts[12]                 = {"no track cuts", "at least 3 hits", "#leq 3 hits & ( 1^{st} | 2^{nd} layer)", "only tracker", "only tracker & ( 1^{st} | 2^{nd} layer)", "tracker & only LGAD before ECal", "tracker & only LGAD before ECal & ( 1^{st} | 2^{nd} layer)", "tracker & LGAD after ECal", "tracker & only LGAD after ECal & ( 1^{st} | 2^{nd} layer)", "any timing hit", "#geq 2 tracker hits", "#geq 3 tracker hits"  };
+  TH2F* h_trackMap_eta_pT[6][12]        = {{NULL}};
+  TH2F* h_trackMapRatio_eta_pT[6][12]    = {{NULL}};
+  TH2F* h_trackMapRec_eta_pT[6][12]        = {{NULL}};
+  TH2F* h_trackMapRecRatio_eta_pT[6][12]    = {{NULL}};
+  TH2F* h_trackMap_eta_p[6][12]        = {{NULL}};
+  TH2F* h_trackMapRatio_eta_p[6][12]    = {{NULL}};
+  TH2F* h_trackMapRec_eta_p[6][12]        = {{NULL}};
+  TH2F* h_trackMapRecRatio_eta_p[6][12]    = {{NULL}};
   
   TFile* inputFile  = new TFile(inputFileName.Data());
   TH1D* histNEvents = (TH1D*)inputFile->Get("nEvents");
@@ -180,7 +229,7 @@ void trackingreso_Pythia(
 
   for (Int_t iEta = 0; iEta < nEta+1; iEta++){
     for (Int_t pid = 0; pid < 6; pid++){
-      h_tracks_reso[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_tracks_reso_pT_All_%s_%d", partName[pid].Data(), iEta));
+      h_tracks_reso[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_tracks_reso_pT_%s_%s_%d", readTrackClass.Data(), partName[pid].Data(), iEta));
       h_tracks_reso[pid][iEta]->Sumw2();
       h_tracks_mean_pt_reso[pid][iEta] = new TH1D(Form("histPtResol_%s_mean_%d", partName[pid].Data(), iEta), 
                                             ";#it{p}_{T}^{MC} (GeV/#it{c}); #LT (#it{p}_{T}^{rec}-#it{p}_{T}^{MC})/#it{p}_{T}^{MC} #GT",
@@ -189,7 +238,7 @@ void trackingreso_Pythia(
                                               ";#it{p}_{T}^{MC} (GeV/#it{c}); #sigma( (#it{p}_{T}^{rec}-#it{p}_{T}^{MC})/#it{p}_{T}^{MC} )", 
                                               nPt, partPt);
     }
-    h_tracks_resoEta[iEta]  = (TH2F*)inputFile->Get(Form("h_tracks_reso_Eta_pT_%d", iEta));
+    h_tracks_resoEta[iEta]  = (TH2F*)inputFile->Get(Form("h_tracks_reso_Eta_pT_%s_%d", readTrackClass.Data(), iEta));
     h_tracks_resoEta[iEta]->Sumw2();
     h_tracks_mean_pt_resoEta[iEta] = new TH1D(Form("histPtResolEta_mean_%d", iEta), 
                                            ";#it{p}_{T}^{MC} (GeV/#it{c}); #LT (#eta^{rec}-#eta^{MC})/#eta^{MC} #GT",
@@ -197,7 +246,7 @@ void trackingreso_Pythia(
     h_tracks_sigma_pt_resoEta[iEta] = new TH1D(Form("histPtResolEta_sigma_%d", iEta), 
                                             ";#it{p}_{T}^{MC} (GeV/#it{c}); #sigma( (#eta^{rec}-#eta^{MC})/#eta^{MC} )", 
                                             nPt, partPt);
-    h_tracks_resoPhi[iEta]  = (TH2F*)inputFile->Get(Form("h_tracks_reso_Phi_pT_%d", iEta));
+    h_tracks_resoPhi[iEta]  = (TH2F*)inputFile->Get(Form("h_tracks_reso_Phi_pT_%s_%d", readTrackClass.Data(), iEta));
     h_tracks_resoPhi[iEta]->Sumw2();
     h_tracks_mean_pt_resoPhi[iEta] = new TH1D(Form("histPtResolPhi_mean_%d", iEta), 
                                            ";#it{p}_{T}^{MC} (GeV/#it{c}); #LT (#varphi^{rec}-#varphi^{MC})/#varphi^{MC} #GT",
@@ -208,7 +257,7 @@ void trackingreso_Pythia(
   }
   
   for (Int_t pid = 0; pid < 6; pid++){
-    for (Int_t cut = 0; cut < 10; cut++){
+    for (Int_t cut = 0; cut < 12; cut++){
       h_trackMap_eta_pT[pid][cut]   = (TH2F*)inputFile->Get(Form("h_tracks_%s_%s_True_Eta_pT", partName[pid].Data(), nameCuts[cut].Data()));
       h_trackMap_eta_pT[pid][cut]->Sumw2();
       if (cut > 0 ){
@@ -216,8 +265,8 @@ void trackingreso_Pythia(
         h_trackMapRatio_eta_pT[pid][cut-1]->Sumw2();
         h_trackMapRatio_eta_pT[pid][cut-1]->Divide(h_trackMap_eta_pT[pid][0]);
       }
-      if (cut == 9){
-        h_trackMapRatio_eta_pT[pid][cut] = (TH2F*)h_trackMap_eta_pT[pid][7]->Clone(Form("h_tracksRatio2_%s_%s_True_Eta_pT", partName[pid].Data(), nameCuts[cut].Data()));
+      if (cut == 11){
+        h_trackMapRatio_eta_pT[pid][cut] = (TH2F*)h_trackMap_eta_pT[pid][7]->Clone(Form("h_tracksRatio2_%s_%s_True_Eta_pT", partName[pid].Data(), nameCuts[9].Data()));
         h_trackMapRatio_eta_pT[pid][cut]->Sumw2();
         h_trackMapRatio_eta_pT[pid][cut]->Divide(h_trackMap_eta_pT[pid][9]);
       
@@ -229,8 +278,8 @@ void trackingreso_Pythia(
         h_trackMapRecRatio_eta_pT[pid][cut-1]->Sumw2();
         h_trackMapRecRatio_eta_pT[pid][cut-1]->Divide(h_trackMapRec_eta_pT[pid][0]);
       }
-      if (cut == 9){
-        h_trackMapRecRatio_eta_pT[pid][cut] = (TH2F*)h_trackMapRec_eta_pT[pid][7]->Clone(Form("h_tracksRatio2_%s_%s_Rec_Eta_pT", partName[pid].Data(), nameCuts[cut].Data()));
+      if (cut == 11){
+        h_trackMapRecRatio_eta_pT[pid][cut] = (TH2F*)h_trackMapRec_eta_pT[pid][7]->Clone(Form("h_tracksRatio2_%s_%s_Rec_Eta_pT", partName[pid].Data(), nameCuts[9].Data()));
         h_trackMapRecRatio_eta_pT[pid][cut]->Sumw2();
         h_trackMapRecRatio_eta_pT[pid][cut]->Divide(h_trackMapRec_eta_pT[pid][9]);
       }
@@ -241,8 +290,8 @@ void trackingreso_Pythia(
         h_trackMapRatio_eta_p[pid][cut-1]->Sumw2();
         h_trackMapRatio_eta_p[pid][cut-1]->Divide(h_trackMap_eta_p[pid][0]);
       }
-      if (cut == 9){
-        h_trackMapRatio_eta_p[pid][cut] = (TH2F*)h_trackMap_eta_p[pid][7]->Clone(Form("h_tracksRatio2_%s_%s_True_Eta_p", partName[pid].Data(), nameCuts[cut].Data()));
+      if (cut == 11){
+        h_trackMapRatio_eta_p[pid][cut] = (TH2F*)h_trackMap_eta_p[pid][7]->Clone(Form("h_tracksRatio2_%s_%s_True_Eta_p", partName[pid].Data(), nameCuts[9].Data()));
         h_trackMapRatio_eta_p[pid][cut]->Sumw2();
         h_trackMapRatio_eta_p[pid][cut]->Divide(h_trackMap_eta_p[pid][9]);
         
@@ -254,8 +303,8 @@ void trackingreso_Pythia(
         h_trackMapRecRatio_eta_p[pid][cut-1]->Sumw2();
         h_trackMapRecRatio_eta_p[pid][cut-1]->Divide(h_trackMapRec_eta_p[pid][0]);
       }
-      if (cut == 9){
-        h_trackMapRecRatio_eta_p[pid][cut] = (TH2F*)h_trackMapRec_eta_p[pid][7]->Clone(Form("h_tracksRatio2_%s_%s_Rec_Eta_p", partName[pid].Data(), nameCuts[cut].Data()));
+      if (cut == 11){
+        h_trackMapRecRatio_eta_p[pid][cut] = (TH2F*)h_trackMapRec_eta_p[pid][7]->Clone(Form("h_tracksRatio2_%s_%s_Rec_Eta_p", partName[pid].Data(), nameCuts[9].Data()));
         h_trackMapRecRatio_eta_p[pid][cut]->Sumw2();
         h_trackMapRecRatio_eta_p[pid][cut]->Divide(h_trackMapRec_eta_p[pid][9]);        
       }
@@ -393,148 +442,177 @@ void trackingreso_Pythia(
     }
   }
 
-  TCanvas* cSingle2D = new TCanvas("cSingle2D","",0,0,1000,800);
-  DrawGammaCanvasSettings( cSingle2D, 0.1, 0.12, 0.025, 0.105);
-  cSingle2D->SetLogz();
+  if (!trackCuts){
+    TCanvas* cSingle2D = new TCanvas("cSingle2D","",0,0,1000,800);
+    DrawGammaCanvasSettings( cSingle2D, 0.1, 0.12, 0.025, 0.105);
+    cSingle2D->SetLogz();
 
-  for (Int_t pid = 0; pid < 6; pid++){
-    for (Int_t cut = 0; cut < 10; cut++){
-      cSingle2D->cd();
-      cSingle2D->SetLogz();
-      SetStyleHistoTH2ForGraphs(h_trackMap_eta_pT[pid][cut], "#it{p}_{T}^{MC} (GeV/#it{c})", "#eta^{MC}", 
-                                0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
-        h_trackMap_eta_pT[pid][cut]->Scale(1./nEvents);
-        h_trackMap_eta_pT[pid][cut]->Draw("colz");
-        drawLatexAdd(labelCuts[cut].Data(),0.85,0.14,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-        drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+1.1*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-//         drawLatexAdd(Form("%1.1f<#eta<%1.1f",etaMin,etaMax),0.85, 0.91,1.3*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-      
-      cSingle2D->SaveAs(Form("%s/%s/TrackDistributionPtvsEta_MC_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[cut].Data(), suffix.Data())); 
-
-      cSingle2D->cd();
-      SetStyleHistoTH2ForGraphs(h_trackMap_eta_p[pid][cut], "#it{p}^{MC} (GeV/#it{c})", "#eta^{MC}", 
-                                0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
-        h_trackMap_eta_p[pid][cut]->Scale(1./nEvents);
-        h_trackMap_eta_p[pid][cut]->Draw("colz");
-        drawLatexAdd(labelCuts[cut].Data(),0.85,0.14,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-        drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+1.1*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-//         drawLatexAdd(Form("%1.1f<#eta<%1.1f",etaMin,etaMax),0.85, 0.91,1.3*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-      
-      cSingle2D->SaveAs(Form("%s/%s/TrackDistributionPvsEta_MC_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[cut].Data(), suffix.Data())); 
-
-      cSingle2D->cd();
-      SetStyleHistoTH2ForGraphs(h_trackMapRec_eta_pT[pid][cut], "#it{p}_{T}^{rec} (GeV/#it{c})", "#eta^{rec}", 
-                                0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
-        h_trackMapRec_eta_pT[pid][cut]->Scale(1./nEvents);
-        h_trackMapRec_eta_pT[pid][cut]->Draw("colz");
-        drawLatexAdd(labelCuts[cut].Data(),0.85,0.14,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-        drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+1.1*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-//         drawLatexAdd(Form("%1.1f<#eta<%1.1f",etaMin,etaMax),0.85, 0.91,1.3*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-      
-      cSingle2D->SaveAs(Form("%s/%s/TrackDistributionPtvsEta_Rec_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[cut].Data(), suffix.Data())); 
-      
-      cSingle2D->cd();
-      SetStyleHistoTH2ForGraphs(h_trackMapRec_eta_p[pid][cut], "#it{p}^{rec} (GeV/#it{c})", "#eta^{rec}", 
-                                0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
-        h_trackMapRec_eta_p[pid][cut]->Scale(1./nEvents);
-        h_trackMapRec_eta_p[pid][cut]->Draw("colz");
-        drawLatexAdd(labelCuts[cut].Data(),0.85,0.14,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-        drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+1.1*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-//         drawLatexAdd(Form("%1.1f<#eta<%1.1f",etaMin,etaMax),0.85, 0.91,1.3*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-      
-      cSingle2D->SaveAs(Form("%s/%s/TrackDistributionPvsEta_Rec_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[cut].Data(), suffix.Data())); 
-      
-      cSingle2D->cd();
-      cSingle2D->SetLogz(0);
-      if (cut > 0){
-        SetStyleHistoTH2ForGraphs(h_trackMapRatio_eta_pT[pid][cut-1], "#it{p}_{T}^{MC} (GeV/#it{c})", "#eta^{MC}", 
-                                  0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
-          
-          h_trackMapRatio_eta_pT[pid][cut-1]->Draw("colz");
-          drawLatexAdd(Form("ratio of %s", labelCuts[cut].Data()),0.85,0.14+1.1*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("to %s", labelCuts[0].Data()),0.85,0.14,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+2.2*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-  
-        cSingle2D->SaveAs(Form("%s/%s/Ratio_TrackDistributionPtvsEta_MC_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[cut].Data(), suffix.Data())); 
+    for (Int_t pid = 0; pid < 6; pid++){
+      for (Int_t cut = 0; cut < 12; cut++){
         cSingle2D->cd();
-        SetStyleHistoTH2ForGraphs(h_trackMapRatio_eta_p[pid][cut-1], "#it{p}^{MC} (GeV/#it{c})", "#eta^{MC}", 
+        cSingle2D->SetLogz();
+        SetStyleHistoTH2ForGraphs(h_trackMap_eta_pT[pid][cut], "#it{p}_{T}^{MC} (GeV/#it{c})", "#eta^{MC}", 
                                   0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+          h_trackMap_eta_pT[pid][cut]->Scale(1./nEvents);
+          h_trackMap_eta_pT[pid][cut]->GetZaxis()->SetRangeUser( 0.9/nEvents, 0.9/nEvents*1e4);
+          h_trackMap_eta_pT[pid][cut]->Draw("colz");
           
-          h_trackMapRatio_eta_p[pid][cut-1]->Draw("colz");
-          drawLatexAdd(Form("ratio of %s", labelCuts[cut].Data()),0.85,0.14+1.1*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("to %s", labelCuts[0].Data()),0.85,0.14,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+2.2*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-  
-        cSingle2D->SaveAs(Form("%s/%s/Ratio_TrackDistributionPvsEta_MC_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[cut].Data(), suffix.Data())); 
+          drawLatexAdd(collisionSystem,0.85,0.14+(nLinesCol+1)*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.14+(2*textSizeLabelsRel),textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+          drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          drawLatexAdd(labelCuts[cut].Data(),0.85,0.14,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+                
+        cSingle2D->SaveAs(Form("%s/%s/TrackDistributionPtvsEta_MC_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[cut].Data(), suffix.Data())); 
 
+        cSingle2D->cd();
+        SetStyleHistoTH2ForGraphs(h_trackMap_eta_p[pid][cut], "#it{p}^{MC} (GeV/#it{c})", "#eta^{MC}", 
+                                  0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+          h_trackMap_eta_p[pid][cut]->Scale(1./nEvents);
+          h_trackMap_eta_p[pid][cut]->GetZaxis()->SetRangeUser( 0.9/nEvents, 0.9/nEvents*1e4);
+          h_trackMap_eta_p[pid][cut]->Draw("colz");
+          drawLatexAdd(collisionSystem,0.85,0.14+(nLinesCol+1)*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.14+(2*textSizeLabelsRel),textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+          drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          drawLatexAdd(labelCuts[cut].Data(),0.85,0.14,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        
+        cSingle2D->SaveAs(Form("%s/%s/TrackDistributionPvsEta_MC_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[cut].Data(), suffix.Data())); 
+
+        cSingle2D->cd();
+        SetStyleHistoTH2ForGraphs(h_trackMapRec_eta_pT[pid][cut], "#it{p}_{T}^{rec} (GeV/#it{c})", "#eta^{rec}", 
+                                  0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+          h_trackMapRec_eta_pT[pid][cut]->Scale(1./nEvents);
+          h_trackMapRec_eta_pT[pid][cut]->Draw("colz");
+          h_trackMapRec_eta_pT[pid][cut]->GetZaxis()->SetRangeUser( 0.9/nEvents, 0.9/nEvents*1e4);
+          drawLatexAdd(collisionSystem,0.85,0.14+(nLinesCol+1)*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.14+(2*textSizeLabelsRel),textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+          drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          drawLatexAdd(labelCuts[cut].Data(),0.85,0.14,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        
+        cSingle2D->SaveAs(Form("%s/%s/TrackDistributionPtvsEta_Rec_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[cut].Data(), suffix.Data())); 
         
         cSingle2D->cd();
-        SetStyleHistoTH2ForGraphs(h_trackMapRecRatio_eta_pT[pid][cut-1], "#it{p}_{T}^{rec} (GeV/#it{c})", "#eta^{rec}", 
+        SetStyleHistoTH2ForGraphs(h_trackMapRec_eta_p[pid][cut], "#it{p}^{rec} (GeV/#it{c})", "#eta^{rec}", 
                                   0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+          h_trackMapRec_eta_p[pid][cut]->Scale(1./nEvents);
+          h_trackMapRec_eta_p[pid][cut]->GetZaxis()->SetRangeUser( 0.9/nEvents, 0.9/nEvents*1e4);
+          h_trackMapRec_eta_p[pid][cut]->Draw("colz");
           
-          h_trackMapRecRatio_eta_pT[pid][cut-1]->Draw("colz");
-          drawLatexAdd(Form("ratio of %s", labelCuts[cut].Data()),0.85,0.14+1.1*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("to %s", labelCuts[0].Data()),0.85,0.14,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+2.2*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-  
-        cSingle2D->SaveAs(Form("%s/%s/Ratio_TrackDistributionPtvsEta_Rec_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[cut].Data(), suffix.Data())); 
+          drawLatexAdd(collisionSystem,0.85,0.14+(nLinesCol+1)*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.14+(2*textSizeLabelsRel),textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+          drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          drawLatexAdd(labelCuts[cut].Data(),0.85,0.14,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
 
-        cSingle2D->cd();
-        SetStyleHistoTH2ForGraphs(h_trackMapRecRatio_eta_p[pid][cut-1], "#it{p}^{rec} (GeV/#it{c})", "#eta^{rec}", 
-                                  0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
-          
-          h_trackMapRecRatio_eta_p[pid][cut-1]->Draw("colz");
-          drawLatexAdd(Form("ratio of %s", labelCuts[cut].Data()),0.85,0.14+1.1*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("to %s", labelCuts[0].Data()),0.85,0.14,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+2.2*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-  
-        cSingle2D->SaveAs(Form("%s/%s/Ratio_TrackDistributionPvsEta_Rec_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[cut].Data(), suffix.Data())); 
-      }
-      if (cut == 9){
-        SetStyleHistoTH2ForGraphs(h_trackMapRatio_eta_pT[pid][cut], "#it{p}_{T}^{MC} (GeV/#it{c})", "#eta^{MC}", 
-                                  0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
-          
-          h_trackMapRatio_eta_pT[pid][cut]->Draw("colz");
-          drawLatexAdd(Form("ratio of %s", labelCuts[7].Data()),0.85,0.14+1.1*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("to %s", labelCuts[9].Data()),0.85,0.14,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+2.2*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-  
-        cSingle2D->SaveAs(Form("%s/%s/RatioToAnyTime_TrackDistributionPtvsEta_MC_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[7].Data(), suffix.Data())); 
-        cSingle2D->cd();
-        SetStyleHistoTH2ForGraphs(h_trackMapRatio_eta_p[pid][cut], "#it{p}^{MC} (GeV/#it{c})", "#eta^{MC}", 
-                                  0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
-          
-          h_trackMapRatio_eta_p[pid][cut]->Draw("colz");
-          drawLatexAdd(Form("ratio of %s", labelCuts[7].Data()),0.85,0.14+1.1*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("to %s", labelCuts[9].Data()),0.85,0.14,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+2.2*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-  
-        cSingle2D->SaveAs(Form("%s/%s/RatioToAnyTime_TrackDistributionPvsEta_MC_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[7].Data(), suffix.Data())); 
-
+        cSingle2D->SaveAs(Form("%s/%s/TrackDistributionPvsEta_Rec_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[cut].Data(), suffix.Data())); 
         
         cSingle2D->cd();
-        SetStyleHistoTH2ForGraphs(h_trackMapRecRatio_eta_pT[pid][cut], "#it{p}_{T}^{rec} (GeV/#it{c})", "#eta^{rec}", 
-                                  0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
-          
-          h_trackMapRecRatio_eta_pT[pid][cut]->Draw("colz");
-          drawLatexAdd(Form("ratio of %s", labelCuts[7].Data()),0.85,0.14+1.1*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("to %s", labelCuts[9].Data()),0.85,0.14,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+2.2*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-  
-        cSingle2D->SaveAs(Form("%s/%s/RatioToAnyTime_TrackDistributionPtvsEta_Rec_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[7].Data(), suffix.Data())); 
+        cSingle2D->SetLogz(0);
+        if (cut > 0){
+          SetStyleHistoTH2ForGraphs(h_trackMapRatio_eta_pT[pid][cut-1], "#it{p}_{T}^{MC} (GeV/#it{c})", "#eta^{MC}", 
+                                    0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+            
+            h_trackMapRatio_eta_pT[pid][cut-1]->Draw("colz");
 
-        cSingle2D->cd();
-        SetStyleHistoTH2ForGraphs(h_trackMapRecRatio_eta_p[pid][cut], "#it{p}^{rec} (GeV/#it{c})", "#eta^{rec}", 
-                                  0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+            drawLatexAdd(collisionSystem,0.85,0.14+(nLinesCol+2)*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.14+(3*textSizeLabelsRel),textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+            drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+2*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            drawLatexAdd(Form("ratio of %s", labelCuts[cut].Data()),0.85,0.14+1*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            drawLatexAdd(Form("to %s", labelCuts[0].Data()),0.85,0.14,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            
+    
+          cSingle2D->SaveAs(Form("%s/%s/Ratio_TrackDistributionPtvsEta_MC_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[cut].Data(), suffix.Data())); 
+          cSingle2D->cd();
+          SetStyleHistoTH2ForGraphs(h_trackMapRatio_eta_p[pid][cut-1], "#it{p}^{MC} (GeV/#it{c})", "#eta^{MC}", 
+                                    0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+            
+            h_trackMapRatio_eta_p[pid][cut-1]->Draw("colz");
+
+            drawLatexAdd(collisionSystem,0.85,0.14+(nLinesCol+2)*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.14+(3*textSizeLabelsRel),textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+            drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+2*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            drawLatexAdd(Form("ratio of %s", labelCuts[cut].Data()),0.85,0.14+1*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            drawLatexAdd(Form("to %s", labelCuts[0].Data()),0.85,0.14,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    
+          cSingle2D->SaveAs(Form("%s/%s/Ratio_TrackDistributionPvsEta_MC_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[cut].Data(), suffix.Data())); 
+
           
-          h_trackMapRecRatio_eta_p[pid][cut]->Draw("colz");
-          drawLatexAdd(Form("ratio of %s", labelCuts[7].Data()),0.85,0.14+1.1*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("to %s", labelCuts[9].Data()),0.85,0.14,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+2.2*textSizeLabelsRel,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-  
-        cSingle2D->SaveAs(Form("%s/%s/RatioToAnyTime_TrackDistributionPvsEta_Rec_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[7].Data(), suffix.Data())); 
+          cSingle2D->cd();
+          SetStyleHistoTH2ForGraphs(h_trackMapRecRatio_eta_pT[pid][cut-1], "#it{p}_{T}^{rec} (GeV/#it{c})", "#eta^{rec}", 
+                                    0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+            
+            h_trackMapRecRatio_eta_pT[pid][cut-1]->Draw("colz");
+            drawLatexAdd(collisionSystem,0.85,0.14+(nLinesCol+2)*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.14+(3*textSizeLabelsRel),textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+            drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+2*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            drawLatexAdd(Form("ratio of %s", labelCuts[cut].Data()),0.85,0.14+1*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            drawLatexAdd(Form("to %s", labelCuts[0].Data()),0.85,0.14,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    
+          cSingle2D->SaveAs(Form("%s/%s/Ratio_TrackDistributionPtvsEta_Rec_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[cut].Data(), suffix.Data())); 
+
+          cSingle2D->cd();
+          SetStyleHistoTH2ForGraphs(h_trackMapRecRatio_eta_p[pid][cut-1], "#it{p}^{rec} (GeV/#it{c})", "#eta^{rec}", 
+                                    0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+            
+            h_trackMapRecRatio_eta_p[pid][cut-1]->Draw("colz");
+            drawLatexAdd(collisionSystem,0.85,0.14+(nLinesCol+2)*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.14+(3*textSizeLabelsRel),textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+            drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+2*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            drawLatexAdd(Form("ratio of %s", labelCuts[cut].Data()),0.85,0.14+1*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            drawLatexAdd(Form("to %s", labelCuts[0].Data()),0.85,0.14,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    
+          cSingle2D->SaveAs(Form("%s/%s/Ratio_TrackDistributionPvsEta_Rec_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[cut].Data(), suffix.Data())); 
+        }
+        if (cut == 11){
+          SetStyleHistoTH2ForGraphs(h_trackMapRatio_eta_pT[pid][cut], "#it{p}_{T}^{MC} (GeV/#it{c})", "#eta^{MC}", 
+                                    0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+            
+            h_trackMapRatio_eta_pT[pid][cut]->Draw("colz");
+            
+            drawLatexAdd(collisionSystem,0.85,0.14+(nLinesCol+2)*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.14+(3*textSizeLabelsRel),textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+            drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+2*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            drawLatexAdd(Form("ratio of %s", labelCuts[7].Data()),0.85,0.14+1*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            drawLatexAdd(Form("to %s", labelCuts[9].Data()),0.85,0.14,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          cSingle2D->SaveAs(Form("%s/%s/RatioToAnyTime_TrackDistributionPtvsEta_MC_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[7].Data(), suffix.Data())); 
+          cSingle2D->cd();
+          SetStyleHistoTH2ForGraphs(h_trackMapRatio_eta_p[pid][cut], "#it{p}^{MC} (GeV/#it{c})", "#eta^{MC}", 
+                                    0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+            
+            h_trackMapRatio_eta_p[pid][cut]->Draw("colz");
+            drawLatexAdd(collisionSystem,0.85,0.14+(nLinesCol+2)*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.14+(3*textSizeLabelsRel),textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+            drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+2*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            drawLatexAdd(Form("ratio of %s", labelCuts[7].Data()),0.85,0.14+1*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            drawLatexAdd(Form("to %s", labelCuts[9].Data()),0.85,0.14,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    
+          cSingle2D->SaveAs(Form("%s/%s/RatioToAnyTime_TrackDistributionPvsEta_MC_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[7].Data(), suffix.Data())); 
+
+          
+          cSingle2D->cd();
+          SetStyleHistoTH2ForGraphs(h_trackMapRecRatio_eta_pT[pid][cut], "#it{p}_{T}^{rec} (GeV/#it{c})", "#eta^{rec}", 
+                                    0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+            
+            h_trackMapRecRatio_eta_pT[pid][cut]->Draw("colz");
+            drawLatexAdd(collisionSystem,0.85,0.14+(nLinesCol+2)*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.14+(3*textSizeLabelsRel),textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+            drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+2*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            drawLatexAdd(Form("ratio of %s", labelCuts[7].Data()),0.85,0.14+1*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            drawLatexAdd(Form("to %s", labelCuts[9].Data()),0.85,0.14,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          cSingle2D->SaveAs(Form("%s/%s/RatioToAnyTime_TrackDistributionPtvsEta_Rec_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[7].Data(), suffix.Data())); 
+
+          cSingle2D->cd();
+          SetStyleHistoTH2ForGraphs(h_trackMapRecRatio_eta_p[pid][cut], "#it{p}^{rec} (GeV/#it{c})", "#eta^{rec}", 
+                                    0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+            
+            h_trackMapRecRatio_eta_p[pid][cut]->Draw("colz");
+            drawLatexAdd(collisionSystem,0.85,0.14+(nLinesCol+2)*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.14+(3*textSizeLabelsRel),textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+            drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.85,0.14+2*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            drawLatexAdd(Form("ratio of %s", labelCuts[7].Data()),0.85,0.14+1*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            drawLatexAdd(Form("to %s", labelCuts[9].Data()),0.85,0.14,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    
+          cSingle2D->SaveAs(Form("%s/%s/RatioToAnyTime_TrackDistributionPvsEta_Rec_%s.%s", outputDir.Data(), partName[pid].Data(), nameCuts[7].Data(), suffix.Data())); 
+        }
       }
-      
     }
   }
   
@@ -703,7 +781,11 @@ void trackingreso_Pythia(
     }
     legendPtResM->Draw();
     DrawGammaLines(0, 20, 0., 0., 2, kGray+2, 7);
-    drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      
+    drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+    drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/PtResolution_%s_Mean_pT.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
 
     histoDummyPtResSigma->Draw();
@@ -713,7 +795,10 @@ void trackingreso_Pythia(
       h_tracks_sigma_pt_reso[pid][iEta]->Draw("same,p");
     }
     legendPtResM->Draw();
-    drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+    drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/PtResolution_%s_Sigma_pT.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
   }
   
@@ -734,13 +819,16 @@ void trackingreso_Pythia(
       legendPtResPID->AddEntry(h_tracks_sigma_pt_reso[pid][iEta],partLabel[pid].Data(),"p");
     }
     legendPtResPID->Draw();
-    drawLatexAdd(Form("%1.1f<#eta<%1.1f, %s",etaMin,etaMax, detLabel.Data()),0.95,0.91,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+    drawLatexAdd(Form("%1.1f<#eta<%1.1f, %s", etaMin, etaMax, detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/PtResolutionPID_Sigma_pT_%d_%d.%s", outputDir.Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
   }
   
   
   DrawGammaCanvasSettings( cReso, 0.11, 0.02, 0.045, 0.105);
-  TH2F* histoDummyEtaResMean   = new TH2F("histoDummyEtaResMean","histoDummyEtaResMean",1000,0, 10,1000,-0.001, 0.001);
+  TH2F* histoDummyEtaResMean   = new TH2F("histoDummyEtaResMean","histoDummyEtaResMean",1000,0, 20,1000,-0.001, 0.001);
   SetStyleHistoTH2ForGraphs(histoDummyEtaResMean, "#it{p}_{T}^{MC} (GeV/#it{c})","#LT (#eta^{rec} - #eta^{MC}) / #eta^{MC} #GT", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.05);
   histoDummyEtaResMean->GetXaxis()->SetNoExponent();
   histoDummyEtaResMean->GetYaxis()->SetNdivisions(510,kTRUE);
@@ -759,11 +847,15 @@ void trackingreso_Pythia(
       legendEtaResM->AddEntry(h_tracks_mean_pt_resoEta[iEta],Form("%1.1f<#eta<%1.1f",partEta[iEta],partEta[iEta+1]),"p");
   }
   legendEtaResM->Draw();
-  drawLatexAdd(Form("h^{#pm} in %s",detLabel.Data()),0.95,0.88,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+
+  drawLatexAdd(collisionSystem,0.95,0.88,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+  drawLatexAdd(Form("(h/e)^{#pm} in %s",detLabel.Data()),0.95,0.88-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
   cReso->Print(Form("%s/EtaResolution_Mean_pT.%s", outputDir.Data(), suffix.Data()));
 
   
-  TH2F* histoDummyEtaResSigma   = new TH2F("histoDummyEtaResSigma","histoDummyEtaResSigma",1000,0, 10,1000,-0.0, maxEtaSigma);
+  TH2F* histoDummyEtaResSigma   = new TH2F("histoDummyEtaResSigma","histoDummyEtaResSigma",1000,0, 20,1000,-0.0, maxEtaSigma);
   SetStyleHistoTH2ForGraphs(histoDummyEtaResSigma, "#it{p}_{T}^{MC} (GeV/#it{c})","#sigma((#eta^{rec} - #eta^{MC}) / #eta^{MC})", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.05);
   histoDummyEtaResSigma->GetXaxis()->SetNoExponent();
   histoDummyEtaResSigma->GetYaxis()->SetNdivisions(510,kTRUE);
@@ -776,10 +868,13 @@ void trackingreso_Pythia(
     h_tracks_sigma_pt_resoEta[iEta]->Draw("same,p");
   }
   legendEtaResM->Draw();
-  drawLatexAdd(Form("h^{#pm} in %s",detLabel.Data()),0.95,0.88,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  drawLatexAdd(collisionSystem,0.95,0.88,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+  drawLatexAdd(Form("(h/e)^{#pm} in %s",detLabel.Data()),0.95,0.88-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
   cReso->Print(Form("%s/EtaResolution_Sigma_pT.%s", outputDir.Data(), suffix.Data()));
 
-  TH2F* histoDummyPhiResMean   = new TH2F("histoDummyPhiResMean","histoDummyPhiResMean",1000,0, 10,1000,-0.01, 0.01);
+  TH2F* histoDummyPhiResMean   = new TH2F("histoDummyPhiResMean","histoDummyPhiResMean",1000,0, 20,1000,-0.01, 0.01);
   SetStyleHistoTH2ForGraphs(histoDummyPhiResMean, "#it{p}_{T}^{MC} (GeV/#it{c})","#LT (#varphi^{rec} - #varphi^{MC}) / #varphi^{MC} #GT", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.05);
   histoDummyPhiResMean->GetXaxis()->SetNoExponent();
   histoDummyPhiResMean->GetYaxis()->SetNdivisions(510,kTRUE);
@@ -798,10 +893,13 @@ void trackingreso_Pythia(
       legendPhiResM->AddEntry(h_tracks_mean_pt_resoPhi[iEta],Form("%1.1f<#eta<%1.1f",partEta[iEta],partEta[iEta+1]),"p");
   }
   legendPhiResM->Draw();
-  drawLatexAdd(Form("h^{#pm} in %s",detLabel.Data()),0.95,0.88,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  drawLatexAdd(collisionSystem,0.95,0.88,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+  drawLatexAdd(Form("(h/e)^{#pm} in %s",detLabel.Data()),0.95,0.88-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
   cReso->Print(Form("%s/PhiResolution_Mean_pT.%s", outputDir.Data(), suffix.Data()));
 
-  TH2F* histoDummyPhiResSigma   = new TH2F("histoDummyPhiResSigma","histoDummyPhiResSigma",1000,0, 10,1000,-0.0, maxPhiSigma);
+  TH2F* histoDummyPhiResSigma   = new TH2F("histoDummyPhiResSigma","histoDummyPhiResSigma",1000,0, 20,1000,-0.0, maxPhiSigma);
   SetStyleHistoTH2ForGraphs(histoDummyPhiResSigma, "#it{p}_{T}^{MC} (GeV/#it{c})","#sigma((#varphi^{rec} - #varphi^{MC}) / #varphi^{MC})", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.05);
   histoDummyPhiResSigma->GetXaxis()->SetNoExponent();
   histoDummyPhiResSigma->GetYaxis()->SetNdivisions(510,kTRUE);
@@ -814,29 +912,32 @@ void trackingreso_Pythia(
     h_tracks_sigma_pt_resoPhi[iEta]->Draw("same,p");
   }
   legendPhiResM->Draw();
-  drawLatexAdd(Form("h^{#pm} in %s",detLabel.Data()),0.95,0.88,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  drawLatexAdd(collisionSystem,0.95,0.88,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+  drawLatexAdd(Form("(h/e)^{#pm} in %s",detLabel.Data()),0.95,0.88-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
   cReso->Print(Form("%s/PhiResolution_Sigma_pT.%s", outputDir.Data(), suffix.Data()));
   
   TFile* outputFile  = new TFile(inputFileName.Data(),"UPDATE");
   for (Int_t iEta = 0; iEta < nEta+1; iEta++){
     if (properFit){
       for (Int_t pid = 0; pid < 6; pid++){
-        h_tracks_mean_pt_reso[pid][iEta]->Write(Form("histPtResol_%s_FitMean_%d", partName[pid].Data(),iEta),TObject::kOverwrite);
-        h_tracks_sigma_pt_reso[pid][iEta]->Write(Form("histPtResol_%s_FitSigma_%d", partName[pid].Data(), iEta),TObject::kOverwrite);
+        h_tracks_mean_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_FitMean_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
+        h_tracks_sigma_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_FitSigma_%d",writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
       }
-      h_tracks_mean_pt_resoEta[iEta]->Write(Form("histEtaResol_FitMean_%d", iEta),TObject::kOverwrite);
-      h_tracks_sigma_pt_resoEta[iEta]->Write(Form("histEtaResol_FitSigma_%d", iEta),TObject::kOverwrite);
-      h_tracks_mean_pt_resoPhi[iEta]->Write(Form("histPhiResol_FitMean_%d", iEta),TObject::kOverwrite);
-      h_tracks_sigma_pt_resoPhi[iEta]->Write(Form("histPhiResol_FitSigma_%d", iEta),TObject::kOverwrite);
+      h_tracks_mean_pt_resoEta[iEta]->Write(Form("histEtaResol%s_FitMean_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
+      h_tracks_sigma_pt_resoEta[iEta]->Write(Form("histEtaResol%s_FitSigma_%d",writeLabel.Data(), iEta),TObject::kOverwrite);
+      h_tracks_mean_pt_resoPhi[iEta]->Write(Form("histPhiResol%s_FitMean_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
+      h_tracks_sigma_pt_resoPhi[iEta]->Write(Form("histPhiResol%s_FitSigma_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
     } else {
       for (Int_t pid = 0; pid < 6; pid++){
-        h_tracks_mean_pt_reso[pid][iEta]->Write(Form("histPtResol_%s_mean_%d", partName[pid].Data(), iEta),TObject::kOverwrite);
-        h_tracks_sigma_pt_reso[pid][iEta]->Write(Form("histPtResol_%s_sigma_%d", partName[pid].Data(), iEta),TObject::kOverwrite);      
+        h_tracks_mean_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_mean_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
+        h_tracks_sigma_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_sigma_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);      
       }
-      h_tracks_mean_pt_resoEta[iEta]->Write(Form("histEtaResol_mean_%d", iEta),TObject::kOverwrite);
-      h_tracks_sigma_pt_resoEta[iEta]->Write(Form("histEtaResol_sigma_%d", iEta),TObject::kOverwrite);
-      h_tracks_mean_pt_resoPhi[iEta]->Write(Form("histPhiResol_mean_%d", iEta),TObject::kOverwrite);
-      h_tracks_sigma_pt_resoPhi[iEta]->Write(Form("histPhiResol_sigma_%d", iEta),TObject::kOverwrite);
+      h_tracks_mean_pt_resoEta[iEta]->Write(Form("histEtaResol%s_mean_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
+      h_tracks_sigma_pt_resoEta[iEta]->Write(Form("histEtaResol%s_sigma_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
+      h_tracks_mean_pt_resoPhi[iEta]->Write(Form("histPhiResol%s_mean_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
+      h_tracks_sigma_pt_resoPhi[iEta]->Write(Form("histPhiResol%s_sigma_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
     }
   }
   outputFile->Write();
