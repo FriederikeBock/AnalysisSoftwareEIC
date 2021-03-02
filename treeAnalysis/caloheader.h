@@ -11,37 +11,50 @@ bool acompare(towersStrct lhs, towersStrct rhs) { return lhs.tower_E > rhs.tower
 
 
 // conversion functions for processing
-float* EtaPhiFromIndicesFHCAL(int ieta,int iphi, int granularity = 1,float energy = 0);
-TVector3 TowerPositionVectorFromIndicesFHCAL(int ieta,int iphi, int granularity = 1);
+float* EtaPhiFromIndices(int ieta,int iphi, int granularity = 1,float energy = 0, bool isEMC = false);
+TVector3 TowerPositionVectorFromIndices(int ieta,int iphi, bool isEMC = false, int granularity = 1);
 
 float weightM02 = 4.5;
-float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers, float w_0, float cluster_E_calc, Bool_t debugOutput);
+float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers, float w_0, float cluster_E_calc, bool isEMC, Bool_t debugOutput);
 
 
 // ANCHOR function to return eta and phi from cell iEta and iPhi indices
-float * EtaPhiFromIndicesFHCAL(int i_x,int i_y, int granularity = 1, float energy){
+float * EtaPhiFromIndices(int i_x,int i_y, int granularity = 1, float energy, bool isEMC = false){
   static float eta_phi[2];
   float zHC = 400;
   float twrD = 10./granularity;
   // center (x=0,y=0) at 27,27 with 10x10 granularity
   int center_x = 27*granularity;
   int center_y = 27*granularity;
+  if(isEMC){
+    zHC = 310;
+    twrD = 5.535/granularity;
+    center_x = 32*granularity;
+    center_y = 32*granularity;
+  }
 
   TVector3 vecTwr((center_x-i_x)*twrD,(center_y-i_y)*twrD,zHC);
   eta_phi[0] = vecTwr.Eta();
   eta_phi[1] = (vecTwr.Phi()<0 ? vecTwr.Phi()+TMath::Pi() : vecTwr.Phi()-TMath::Pi());
-  if(false)cout << "\t" << center_x-i_x << ":" << center_y-i_y << "\tEta " << eta_phi[0] << "\tPhi "<< eta_phi[1]/**180/TMath::Pi()*/ << "\t" << energy << endl;
+  if(eta_phi[0]>10)cout << "\t" << center_x-i_x << ":" << center_y-i_y << "\tEta " << eta_phi[0] << "\tPhi "<< eta_phi[1]/**180/TMath::Pi()*/ << "\t" << energy << endl;
 
   return eta_phi;
 }
 
 // ANCHOR function to return a TVector3 for the tower position based on iEta and iPhi indices
-TVector3 TowerPositionVectorFromIndicesFHCAL(int i_x,int i_y, int granularity = 1){
+TVector3 TowerPositionVectorFromIndices(int i_x,int i_y, bool isEMC = false, int granularity = 1){
   float zHC = 400;
   float twrD = 10./granularity;
   // center (x=0,y=0) at 27,27 with 10x10 granularity
   int center_x = 27*granularity;
   int center_y = 27*granularity;
+
+  if(isEMC){
+    zHC = 310;
+    twrD = 5.535/granularity;
+    center_x = 32*granularity;
+    center_y = 32*granularity;
+  }
 
   TVector3 twrPositionVec((center_x-i_x)*twrD,(center_y-i_y)*twrD,zHC);
   return twrPositionVec;
@@ -49,7 +62,7 @@ TVector3 TowerPositionVectorFromIndicesFHCAL(int i_x,int i_y, int granularity = 
 
 
 // ANCHOR function to determine shower shape
-float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers, float w_0, float cluster_E_calc, Bool_t debugOutput){
+float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers, float w_0, float cluster_E_calc, bool isEMC, Bool_t debugOutput){
     static float returnVariables[4]; //0:M02, 1:M20, 2:eta, 3: phi
     float w_tot = 0;
     std::vector<float> w_i;
@@ -59,7 +72,7 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
     for(int cellI=0; cellI<cluster_towers.size(); cellI++){
         w_i.push_back(TMath::Max( (float)0, (float) (w_0 + TMath::Log(cluster_towers.at(cellI).tower_E/cluster_E_calc) )));
         w_tot += w_i.at(cellI);
-        vecTwr += w_i.at(cellI)*TowerPositionVectorFromIndicesFHCAL(cluster_towers.at(cellI).tower_iEta,cluster_towers.at(cellI).tower_iPhi);
+        vecTwr += w_i.at(cellI)*TowerPositionVectorFromIndices(cluster_towers.at(cellI).tower_iEta,cluster_towers.at(cellI).tower_iPhi, isEMC);
     }
     returnVariables[2]=vecTwr.Eta();
     returnVariables[3]=(vecTwr.Phi()<0 ? vecTwr.Phi()+TMath::Pi() : vecTwr.Phi()-TMath::Pi());

@@ -2,15 +2,20 @@
 // ANCHOR debug output verbosity
 int verbosityV3 = 1;
 
+bool _do_V3clusterizer = false;
+
 // ANCHOR define global variables
 int _nclusters_V3_FHCAL = 0;
 float* _clusters_V3_FHCAL_E            = new float[_maxNclusters];
-float* _clusters_V3_FHCAL_Eta         = new float[_maxNclusters]; // TODO
-float* _clusters_V3_FHCAL_Phi         = new float[_maxNclusters]; // TODO
-float* _clusters_V3_FHCAL_M02         = new float[_maxNclusters]; // TODO
-float* _clusters_V3_FHCAL_M20         = new float[_maxNclusters]; // TODO
+float* _clusters_V3_FHCAL_Eta         = new float[_maxNclusters];
+float* _clusters_V3_FHCAL_Phi         = new float[_maxNclusters];
+float* _clusters_V3_FHCAL_M02         = new float[_maxNclusters];
+float* _clusters_V3_FHCAL_M20         = new float[_maxNclusters];
+bool* _clusters_V3_FHCAL_isMatched         = new bool[_maxNclusters];
 int* _clusters_V3_FHCAL_NTower         = new int[_maxNclusters];
 int* _clusters_V3_FHCAL_trueID       = new int[_maxNclusters];
+
+bool isClusterMatchedV3(int clsID, float matchingwindow = 0.3, bool useProjection = false, int projectionlayer = 0);
 
 
 // ANCHOR main function to be called in event loop
@@ -70,13 +75,15 @@ void runV3clusterizer(float seedE_V3 = 0.3, float aggE_V3 = 0.1){
       }
 
       // determine remaining cluster properties from its towers
-      float* showershape_eta_phi = CalculateM02andWeightedPosition(cluster_towers, weightM02, _clusters_V3_FHCAL_E[_nclusters_V3_FHCAL], kFALSE);
+      float* showershape_eta_phi = CalculateM02andWeightedPosition(cluster_towers, weightM02, _clusters_V3_FHCAL_E[_nclusters_V3_FHCAL], false, kFALSE);
       _clusters_V3_FHCAL_M02[_nclusters_V3_FHCAL] = showershape_eta_phi[0];
       _clusters_V3_FHCAL_M20[_nclusters_V3_FHCAL] = showershape_eta_phi[1];
       _clusters_V3_FHCAL_Eta[_nclusters_V3_FHCAL] = showershape_eta_phi[2];
       _clusters_V3_FHCAL_Phi[_nclusters_V3_FHCAL] = showershape_eta_phi[3];
+      _clusters_V3_FHCAL_isMatched[_nclusters_V3_FHCAL] = isClusterMatchedV3(_nclusters_V3_FHCAL);
       // if(verbosityV3>1)cout << "\tV3 cluster with E = " << _clusters_V3_FHCAL_E[_nclusters_V3_FHCAL] << "\tEta: " << _clusters_V3_FHCAL_Eta[_nclusters_V3_FHCAL]<< "\tPhi: " << _clusters_V3_FHCAL_Phi[_nclusters_V3_FHCAL]<< "\tntowers: " << _clusters_V3_FHCAL_NTower[_nclusters_V3_FHCAL] << "\ttrueID: " << _clusters_V3_FHCAL_trueID[_nclusters_V3_FHCAL] << endl;
       // remove clusterized towers
+
       _nclusters_V3_FHCAL++;
     } else {
       input_towers.clear();
@@ -85,6 +92,41 @@ void runV3clusterizer(float seedE_V3 = 0.3, float aggE_V3 = 0.1){
 }
 
 
+// ANCHOR track/projection matching function
+// TODO at some point we might want E/p
+bool isClusterMatchedV3(int clsID, float matchingwindow = 0.3, bool useProjection = false, int projectionlayer = 2 /*FTTL2*/){
+  if(useProjection){
+    for(Int_t iproj=0; iproj<_nProjections; iproj++){
+      if(_track_ProjLayer[iproj]!=projectionlayer) continue;
+      // check eta difference
+      TVector3 trackvec(_track_Proj_x[iproj],_track_Proj_y[iproj],_track_Proj_z[iproj]);
+      if(abs(trackvec.Eta()-_clusters_V3_FHCAL_Eta[clsID]) < matchingwindow){
+        if(verbosityV3>1) cout << "\tProj matched in eta! trk: " << trackvec.Eta() << "\tcls: " << _clusters_V3_FHCAL_Eta[clsID] << "\tdelta: " << abs(trackvec.Eta()-_clusters_V3_FHCAL_Eta[clsID]) << endl;
+        float trkphi = (trackvec.Phi()<0 ? trackvec.Phi()+TMath::Pi() : trackvec.Phi()-TMath::Pi());
+        // check phi difference
+        if(abs(trkphi-_clusters_V3_FHCAL_Phi[clsID]) < matchingwindow){
+          if(verbosityV3>1) cout << "\tProj matched in phi! trk: " << trackvec.Mag() << "\tcls: " << _clusters_V3_FHCAL_E[clsID] << "\tdelta: " << abs(trkphi-_clusters_V3_FHCAL_Phi[clsID]) << endl;
+          return true;
+        }
+      }
+    }
+  } else {
+    for(Int_t itrk=0; itrk<_nTracks; itrk++){
+      // check eta difference
+      TVector3 trackvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
+      if(abs(trackvec.Eta()-_clusters_V3_FHCAL_Eta[clsID]) < matchingwindow){
+        if(verbosityV3>1) cout << "\tTrack matched in eta! trk: " << trackvec.Mag() << "\tcls: " << _clusters_V3_FHCAL_E[clsID] << "\tdelta: " << abs(trackvec.Eta()-_clusters_V3_FHCAL_Eta[clsID]) << endl;
+        float trkphi = (trackvec.Phi()<0 ? trackvec.Phi()+TMath::Pi() : trackvec.Phi()-TMath::Pi());
+        // check phi difference
+        if(abs(trkphi-_clusters_V3_FHCAL_Phi[clsID]) < matchingwindow){
+          if(verbosityV3>1) cout << "\tTrack matched in phi! trk: " << trackvec.Mag() << "\tcls: " << _clusters_V3_FHCAL_E[clsID] << "\tdelta: " << abs(trkphi-_clusters_V3_FHCAL_Phi[clsID]) << endl;
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
 
 // ANCHOR save function after event loop
 void saveHistosV3clusterizer(){
