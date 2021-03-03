@@ -6,6 +6,8 @@ const int _maxNProjections = 2000;
 const int _maxNTracks = 200;
 const int _maxNMCPart = 1000;
 
+float _nEventsTree;
+
 
 // track hits
 int _nHitsLayers;

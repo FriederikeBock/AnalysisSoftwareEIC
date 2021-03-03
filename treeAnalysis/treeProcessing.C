@@ -12,12 +12,16 @@
 #include "resolutionhistos.cxx"
 #include "clusterstudies.cxx"
 #include "trackingefficiency.cxx"
+#include "hitstudies.cxx"
 
 void treeProcessing(
-    // TString fileName                = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/output_EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_epMB/eventtreeMB.root",
-    TString fileName                = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/eventtreembpth.root",
-    // TString fileName                = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/output_EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_epMB/eventtreeMB.root",
-    // TString fileName                = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/output_EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_pTHard5/eventtreepth5.root",
+    
+    // TString fileName       = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_epMB.root",
+    // TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_pTHard5.root",
+    TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_epMB_pTHard5.root",
+    // TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-TREXTOUT_epMB.root",
+    // TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-TREXTOUT_pTHard5.root",
+    // TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-TREXTOUT_epMB_pTHard5.root",
     bool do_NxNclusterizer      = true,
     bool do_V3clusterizer       = true,
     bool do_XNclusterizer       = true,
@@ -49,11 +53,12 @@ void treeProcessing(
         nEntriesTree = maxNEvent;
         cout << "Will only analyze first " << maxNEvent << " events in the tree..." << endl;
     }
-
+    _nEventsTree=0;
     // main event loop
     for (Long64_t i=0; i<nEntriesTree;i++) {
         // load current event
         tt_event->GetEntry(i);
+        _nEventsTree++;
 
         // processing progress info
         if(i>0 && i%(nEntriesTree/(20)) ==0) cout << "//processed " << 100*(i)/nEntriesTree << "%"  << endl;
@@ -154,6 +159,7 @@ void treeProcessing(
         // for(Int_t ihit=0; ihit<_nHitsLayers; ihit++){
         //     if(verbosity>1) cout << "\tHIT: hit " << ihit << "\tin layer " << _hits_layerID[ihit] << "\twith X = " << _hits_x[ihit] << " cm" << endl;
         // }
+        hitstudies();
 
         // ANCHOR Track loop variables:
         // float* _track_ID[itrk]
@@ -311,4 +317,5 @@ void treeProcessing(
     resolutionhistosSave();
     clusterstudiesSave();
     trackingefficiencyhistosSave();
+    hitstudiesSave();
 }
