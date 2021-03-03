@@ -7,18 +7,23 @@ int int_CS_mcparticles_PDG[6] = {11 /*e*/,22 /*gamma*/,211  /*pi*/,  2212/*p*/, 
 // ANCHOR create histograms globally
 TH1F*  h_CS_cluster_fhcal_V1_E 	= new TH1F("h_CS_cluster_fhcal_V1_E", "", 120, 0,60);
 TH1F*  h_CS_cluster_fhcal_NxN_E 	= new TH1F("h_CS_cluster_fhcal_NxN_E", "", 120, 0,60);
+TH1F*  h_CS_cluster_fhcal_XN_E 	= new TH1F("h_CS_cluster_fhcal_XN_E", "", 120, 0,60);
 TH1F*  h_CS_cluster_fhcal_V3_E 	= new TH1F("h_CS_cluster_fhcal_V3_E", "", 120, 0,60);
 TH2F*  h_CS_cluster_M02_fhcal_V1_E 	= new TH2F("h_CS_cluster_M02_fhcal_V1_E", "", 100, 0, 2, 120, 0,60);
 TH2F*  h_CS_cluster_M02_fhcal_NxN_E 	= new TH2F("h_CS_cluster_M02_fhcal_NxN_E", "", 100, 0, 2, 120, 0,60);
+TH2F*  h_CS_cluster_M02_fhcal_XN_E 	= new TH2F("h_CS_cluster_M02_fhcal_XN_E", "", 100, 0, 2, 120, 0,60);
 TH2F*  h_CS_cluster_M02_fhcal_V3_E 	= new TH2F("h_CS_cluster_M02_fhcal_V3_E", "", 100, 0, 2, 120, 0,60);
 TH2F*  h_CS_cluster_M02_fhcal_V1_E_truth[6] = {NULL};
 TH2F*  h_CS_cluster_M02_fhcal_V3_E_truth[6] = {NULL};
 TH2F*  h_CS_cluster_M02_fhcal_NxN_E_truth[6] = {NULL};
+TH2F*  h_CS_cluster_M02_fhcal_XN_E_truth[6] = {NULL};
 TH2F*  h_CS_cluster_M20_fhcal_V1_E 	= new TH2F("h_CS_cluster_M20_fhcal_V1_E", "", 100, 0, 2, 120, 0,60);
 TH2F*  h_CS_cluster_M20_fhcal_NxN_E 	= new TH2F("h_CS_cluster_M20_fhcal_NxN_E", "", 100, 0, 2, 120, 0,60);
+TH2F*  h_CS_cluster_M20_fhcal_XN_E 	= new TH2F("h_CS_cluster_M20_fhcal_XN_E", "", 100, 0, 2, 120, 0,60);
 TH2F*  h_CS_cluster_M20_fhcal_V3_E 	= new TH2F("h_CS_cluster_M20_fhcal_V3_E", "", 100, 0, 2, 120, 0,60);
 TH2F*  h_CS_cluster_NTower_fhcal_V1_E 	= new TH2F("h_CS_cluster_nTower_fhcal_V1_E", "", 120, 0,60, 30, -0.5, 29.5);
 TH2F*  h_CS_cluster_nTower_fhcal_NxN_E 	= new TH2F("h_CS_cluster_nTower_fhcal_NxN_E", "", 120, 0,60, 30, -0.5, 29.5);
+TH2F*  h_CS_cluster_nTower_fhcal_XN_E 	= new TH2F("h_CS_cluster_nTower_fhcal_XN_E", "", 120, 0,60, 30, -0.5, 29.5);
 TH2F*  h_CS_cluster_nTower_fhcal_V3_E 	= new TH2F("h_CS_cluster_nTower_fhcal_V3_E", "", 120, 0,60, 30, -0.5, 29.5);
 
 // ANCHOR main function to be called in event loop
@@ -57,8 +62,28 @@ void clusterstudies(){
       for (int iPDG = 0; iPDG < 6; iPDG++)
       {
         if(!h_CS_cluster_M02_fhcal_NxN_E_truth[iPDG]) h_CS_cluster_M02_fhcal_NxN_E_truth[iPDG] = new TH2F(Form("h_CS_cluster_M02_fhcal_NxN_E_truth_%d",int_CS_mcparticles_PDG[iPDG]), "", 100, 0, 2, 120, 0,60);
-        if(abs(_mcpart_PDG[_clusters_NxN_FHCAL_trueID[iclus]]) == abs(int_CS_mcparticles_PDG[iPDG])){
+        if(abs(_mcpart_PDG[_clusters_NxN_FHCAL_trueID[iclus]-1]) == abs(int_CS_mcparticles_PDG[iPDG])){
           h_CS_cluster_M02_fhcal_NxN_E_truth[iPDG]->Fill(_clusters_NxN_FHCAL_M02[iclus],_clusters_NxN_FHCAL_E[iclus]);
+        }
+      }
+    }
+  }
+  if(_do_XNclusterizer){
+    for(Int_t iclus=0; iclus<_nclusters_XN_FHCAL; iclus++){
+      // if(int_CS_verbosity>1) cout << "\tFHCAL: cluster " << iclus << "\twith E = " << _cluster_FHCAL_E[iclus] << " GeV" << endl;
+      // if(int_CS_verbosity>1) cout << "\tFHCAL: cluster MC ID " << _cluster_FHCAL_trueID[iclus] << endl;
+
+      h_CS_cluster_fhcal_XN_E->Fill(_clusters_XN_FHCAL_E[iclus]);
+      h_CS_cluster_M02_fhcal_XN_E->Fill(_clusters_XN_FHCAL_M02[iclus],_clusters_XN_FHCAL_E[iclus]);
+      h_CS_cluster_M20_fhcal_XN_E->Fill(_clusters_XN_FHCAL_M20[iclus],_clusters_XN_FHCAL_E[iclus]);
+
+      h_CS_cluster_nTower_fhcal_XN_E->Fill(_clusters_XN_FHCAL_E[iclus],_clusters_XN_FHCAL_NTower[iclus]);
+
+      for (int iPDG = 0; iPDG < 6; iPDG++)
+      {
+        if(!h_CS_cluster_M02_fhcal_XN_E_truth[iPDG]) h_CS_cluster_M02_fhcal_XN_E_truth[iPDG] = new TH2F(Form("h_CS_cluster_M02_fhcal_XN_E_truth_%d",int_CS_mcparticles_PDG[iPDG]), "", 100, 0, 2, 120, 0,60);
+        if(abs(_mcpart_PDG[_clusters_XN_FHCAL_trueID[iclus]-1]) == abs(int_CS_mcparticles_PDG[iPDG])){
+          h_CS_cluster_M02_fhcal_XN_E_truth[iPDG]->Fill(_clusters_XN_FHCAL_M02[iclus],_clusters_XN_FHCAL_E[iclus]);
         }
       }
     }
@@ -82,7 +107,7 @@ void clusterstudies(){
       for (int iPDG = 0; iPDG < 6; iPDG++)
       {
         if(!h_CS_cluster_M02_fhcal_V3_E_truth[iPDG]) h_CS_cluster_M02_fhcal_V3_E_truth[iPDG] = new TH2F(Form("h_CS_cluster_M02_fhcal_V3_E_truth_%d",int_CS_mcparticles_PDG[iPDG]), "", 100, 0, 2, 120, 0,60);
-        if(abs(_mcpart_PDG[_clusters_V3_FHCAL_trueID[iclus]]) == abs(int_CS_mcparticles_PDG[iPDG])){
+        if(abs(_mcpart_PDG[_clusters_V3_FHCAL_trueID[iclus]-1]) == abs(int_CS_mcparticles_PDG[iPDG])){
           h_CS_cluster_M02_fhcal_V3_E_truth[iPDG]->Fill(_clusters_V3_FHCAL_M02[iclus],_clusters_V3_FHCAL_E[iclus]);
         }
       }
@@ -103,21 +128,26 @@ void clusterstudiesSave(){
 
   // write histograms
   if(h_CS_cluster_fhcal_NxN_E) h_CS_cluster_fhcal_NxN_E->Write();
+  if(h_CS_cluster_fhcal_XN_E) h_CS_cluster_fhcal_XN_E->Write();
   if(h_CS_cluster_fhcal_V3_E) h_CS_cluster_fhcal_V3_E->Write();
   if(h_CS_cluster_NTower_fhcal_V1_E) h_CS_cluster_NTower_fhcal_V1_E->Write();
   if(h_CS_cluster_nTower_fhcal_NxN_E) h_CS_cluster_nTower_fhcal_NxN_E->Write();
+  if(h_CS_cluster_nTower_fhcal_XN_E) h_CS_cluster_nTower_fhcal_XN_E->Write();
   if(h_CS_cluster_nTower_fhcal_V3_E) h_CS_cluster_nTower_fhcal_V3_E->Write();
 
   if(h_CS_cluster_M02_fhcal_V1_E) h_CS_cluster_M02_fhcal_V1_E->Write();
   if(h_CS_cluster_M02_fhcal_NxN_E) h_CS_cluster_M02_fhcal_NxN_E->Write();
+  if(h_CS_cluster_M02_fhcal_XN_E) h_CS_cluster_M02_fhcal_XN_E->Write();
   if(h_CS_cluster_M02_fhcal_V3_E) h_CS_cluster_M02_fhcal_V3_E->Write();
   for (int iPDG = 0; iPDG < 6; iPDG++)
   {
       if(h_CS_cluster_M02_fhcal_V3_E_truth[iPDG]) h_CS_cluster_M02_fhcal_V3_E_truth[iPDG]->Write();;
       if(h_CS_cluster_M02_fhcal_NxN_E_truth[iPDG]) h_CS_cluster_M02_fhcal_NxN_E_truth[iPDG]->Write();;
+      if(h_CS_cluster_M02_fhcal_XN_E_truth[iPDG]) h_CS_cluster_M02_fhcal_XN_E_truth[iPDG]->Write();;
   }
   if(h_CS_cluster_M20_fhcal_V1_E) h_CS_cluster_M20_fhcal_V1_E->Write();
   if(h_CS_cluster_M20_fhcal_NxN_E) h_CS_cluster_M20_fhcal_NxN_E->Write();
+  if(h_CS_cluster_M20_fhcal_XN_E) h_CS_cluster_M20_fhcal_XN_E->Write();
   if(h_CS_cluster_M20_fhcal_V3_E) h_CS_cluster_M20_fhcal_V3_E->Write();
 
   // write output file

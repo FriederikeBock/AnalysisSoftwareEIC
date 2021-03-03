@@ -6,34 +6,37 @@ Int_t verbosityTRKEFF = 0;
 TString str_TRKEFF_mcparticles[4] = {"electron", "cpion", "proton", "ckaon"};
 int int_TRKEFF_mcparticles_PDG[4] = {11 /*e*/,211  /*pi*/,  2212/*p*/,  321/*K*/};
 
-TH1F*  h_chargedpart_MC_pT 	= new TH1F("h_chargedpart_MC_pT", "", 60, 0,30);
-TH1F*  h_particle_MC_pT[5];
-TH1F*  h_chargedpart_pT 	= new TH1F("h_chargedpart_pT", "", 60, 0,30);
-TH1F*  h_particle_pT[5];
+TH2F*  h_chargedpart_MC_pT 	= new TH2F("h_chargedpart_MC_pT", "", 60, 0,30,32, -4.0,4.0);
+TH2F*  h_particle_MC_pT[5];
+TH2F*  h_chargedpart_rec_pT 	= new TH2F("h_chargedpart_rec_pT", "", 60, 0,30,32, -4.0,4.0);
+TH2F*  h_chargedpart_rec_truepT 	= new TH2F("h_chargedpart_rec_truepT", "", 60, 0,30,32, -4.0,4.0);
+TH2F*  h_particle_rec_pT[5];
+TH2F*  h_particle_rec_truepT[5];
 
 // ANCHOR main function to be called in event loop
 void trackingefficiency(){
-
+  // cout << "new evt" << endl;
   for(int imc=0; imc<_nMCPart; imc++){
     TVector3 mcpartvec(_mcpart_px[imc],_mcpart_py[imc],_mcpart_pz[imc]);
+    float trueeta = mcpartvec.Eta();
 
-    if(mcpartvec.Eta()<3.0) continue;
-
+    // cout << "\tMCID " << imc << "\tPDG: " << _mcpart_PDG[imc] << "\tpT: " << TMath::Sqrt(TMath::Power(_mcpart_px[imc],2)+TMath::Power(_mcpart_py[imc],2)) << "\tEta " << trueeta << endl;
     for(int ipart=0;ipart<4;ipart++){
-      if(!h_particle_MC_pT[ipart]) h_particle_MC_pT[ipart] 	= new TH1F(Form("h_%s_MC_pT",str_TRKEFF_mcparticles[ipart].Data()), "", 60, 0,30);
-      if(!h_particle_pT[ipart]) h_particle_pT[ipart] 	= new TH1F(Form("h_%s_pT",str_TRKEFF_mcparticles[ipart].Data()), "", 60, 0,30);
+      if(!h_particle_MC_pT[ipart]) h_particle_MC_pT[ipart] 	= new TH2F(Form("h_%s_MC_pT",str_TRKEFF_mcparticles[ipart].Data()), "", 60, 0,30,32, -4.0,4.0);
+      if(!h_particle_rec_pT[ipart]) h_particle_rec_pT[ipart] 	= new TH2F(Form("h_%s_pT",str_TRKEFF_mcparticles[ipart].Data()), "", 60, 0,30,32, -4.0,4.0);
+      if(!h_particle_rec_truepT[ipart]) h_particle_rec_truepT[ipart] 	= new TH2F(Form("h_%s_truepT",str_TRKEFF_mcparticles[ipart].Data()), "", 60, 0,30,32, -4.0,4.0);
 
-      if(_mcpart_PDG[imc] == int_TRKEFF_mcparticles_PDG[ipart]){
-        h_particle_MC_pT[ipart]->Fill(TMath::Sqrt(TMath::Power(_mcpart_px[imc],2)+TMath::Power(_mcpart_py[imc],2)));
-        h_chargedpart_MC_pT->Fill(TMath::Sqrt(TMath::Power(_mcpart_px[imc],2)+TMath::Power(_mcpart_py[imc],2)));
+      if(abs(_mcpart_PDG[imc]) == int_TRKEFF_mcparticles_PDG[ipart]){
+        h_particle_MC_pT[ipart]->Fill(TMath::Sqrt(TMath::Power(_mcpart_px[imc],2)+TMath::Power(_mcpart_py[imc],2)),trueeta);
+        h_chargedpart_MC_pT->Fill(TMath::Sqrt(TMath::Power(_mcpart_px[imc],2)+TMath::Power(_mcpart_py[imc],2)),trueeta);
 
         // // see if true reco. track was found
         // for(Int_t itrk=0; itrk<_nTracks; itrk++){
         //   if(_track_trueID[itrk]==_mcpart_ID[imc]){
         //     TVector3 recpartvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
         //     if(recpartvec.Eta()<3.0) continue;
-        //     h_particle_pT[ipart]->Fill(TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)));
-        //     h_chargedpart_pT->Fill(TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)));
+        //     h_particle_rec_pT[ipart]->Fill(TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)));
+        //     h_chargedpart_rec_pT->Fill(TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)));
         //   }
         // }
       }
@@ -42,12 +45,18 @@ void trackingefficiency(){
 
   // see if true reco. track was found
   for(Int_t itrk=0; itrk<_nTracks; itrk++){
+    TVector3 recpartvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
+    // cout << itrk << endl;
+    float receta = recpartvec.Eta();
+    // cout << "\tTRKTRUEID " << _track_trueID[itrk]-1 << "\tPDG: " << _mcpart_PDG[(int)_track_trueID[itrk]-1] << "\tpT: " <<   TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)) << "\tEta " << receta << endl;
+    float pt = TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2));
+    float truept = TMath::Sqrt(TMath::Power(_mcpart_px[(int)_track_trueID[itrk]-1],2)+TMath::Power(_mcpart_py[(int)_track_trueID[itrk]-1],2));
     for(int ipart=0;ipart<4;ipart++){
-      if(_mcpart_PDG[(int)_track_trueID[itrk]]==int_TRKEFF_mcparticles_PDG[ipart]){
-        TVector3 recpartvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
-        if(recpartvec.Eta()<3.0) continue;
-        h_particle_pT[ipart]->Fill(TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)));
-        h_chargedpart_pT->Fill(TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)));
+      if(abs(_mcpart_PDG[(int)_track_trueID[itrk]-1])==int_TRKEFF_mcparticles_PDG[ipart]){
+        h_particle_rec_pT[ipart]->Fill(pt,receta);
+        h_particle_rec_truepT[ipart]->Fill(truept,receta);
+        h_chargedpart_rec_pT->Fill(pt,receta);
+        h_chargedpart_rec_truepT->Fill(truept,receta);
       }
     }
   }
@@ -65,20 +74,29 @@ void trackingefficiencyhistosSave(){
 
   // write histograms
   if(h_chargedpart_MC_pT) h_chargedpart_MC_pT->Write();
-  if(h_chargedpart_pT) h_chargedpart_pT->Write();
-  if(h_chargedpart_MC_pT && h_chargedpart_pT) {
-    TH1F*  h_chargedpart_eff_pT = (TH1F*)h_chargedpart_pT->Clone("h_chargedpart_eff_pT");
+  if(h_chargedpart_rec_pT) h_chargedpart_rec_pT->Write();
+  if(h_chargedpart_rec_truepT) h_chargedpart_rec_truepT->Write();
+  if(h_chargedpart_MC_pT && h_chargedpart_rec_pT && h_chargedpart_rec_truepT) {
+    TH2F*  h_chargedpart_eff_pT = (TH2F*)h_chargedpart_rec_pT->Clone("h_chargedpart_eff_pT");
     h_chargedpart_eff_pT->Divide(h_chargedpart_MC_pT);
     h_chargedpart_eff_pT->Write();
+    TH2F*  h_chargedpart_eff_truepT = (TH2F*)h_chargedpart_rec_truepT->Clone("h_chargedpart_eff_truepT");
+    h_chargedpart_eff_truepT->Divide(h_chargedpart_MC_pT);
+    h_chargedpart_eff_truepT->Write();
   }
-  TH1F*  h_particle_eff_pT[4];
+  TH2F*  h_particle_eff_pT[4];
+  TH2F*  h_particle_eff_truepT[4];
   for(int ipart=0;ipart<4;ipart++){
     if(h_particle_MC_pT[ipart]) h_particle_MC_pT[ipart]->Write();
-    if(h_particle_pT[ipart]) h_particle_pT[ipart]->Write();
-    if(h_particle_MC_pT[ipart] && h_particle_pT[ipart]) {
-      h_particle_eff_pT[ipart] = (TH1F*)h_particle_pT[ipart]->Clone(Form("h_%s_eff_pT",str_TRKEFF_mcparticles[ipart].Data()));
+    if(h_particle_rec_pT[ipart]) h_particle_rec_pT[ipart]->Write();
+    if(h_particle_rec_truepT[ipart]) h_particle_rec_truepT[ipart]->Write();
+    if(h_particle_MC_pT[ipart] && h_particle_rec_pT[ipart] && h_particle_rec_truepT[ipart]) {
+      h_particle_eff_pT[ipart] = (TH2F*)h_particle_rec_pT[ipart]->Clone(Form("h_%s_eff_pT",str_TRKEFF_mcparticles[ipart].Data()));
       h_particle_eff_pT[ipart]->Divide(h_particle_MC_pT[ipart]);
       h_particle_eff_pT[ipart]->Write();
+      h_particle_eff_truepT[ipart] = (TH2F*)h_particle_rec_truepT[ipart]->Clone(Form("h_%s_eff_truepT",str_TRKEFF_mcparticles[ipart].Data()));
+      h_particle_eff_truepT[ipart]->Divide(h_particle_MC_pT[ipart]);
+      h_particle_eff_truepT[ipart]->Write();
     }
   }
 

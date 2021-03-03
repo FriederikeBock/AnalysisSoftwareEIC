@@ -6,27 +6,35 @@ typedef struct {
   int tower_trueID;
 } towersStrct;
 
+enum calotype {
+    kFHCAL         = 0,
+    kFEMC         = 1,
+    kDRCALO        = 2,
+    kEEMC         = 3,
+    kCEMC         = 4
+};
+
 // sorting function for towers
 bool acompare(towersStrct lhs, towersStrct rhs) { return lhs.tower_E > rhs.tower_E; }
 
 
 // conversion functions for processing
-float* EtaPhiFromIndices(int ieta,int iphi, int granularity = 1,float energy = 0, bool isEMC = false);
-TVector3 TowerPositionVectorFromIndices(int ieta,int iphi, bool isEMC = false, int granularity = 1);
+float* EtaPhiFromIndices(int ieta,int iphi, int granularity = 1,float energy = 0, int caloSelect = 0);
+TVector3 TowerPositionVectorFromIndices(int ieta,int iphi, int caloSelect = 0, int granularity = 1);
 
 float weightM02 = 4.5;
-float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers, float w_0, float cluster_E_calc, bool isEMC, Bool_t debugOutput);
+float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers, float w_0, float cluster_E_calc, int caloSelect, Bool_t debugOutput);
 
 
 // ANCHOR function to return eta and phi from cell iEta and iPhi indices
-float * EtaPhiFromIndices(int i_x,int i_y, int granularity = 1, float energy, bool isEMC = false){
+float * EtaPhiFromIndices(int i_x,int i_y, int granularity = 1, float energy, int caloSelect = 0){
   static float eta_phi[2];
   float zHC = 400;
   float twrD = 10./granularity;
   // center (x=0,y=0) at 27,27 with 10x10 granularity
   int center_x = 27*granularity;
   int center_y = 27*granularity;
-  if(isEMC){
+  if(caloSelect==kFEMC){
     zHC = 310;
     twrD = 5.535/granularity;
     center_x = 32*granularity;
@@ -42,14 +50,14 @@ float * EtaPhiFromIndices(int i_x,int i_y, int granularity = 1, float energy, bo
 }
 
 // ANCHOR function to return a TVector3 for the tower position based on iEta and iPhi indices
-TVector3 TowerPositionVectorFromIndices(int i_x,int i_y, bool isEMC = false, int granularity = 1){
+TVector3 TowerPositionVectorFromIndices(int i_x,int i_y, int caloSelect = 0, int granularity = 1){
   float zHC = 400;
   float twrD = 10./granularity;
   // center (x=0,y=0) at 27,27 with 10x10 granularity
   int center_x = 27*granularity;
   int center_y = 27*granularity;
 
-  if(isEMC){
+  if(caloSelect==kFEMC){
     zHC = 310;
     twrD = 5.535/granularity;
     center_x = 32*granularity;
@@ -62,7 +70,7 @@ TVector3 TowerPositionVectorFromIndices(int i_x,int i_y, bool isEMC = false, int
 
 
 // ANCHOR function to determine shower shape
-float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers, float w_0, float cluster_E_calc, bool isEMC, Bool_t debugOutput){
+float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers, float w_0, float cluster_E_calc, int caloSelect, Bool_t debugOutput){
     static float returnVariables[4]; //0:M02, 1:M20, 2:eta, 3: phi
     float w_tot = 0;
     std::vector<float> w_i;
@@ -72,7 +80,7 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
     for(int cellI=0; cellI<cluster_towers.size(); cellI++){
         w_i.push_back(TMath::Max( (float)0, (float) (w_0 + TMath::Log(cluster_towers.at(cellI).tower_E/cluster_E_calc) )));
         w_tot += w_i.at(cellI);
-        vecTwr += w_i.at(cellI)*TowerPositionVectorFromIndices(cluster_towers.at(cellI).tower_iEta,cluster_towers.at(cellI).tower_iPhi, isEMC);
+        vecTwr += w_i.at(cellI)*TowerPositionVectorFromIndices(cluster_towers.at(cellI).tower_iEta,cluster_towers.at(cellI).tower_iPhi, caloSelect);
     }
     returnVariables[2]=vecTwr.Eta();
     returnVariables[3]=(vecTwr.Phi()<0 ? vecTwr.Phi()+TMath::Pi() : vecTwr.Phi()-TMath::Pi());
@@ -110,3 +118,72 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
 
 }
 
+
+// NxN global cluster variables
+int _nclusters_NxN_FHCAL = 0;
+float* _clusters_NxN_FHCAL_E            = new float[_maxNclusters];
+float* _clusters_NxN_FHCAL_Eta         = new float[_maxNclusters];
+float* _clusters_NxN_FHCAL_Phi         = new float[_maxNclusters];
+float* _clusters_NxN_FHCAL_M02         = new float[_maxNclusters];
+float* _clusters_NxN_FHCAL_M20         = new float[_maxNclusters];
+bool* _clusters_NxN_FHCAL_isMatched         = new bool[_maxNclusters];
+int* _clusters_NxN_FHCAL_NTower         = new int[_maxNclusters];
+int* _clusters_NxN_FHCAL_trueID       = new int[_maxNclusters];
+int* _clusters_NxN_FHCAL_NtrueID       = new int[_maxNclusters];
+
+int _nclusters_NxN_FEMC = 0;
+float* _clusters_NxN_FEMC_E            = new float[_maxNclusters];
+float* _clusters_NxN_FEMC_Eta         = new float[_maxNclusters];
+float* _clusters_NxN_FEMC_Phi         = new float[_maxNclusters];
+float* _clusters_NxN_FEMC_M02         = new float[_maxNclusters];
+float* _clusters_NxN_FEMC_M20         = new float[_maxNclusters];
+bool* _clusters_NxN_FEMC_isMatched         = new bool[_maxNclusters];
+int* _clusters_NxN_FEMC_NTower         = new int[_maxNclusters];
+int* _clusters_NxN_FEMC_trueID       = new int[_maxNclusters];
+int* _clusters_NxN_FEMC_NtrueID       = new int[_maxNclusters];
+
+// V3 global cluster variables
+int _nclusters_V3_FHCAL = 0;
+float* _clusters_V3_FHCAL_E            = new float[_maxNclusters];
+float* _clusters_V3_FHCAL_Eta         = new float[_maxNclusters];
+float* _clusters_V3_FHCAL_Phi         = new float[_maxNclusters];
+float* _clusters_V3_FHCAL_M02         = new float[_maxNclusters];
+float* _clusters_V3_FHCAL_M20         = new float[_maxNclusters];
+bool* _clusters_V3_FHCAL_isMatched         = new bool[_maxNclusters];
+int* _clusters_V3_FHCAL_NTower         = new int[_maxNclusters];
+int* _clusters_V3_FHCAL_trueID       = new int[_maxNclusters];
+int* _clusters_V3_FHCAL_NtrueID       = new int[_maxNclusters];
+
+int _nclusters_V3_FEMC = 0;
+float* _clusters_V3_FEMC_E            = new float[_maxNclusters];
+float* _clusters_V3_FEMC_Eta         = new float[_maxNclusters];
+float* _clusters_V3_FEMC_Phi         = new float[_maxNclusters];
+float* _clusters_V3_FEMC_M02         = new float[_maxNclusters];
+float* _clusters_V3_FEMC_M20         = new float[_maxNclusters];
+bool* _clusters_V3_FEMC_isMatched         = new bool[_maxNclusters];
+int* _clusters_V3_FEMC_NTower         = new int[_maxNclusters];
+int* _clusters_V3_FEMC_trueID       = new int[_maxNclusters];
+int* _clusters_V3_FEMC_NtrueID       = new int[_maxNclusters];
+
+// XN global cluster variables
+int _nclusters_XN_FHCAL = 0;
+float* _clusters_XN_FHCAL_E            = new float[_maxNclusters];
+float* _clusters_XN_FHCAL_Eta         = new float[_maxNclusters];
+float* _clusters_XN_FHCAL_Phi         = new float[_maxNclusters];
+float* _clusters_XN_FHCAL_M02         = new float[_maxNclusters];
+float* _clusters_XN_FHCAL_M20         = new float[_maxNclusters];
+bool* _clusters_XN_FHCAL_isMatched         = new bool[_maxNclusters];
+int* _clusters_XN_FHCAL_NTower         = new int[_maxNclusters];
+int* _clusters_XN_FHCAL_trueID       = new int[_maxNclusters];
+int* _clusters_XN_FHCAL_NtrueID       = new int[_maxNclusters];
+
+int _nclusters_XN_FEMC = 0;
+float* _clusters_XN_FEMC_E            = new float[_maxNclusters];
+float* _clusters_XN_FEMC_Eta         = new float[_maxNclusters];
+float* _clusters_XN_FEMC_Phi         = new float[_maxNclusters];
+float* _clusters_XN_FEMC_M02         = new float[_maxNclusters];
+float* _clusters_XN_FEMC_M20         = new float[_maxNclusters];
+bool* _clusters_XN_FEMC_isMatched         = new bool[_maxNclusters];
+int* _clusters_XN_FEMC_NTower         = new int[_maxNclusters];
+int* _clusters_XN_FEMC_trueID       = new int[_maxNclusters];
+int* _clusters_XN_FEMC_NtrueID       = new int[_maxNclusters];

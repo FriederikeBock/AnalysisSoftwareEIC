@@ -22,7 +22,7 @@ void resolutionhistos(){
     for(Int_t imc=0; imc<_nMCPart; imc++){
 
       // find true MC particle for given cluster
-      if(_cluster_FHCAL_trueID[iclus]==_mcpart_ID[imc]){
+      if((_cluster_FHCAL_trueID[iclus]-1)==_mcpart_ID[imc]){
         // if(verbosityRH>1) cout << "\tfound MC:  particle " << imc << "\twith E = " << _mcpart_E[imc] << " GeV" << endl;
 
         h_RH_pion_fhcal_V1_E->Fill(_mcpart_E[imc],_cluster_FHCAL_E[iclus]/_mcpart_E[imc]);
@@ -41,7 +41,7 @@ void resolutionhistos(){
       for(Int_t imc=0; imc<_nMCPart; imc++){
 
         // find true MC particle for given cluster
-        if(_clusters_NxN_FHCAL_trueID[iclus]==_mcpart_ID[imc]){
+        if((_clusters_NxN_FHCAL_trueID[iclus]-1)==_mcpart_ID[imc]){
           // if(verbosityRH>1) cout << "\tfound MC:  particle " << imc << "\twith E = " << _mcpart_E[imc] << " GeV" << endl;
 
           h_RH_pion_fhcal_NxN_E->Fill(_mcpart_E[imc],_clusters_NxN_FHCAL_E[iclus]/_mcpart_E[imc]);
@@ -61,7 +61,7 @@ void resolutionhistos(){
       for(Int_t imc=0; imc<_nMCPart; imc++){
 
         // find true MC particle for given cluster
-        if(_clusters_V3_FHCAL_trueID[iclus]==_mcpart_ID[imc]){
+        if((_clusters_V3_FHCAL_trueID[iclus]-1)==_mcpart_ID[imc]){
           // if(verbosityRH>1) cout << "\tfound MC:  particle " << imc << "\twith E = " << _mcpart_E[imc] << " GeV" << endl;
 
           h_RH_pion_fhcal_V3_E->Fill(_mcpart_E[imc],_clusters_V3_FHCAL_E[iclus]/_mcpart_E[imc]);

@@ -1,10 +1,12 @@
 #include "jet_finder.cxx"
 #include "treeProcessing.h"
 #include "caloheader.h"
-#include "clusterizerNxN.cxx"
-#include "clusterizerV3.cxx"
-#include "clusterizerNxNFEMC.cxx"
-#include "clusterizerV3FEMC.cxx"
+#include "clusterizer.cxx"
+// #include "clusterizerNxN.cxx"
+// #include "clusterizerV3.cxx"
+// #include "clusterizerXN.cxx"
+// #include "clusterizerNxNFEMC.cxx"
+// #include "clusterizerV3FEMC.cxx"
 
 #include "jetresolutionhistos.cxx"
 #include "resolutionhistos.cxx"
@@ -13,16 +15,18 @@
 
 void treeProcessing(
     // TString fileName                = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/output_EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_epMB/eventtreeMB.root",
-    // TString fileName                = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/eventtreembpth.root",
+    TString fileName                = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/eventtreembpth.root",
     // TString fileName                = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/output_EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_epMB/eventtreeMB.root",
-    TString fileName                = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/output_EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_pTHard5/eventtreepth5.root",
+    // TString fileName                = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/output_EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_pTHard5/eventtreepth5.root",
     bool do_NxNclusterizer      = true,
     bool do_V3clusterizer       = true,
+    bool do_XNclusterizer       = true,
     bool do_NxNclusterizerFEMC      = true,
     bool do_V3clusterizerFEMC       = true,
+    bool do_XNclusterizerFEMC       = true,
     bool do_jetfinding          = false,
-    Double_t maxNEvent = 1e5,
-    // Double_t maxNEvent = -1,
+    // Double_t maxNEvent = 1e5,
+    Double_t maxNEvent = -1,
     Int_t verbosity = 0
 ){
     // make output directory
@@ -55,23 +59,91 @@ void treeProcessing(
         if(i>0 && i%(nEntriesTree/(20)) ==0) cout << "//processed " << 100*(i)/nEntriesTree << "%"  << endl;
         // if(verbosity>1) cout << "event " << i << endl;
 
-        // run clusterizers
+        // run clusterizers FHCAL
         if(do_NxNclusterizer){
             _do_NxNclusterizer = true;
-            runNxNclusterizer(0.5);
+            runclusterizer(kNxN, kFHCAL,0.5, 0.1,
+                _nclusters_NxN_FHCAL,
+                _clusters_NxN_FHCAL_E,
+                _clusters_NxN_FHCAL_Eta,
+                _clusters_NxN_FHCAL_Phi,
+                _clusters_NxN_FHCAL_M02,
+                _clusters_NxN_FHCAL_M20,
+                _clusters_NxN_FHCAL_isMatched,
+                _clusters_NxN_FHCAL_NTower,
+                _clusters_NxN_FHCAL_trueID,
+                _clusters_NxN_FHCAL_NtrueID);
         }
         if(do_V3clusterizer){
             _do_V3clusterizer = true;
-            runV3clusterizer(0.5);
+            runclusterizer(kV3, kFHCAL,0.5, 0.1,
+                _nclusters_V3_FHCAL,
+                _clusters_V3_FHCAL_E,
+                _clusters_V3_FHCAL_Eta,
+                _clusters_V3_FHCAL_Phi,
+                _clusters_V3_FHCAL_M02,
+                _clusters_V3_FHCAL_M20,
+                _clusters_V3_FHCAL_isMatched,
+                _clusters_V3_FHCAL_NTower,
+                _clusters_V3_FHCAL_trueID,
+                _clusters_V3_FHCAL_NtrueID);
         }
-        // run clusterizers
+        if(do_XNclusterizer){
+            _do_XNclusterizer = true;
+            runclusterizer(kXN, kFHCAL,0.5, 0.1,
+                _nclusters_XN_FHCAL,
+                _clusters_XN_FHCAL_E,
+                _clusters_XN_FHCAL_Eta,
+                _clusters_XN_FHCAL_Phi,
+                _clusters_XN_FHCAL_M02,
+                _clusters_XN_FHCAL_M20,
+                _clusters_XN_FHCAL_isMatched,
+                _clusters_XN_FHCAL_NTower,
+                _clusters_XN_FHCAL_trueID,
+                _clusters_XN_FHCAL_NtrueID);
+        }
+        // run clusterizers FEMC
+        if(do_NxNclusterizer){
+            _do_NxNclusterizer = true;
+            runclusterizer(kNxN, kFEMC,0.5, 0.1,
+                _nclusters_NxN_FEMC,
+                _clusters_NxN_FEMC_E,
+                _clusters_NxN_FEMC_Eta,
+                _clusters_NxN_FEMC_Phi,
+                _clusters_NxN_FEMC_M02,
+                _clusters_NxN_FEMC_M20,
+                _clusters_NxN_FEMC_isMatched,
+                _clusters_NxN_FEMC_NTower,
+                _clusters_NxN_FEMC_trueID,
+                _clusters_NxN_FEMC_NtrueID);
+        }
         if(do_NxNclusterizerFEMC){
-            _do_NxNclusterizerFEMC = true;
-            runNxNclusterizerFEMC(0.5);
-        }
-        if(do_V3clusterizerFEMC){
             _do_V3clusterizerFEMC = true;
-            runV3clusterizerFEMC(0.5);
+            runclusterizer(kV3, kFEMC,0.5, 0.1,
+                _nclusters_V3_FEMC,
+                _clusters_V3_FEMC_E,
+                _clusters_V3_FEMC_Eta,
+                _clusters_V3_FEMC_Phi,
+                _clusters_V3_FEMC_M02,
+                _clusters_V3_FEMC_M20,
+                _clusters_V3_FEMC_isMatched,
+                _clusters_V3_FEMC_NTower,
+                _clusters_V3_FEMC_trueID,
+                _clusters_V3_FEMC_NtrueID);
+        }
+        if(do_XNclusterizerFEMC){
+            _do_XNclusterizerFEMC = true;
+            runclusterizer(kXN, kFEMC,0.5, 0.1,
+                _nclusters_XN_FEMC,
+                _clusters_XN_FEMC_E,
+                _clusters_XN_FEMC_Eta,
+                _clusters_XN_FEMC_Phi,
+                _clusters_XN_FEMC_M02,
+                _clusters_XN_FEMC_M20,
+                _clusters_XN_FEMC_isMatched,
+                _clusters_XN_FEMC_NTower,
+                _clusters_XN_FEMC_trueID,
+                _clusters_XN_FEMC_NtrueID);
         }
 
         // ANCHOR Hits loop variables:
@@ -98,7 +170,7 @@ void treeProcessing(
         std::vector<float> jetf_full_pz;
         std::vector<float> jetf_full_E;
         for(Int_t itrk=0; itrk<_nTracks; itrk++){
-            if(verbosity>1) cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk] << "\tand X = " << _track_px[itrk] << " cm" << endl;
+            if(verbosity>1) cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk]-1 << "\tand X = " << _track_px[itrk] << " cm" << endl;
 
             if(_do_jetfinding){
                 // create track vector for jet finder
@@ -238,6 +310,5 @@ void treeProcessing(
     jetresolutionhistosSave();
     resolutionhistosSave();
     clusterstudiesSave();
-    saveHistosNxNclusterizer();
     trackingefficiencyhistosSave();
 }
