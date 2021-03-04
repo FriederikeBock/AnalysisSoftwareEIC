@@ -12,27 +12,27 @@ void resolutionhistos(){
 
 
   for(Int_t iclus=0; iclus<_nclusters_FHCAL; iclus++){
-    // if(verbosityRH>1) cout << "\tFHCAL: cluster " << iclus << "\twith E = " << _cluster_FHCAL_E[iclus] << " GeV" << endl;
-    // if(verbosityRH>1) cout << "\tFHCAL: cluster MC ID " << _cluster_FHCAL_trueID[iclus] << endl;
+    // if(verbosityRH>1) cout << "\tFHCAL: cluster " << iclus << "\twith E = " << _clusters_FHCAL_E[iclus] << " GeV" << endl;
+    // if(verbosityRH>1) cout << "\tFHCAL: cluster MC ID " << _clusters_FHCAL_trueID[iclus] << endl;
 
     // cluster should have at least 2 towers
-    if(_cluster_FHCAL_NTower[iclus]<2) continue;
+    if(_clusters_FHCAL_NTower[iclus]<2) continue;
 
     // loop over MC particles
     for(Int_t imc=0; imc<_nMCPart; imc++){
 
       // find true MC particle for given cluster
-      if((_cluster_FHCAL_trueID[iclus]-1)==_mcpart_ID[imc]){
+      if((_clusters_FHCAL_trueID[iclus]-1)==_mcpart_ID[imc]){
         // if(verbosityRH>1) cout << "\tfound MC:  particle " << imc << "\twith E = " << _mcpart_E[imc] << " GeV" << endl;
 
-        h_RH_pion_fhcal_V1_E->Fill(_mcpart_E[imc],_cluster_FHCAL_E[iclus]/_mcpart_E[imc]);
+        h_RH_pion_fhcal_V1_E->Fill(_mcpart_E[imc],_clusters_FHCAL_E[iclus]/_mcpart_E[imc]);
       }
     }
   }
   if(_do_NxNclusterizer){
     for(Int_t iclus=0; iclus<_nclusters_NxN_FHCAL; iclus++){
-      // if(verbosityRH>1) cout << "\tFHCAL: cluster " << iclus << "\twith E = " << _cluster_FHCAL_E[iclus] << " GeV" << endl;
-      // if(verbosityRH>1) cout << "\tFHCAL: cluster MC ID " << _cluster_FHCAL_trueID[iclus] << endl;
+      // if(verbosityRH>1) cout << "\tFHCAL: cluster " << iclus << "\twith E = " << _clusters_FHCAL_E[iclus] << " GeV" << endl;
+      // if(verbosityRH>1) cout << "\tFHCAL: cluster MC ID " << _clusters_FHCAL_trueID[iclus] << endl;
 
       // cluster should have at least 2 towers
       if(_clusters_NxN_FHCAL_NTower[iclus]<2) continue;
@@ -51,8 +51,8 @@ void resolutionhistos(){
   }
   if(_do_V3clusterizer){
     for(Int_t iclus=0; iclus<_nclusters_V3_FHCAL; iclus++){
-      // if(verbosityRH>1) cout << "\tFHCAL: cluster " << iclus << "\twith E = " << _cluster_FHCAL_E[iclus] << " GeV" << endl;
-      // if(verbosityRH>1) cout << "\tFHCAL: cluster MC ID " << _cluster_FHCAL_trueID[iclus] << endl;
+      // if(verbosityRH>1) cout << "\tFHCAL: cluster " << iclus << "\twith E = " << _clusters_FHCAL_E[iclus] << " GeV" << endl;
+      // if(verbosityRH>1) cout << "\tFHCAL: cluster MC ID " << _clusters_FHCAL_trueID[iclus] << endl;
 
       // cluster should have at least 2 towers
       if(_clusters_V3_FHCAL_NTower[iclus]<2) continue;

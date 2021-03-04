@@ -33,19 +33,19 @@ int* _tower_FEMC_trueID        = new int[_maxNTowers];
 
 // clusters
 int _nclusters_FHCAL;
-float* _cluster_FHCAL_E            = new float[_maxNclusters];
-float* _cluster_FHCAL_Eta         = new float[_maxNclusters];
-float* _cluster_FHCAL_Phi         = new float[_maxNclusters];
-int* _cluster_FHCAL_NTower         = new int[_maxNclusters];
-int* _cluster_FHCAL_trueID       = new int[_maxNclusters];
+float* _clusters_FHCAL_E            = new float[_maxNclusters];
+float* _clusters_FHCAL_Eta         = new float[_maxNclusters];
+float* _clusters_FHCAL_Phi         = new float[_maxNclusters];
+int* _clusters_FHCAL_NTower         = new int[_maxNclusters];
+int* _clusters_FHCAL_trueID       = new int[_maxNclusters];
 
 // clusters
 int _nclusters_FEMC;
-float* _cluster_FEMC_E             = new float[_maxNclusters];
-float* _cluster_FEMC_Eta          = new float[_maxNclusters];
-float* _cluster_FEMC_Phi          = new float[_maxNclusters];
-int* _cluster_FEMC_NTower          = new int[_maxNclusters];
-int* _cluster_FEMC_trueID        = new int[_maxNclusters];
+float* _clusters_FEMC_E             = new float[_maxNclusters];
+float* _clusters_FEMC_Eta          = new float[_maxNclusters];
+float* _clusters_FEMC_Phi          = new float[_maxNclusters];
+int* _clusters_FEMC_NTower          = new int[_maxNclusters];
+int* _clusters_FEMC_trueID        = new int[_maxNclusters];
 
 // vertex
 int _vertex_x;
@@ -127,19 +127,19 @@ void SetBranchAddressesTree(TTree* inputTree){
 
     // clusters HCAL
     inputTree->SetBranchAddress("cluster_FHCAL_N",                &_nclusters_FHCAL);
-    inputTree->SetBranchAddress("cluster_FHCAL_E",                _cluster_FHCAL_E);
-    inputTree->SetBranchAddress("cluster_FHCAL_Eta",             _cluster_FHCAL_Eta);
-    inputTree->SetBranchAddress("cluster_FHCAL_Phi",             _cluster_FHCAL_Phi);
-    inputTree->SetBranchAddress("cluster_FHCAL_NTower",             _cluster_FHCAL_NTower);
-    inputTree->SetBranchAddress("cluster_FHCAL_trueID",           _cluster_FHCAL_trueID);
+    inputTree->SetBranchAddress("cluster_FHCAL_E",                _clusters_FHCAL_E);
+    inputTree->SetBranchAddress("cluster_FHCAL_Eta",             _clusters_FHCAL_Eta);
+    inputTree->SetBranchAddress("cluster_FHCAL_Phi",             _clusters_FHCAL_Phi);
+    inputTree->SetBranchAddress("cluster_FHCAL_NTower",             _clusters_FHCAL_NTower);
+    inputTree->SetBranchAddress("cluster_FHCAL_trueID",           _clusters_FHCAL_trueID);
 
     // clusters EMC
     inputTree->SetBranchAddress("cluster_FEMC_N",                 &_nclusters_FEMC);
-    inputTree->SetBranchAddress("cluster_FEMC_E",                 _cluster_FEMC_E);
-    inputTree->SetBranchAddress("cluster_FEMC_Eta",              _cluster_FEMC_Eta);
-    inputTree->SetBranchAddress("cluster_FEMC_Phi",              _cluster_FEMC_Phi);
-    inputTree->SetBranchAddress("cluster_FEMC_NTower",              _cluster_FEMC_NTower);
-    inputTree->SetBranchAddress("cluster_FEMC_trueID",            _cluster_FEMC_trueID);
+    inputTree->SetBranchAddress("cluster_FEMC_E",                 _clusters_FEMC_E);
+    inputTree->SetBranchAddress("cluster_FEMC_Eta",              _clusters_FEMC_Eta);
+    inputTree->SetBranchAddress("cluster_FEMC_Phi",              _clusters_FEMC_Phi);
+    inputTree->SetBranchAddress("cluster_FEMC_NTower",              _clusters_FEMC_NTower);
+    inputTree->SetBranchAddress("cluster_FEMC_trueID",            _clusters_FEMC_trueID);
 
     // vertex
     inputTree->SetBranchAddress("vertex_x",                     &_vertex_x);

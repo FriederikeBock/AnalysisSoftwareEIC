@@ -1,5 +1,5 @@
-#include "jet_finder.cxx"
 #include "treeProcessing.h"
+#include "jet_finder.cxx"
 #include "caloheader.h"
 #include "clusterizer.cxx"
 // #include "clusterizerNxN.cxx"
@@ -13,6 +13,7 @@
 #include "clusterstudies.cxx"
 #include "trackingefficiency.cxx"
 #include "hitstudies.cxx"
+#include "trackmatchingstudies.cxx"
 
 void treeProcessing(
     
@@ -77,7 +78,10 @@ void treeProcessing(
                 _clusters_NxN_FHCAL_isMatched,
                 _clusters_NxN_FHCAL_NTower,
                 _clusters_NxN_FHCAL_trueID,
-                _clusters_NxN_FHCAL_NtrueID);
+                _clusters_NxN_FHCAL_NtrueID,
+                _clusters_NxN_FHCAL_X,
+                _clusters_NxN_FHCAL_Y,
+                _clusters_NxN_FHCAL_Z);
         }
         if(do_V3clusterizer){
             _do_V3clusterizer = true;
@@ -91,7 +95,10 @@ void treeProcessing(
                 _clusters_V3_FHCAL_isMatched,
                 _clusters_V3_FHCAL_NTower,
                 _clusters_V3_FHCAL_trueID,
-                _clusters_V3_FHCAL_NtrueID);
+                _clusters_V3_FHCAL_NtrueID,
+                _clusters_V3_FHCAL_X,
+                _clusters_V3_FHCAL_Y,
+                _clusters_V3_FHCAL_Z);
         }
         if(do_XNclusterizer){
             _do_XNclusterizer = true;
@@ -105,11 +112,14 @@ void treeProcessing(
                 _clusters_XN_FHCAL_isMatched,
                 _clusters_XN_FHCAL_NTower,
                 _clusters_XN_FHCAL_trueID,
-                _clusters_XN_FHCAL_NtrueID);
+                _clusters_XN_FHCAL_NtrueID,
+                _clusters_XN_FHCAL_X,
+                _clusters_XN_FHCAL_Y,
+                _clusters_XN_FHCAL_Z);
         }
         // run clusterizers FEMC
-        if(do_NxNclusterizer){
-            _do_NxNclusterizer = true;
+        if(do_NxNclusterizerFEMC){
+            _do_NxNclusterizerFEMC = true;
             runclusterizer(kNxN, kFEMC,0.5, 0.1,
                 _nclusters_NxN_FEMC,
                 _clusters_NxN_FEMC_E,
@@ -120,7 +130,10 @@ void treeProcessing(
                 _clusters_NxN_FEMC_isMatched,
                 _clusters_NxN_FEMC_NTower,
                 _clusters_NxN_FEMC_trueID,
-                _clusters_NxN_FEMC_NtrueID);
+                _clusters_NxN_FEMC_NtrueID,
+                _clusters_NxN_FEMC_X,
+                _clusters_NxN_FEMC_Y,
+                _clusters_NxN_FEMC_Z);
         }
         if(do_NxNclusterizerFEMC){
             _do_V3clusterizerFEMC = true;
@@ -134,7 +147,10 @@ void treeProcessing(
                 _clusters_V3_FEMC_isMatched,
                 _clusters_V3_FEMC_NTower,
                 _clusters_V3_FEMC_trueID,
-                _clusters_V3_FEMC_NtrueID);
+                _clusters_V3_FEMC_NtrueID,
+                _clusters_V3_FEMC_X,
+                _clusters_V3_FEMC_Y,
+                _clusters_V3_FEMC_Z);
         }
         if(do_XNclusterizerFEMC){
             _do_XNclusterizerFEMC = true;
@@ -148,7 +164,10 @@ void treeProcessing(
                 _clusters_XN_FEMC_isMatched,
                 _clusters_XN_FEMC_NTower,
                 _clusters_XN_FEMC_trueID,
-                _clusters_XN_FEMC_NtrueID);
+                _clusters_XN_FEMC_NtrueID,
+                _clusters_XN_FEMC_X,
+                _clusters_XN_FEMC_Y,
+                _clusters_XN_FEMC_Z);
         }
 
         // ANCHOR Hits loop variables:
@@ -208,13 +227,13 @@ void treeProcessing(
         // }
 
         // ANCHOR FHCAL cluster loop variables:
-        // float* _cluster_FHCAL_E[iclus];
-        // float* _cluster_FHCAL_Eta[iclus];
-        // float* _cluster_FHCAL_Phi[iclus];
-        // int* _cluster_FHCAL_NTower[iclus];
-        // float* _cluster_FHCAL_trueID[iclus];
+        // float* _clusters_FHCAL_E[iclus];
+        // float* _clusters_FHCAL_Eta[iclus];
+        // float* _clusters_FHCAL_Phi[iclus];
+        // int* _clusters_FHCAL_NTower[iclus];
+        // float* _clusters_FHCAL_trueID[iclus];
         // for(Int_t iclus=0; iclus<_nclusters_FHCAL; iclus++){
-        //     if(verbosity>1) cout << "\tcls " << iclus << "\tE " << _cluster_FHCAL_E[iclus] << "\tEta " << _cluster_FHCAL_Eta[iclus] << "\tPhi " << _cluster_FHCAL_Phi[iclus] << "\tntowers: " << _cluster_FHCAL_NTower[iclus] << "\ttrueID: " << _cluster_FHCAL_trueID[iclus] << endl;
+        //     if(verbosity>1) cout << "\tcls " << iclus << "\tE " << _clusters_FHCAL_E[iclus] << "\tEta " << _clusters_FHCAL_Eta[iclus] << "\tPhi " << _clusters_FHCAL_Phi[iclus] << "\tntowers: " << _clusters_FHCAL_NTower[iclus] << "\ttrueID: " << _clusters_FHCAL_trueID[iclus] << endl;
         // }
         // if(do_V3clusterizer){
         //     for(Int_t iclus=0; iclus<_nclusters_V3_FHCAL; iclus++){
@@ -232,13 +251,13 @@ void treeProcessing(
         // }
 
         // ANCHOR FEMC cluster loop variables:
-        // float* _cluster_FEMC_E[iclus];
-        // float* _cluster_FEMC_Eta[iclus];
-        // float* _cluster_FEMC_Phi[iclus];
-        // int* _cluster_FEMC_NTower[iclus];
-        // float* _cluster_FEMC_trueID[iclus];
+        // float* _clusters_FEMC_E[iclus];
+        // float* _clusters_FEMC_Eta[iclus];
+        // float* _clusters_FEMC_Phi[iclus];
+        // int* _clusters_FEMC_NTower[iclus];
+        // float* _clusters_FEMC_trueID[iclus];
         // for(Int_t iclus=0; iclus<_nclusters_FEMC; iclus++){
-        //     if(verbosity>1) cout << "\tFEMC:  cluster " << iclus << "\twith E = " << _cluster_FEMC_E[iclus] << " GeV" << endl;
+        //     if(verbosity>1) cout << "\tFEMC:  cluster " << iclus << "\twith E = " << _clusters_FEMC_E[iclus] << " GeV" << endl;
         // }
        if(do_V3clusterizerFEMC){
             for(Int_t iclus=0; iclus<_nclusters_V3_FEMC; iclus++){
@@ -311,6 +330,10 @@ void treeProcessing(
         }
         resolutionhistos();
         clusterstudies();
+        if(_do_NxNclusterizer) trackmatchingstudies(kNxN, kFHCAL,true);
+        if(_do_NxNclusterizerFEMC) trackmatchingstudies(kNxN, kFEMC,true);
+        if(_do_V3clusterizer) trackmatchingstudies(kV3, kFHCAL,true);
+        if(_do_V3clusterizerFEMC) trackmatchingstudies(kV3, kFEMC,true);
 
     } // event loop end
     jetresolutionhistosSave();
@@ -318,4 +341,5 @@ void treeProcessing(
     clusterstudiesSave();
     trackingefficiencyhistosSave();
     hitstudiesSave();
+    trackmatchingstudiesSave();
 }

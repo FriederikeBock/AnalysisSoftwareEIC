@@ -3,13 +3,6 @@
 int verbosityCLS = 1;
 
 // ANCHOR define global variables
-enum clusterizertype {
-    kV1         = 0,
-    kV3         = 1,
-    kNxN        = 2,
-    kXN         = 3
-};
-
 bool _do_V1clusterizer = false;
 bool _do_V3clusterizer = false;
 bool _do_XNclusterizer = false;
@@ -38,7 +31,10 @@ void runclusterizer(
   bool* &clusters_isMatched,
   int* &clusters_NTower,
   int* &clusters_trueID,
-  int* &clusters_NtrueID
+  int* &clusters_NtrueID,
+  float* &clusters_X,
+  float* &clusters_Y,
+  float* &clusters_Z
 ){
   nclusters = 0;
   if(verbosityCLS>1)cout << "XN: new event" << endl;
@@ -163,6 +159,9 @@ void runclusterizer(
       clusters_M20[nclusters] = showershape_eta_phi[1];
       clusters_Eta[nclusters] = showershape_eta_phi[2];
       clusters_Phi[nclusters] = showershape_eta_phi[3];
+      clusters_X[nclusters] = showershape_eta_phi[4];
+      clusters_Y[nclusters] = showershape_eta_phi[5];
+      clusters_Z[nclusters] = showershape_eta_phi[6];
       clusters_isMatched[nclusters] = isClusterMatched(nclusters, 0.3,clusters_Eta,clusters_Phi,clusters_E);
      // if(verbosityCLS>1) cout << "\tXN cluster with E = " << clusters_E[nclusters] << "\tEta: " << clusters_Eta[nclusters]<< "\tPhi: " << clusters_Phi[nclusters]<< "\tntowers: " << clusters_NTower[nclusters] << "\ttrueID: " << clusters_trueID[nclusters] << endl;
       // remove clusterized towers
