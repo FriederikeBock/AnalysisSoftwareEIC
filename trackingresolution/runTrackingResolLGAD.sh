@@ -33,20 +33,21 @@ if [ $1 = "plots" ]; then
   root -b -x -q -l trackingreso_flatPt.C\(\"$fileFSTLGAD\"\,\"pdf\"\,\"FSTwithLGAD-Hist\"\,kFALSE\)
   root -b -x -q -l trackingreso_flatPt.C\(\"$fileFSTLGAD\"\,\"pdf\"\,\"FSTwithLGAD-Fit\"\)
 elif [ $1 = "plotsPyt" ]; then
-  root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBL\"\,\"pdf\"\,\"defaultLBL-Hist-pTHard5GeV\"\,kFALSE\)
 #   root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBL\"\,\"pdf\"\,\"defaultLBL-Fit\"\)
-  root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBLLGAD\"\,\"pdf\"\,\"LBLwithLGAD-Hist-pTHard5GeV\"\,kFALSE\)
 #   root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBLLGAD\"\,\"pdf\"\,\"LBLwithLGAD-Fit\"\)
-  root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBLACLGAD\"\,\"pdf\"\,\"LBLwithACLGAD-Hist-pTHard5GeV\"\,kFALSE\)
 #   root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBLACLGAD\"\,\"pdf\"\,\"LBLwithACLGAD-Fit\"\)
-  root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBL2LTTL\"\,\"pdf\"\,\"LBLwithFTTLS2LC-ETTL-CTTL-Hist-pTHard5GeV\"\,kFALSE\)
 #   root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBL2LTTL\"\,\"pdf\"\,\"LBLwithFTTLS2LC-ETTL-CTTL-Fit\"\)
-  root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBLTTLC\"\,\"pdf\"\,\"LBLwithFTTLS3LVC-ETTLLC-CTTLLC-Hist-pTHard5GeV\"\,kFALSE\)
   #   root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBLTTLC\"\,\"pdf\"\,\"LBLwithFTTLS3LVC-ETTLLC-CTTLLC-Fit\"\)
-  root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBL1LTTL\"\,\"pdf\"\,\"LBLwithFTTLSE1LC-ETTLSE1-CTTLSE1-Hist-pTHard5GeV\"\,kFALSE\)
   #   root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBL1LTTL\"\,\"pdf\"\,\"LBLwithFTTLSE1LC-ETTLSE1-CTTLSE1-Fit\"\)
-  root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBL2LBETTL\"\,\"pdf\"\,\"LBLwithFTTLSE2LC-ETTL-CTTLSE1-Hist-pTHard5GeV\"\,kFALSE\)
   #   root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBL2LBETTL\"\,\"pdf\"\,\"LBLwithFTTLSE2LC-ETTL-CTTLSE1-Fit\"\)
+
+  root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBL\"\,\"pdf\"\,\"defaultLBL-Hist-pTHard5GeV\"\,kFALSE\)
+  root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBLLGAD\"\,\"pdf\"\,\"LBLwithLGAD-Hist-pTHard5GeV\"\,kFALSE\)
+  root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBLACLGAD\"\,\"pdf\"\,\"LBLwithACLGAD-Hist-pTHard5GeV\"\,kFALSE\)
+  root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBL2LTTL\"\,\"pdf\"\,\"LBLwithFTTLS2LC-ETTL-CTTL-Hist-pTHard5GeV\"\,kFALSE\)
+  root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBLTTLC\"\,\"pdf\"\,\"LBLwithFTTLS3LVC-ETTLLC-CTTLLC-Hist-pTHard5GeV\"\,kFALSE\)
+  root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBL1LTTL\"\,\"pdf\"\,\"LBLwithFTTLSE1LC-ETTLSE1-CTTLSE1-Hist-pTHard5GeV\"\,kFALSE\)
+  root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBL2LBETTL\"\,\"pdf\"\,\"LBLwithFTTLSE2LC-ETTL-CTTLSE1-Hist-pTHard5GeV\"\,kFALSE\)
   root -b -x -q -l trackingreso_Pythia.C\(\"$fileLANL\"\,\"pdf\"\,\"defaultLANL-Hist-pTHard5GeV\"\,kFALSE\)
   root -b -x -q -l trackingreso_Pythia.C\(\"$fileLANLLGAD\"\,\"pdf\"\,\"LANLwithLGAD-Hist-pTHard5GeV\"\,kFALSE\)
   root -b -x -q -l trackingreso_Pythia.C\(\"$fileLANLACLGAD\"\,\"pdf\"\,\"LANLwithACLGAD-Hist-pTHard5GeV\"\,kFALSE\)
@@ -82,7 +83,7 @@ elif [ $1 = "plotsPyt" ]; then
   root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBLMB\"\,\"pdf\"\,\"defaultLBL-Hist-MB\"\,kFALSE\,2\)
   root -b -x -q -l trackingreso_Pythia.C\(\"$fileLBLLGADMB\"\,\"pdf\"\,\"LBLwithLGAD-Hist-MB\"\,kFALSE\,2\)
   
-elif [ $1 = "plotsPID" ]; then
+# elif [ $1 = "plotsPID" ]; then
   
   root -b -x -q -l pidreso_Pythia.C\(\"$fileLBLLGAD\"\,\"pdf\"\,\"LBLwithLGAD-Hist-pTHard5GeV\"\,kFALSE\)
   root -b -x -q -l pidreso_Pythia.C\(\"$fileLBLACLGAD\"\,\"pdf\"\,\"LBLwithACLGAD-Hist-pTHard5GeV\"\,kFALSE\)
@@ -109,6 +110,7 @@ elif [ $1 = "plotsPID" ]; then
 elif [ $1 = "compare" ]; then
   root -q -x -l -b 'compare_trackingreso_Pythia.C("filesCompareReso_granularity.txt","Granularity-pTHard5GeV","pdf",kFALSE)'
   root -q -x -l -b 'compare_trackingreso_Pythia.C("filesCompareReso_Setups.txt","Setups-pTHard5GeV","pdf",kFALSE)'
+  root -q -x -l -b 'compare_trackingreso_Pythia.C("filesCompareReso_SetupsRed.txt","SetupsRed-pTHard5GeV","pdf",kFALSE)'
   root -q -x -l -b 'compare_trackingreso_Pythia.C("filesCompareReso_granularity_LANL.txt","GranularityLANL-pTHard5GeV","pdf",kFALSE)'
   root -q -x -l -b 'compare_trackingreso_Pythia.C("filesCompareReso_Tracker.txt","Tracker-pTHard5GeV","pdf",kFALSE)'
   
@@ -121,7 +123,7 @@ elif [ $1 = "tree" ]; then
   root -x -b -q -l 'analyseTreeForTrackingResolAndPID.C("LBLandTTLCoarse","","files_ALLSILICON-FTTLS3LVC-ETTLLC-CTTLLC.txt")'
   root -x -b -q -l 'analyseTreeForTrackingResolAndPID.C("LBLandFTTLSE1LC-ETTLSE1-CTTLSE1","","files_ALLSILICON-FTTLSE1LC-ETTLSE1-CTTLSE1.txt")'
   root -x -b -q -l 'analyseTreeForTrackingResolAndPID.C("LBLandFTTLSE2LC-ETTL-CTTLSE1","","files_ALLSILICON-FTTLSE2LC-ETTL-CTTLSE1.txt")'
-
+# 
   root -x -b -q -l 'analyseTreeForTrackingResolAndPID.C("LANL","","files_defaultLANL.txt",kTRUE,kFALSE)'
   root -x -b -q -l 'analyseTreeForTrackingResolAndPID.C("LANLandFullTTL","","files_LANL-LGAD.txt",kTRUE)'
   root -x -b -q -l 'analyseTreeForTrackingResolAndPID.C("LANLandFullTTLACLGAD","","files_LANL-ACLGAD.txt",kTRUE)'

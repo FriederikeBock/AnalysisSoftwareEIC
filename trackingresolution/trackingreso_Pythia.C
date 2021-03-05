@@ -1,4 +1,5 @@
 #include "../common/plottingheader.h"
+#include "../common/binningheader.h"
 #define NELEMS(arr) (sizeof(arr)/sizeof(arr[0]))
 
 
@@ -31,6 +32,8 @@ void trackingreso_Pythia(
     labelPlotCuts                   = "#geq 3 tracker hits";
   }
   
+  for (Int_t eR = 0; eR < 3; eR++) cout << "before: "<< labelEtaRange[eR].Data() << endl;
+  
   TString collisionSystem = "Pythia 6, e+p, 10+250 GeV";
   TString pTHard = "";
   Int_t nLinesCol = 1;
@@ -47,104 +50,36 @@ void trackingreso_Pythia(
   gSystem->Exec("mkdir -p "+outputDirPhiRes);
   gSystem->Exec("mkdir -p "+outputDirPTRes);
   gSystem->Exec("mkdir -p "+outputDirEtaRes);
-  TString partName[6]                   = {"All", "Pion", "Kaon", "Proton", "Electron", "Muon"};
-  for (Int_t pid = 0; pid < 6; pid++) gSystem->Exec("mkdir -p "+outputDir+"/"+partName[pid]);
+
+  for (Int_t pid = 0; pid < nPID; pid++) gSystem->Exec("mkdir -p "+outputDir+"/"+partName[pid]);
     
   TString detLabel = "";
-  Bool_t enablePlot[20]        = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-                                  1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-  Int_t nActiveEta            = 8;
+  Int_t nActiveEta            = 14;
   Double_t maxPtSigma         = 0.175;
   Double_t maxEtaSigma        = 0.005;
   Double_t maxPhiSigma        = 0.01;
   if (addLabel.Contains("defaultLBL") ){
     detLabel  = "LBL";
-    enablePlot[19] = 0;
-    enablePlot[18] = 0;
-    enablePlot[0] = 0;
-    enablePlot[1] = 0;
-    enablePlot[2] = 0;
-    nActiveEta    = 16;
   } else if (addLabel.Contains("LBLwithLGAD") ){
     detLabel  = "LBL+TTL";
-    enablePlot[19] = 0;
-    enablePlot[18] = 0;
-    enablePlot[0] = 0;
-    enablePlot[1] = 0;
-    enablePlot[2] = 0;
-    nActiveEta    = 16;
   } else if (addLabel.Contains("LBLwithACLGAD") ){
     detLabel  = "LBL+TTL(AC-LGAD)";
-    enablePlot[19] = 0;
-    enablePlot[18] = 0;
-    enablePlot[0] = 0;
-    enablePlot[1] = 0;
-    enablePlot[2] = 0;
-    nActiveEta    = 16;
   } else if (addLabel.Contains("LBLwithFTTLS2LC-ETTL-CTTL") ){
     detLabel  = "LBL+TTL(2 l's)";
-    enablePlot[19] = 0;
-    enablePlot[18] = 0;
-    enablePlot[0] = 0;
-    enablePlot[1] = 0;
-    enablePlot[2] = 0;
-    nActiveEta    = 16;
   } else if (addLabel.Contains("LBLwithFTTLS3LVC-ETTLLC-CTTLLC") ){
     detLabel  = "LBL+TTL(1.3mm)";
-    enablePlot[19] = 0;
-    enablePlot[18] = 0;
-    enablePlot[0] = 0;
-    enablePlot[1] = 0;
-    enablePlot[2] = 0;
-    nActiveEta    = 16;
   } else if (addLabel.Contains("LBLwithFTTLSE1LC-ETTLSE1-CTTLSE1") ){
     detLabel  = "LBL+TTL(1 l b. ECal)";
-    enablePlot[19] = 0;
-    enablePlot[18] = 0;
-    enablePlot[0] = 0;
-    enablePlot[1] = 0;
-    enablePlot[2] = 0;
-    nActiveEta    = 16;
   } else if (addLabel.Contains("LBLwithFTTLSE2LC-ETTL-CTTLSE1") ){
     detLabel  = "LBL+TTL(1|2 l b. ECal)";
-    enablePlot[19] = 0;
-    enablePlot[18] = 0;
-    enablePlot[0] = 0;
-    enablePlot[1] = 0;
-    enablePlot[2] = 0;
-    nActiveEta    = 16;
   } else if (addLabel.Contains("defaultLANL") ){
     detLabel  = "LANL";
-    enablePlot[19] = 0;
-    enablePlot[18] = 0;
-    enablePlot[0] = 0;
-    enablePlot[1] = 0;
-    enablePlot[2] = 0;
-    nActiveEta    = 16;
   } else if (addLabel.Contains("LANLwithLGAD") ){
     detLabel  = "LANL+TTL";
-    enablePlot[19] = 0;
-    enablePlot[18] = 0;
-    enablePlot[0] = 0;
-    enablePlot[1] = 0;
-    enablePlot[2] = 0;
-    nActiveEta    = 16;
   } else if (addLabel.Contains("LANLwithACLGAD") ){
     detLabel  = "LANL+TTL(AC-LGAD)";
-    enablePlot[19] = 0;
-    enablePlot[18] = 0;
-    enablePlot[0] = 0;
-    enablePlot[1] = 0;
-    enablePlot[2] = 0;
-    nActiveEta    = 16;
   } else if (addLabel.Contains("LANLwithFTTLS3LVC-ETTLLC-CTTLLC") ){
     detLabel  = "LANL+TTL(1.3mm)";
-    enablePlot[19] = 0;
-    enablePlot[18] = 0;
-    enablePlot[0] = 0;
-    enablePlot[1] = 0;
-    enablePlot[2] = 0;
-    nActiveEta    = 16;
   }
   if (addLabel.Contains("Hist")){
     maxPtSigma         = 0.42;
@@ -156,79 +91,46 @@ void trackingreso_Pythia(
   Double_t textSizeLabelsRel        = 58./1300;
   Bool_t debugOutput = kFALSE;
 
-  TString partLabel[6]                  = {"(h/e)^{#pm}", "#pi^{#pm}", "K^{#pm}", "p/#bar{p}", "e^{#pm}", "#mu^{#pm}"};
-  //************************** Read data **************************************************
-  const Int_t nPt                  = 13;
-  const static Double_t partPt[]     = {0., 0.5, 1.0,  2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 
-                                      9.0, 10.0, 15.0, 20.0};
-//   const Int_t nPt                  = 20;
-//   const static Double_t partE[]     = {0., 0.5, 1., 1.5, 2., 2.5, 3.0, 3.5, 4.0, 4.5, 
-//                                       5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5,
-//                                       10.};
-  const Int_t nEta                = 19;                                        
-  Double_t partEta[20]            = { -4.0, -3.5, -3.0, -2.5, -2.0, -1.5, -1.2, -1.0, -0.6, -0.2, 
-                                       0.2, 0.6, 1.0, 1.2, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0};
+  
+  TH1D* h_tracks_mean_pt_reso[nPID][nEta+1]     = {{NULL}};
+  TH1D* h_tracks_sigma_pt_reso[nPID][nEta+1]    = {{NULL}};  
+  TH1D* h_tracks_mean_p_resoP[nPID][nEta+1]     = {{NULL}};
+  TH1D* h_tracks_sigma_p_resoP[nPID][nEta+1]    = {{NULL}};  
+  TH1D* h_tracks_mean_pt_resoEta[nEta+1]        = {NULL};
+  TH1D* h_tracks_sigma_pt_resoEta[nEta+1]       = {NULL};  
+  TH1D* h_tracks_mean_pt_resoPhi[nEta+1]        = {NULL};
+  TH1D* h_tracks_sigma_pt_resoPhi[nEta+1]       = {NULL};  
 
+  TH1D* h_tracks_reso_bins[nPID][nEta+1][nPt]   = {{{NULL}}};
+  TF1* fit_tracks_reso_bins[nPID][nEta+1][nPt]  = {{{NULL}}};
+  TH1D* h_tracks_resoEta_bins[nEta+1][nPt]      = {{NULL}};
+  TF1* fit_tracks_resoEta_bins[nEta+1][nPt]     = {{NULL}};
+  TH1D* h_tracks_resoPhi_bins[nEta+1][nPt]      = {{NULL}};
+  TF1* fit_tracks_resoPhi_bins[nEta+1][nPt]     = {{NULL}};
+
+  TH1D* h_tracks_resoP_bins[nPID][nEta+1][nP]   = {{{NULL}}};
+  TF1* fit_tracks_resoP_bins[nPID][nEta+1][nP]  = {{{NULL}}};
   
-  const Int_t rebinEta_PtResol[20]   = { 4, 4, 2, 2, 2, 2, 2, 2, 2, 2, 
-                                         2, 2, 2, 2, 2, 2, 2, 2, 4, 1};
-  const Int_t rebinEta_EtaResol[20]   = { 8, 8, 4, 1, 1, 1, 1, 1, 1, 1,
-                                          1, 1, 1, 1, 1, 1, 1, 4, 8,  1};
-  const Int_t rebinEta_PhiResol[20]   = { 8, 8, 4, 1, 1, 1, 1, 1, 1, 1,
-                                          1, 1, 1, 1, 1, 1, 1, 4, 8,  1};
-  Float_t ptResolFit[20]    = { 0.3, 0.3, 0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
-                                0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.3, 0.3, 0.2};                                    
-  Float_t etaResolFit[20]   = { 0.02, 0.02, 0.02, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 
-                                0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.02, 0.01};                                    
-  Float_t phiResolFit[20]    = { 0.15, 0.15, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
-                                0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15, 0.2, 0.1};                                    
+  TH2F* h_tracks_reso[nPID][nEta+1]             = {{NULL}};
+  TH2F* h_tracks_resoP[nPID][nEta+1]            = {{NULL}};
+  TH2F* h_tracks_resoEta[nEta+1]                = {NULL};
+  TH2F* h_tracks_resoPhi[nEta+1]                = {NULL};
   
-  Color_t colorEta[20]         = {kBlue+1, kBlue-6, kViolet+2, kViolet-5, kMagenta+1, kMagenta-6, kPink-5, kPink-9, kRed+1, kRed-7, 
-                                kOrange+7, kOrange, kYellow-6, kSpring+5, kGreen+1, kGreen-5, kCyan+1, kCyan+3, kAzure+2, kBlack };
-  Style_t markerStyleEta[20]   = {24, 25, 27, 28, 30, 42, 46, 24, 25, 27, 
-                                 28, 30, 42, 46, 24, 25, 27, 28, 30, 20};
-  Size_t markerSizeEta[20]     = {1.5, 1.4, 1.9, 1.5, 1.8, 1.8, 1.5, 1.5, 1.4, 1.9,
-                                 1.5, 1.8, 1.8, 1.5, 1.5, 1.4, 1.9, 1.5, 1.8, 1.5 };
-  Color_t colorPID[6]          = {kBlack, kRed+1, kGreen+2, kCyan+2, kBlue+1, kOrange};
-  Style_t markerStylePID[6]    = {20, 24, 25, 27, 28, 30};
-  Size_t markerSizePID[6]      = {1.5, 1.4, 1.5, 1.9, 1.6, 1.8};
-  
-                                 
-                                 
-  TH1D* h_tracks_mean_pt_reso[6][nEta+1]       = {{NULL}};
-  TH1D* h_tracks_sigma_pt_reso[6][nEta+1]      = {{NULL}};  
-  TH1D* h_tracks_mean_pt_resoEta[nEta+1]    = {NULL};
-  TH1D* h_tracks_sigma_pt_resoEta[nEta+1]   = {NULL};  
-  TH1D* h_tracks_mean_pt_resoPhi[nEta+1]    = {NULL};
-  TH1D* h_tracks_sigma_pt_resoPhi[nEta+1]   = {NULL};  
-  TH1D* h_tracks_reso_bins[6][nEta+1][nPt]     = {{{NULL}}};
-  TF1* fit_tracks_reso_bins[6][nEta+1][nPt]    = {{{NULL}}};
-  TH1D* h_tracks_resoEta_bins[nEta+1][nPt]  = {{NULL}};
-  TF1* fit_tracks_resoEta_bins[nEta+1][nPt] = {{NULL}};
-  TH1D* h_tracks_resoPhi_bins[nEta+1][nPt]  = {{NULL}};
-  TF1* fit_tracks_resoPhi_bins[nEta+1][nPt] = {{NULL}};
-  
-  TH2F* h_tracks_reso[6][nEta+1]           = {{NULL}};
-  TH2F* h_tracks_resoEta[nEta+1]        = {NULL};
-  TH2F* h_tracks_resoPhi[nEta+1]        = {NULL};
-  
-  TString nameCuts[12]                  = {"N", "L3", "L3F", "LI", "LIF", "BE", "BEF", "AE", "AEF", "T", "LI2", "LI3" };
-  TString labelCuts[12]                 = {"no track cuts", "at least 3 hits", "#leq 3 hits & ( 1^{st} | 2^{nd} layer)", "only tracker", "only tracker & ( 1^{st} | 2^{nd} layer)", "tracker & only LGAD before ECal", "tracker & only LGAD before ECal & ( 1^{st} | 2^{nd} layer)", "tracker & LGAD after ECal", "tracker & only LGAD after ECal & ( 1^{st} | 2^{nd} layer)", "any timing hit", "#geq 2 tracker hits", "#geq 3 tracker hits"  };
-  TH2F* h_trackMap_eta_pT[6][12]        = {{NULL}};
-  TH2F* h_trackMapRatio_eta_pT[6][12]    = {{NULL}};
-  TH2F* h_trackMapRec_eta_pT[6][12]        = {{NULL}};
-  TH2F* h_trackMapRecRatio_eta_pT[6][12]    = {{NULL}};
-  TH2F* h_trackMap_eta_p[6][12]        = {{NULL}};
-  TH2F* h_trackMapRatio_eta_p[6][12]    = {{NULL}};
-  TH2F* h_trackMapRec_eta_p[6][12]        = {{NULL}};
-  TH2F* h_trackMapRecRatio_eta_p[6][12]    = {{NULL}};
+  TH2F* h_trackMap_eta_pT[nPID][nCuts]          = {{NULL}};
+  TH2F* h_trackMapRatio_eta_pT[nPID][nCuts]     = {{NULL}};
+  TH2F* h_trackMapRec_eta_pT[nPID][nCuts]       = {{NULL}};
+  TH2F* h_trackMapRecRatio_eta_pT[nPID][nCuts]  = {{NULL}};
+  TH2F* h_trackMap_eta_p[nPID][nCuts]           = {{NULL}};
+  TH2F* h_trackMapRatio_eta_p[nPID][nCuts]      = {{NULL}};
+  TH2F* h_trackMapRec_eta_p[nPID][nCuts]        = {{NULL}};
+  TH2F* h_trackMapRecRatio_eta_p[nPID][nCuts]   = {{NULL}};
   
   TFile* inputFile  = new TFile(inputFileName.Data());
   TH1D* histNEvents = (TH1D*)inputFile->Get("nEvents");
   Long_t nEvents    = histNEvents->GetBinContent(1);
 
   for (Int_t iEta = 0; iEta < nEta+1; iEta++){
-    for (Int_t pid = 0; pid < 6; pid++){
+    for (Int_t pid = 0; pid < nPID; pid++){
       h_tracks_reso[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_tracks_reso_pT_%s_%s_%d", readTrackClass.Data(), partName[pid].Data(), iEta));
       h_tracks_reso[pid][iEta]->Sumw2();
       h_tracks_mean_pt_reso[pid][iEta] = new TH1D(Form("histPtResol_%s_mean_%d", partName[pid].Data(), iEta), 
@@ -237,6 +139,16 @@ void trackingreso_Pythia(
       h_tracks_sigma_pt_reso[pid][iEta] = new TH1D(Form("histPtResol_%s_sigma_%d", partName[pid].Data(), iEta), 
                                               ";#it{p}_{T}^{MC} (GeV/#it{c}); #sigma( (#it{p}_{T}^{rec}-#it{p}_{T}^{MC})/#it{p}_{T}^{MC} )", 
                                               nPt, partPt);
+
+      h_tracks_resoP[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_tracks_reso_p_%s_%s_%d", readTrackClass.Data(), partName[pid].Data(), iEta));
+      h_tracks_resoP[pid][iEta]->Sumw2();
+      h_tracks_mean_p_resoP[pid][iEta] = new TH1D(Form("histPResol_%s_mean_%d", partName[pid].Data(), iEta), 
+                                            ";#it{p}^{MC} (GeV/#it{c}); #LT (#it{p}^{rec}-#it{p}^{MC})/#it{p}^{MC} #GT",
+                                            nP, partP);
+      h_tracks_sigma_p_resoP[pid][iEta] = new TH1D(Form("histPResol_%s_sigma_%d", partName[pid].Data(), iEta), 
+                                              ";#it{p}^{MC} (GeV/#it{c}); #sigma( (#it{p}^{rec}-#it{p}^{MC})/#it{p}^{MC} )", 
+                                              nP, partP);
+
     }
     h_tracks_resoEta[iEta]  = (TH2F*)inputFile->Get(Form("h_tracks_reso_Eta_pT_%s_%d", readTrackClass.Data(), iEta));
     h_tracks_resoEta[iEta]->Sumw2();
@@ -256,8 +168,8 @@ void trackingreso_Pythia(
                                             nPt, partPt);
   }
   
-  for (Int_t pid = 0; pid < 6; pid++){
-    for (Int_t cut = 0; cut < 12; cut++){
+  for (Int_t pid = 0; pid < nPID; pid++){
+    for (Int_t cut = 0; cut < nCuts; cut++){
       h_trackMap_eta_pT[pid][cut]   = (TH2F*)inputFile->Get(Form("h_tracks_%s_%s_True_Eta_pT", partName[pid].Data(), nameCuts[cut].Data()));
       h_trackMap_eta_pT[pid][cut]->Sumw2();
       if (cut > 0 ){
@@ -320,10 +232,10 @@ void trackingreso_Pythia(
     }
     if (debugOutput)std::cout << Form("%1.1f<#eta<%1.1f",etaMin,etaMax)  << std::endl;
     for (Int_t iPt = 0; iPt < nPt; iPt++){
-      for (Int_t pid = 0; pid < 6; pid++){
+      for (Int_t pid = 0; pid < nPID; pid++){
   //       std::cout << partPt[iPt] << "\t" << h_tracks_reso[iEta]->GetXaxis()->FindBin(partPt[iPt]) << std::endl;
         h_tracks_reso_bins[pid][iEta][iPt] = (TH1D*)h_tracks_reso[pid][iEta]->ProjectionY(Form("projection_%s_dPt_%d_%d",partName[pid].Data(),iPt, iEta), 
-                                                                          h_tracks_reso[pid][iEta]->GetXaxis()->FindBin(partPt[iPt]), h_tracks_reso[pid][iEta]->GetXaxis()->FindBin(partPt[iPt+1]),"e"); 
+                                                                          h_tracks_reso[pid][iEta]->GetXaxis()->FindBin(partPt[iPt]+0.001), h_tracks_reso[pid][iEta]->GetXaxis()->FindBin(partPt[iPt+1]-0.001),"e"); 
         h_tracks_reso_bins[pid][iEta][iPt]->Rebin(rebinEta_PtResol[iEta]);
         h_tracks_reso_bins[pid][iEta][iPt]->GetXaxis()->SetRangeUser(-0.5,0.5);
         if(h_tracks_reso_bins[pid][iEta][iPt]->GetEntries() > 10 && properFit){
@@ -335,7 +247,7 @@ void trackingreso_Pythia(
       }
       
       h_tracks_resoEta_bins[iEta][iPt] = (TH1D*)h_tracks_resoEta[iEta]->ProjectionY(Form("projection_dEta_%d_%d",iPt, iEta), 
-                                                                        h_tracks_resoEta[iEta]->GetXaxis()->FindBin(partPt[iPt]), h_tracks_resoEta[iEta]->GetXaxis()->FindBin(partPt[iPt+1]),"e"); 
+                                                                        h_tracks_resoEta[iEta]->GetXaxis()->FindBin(partPt[iPt]+0.001), h_tracks_resoEta[iEta]->GetXaxis()->FindBin(partPt[iPt+1]-0.001),"e"); 
       h_tracks_resoEta_bins[iEta][iPt]->Rebin(rebinEta_EtaResol[iEta]);
       h_tracks_resoEta_bins[iEta][iPt]->GetXaxis()->SetRangeUser(-0.05,0.05);
       if(h_tracks_resoEta_bins[iEta][iPt]->GetEntries() > 10 && properFit){
@@ -345,7 +257,7 @@ void trackingreso_Pythia(
           h_tracks_resoEta_bins[iEta][iPt]->Fit(fit_tracks_resoEta_bins[iEta][iPt],"QNRME+","",-etaResolFit[iEta],etaResolFit[iEta]);
       }
       h_tracks_resoPhi_bins[iEta][iPt] = (TH1D*)h_tracks_resoPhi[iEta]->ProjectionY(Form("projection_dPhi_%d_%d",iPt, iEta), 
-                                                                        h_tracks_resoPhi[iEta]->GetXaxis()->FindBin(partPt[iPt]), h_tracks_resoPhi[iEta]->GetXaxis()->FindBin(partPt[iPt+1]),"e"); 
+                                                                        h_tracks_resoPhi[iEta]->GetXaxis()->FindBin(partPt[iPt]+0.001), h_tracks_resoPhi[iEta]->GetXaxis()->FindBin(partPt[iPt+1]-0.001),"e"); 
       h_tracks_resoPhi_bins[iEta][iPt]->Rebin(rebinEta_PhiResol[iEta]);
       h_tracks_resoPhi_bins[iEta][iPt]->GetXaxis()->SetRangeUser(-0.25,0.25);
       if(h_tracks_resoPhi_bins[iEta][iPt]->GetEntries() > 10 && properFit){
@@ -360,7 +272,7 @@ void trackingreso_Pythia(
         if (fit_tracks_reso_bins[0][iEta][iPt]) std::cout<< fit_tracks_reso_bins[0][iEta][iPt]->GetParameter(1) << "\t" << fit_tracks_reso_bins[0][iEta][iPt]->GetParameter(2) << std::endl;
       }
       if (properFit){
-        for (Int_t pid = 0; pid < 6; pid++){
+        for (Int_t pid = 0; pid < nPID; pid++){
           if (fit_tracks_reso_bins[pid][iEta][iPt]){
             h_tracks_mean_pt_reso[pid][iEta]->SetBinContent(iPt+1,fit_tracks_reso_bins[pid][iEta][iPt]->GetParameter(1));
             h_tracks_mean_pt_reso[pid][iEta]->SetBinError(iPt+1,fit_tracks_reso_bins[pid][iEta][iPt]->GetParError(1));
@@ -397,7 +309,7 @@ void trackingreso_Pythia(
         }
         
       } else {
-        for (Int_t pid = 0; pid < 6; pid++){
+        for (Int_t pid = 0; pid < nPID; pid++){
           if(h_tracks_reso_bins[pid][iEta][iPt]->GetEntries() > 10){
             h_tracks_mean_pt_reso[pid][iEta]->SetBinContent(iPt+1,h_tracks_reso_bins[pid][iEta][iPt]->GetMean());
             h_tracks_mean_pt_reso[pid][iEta]->SetBinError(iPt+1,h_tracks_reso_bins[pid][iEta][iPt]->GetMeanError());
@@ -440,6 +352,52 @@ void trackingreso_Pythia(
         }
       }
     }
+    for (Int_t iP = 0; iP < nP; iP++){
+      for (Int_t pid = 0; pid < nPID; pid++){
+  //       std::cout << partPt[iP] << "\t" << h_tracks_reso[iEta]->GetXaxis()->FindBin(partPt[iP]) << std::endl;
+        h_tracks_resoP_bins[pid][iEta][iP] = (TH1D*)h_tracks_resoP[pid][iEta]->ProjectionY(Form("projection_%s_dP_%d_%d",partName[pid].Data(),iP, iEta), 
+                                                                          h_tracks_resoP[pid][iEta]->GetXaxis()->FindBin(partP[iP]+0.001), h_tracks_resoP[pid][iEta]->GetXaxis()->FindBin(partP[iP+1]-0.001),"e"); 
+        h_tracks_resoP_bins[pid][iEta][iP]->Rebin(rebinEta_PtResol[iEta]);
+        h_tracks_resoP_bins[pid][iEta][iP]->GetXaxis()->SetRangeUser(-0.5,0.5);
+        if(h_tracks_resoP_bins[pid][iEta][iP]->GetEntries() > 10 && properFit){
+            fit_tracks_resoP_bins[pid][iEta][iP] = new TF1(Form("fitGaussP%s%d_%d",partName[pid].Data() ,iP, iEta),  "gaus", -ptResolFit[iEta],ptResolFit[iEta]);
+            fit_tracks_resoP_bins[pid][iEta][iP]->SetParameter(0,h_tracks_resoP_bins[pid][iEta][iP]->GetMaximum() );
+            fit_tracks_resoP_bins[pid][iEta][iP]->SetParLimits(0,0.9*h_tracks_resoP_bins[pid][iEta][iP]->GetMaximum(),4*h_tracks_reso_bins[pid][iEta][iP]->GetMaximum() );
+            h_tracks_resoP_bins[pid][iEta][iP]->Fit(fit_tracks_resoP_bins[pid][iEta][iP],"QNRME+","",-ptResolFit[iEta],ptResolFit[iEta]);
+        }
+      }
+      if (properFit){
+        for (Int_t pid = 0; pid < nPID; pid++){
+          if (fit_tracks_resoP_bins[pid][iEta][iP]){
+            h_tracks_mean_p_resoP[pid][iEta]->SetBinContent(iP+1,fit_tracks_resoP_bins[pid][iEta][iP]->GetParameter(1));
+            h_tracks_mean_p_resoP[pid][iEta]->SetBinError(iP+1,fit_tracks_resoP_bins[pid][iEta][iP]->GetParError(1));
+            h_tracks_sigma_p_resoP[pid][iEta]->SetBinContent(iP+1,fit_tracks_resoP_bins[pid][iEta][iP]->GetParameter(2));
+            h_tracks_sigma_p_resoP[pid][iEta]->SetBinError(iP+1,fit_tracks_resoP_bins[pid][iEta][iP]->GetParError(2));
+          } else {
+            h_tracks_mean_p_resoP[pid][iEta]->SetBinContent(iP+1,-100000);
+            h_tracks_mean_p_resoP[pid][iEta]->SetBinError(iP+1,0);
+            h_tracks_sigma_p_resoP[pid][iEta]->SetBinContent(iP+1,-1000);
+            h_tracks_sigma_p_resoP[pid][iEta]->SetBinError(iP+1,0);         
+          }
+        }
+      } else {
+        for (Int_t pid = 0; pid < nPID; pid++){
+          if(h_tracks_resoP_bins[pid][iEta][iP]->GetEntries() > 10){
+            h_tracks_mean_p_resoP[pid][iEta]->SetBinContent(iP+1,h_tracks_resoP_bins[pid][iEta][iP]->GetMean());
+            h_tracks_mean_p_resoP[pid][iEta]->SetBinError(iP+1,h_tracks_resoP_bins[pid][iEta][iP]->GetMeanError());
+            h_tracks_sigma_p_resoP[pid][iEta]->SetBinContent(iP+1,h_tracks_resoP_bins[pid][iEta][iP]->GetRMS());
+            h_tracks_sigma_p_resoP[pid][iEta]->SetBinError(iP+1,h_tracks_resoP_bins[pid][iEta][iP]->GetRMSError());      
+//       h_tracks_sigma_pt_reso[iEta]->SetBinContent(iP+1,h_tracks_reso_bins[iEta][iP]->GetStdDev());
+//       h_tracks_sigma_pt_reso[iEta]->SetBinError(iP+1,h_tracks_reso_bins[iEta][iP]->GetStdDevError());
+          } else {
+            h_tracks_mean_p_resoP[pid][iEta]->SetBinContent(iP+1,-100000);
+            h_tracks_mean_p_resoP[pid][iEta]->SetBinError(iP+1,0);
+            h_tracks_sigma_p_resoP[pid][iEta]->SetBinContent(iP+1,-1000);
+            h_tracks_sigma_p_resoP[pid][iEta]->SetBinError(iP+1,0);         
+          }
+        }        
+      }
+    }
   }
 
   if (!trackCuts){
@@ -447,8 +405,8 @@ void trackingreso_Pythia(
     DrawGammaCanvasSettings( cSingle2D, 0.1, 0.12, 0.025, 0.105);
     cSingle2D->SetLogz();
 
-    for (Int_t pid = 0; pid < 6; pid++){
-      for (Int_t cut = 0; cut < 12; cut++){
+    for (Int_t pid = 0; pid < nPID; pid++){
+      for (Int_t cut = 0; cut < nCuts; cut++){
         cSingle2D->cd();
         cSingle2D->SetLogz();
         SetStyleHistoTH2ForGraphs(h_trackMap_eta_pT[pid][cut], "#it{p}_{T}^{MC} (GeV/#it{c})", "#eta^{MC}", 
@@ -618,6 +576,8 @@ void trackingreso_Pythia(
   
   TCanvas* cPNG; // = new TCanvas("cPNG", "", gStyle->GetCanvasDefW() * 3,
   split_canvas(cPNG, "cPNG1", nPt);
+  TCanvas* cPNGP; // = new TCanvas("cPNG", "", gStyle->GetCanvasDefW() * 3,
+  split_canvas(cPNGP, "cPNGP", nP);
   for (Int_t iEta = 0; iEta < nEta+1; iEta++){
     Int_t padnum =0;
     Double_t etaMin = partEta[0];
@@ -628,7 +588,7 @@ void trackingreso_Pythia(
     }
     if (debugOutput) std::cout << Form("%1.1f<#eta<%1.1f",etaMin,etaMax)  << std::endl;
       
-    for (Int_t pid = 0; pid < 6; pid++){
+    for (Int_t pid = 0; pid < nPID; pid++){
       padnum =0;
       for(Int_t iPt=0; iPt< nPt; iPt++){
         cPNG->cd(padnum+1);
@@ -666,6 +626,46 @@ void trackingreso_Pythia(
         padnum++;
       }
       cPNG->Print(Form("%s/Tracking_%s_Resolution_%d_%d.%s", outputDirPTRes.Data(), partName[pid].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
+
+      cPNGP->cd();
+      padnum =0;
+      for(Int_t iP=0; iP< nP; iP++){
+        cPNGP->cd(padnum+1);
+        DrawVirtualPadSettings( cPNGP->cd(padnum+1), 0.1, 0.02, 0.015, 0.115);
+        cPNGP->cd(padnum+1)->SetLogy(1);
+        SetStyleHistoTH1ForGraphs(h_tracks_resoP_bins[pid][iEta][iP], "(#it{p}^{rec}-#it{p}^{MC})/#it{p}^{MC}", "counts",
+                                  0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.9);
+        h_tracks_resoP_bins[pid][iEta][iP]->GetYaxis()->SetRangeUser(0.8,h_tracks_resoP_bins[pid][iEta][iP]->GetMaximum()*2);
+        
+        DrawGammaSetMarker(h_tracks_resoP_bins[pid][iEta][iP], 20, 1.5, kBlack, kBlack);      
+        h_tracks_resoP_bins[pid][iEta][iP]->Draw("p,e");
+        
+        if (fit_tracks_resoP_bins[pid][iEta][iP] && properFit){
+          DrawGammaSetMarkerTF1( fit_tracks_resoP_bins[pid][iEta][iP], 7, 2, kBlue+1);
+          fit_tracks_resoP_bins[pid][iEta][iP]->Draw("same");
+        }
+        
+        if (padnum == 0){
+          drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.16,0.89,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+          drawLatexAdd(Form("%1.1f<#eta<%1.1f",etaMin,etaMax),0.16,0.89-1.3*textSizeLabelsRel,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+        }
+        
+        drawLatexAdd(Form("%1.1f<#it{p} (GeV/#it{c})<%1.1f ",partP[iP],partP[iP+1]),0.95,0.89,1.3*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        if(iEta == 0 && debugOutput) std::cout << Form("%1.1f<#it{p} (GeV/#it{c})<%1.1f \t",partP[iP],partP[iP+1]) << h_tracks_mean_pt_reso[pid][iEta]->GetBinCenter(iP+1)<< "\t"<< h_tracks_mean_pt_reso[pid][iEta]->GetBinContent(iP+1) << std::endl;
+        DrawGammaLines(h_tracks_mean_p_resoP[pid][iEta]->GetBinContent(iP+1), 
+                      h_tracks_mean_p_resoP[pid][iEta]->GetBinContent(iP+1), 
+                      0., 0.05*h_tracks_resoP_bins[pid][iEta][iP]->GetMaximum(), 1, kGray+2, 2);
+        DrawGammaLines(h_tracks_mean_p_resoP[pid][iEta]->GetBinContent(iP+1)-h_tracks_sigma_p_resoP[pid][iEta]->GetBinContent(iP+1), 
+                      h_tracks_mean_p_resoP[pid][iEta]->GetBinContent(iP+1)-h_tracks_sigma_p_resoP[pid][iEta]->GetBinContent(iP+1), 
+                      0., 0.05*h_tracks_resoP_bins[pid][iEta][iP]->GetMaximum(), 1, kRed+2, 2);
+        DrawGammaLines(h_tracks_mean_p_resoP[pid][iEta]->GetBinContent(iP+1)+h_tracks_sigma_p_resoP[pid][iEta]->GetBinContent(iP+1), 
+                      h_tracks_mean_p_resoP[pid][iEta]->GetBinContent(iP+1)+h_tracks_sigma_p_resoP[pid][iEta]->GetBinContent(iP+1), 
+                      0., 0.05*h_tracks_resoP_bins[pid][iEta][iP]->GetMaximum(), 1, kRed+2, 2);
+
+        padnum++;
+      }
+      cPNGP->Print(Form("%s/Tracking_%s_ResolutionP_%d_%d.%s", outputDirPTRes.Data(), partName[pid].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
+
     }
     
     padnum =0;
@@ -766,7 +766,7 @@ void trackingreso_Pythia(
   TLegend* legendPtResM  = GetAndSetLegend2(0.14, 0.94-(nActiveEta/3*0.75*textSizeLabelsRel), 0.6, 0.94,0.75*textSizeLabelsPixel, 3, "", 43, 0.2);
   TLegend* legendPtResPID  = GetAndSetLegend2(0.14, 0.94-(3*0.85*textSizeLabelsRel), 0.35, 0.94,0.85*textSizeLabelsPixel, 2, "", 43, 0.25);
   
-  for (Int_t pid = 0; pid < 6; pid++){
+  for (Int_t pid = 0; pid < nPID; pid++){
     histoDummyPtResMean->Draw();
     for(Int_t iEta=0; iEta<nEta+1;iEta++){
       if (!enablePlot[iEta]) continue;
@@ -812,7 +812,7 @@ void trackingreso_Pythia(
     }
     histoDummyPtResSigma->Draw();
     legendPtResPID->Clear();
-    for (Int_t pid =0; pid < 6; pid++){
+    for (Int_t pid =0; pid < nPID; pid++){
       
       DrawGammaSetMarker(h_tracks_sigma_pt_reso[pid][iEta], markerStylePID[pid], markerSizePID[pid], colorPID[pid], colorPID[pid]);
       h_tracks_sigma_pt_reso[pid][iEta]->Draw("same,p");      
@@ -826,10 +826,129 @@ void trackingreso_Pythia(
     cReso->Print(Form("%s/PtResolutionPID_Sigma_pT_%d_%d.%s", outputDir.Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
   }
   
+  TH2F* histoDummyPResMean   = new TH2F("histoDummyPResMean","histoDummyPResMean",1000,0.1, 220,1000,-0.1, 0.1);
+  SetStyleHistoTH2ForGraphs(histoDummyPResMean, "#it{p}^{MC} (GeV/#it{c})","#LT (#it{p}^{rec} - #it{p}^{MC}) / #it{p}^{MC} #GT", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.05);
+  histoDummyPResMean->GetXaxis()->SetMoreLogLabels();
+  histoDummyPResMean->GetXaxis()->SetLabelOffset(0.01);
+  histoDummyPResMean->GetXaxis()->SetNoExponent();
+  histoDummyPResMean->GetYaxis()->SetNdivisions(510,kTRUE);
+  histoDummyPResMean->GetXaxis()->SetMoreLogLabels(kTRUE);
+  TH2F* histoDummyPResSigma   = new TH2F("histoDummyPResSigma","histoDummyPResSigma",1000,0.1, 220,1000,-0.0, maxPtSigma);
+  SetStyleHistoTH2ForGraphs(histoDummyPResSigma, "#it{p}^{MC} (GeV/#it{c})","#sigma((#it{p}^{rec} - #it{p}^{MC}) / #it{p}^{MC})", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.05);
+  histoDummyPResSigma->GetXaxis()->SetMoreLogLabels();
+  histoDummyPResSigma->GetXaxis()->SetLabelOffset(0.01);
+  histoDummyPResSigma->GetXaxis()->SetNoExponent();
+  histoDummyPResSigma->GetYaxis()->SetNdivisions(510,kTRUE);
+  histoDummyPResSigma->GetXaxis()->SetMoreLogLabels(kTRUE);
+
+  for (Int_t eR = 0; eR < 3; eR++) cout << "before: "<< labelEtaRange[eR].Data() << endl;
+  
+  TLegend* legendPResM  = GetAndSetLegend2(0.14, 0.94-(nActiveEta/3*0.75*textSizeLabelsRel), 0.6, 0.94,0.75*textSizeLabelsPixel, 3, "", 43, 0.2);
+  TLegend* legendPResPID  = GetAndSetLegend2(0.14, 0.94-(3*0.85*textSizeLabelsRel), 0.35, 0.94,0.85*textSizeLabelsPixel, 2, "", 43, 0.25);
+  TLegend* legendPResEta[3]  = {NULL, NULL, NULL}; 
+  cReso->SetLogx();
+  for (Int_t pid = 0; pid < nPID; pid++){
+    histoDummyPResMean->Draw();
+    for(Int_t iEta=0; iEta<nEta+1;iEta++){
+      if (!enablePlot[iEta]) continue;
+      DrawGammaSetMarker(h_tracks_mean_p_resoP[pid][iEta], markerStyleEta[iEta], markerSizeEta[iEta], colorEta[iEta], colorEta[iEta]);
+      h_tracks_mean_p_resoP[pid][iEta]->Draw("same,p");
+      if (pid == 0){
+        if (iEta == nEta )
+          legendPResM->AddEntry(h_tracks_mean_p_resoP[pid][iEta],Form("%1.1f<#eta<%1.1f",partEta[0],partEta[iEta]),"p");
+        else 
+          legendPResM->AddEntry(h_tracks_mean_p_resoP[pid][iEta],Form("%1.1f<#eta<%1.1f",partEta[iEta],partEta[iEta+1]),"p");
+      }
+    }
+    legendPResM->Draw();
+    DrawGammaLines(0.08, 220., 0., 0., 2, kGray+2, 7);
+      
+    drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+    drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    cReso->Print(Form("%s/PResolution_%s_Mean_p.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
+
+    histoDummyPResSigma->Draw();
+    for(Int_t iEta=0; iEta<nEta+1;iEta++){
+      if (!enablePlot[iEta]) continue;
+      DrawGammaSetMarker(h_tracks_sigma_p_resoP[pid][iEta], markerStyleEta[iEta], markerSizeEta[iEta], colorEta[iEta], colorEta[iEta]);
+      h_tracks_sigma_p_resoP[pid][iEta]->Draw("same,p");
+    }
+    legendPResM->Draw();
+    drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+    drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    cReso->Print(Form("%s/PResolution_%s_Sigma_p.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
+    
+    for (Int_t eR = 0; eR < 3; eR++){
+      histoDummyPResMean->Draw();
+      cout << labelEtaRange[eR].Data() << endl;
+      if (pid == 0) legendPResEta[eR]  = GetAndSetLegend2(0.14, 0.94-((maxNEtaBins[eR]+1)*0.85*textSizeLabelsRel), 0.35, 0.94,0.85*textSizeLabelsPixel, 1, labelEtaRange[eR], 43, 0.2);
+      for(Int_t iEta=minEtaBin[eR]; iEta<maxEtaBin[eR]+1;iEta++){
+        if (!enablePlot[iEta]) continue;
+        DrawGammaSetMarker(h_tracks_mean_p_resoP[pid][iEta], markerStyleEta[iEta], markerSizeEta[iEta], colorEta[iEta], colorEta[iEta]);
+        h_tracks_mean_p_resoP[pid][iEta]->Draw("same,p");
+        if (pid == 0){
+          if (iEta == nEta )
+            legendPResEta[eR]->AddEntry(h_tracks_mean_p_resoP[pid][iEta],Form("%1.1f<#eta<%1.1f",partEta[0],partEta[iEta]),"p");
+          else 
+            legendPResEta[eR]->AddEntry(h_tracks_mean_p_resoP[pid][iEta],Form("%1.1f<#eta<%1.1f",partEta[iEta],partEta[iEta+1]),"p");
+        }
+      }
+      legendPResEta[eR]->Draw();
+      DrawGammaLines(0.08, 220., 0., 0., 2, kGray+2, 7);
+        
+      drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+      drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      cReso->Print(Form("%s/PResolution_%s_%s_Mean_p.%s", outputDir.Data(), nameOutEtaRange[eR].Data(), partName[pid].Data(), suffix.Data()));
+
+      histoDummyPResSigma->Draw();
+      for(Int_t iEta=minEtaBin[eR]; iEta<maxEtaBin[eR]+1;iEta++){
+        if (!enablePlot[iEta]) continue;
+        DrawGammaSetMarker(h_tracks_sigma_p_resoP[pid][iEta], markerStyleEta[iEta], markerSizeEta[iEta], colorEta[iEta], colorEta[iEta]);
+        h_tracks_sigma_p_resoP[pid][iEta]->Draw("same,p");
+      }
+      legendPResEta[eR]->Draw();
+      drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+      drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      cReso->Print(Form("%s/PResolution_%s_%s_Sigma_p.%s", outputDir.Data(), nameOutEtaRange[eR].Data() ,partName[pid].Data(), suffix.Data()));
+    }
+  }
+  
+  for(Int_t iEta=0; iEta<nEta+1;iEta++){
+    if (!enablePlot[iEta]) continue;
+    Double_t etaMin = partEta[0];
+    Double_t etaMax = partEta[nEta];
+    if (iEta < nEta){
+      etaMin = partEta[iEta];
+      etaMax = partEta[iEta+1];
+    }
+    histoDummyPResSigma->Draw();
+    legendPResPID->Clear();
+    for (Int_t pid =0; pid < nPID; pid++){
+      
+      DrawGammaSetMarker(h_tracks_sigma_p_resoP[pid][iEta], markerStylePID[pid], markerSizePID[pid], colorPID[pid], colorPID[pid]);
+      h_tracks_sigma_p_resoP[pid][iEta]->Draw("same,p");      
+      legendPResPID->AddEntry(h_tracks_sigma_p_resoP[pid][iEta],partLabel[pid].Data(),"p");
+    }
+    legendPResPID->Draw();
+    drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+    drawLatexAdd(Form("%1.1f<#eta<%1.1f, %s", etaMin, etaMax, detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    cReso->Print(Form("%s/PResolutionPID_Sigma_p_%d_%d.%s", outputDir.Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
+  }
+  cReso->SetLogx(0);
   
   DrawGammaCanvasSettings( cReso, 0.11, 0.02, 0.045, 0.105);
   TH2F* histoDummyEtaResMean   = new TH2F("histoDummyEtaResMean","histoDummyEtaResMean",1000,0, 20,1000,-0.001, 0.001);
-  SetStyleHistoTH2ForGraphs(histoDummyEtaResMean, "#it{p}_{T}^{MC} (GeV/#it{c})","#LT (#eta^{rec} - #eta^{MC}) / #eta^{MC} #GT", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.05);
+  SetStyleHistoTH2ForGraphs(histoDummyEtaResMean, "#it{p}_{T}^{MC} (GeV/#it{c})","#LT #eta^{rec} - #eta^{MC} #GT", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.05);
   histoDummyEtaResMean->GetXaxis()->SetNoExponent();
   histoDummyEtaResMean->GetYaxis()->SetNdivisions(510,kTRUE);
   histoDummyEtaResMean->GetXaxis()->SetMoreLogLabels(kTRUE);
@@ -856,7 +975,7 @@ void trackingreso_Pythia(
 
   
   TH2F* histoDummyEtaResSigma   = new TH2F("histoDummyEtaResSigma","histoDummyEtaResSigma",1000,0, 20,1000,-0.0, maxEtaSigma);
-  SetStyleHistoTH2ForGraphs(histoDummyEtaResSigma, "#it{p}_{T}^{MC} (GeV/#it{c})","#sigma((#eta^{rec} - #eta^{MC}) / #eta^{MC})", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.05);
+  SetStyleHistoTH2ForGraphs(histoDummyEtaResSigma, "#it{p}_{T}^{MC} (GeV/#it{c})","#sigma(#eta^{rec} - #eta^{MC})", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.05);
   histoDummyEtaResSigma->GetXaxis()->SetNoExponent();
   histoDummyEtaResSigma->GetYaxis()->SetNdivisions(510,kTRUE);
   histoDummyEtaResSigma->GetXaxis()->SetMoreLogLabels(kTRUE);
@@ -875,7 +994,7 @@ void trackingreso_Pythia(
   cReso->Print(Form("%s/EtaResolution_Sigma_pT.%s", outputDir.Data(), suffix.Data()));
 
   TH2F* histoDummyPhiResMean   = new TH2F("histoDummyPhiResMean","histoDummyPhiResMean",1000,0, 20,1000,-0.01, 0.01);
-  SetStyleHistoTH2ForGraphs(histoDummyPhiResMean, "#it{p}_{T}^{MC} (GeV/#it{c})","#LT (#varphi^{rec} - #varphi^{MC}) / #varphi^{MC} #GT", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.05);
+  SetStyleHistoTH2ForGraphs(histoDummyPhiResMean, "#it{p}_{T}^{MC} (GeV/#it{c})","#LT #varphi^{rec} - #varphi^{MC} #GT (rad)" , 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.05);
   histoDummyPhiResMean->GetXaxis()->SetNoExponent();
   histoDummyPhiResMean->GetYaxis()->SetNdivisions(510,kTRUE);
   histoDummyPhiResMean->GetXaxis()->SetMoreLogLabels(kTRUE);
@@ -900,7 +1019,7 @@ void trackingreso_Pythia(
   cReso->Print(Form("%s/PhiResolution_Mean_pT.%s", outputDir.Data(), suffix.Data()));
 
   TH2F* histoDummyPhiResSigma   = new TH2F("histoDummyPhiResSigma","histoDummyPhiResSigma",1000,0, 20,1000,-0.0, maxPhiSigma);
-  SetStyleHistoTH2ForGraphs(histoDummyPhiResSigma, "#it{p}_{T}^{MC} (GeV/#it{c})","#sigma((#varphi^{rec} - #varphi^{MC}) / #varphi^{MC})", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.05);
+  SetStyleHistoTH2ForGraphs(histoDummyPhiResSigma, "#it{p}_{T}^{MC} (GeV/#it{c})","#sigma(#varphi^{rec} - #varphi^{MC}) (rad)", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.05);
   histoDummyPhiResSigma->GetXaxis()->SetNoExponent();
   histoDummyPhiResSigma->GetYaxis()->SetNdivisions(510,kTRUE);
   histoDummyPhiResSigma->GetXaxis()->SetMoreLogLabels(kTRUE);
@@ -924,15 +1043,19 @@ void trackingreso_Pythia(
       for (Int_t pid = 0; pid < 6; pid++){
         h_tracks_mean_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_FitMean_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
         h_tracks_sigma_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_FitSigma_%d",writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
+        h_tracks_mean_p_resoP[pid][iEta]->Write(Form("histPResol%s_%s_FitMean_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
+        h_tracks_sigma_p_resoP[pid][iEta]->Write(Form("histPResol%s_%s_FitSigma_%d",writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
       }
       h_tracks_mean_pt_resoEta[iEta]->Write(Form("histEtaResol%s_FitMean_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
       h_tracks_sigma_pt_resoEta[iEta]->Write(Form("histEtaResol%s_FitSigma_%d",writeLabel.Data(), iEta),TObject::kOverwrite);
       h_tracks_mean_pt_resoPhi[iEta]->Write(Form("histPhiResol%s_FitMean_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
       h_tracks_sigma_pt_resoPhi[iEta]->Write(Form("histPhiResol%s_FitSigma_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
     } else {
-      for (Int_t pid = 0; pid < 6; pid++){
+      for (Int_t pid = 0; pid < nPID; pid++){
         h_tracks_mean_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_mean_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
         h_tracks_sigma_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_sigma_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);      
+        h_tracks_mean_p_resoP[pid][iEta]->Write(Form("histPResol%s_%s_mean_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
+        h_tracks_sigma_p_resoP[pid][iEta]->Write(Form("histPResol%s_%s_sigma_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);      
       }
       h_tracks_mean_pt_resoEta[iEta]->Write(Form("histEtaResol%s_mean_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
       h_tracks_sigma_pt_resoEta[iEta]->Write(Form("histEtaResol%s_sigma_%d", writeLabel.Data(), iEta),TObject::kOverwrite);

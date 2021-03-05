@@ -1,4 +1,5 @@
 #include "../common/plottingheader.h"
+#include "../common/binningheader.h"
 #define NELEMS(arr) (sizeof(arr)/sizeof(arr[0]))
 #include <fstream>
 
@@ -30,18 +31,7 @@ void analyseTreeForTrackingResolAndPID(
   const double c                  = 29.9792458; // cm/ns
   const double sigmat             = 20e-3; // ns
 
-  Int_t nEne                      = 20;
-  Double_t partE[21]              = { 0., 0.5, 1.0, 1.5, 2., 2.5, 3.0, 3.5, 4.0, 4.5, 
-                                      5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5,
-                                      10.};
-  const Int_t nEta                = 19;                                        
-  Double_t partEta[20]            = { -4.0, -3.5, -3.0, -2.5, -2.0, -1.5, -1.2, -1.0, -0.6, -0.2, 
-                                       0.2, 0.6, 1.0, 1.2, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0};
   
-  TString partName[6]             = {"All", "Electron", "Muon", "Pion", "Kaon", "Proton" };
-  TString layerName[12]           = {"N", "L3", "L3F", "LI", "LIF", "BE", "BEF", "AE", "AEF", "T", "LI2", "LI3" };
-  TString nameResoAdd[5]          = {"All", "woT", "wT","LI2", "LI3"};
-  TString nameAddBeta[4]          = {"", "AEMC", "LI3", "LI3AEMC"};
   
   // regions: 0 = Backwards (electron going), 1 = central barrel, 2 = forward (hadron going)
   Int_t maxLayer[3]               = {5, 6, 5};
@@ -82,7 +72,7 @@ void analyseTreeForTrackingResolAndPID(
   TH1D* hNEvents                                = new TH1D("nEvents","",1,0,1);
   TH1D* hNTracks                                = new TH1D("nTracks","",200,-0.5,199.5);
   TH2F* h_tracks_reso_pT[5][nEta+1][6]          = {{{NULL}}};
-  TH2F* h_tracks_reso_p[5][nEta+1]              = {{NULL}};
+  TH2F* h_tracks_reso_p[5][nEta+1][6]           = {{NULL}};
   TH2F* h_tracks_resoEta_pT[5][nEta+1]          = {{NULL}};
   TH2F* h_tracks_resoPhi_pT[5][nEta+1]          = {{NULL}};
   TH2F* h_tracksTrue_Eta_pT[6][12]              = {{NULL}};
@@ -97,15 +87,15 @@ void analyseTreeForTrackingResolAndPID(
   
   for (Int_t id = 0; id < 6; id++){
     for (Int_t k = 0; k < 12; k++){
-      std::cout << id << "\t" << partName[id].Data() << "\t" << k << "\t" << layerName[k].Data()  << "\t" 
-                << Form("h_tracks_%s_%s_True_Eta_pT", partName[id].Data(), layerName[k].Data()) ;
-      h_tracksTrue_Eta_pT[id][k]         = new TH2F(Form("h_tracks_%s_%s_True_Eta_pT", partName[id].Data(), layerName[k].Data() ), "", 200, 0, 20, 200, -4, 4.);
+      std::cout << id << "\t" << partName[id].Data() << "\t" << k << "\t" << nameCuts[k].Data()  << "\t" 
+                << Form("h_tracks_%s_%s_True_Eta_pT", partName[id].Data(), nameCuts[k].Data()) ;
+      h_tracksTrue_Eta_pT[id][k]         = new TH2F(Form("h_tracks_%s_%s_True_Eta_pT", partName[id].Data(), nameCuts[k].Data() ), "", 200, 0, 20, 200, -4, 4.);
 //       h_tracksTrue_Eta_pT[id][k]->Sumw2();
-      h_tracksRec_Eta_pT[id][k]          = new TH2F(Form("h_tracks_%s_%s_Rec_Eta_pT", partName[id].Data(), layerName[k].Data() ), "", 200, 0, 20, 200, -4, 4.);
+      h_tracksRec_Eta_pT[id][k]          = new TH2F(Form("h_tracks_%s_%s_Rec_Eta_pT", partName[id].Data(), nameCuts[k].Data() ), "", 200, 0, 20, 200, -4, 4.);
 //       h_tracksRec_Eta_pT[id][k]->Sumw2();
-      h_tracksTrue_Eta_p[id][k]          = new TH2F(Form("h_tracks_%s_%s_True_Eta_p", partName[id].Data(), layerName[k].Data() ), "", 500, 0, 200, 200, -4, 4.);
+      h_tracksTrue_Eta_p[id][k]          = new TH2F(Form("h_tracks_%s_%s_True_Eta_p", partName[id].Data(), nameCuts[k].Data() ), "", nBinsP, binningP,  200, -4, 4.);
 //       h_tracksTrue_Eta_p[id][k]->Sumw2();
-      h_tracksRec_Eta_p[id][k]           = new TH2F(Form("h_tracks_%s_%s_Rec_Eta_p", partName[id].Data(), layerName[k].Data() ), "", 500, 0, 200, 200, -4, 4.);
+      h_tracksRec_Eta_p[id][k]           = new TH2F(Form("h_tracks_%s_%s_Rec_Eta_p", partName[id].Data(), nameCuts[k].Data() ), "", nBinsP, binningP, 200, -4, 4.);
 //       h_tracksRec_Eta_p[id][k]->Sumw2();
       
       std::cout << h_tracksTrue_Eta_pT[id][k]->GetName() << "\t" << h_tracksRec_Eta_pT[id][k]->GetName()  << "\t" << h_tracksTrue_Eta_p[id][k]->GetName() << "\t" << h_tracksRec_Eta_p[id][k]->GetName()<< std::endl;
@@ -124,42 +114,34 @@ void analyseTreeForTrackingResolAndPID(
         h_tracks_reso_pT[i][et][id]     = new TH2F(Form("h_tracks_reso_pT_%s_%s_%d",nameResoAdd[i].Data(), partName[id].Data(),et), 
                                               Form("%1.1f < #eta < %1.1f; #it{p}_{T,MC} (GeV/c); (#it{p}_{T,rec}-#it{p}_{T,MC})/#it{p}_{T,MC}",etaMin, etaMax), 
                                               200, 0, 20, 250, -0.5, 0.5);
-//         h_tracks_reso_pT[i][et][id]->Sumw2();
+        h_tracks_reso_p[i][et][id]         = new TH2F(Form("h_tracks_reso_p_%s_%s_%d",nameResoAdd[i].Data(), partName[id].Data(),et), 
+                                                Form("%1.1f < #eta < %1.1f; #it{p}_{MC} (GeV/c); (#it{p}_{rec}-#it{p}_{MC})/#it{p}_{MC}", etaMin, etaMax), 
+                                                nBinsP, binningP, 250, -0.5, 0.5);
       }
-      h_tracks_reso_p[i][et]         = new TH2F(Form("h_tracks_reso_p_%s_%d",nameResoAdd[i].Data(), et), 
-                                              Form("%1.1f < #eta < %1.1f; #it{p}_{MC} (GeV/c); (#it{p}_{rec}-#it{p}_{MC})/#it{p}_{MC}", etaMin, etaMax), 
-                                              500, 0, 100, 250, -0.5, 0.5);
-//       h_tracks_reso_p[i][et]->Sumw2();
       h_tracks_resoEta_pT[i][et]     = new TH2F(Form("h_tracks_reso_Eta_pT_%s_%d",nameResoAdd[i].Data(),et), Form("%1.1f < #eta < %1.1f; #it{p}_{T,MC} (GeV/c); (#eta_{rec}-#eta_{MC})/#eta_{MC}",
                                                                                       etaMin, etaMax), 200, 0, 20, 500, -0.1, 0.1);
-//       h_tracks_resoEta_pT[i][et]->Sumw2();
       h_tracks_resoPhi_pT[i][et]     = new TH2F(Form("h_tracks_reso_Phi_pT_%s_%d",nameResoAdd[i].Data(),et), Form("%1.1f < #eta < %1.1f; #it{p}_{T,MC} (GeV/c); (#phi_{rec}-#phi_{MC})/#phi_{MC}",
                                                                                       etaMin, etaMax), 200, 0, 20, 500, -0.5, 0.5);
-//       h_tracks_resoPhi_pT[i][et]->Sumw2();
     }
     for (Int_t e = 0; e< 4; e++){
       for (Int_t id = 0; id < 6; id++){
         
         h_InvGenBeta_Eta_p[e][id][et]      = new TH2F(Form("h_InvGenBeta%s_Eta_p_%s_%d", nameAddBeta[e].Data(), partName[id].Data(), et), 
                                                 Form("%1.1f < #eta < %1.1f; #it{p}_{MC} (GeV/c); 1/#beta_{MC}", etaMin, etaMax), 
-                                                200, 0, 20, 300, 0.9, 1.5);
-//         h_InvGenBeta_Eta_p[e][id][et]->Sumw2();
+                                                 nBinsPLow, binningP, 300, 0.9, 1.5);
+
         h_InvBeta_Eta_p[e][id][et]         = new TH2F(Form("h_InvBeta%s_Eta_p_%s_%d", nameAddBeta[e].Data(), partName[id].Data(), et), 
                                                 Form("%1.1f < #eta < %1.1f; #it{p}_{MC} (GeV/c); 1/#beta_{rec}", etaMin, etaMax), 
-                                                200, 0, 20, 300, 0.9, 1.5);
-//         h_InvBeta_Eta_p[e][id][et]->Sumw2();
+                                                nBinsPLow, binningP, 300, 0.9, 1.5);
         h_InvSmearBeta_Eta_p[e][id][et]    = new TH2F(Form("h_InvSmearBeta%s_Eta_p_%s_%d", nameAddBeta[e].Data(),partName[id].Data(), et), 
                                                 Form("%1.1f < #eta < %1.1f; #it{p}_{MC} (GeV/c); 1/#beta_{smear}", etaMin, etaMax), 
-                                                200, 0, 20, 300, 0.9, 1.5);
-//         h_InvSmearBeta_Eta_p[e][id][et]->Sumw2();
+                                                nBinsPLow, binningP, 300, 0.9, 1.5);
         h_Res_InvBeta_Eta_p[e][id][et]     = new TH2F(Form("h_Res_InvBeta%s_Eta_p_%s_%d", nameAddBeta[e].Data(),partName[id].Data(), et), 
                                                 Form("%1.1f < #eta < %1.1f; #it{p}_{MC} (GeV/c); (1/#beta_{rec} - 1/#beta_{MC})/(1/#beta_{MC}) ", etaMin, etaMax), 
-                                                200, 0, 20, 500, -0.1, 0.1);
-//         h_Res_InvBeta_Eta_p[e][id][et]->Sumw2();
+                                                nBinsPLow, binningP, 500, -0.1, 0.1);
         h_Res_InvSmearBeta_Eta_p[e][id][et]= new TH2F(Form("h_Res_InvSmearBeta%s_Eta_p_%s_%d", nameAddBeta[e].Data(),partName[id].Data(), et), 
                                                 Form("%1.1f < #eta < %1.1f; #it{p}_{MC} (GeV/c); (1/#beta_{smear} - 1/#beta_{MC})/(1/#beta_{MC}) ", etaMin, etaMax), 
-                                                200, 0, 20, 500, -0.1, 0.1);
-//         h_Res_InvSmearBeta_Eta_p[e][id][et]->Sumw2();
+                                                nBinsPLow, binningP, 500, -0.1, 0.1);
       }
     }
   }
@@ -183,7 +165,7 @@ void analyseTreeForTrackingResolAndPID(
         std::cout << "adding " << tempFilename.Data() << std::endl;
         t_tracks->Add(tempFilename.Data());
       }
-    }      
+    }
   }
 
   if(t_tracks){
@@ -363,31 +345,31 @@ void analyseTreeForTrackingResolAndPID(
       
       
       h_tracks_reso_pT[0][et][parIdx]->Fill(truePt,(recPt-truePt)/truePt);
-      h_tracks_reso_p[0][et]->Fill(trueP,(recP-trueP)/trueP);
-      h_tracks_resoEta_pT[0][et]->Fill(truePt,(recEta-trueEta)/trueEta);
-      h_tracks_resoPhi_pT[0][et]->Fill(truePt,(recPhi-truePhi)/truePhi);
+      h_tracks_reso_p[0][et][parIdx]->Fill(trueP,(recP-trueP)/trueP);
+      h_tracks_resoEta_pT[0][et]->Fill(truePt,(recEta-trueEta));
+      h_tracks_resoPhi_pT[0][et]->Fill(truePt,(recPhi-truePhi));
       if (totTimeHits > 0){
         h_tracks_reso_pT[2][et][parIdx]->Fill(truePt,(recPt-truePt)/truePt);
-        h_tracks_reso_p[2][et]->Fill(trueP,(recP-trueP)/trueP);
-        h_tracks_resoEta_pT[2][et]->Fill(truePt,(recEta-trueEta)/trueEta);
-        h_tracks_resoPhi_pT[2][et]->Fill(truePt,(recPhi-truePhi)/truePhi);
+        h_tracks_reso_p[2][et][parIdx]->Fill(trueP,(recP-trueP)/trueP);
+        h_tracks_resoEta_pT[2][et]->Fill(truePt,(recEta-trueEta));
+        h_tracks_resoPhi_pT[2][et]->Fill(truePt,(recPhi-truePhi));
       } else {
         h_tracks_reso_pT[1][et][parIdx]->Fill(truePt,(recPt-truePt)/truePt);
-        h_tracks_reso_p[1][et]->Fill(trueP,(recP-trueP)/trueP);        
-        h_tracks_resoEta_pT[1][et]->Fill(truePt,(recEta-trueEta)/trueEta);
-        h_tracks_resoPhi_pT[1][et]->Fill(truePt,(recPhi-truePhi)/truePhi);
+        h_tracks_reso_p[1][et][parIdx]->Fill(trueP,(recP-trueP)/trueP);        
+        h_tracks_resoEta_pT[1][et]->Fill(truePt,(recEta-trueEta));
+        h_tracks_resoPhi_pT[1][et]->Fill(truePt,(recPhi-truePhi));
       }
       if (totTimeTracker >= 2){
         h_tracks_reso_pT[3][et][parIdx]->Fill(truePt,(recPt-truePt)/truePt);
-        h_tracks_reso_p[3][et]->Fill(trueP,(recP-trueP)/trueP);        
-        h_tracks_resoEta_pT[3][et]->Fill(truePt,(recEta-trueEta)/trueEta);
-        h_tracks_resoPhi_pT[3][et]->Fill(truePt,(recPhi-truePhi)/truePhi);
+        h_tracks_reso_p[3][et][parIdx]->Fill(trueP,(recP-trueP)/trueP);        
+        h_tracks_resoEta_pT[3][et]->Fill(truePt,(recEta-trueEta));
+        h_tracks_resoPhi_pT[3][et]->Fill(truePt,(recPhi-truePhi));
       }
       if (totTimeTracker >= 3){
         h_tracks_reso_pT[4][et][parIdx]->Fill(truePt,(recPt-truePt)/truePt);
-        h_tracks_reso_p[4][et]->Fill(trueP,(recP-trueP)/trueP);        
-        h_tracks_resoEta_pT[4][et]->Fill(truePt,(recEta-trueEta)/trueEta);
-        h_tracks_resoPhi_pT[4][et]->Fill(truePt,(recPhi-truePhi)/truePhi);
+        h_tracks_reso_p[4][et][parIdx]->Fill(trueP,(recP-trueP)/trueP);        
+        h_tracks_resoEta_pT[4][et]->Fill(truePt,(recEta-trueEta));
+        h_tracks_resoPhi_pT[4][et]->Fill(truePt,(recPhi-truePhi));
       }
             
       if (hasTiming && totTimeHits > 0){
@@ -526,10 +508,16 @@ void analyseTreeForTrackingResolAndPID(
           h_tracks_reso_pT[i][et][0]->Sumw2();
           h_tracks_reso_pT[i][nEta][0]->Sumw2();
           h_tracks_reso_pT[i][nEta][id]->Sumw2();
+          h_tracks_reso_p[i][et][0]->Sumw2();
+          h_tracks_reso_p[i][nEta][0]->Sumw2();
+          h_tracks_reso_p[i][nEta][id]->Sumw2();
         }
         h_tracks_reso_pT[i][et][0]->Add(h_tracks_reso_pT[i][et][id]);
         h_tracks_reso_pT[i][nEta][0]->Add(h_tracks_reso_pT[i][et][id]);
         h_tracks_reso_pT[i][nEta][id]->Add(h_tracks_reso_pT[i][et][id]);
+        h_tracks_reso_p[i][et][0]->Add(h_tracks_reso_p[i][et][id]);
+        h_tracks_reso_p[i][nEta][0]->Add(h_tracks_reso_p[i][et][id]);
+        h_tracks_reso_p[i][nEta][id]->Add(h_tracks_reso_p[i][et][id]);
       }
     }
     for (Int_t e = 0; e < 4; e++){
@@ -573,11 +561,9 @@ void analyseTreeForTrackingResolAndPID(
   for (Int_t i = 0; i < 5; i++){
     for (Int_t et = 0; et < nEta; et++){
       if (et == 0){
-        h_tracks_reso_p[i][nEta]->Sumw2();
         h_tracks_resoEta_pT[i][nEta]->Sumw2();
         h_tracks_resoPhi_pT[i][nEta]->Sumw2();
       }
-      h_tracks_reso_p[i][nEta]->Add(h_tracks_reso_p[i][et]);
       h_tracks_resoEta_pT[i][nEta]->Add(h_tracks_resoEta_pT[i][et]);
       h_tracks_resoPhi_pT[i][nEta]->Add(h_tracks_resoPhi_pT[i][et]);
     }
@@ -595,8 +581,8 @@ void analyseTreeForTrackingResolAndPID(
       for (Int_t i = 0; i< 5; i++){
         for (Int_t id = 0; id < 6; id++) {
           h_tracks_reso_pT[i][et][id]->Write();
+          h_tracks_reso_p[i][et][id]->Write();
         }
-        h_tracks_reso_p[i][et]->Write();
         h_tracks_resoEta_pT[i][et]->Write();
         h_tracks_resoPhi_pT[i][et]->Write();
       }
