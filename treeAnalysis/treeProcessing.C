@@ -18,8 +18,8 @@
 void treeProcessing(
     
     // TString fileName       = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_epMB.root",
-    // TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_pTHard5.root",
-    TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_epMB_pTHard5.root",
+    TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_pTHard5.root",
+    // TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_epMB_pTHard5.root",
     // TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-TREXTOUT_epMB.root",
     // TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-TREXTOUT_pTHard5.root",
     // TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-TREXTOUT_epMB_pTHard5.root",
@@ -135,7 +135,7 @@ void treeProcessing(
                 _clusters_NxN_FEMC_Y,
                 _clusters_NxN_FEMC_Z);
         }
-        if(do_NxNclusterizerFEMC){
+        if(do_V3clusterizerFEMC){
             _do_V3clusterizerFEMC = true;
             runclusterizer(kV3, kFEMC,0.5, 0.1,
                 _nclusters_V3_FEMC,
@@ -194,19 +194,30 @@ void treeProcessing(
         std::vector<float> jetf_full_py;
         std::vector<float> jetf_full_pz;
         std::vector<float> jetf_full_E;
+        std::vector<float> jetf_all_px;
+        std::vector<float> jetf_all_py;
+        std::vector<float> jetf_all_pz;
+        std::vector<float> jetf_all_E;
         for(Int_t itrk=0; itrk<_nTracks; itrk++){
             if(verbosity>1) cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk]-1 << "\tand X = " << _track_px[itrk] << " cm" << endl;
 
             if(_do_jetfinding){
+                TVector3 trackvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
+                if(trackvec.Eta()<0) continue;
+                float Etrack = TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)+TMath::Power(_track_pz[itrk],2));
                 // create track vector for jet finder
                 jetf_track_px.push_back(_track_px[itrk]);
                 jetf_track_py.push_back(_track_py[itrk]);
                 jetf_track_pz.push_back(_track_pz[itrk]);
-                jetf_track_E.push_back(TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)+TMath::Power(_track_pz[itrk],2)));
+                jetf_track_E.push_back(Etrack);
                 jetf_full_px.push_back(_track_px[itrk]);
                 jetf_full_py.push_back(_track_py[itrk]);
                 jetf_full_pz.push_back(_track_pz[itrk]);
-                jetf_full_E.push_back(TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)+TMath::Power(_track_pz[itrk],2)));
+                jetf_full_E.push_back(Etrack);
+                jetf_all_px.push_back(_track_px[itrk]);
+                jetf_all_py.push_back(_track_py[itrk]);
+                jetf_all_pz.push_back(_track_pz[itrk]);
+                jetf_all_E.push_back(Etrack);
             }
         }
         trackingefficiency();
@@ -232,23 +243,43 @@ void treeProcessing(
         // float* _clusters_FHCAL_Phi[iclus];
         // int* _clusters_FHCAL_NTower[iclus];
         // float* _clusters_FHCAL_trueID[iclus];
+        std::vector<float> jetf_hcal_E;
+        std::vector<float> jetf_hcal_px;
+        std::vector<float> jetf_hcal_py;
+        std::vector<float> jetf_hcal_pz;
+        std::vector<float> jetf_calo_E;
+        std::vector<float> jetf_calo_px;
+        std::vector<float> jetf_calo_py;
+        std::vector<float> jetf_calo_pz;
         // for(Int_t iclus=0; iclus<_nclusters_FHCAL; iclus++){
         //     if(verbosity>1) cout << "\tcls " << iclus << "\tE " << _clusters_FHCAL_E[iclus] << "\tEta " << _clusters_FHCAL_Eta[iclus] << "\tPhi " << _clusters_FHCAL_Phi[iclus] << "\tntowers: " << _clusters_FHCAL_NTower[iclus] << "\ttrueID: " << _clusters_FHCAL_trueID[iclus] << endl;
         // }
-        // if(do_V3clusterizer){
-        //     for(Int_t iclus=0; iclus<_nclusters_V3_FHCAL; iclus++){
-        //         if(!_clusters_V3_FHCAL_isMatched[iclus]){
-        //             double pt = _clusters_V3_FHCAL_E[iclus] / cosh(_clusters_V3_FHCAL_Eta[iclus]);
-        //             double px = pt * cos(_clusters_V3_FHCAL_Phi[iclus]);
-        //             double py = pt * sin(_clusters_V3_FHCAL_Phi[iclus]);
-        //             double pz = pt * sinh(_clusters_V3_FHCAL_Eta[iclus]);
-        //             jetf_full_px.push_back(px);
-        //             jetf_full_py.push_back(py);
-        //             jetf_full_pz.push_back(pz);
-        //             jetf_full_E.push_back(_clusters_V3_FHCAL_E[iclus]);
-        //         }
-        //     }
-        // }
+        if(do_V3clusterizer){
+            for(Int_t iclus=0; iclus<_nclusters_V3_FHCAL; iclus++){
+                if(!_clusters_V3_FHCAL_isMatched[iclus]){
+                    double pt = _clusters_V3_FHCAL_E[iclus] / cosh(_clusters_V3_FHCAL_Eta[iclus]);
+                    double px = pt * cos(_clusters_V3_FHCAL_Phi[iclus]);
+                    double py = pt * sin(_clusters_V3_FHCAL_Phi[iclus]);
+                    double pz = pt * sinh(_clusters_V3_FHCAL_Eta[iclus]);
+                    jetf_all_px.push_back(px);
+                    jetf_all_py.push_back(py);
+                    jetf_all_pz.push_back(pz);
+                    jetf_all_E.push_back(_clusters_V3_FHCAL_E[iclus]);
+                    jetf_hcal_px.push_back(px);
+                    jetf_hcal_py.push_back(py);
+                    jetf_hcal_pz.push_back(pz);
+                    jetf_hcal_E.push_back(_clusters_V3_FHCAL_E[iclus]);
+                    jetf_calo_px.push_back(px);
+                    jetf_calo_py.push_back(py);
+                    jetf_calo_pz.push_back(pz);
+                    jetf_calo_E.push_back(_clusters_V3_FHCAL_E[iclus]);
+                    jetf_all_px.push_back(px);
+                    jetf_all_py.push_back(py);
+                    jetf_all_pz.push_back(pz);
+                    jetf_all_E.push_back(_clusters_V3_FHCAL_E[iclus]);
+                }
+            }
+        }
 
         // ANCHOR FEMC cluster loop variables:
         // float* _clusters_FEMC_E[iclus];
@@ -259,7 +290,7 @@ void treeProcessing(
         // for(Int_t iclus=0; iclus<_nclusters_FEMC; iclus++){
         //     if(verbosity>1) cout << "\tFEMC:  cluster " << iclus << "\twith E = " << _clusters_FEMC_E[iclus] << " GeV" << endl;
         // }
-       if(do_V3clusterizerFEMC){
+        if(do_V3clusterizerFEMC){
             for(Int_t iclus=0; iclus<_nclusters_V3_FEMC; iclus++){
                 if(!_clusters_V3_FEMC_isMatched[iclus]){
                     double pt = _clusters_V3_FEMC_E[iclus] / cosh(_clusters_V3_FEMC_Eta[iclus]);
@@ -270,6 +301,14 @@ void treeProcessing(
                     jetf_full_py.push_back(py);
                     jetf_full_pz.push_back(pz);
                     jetf_full_E.push_back(_clusters_V3_FEMC_E[iclus]);
+                    jetf_calo_px.push_back(px);
+                    jetf_calo_py.push_back(py);
+                    jetf_calo_pz.push_back(pz);
+                    jetf_calo_E.push_back(_clusters_V3_FEMC_E[iclus]);
+                    jetf_all_px.push_back(px);
+                    jetf_all_py.push_back(py);
+                    jetf_all_pz.push_back(pz);
+                    jetf_all_E.push_back(_clusters_V3_FEMC_E[iclus]);
                 }
             }
         }
@@ -305,6 +344,8 @@ void treeProcessing(
             std::vector<float> jetf_truth_pz;
             std::vector<float> jetf_truth_E;
             for(Int_t imc=0; imc<_nMCPart; imc++){
+                TVector3 truevec(_mcpart_px[imc],_mcpart_py[imc],_mcpart_pz[imc]);
+                if(truevec.Eta()<0) continue;
                 if(verbosity>1) cout << "\tMC:  particle " << imc << "\twith E = " << _mcpart_E[imc] << " GeV" << endl;
                 //  create truth vector for jet finder
                 jetf_truth_px.push_back(_mcpart_px[imc]);
@@ -319,21 +360,39 @@ void treeProcessing(
             if(verbosity>1)cout << "found " << std::get<1>(jetsTrue).size() << " true jets" << endl;        // printJets(std::get<1>(jetsTrue));
 
             // track-based jets (rec)
-            // auto jetsTrackRec = findJets(1.0, "anti-kt", jetf_track_px, jetf_track_py, jetf_track_pz, jetf_track_E);
-            // if(verbosity>1)cout << "found " << std::get<1>(jetsTrackRec).size() << " rec track jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
+            auto jetsTrackRec = findJets(1.0, "anti-kt", jetf_track_px, jetf_track_py, jetf_track_pz, jetf_track_E);
+            if(verbosity>1)cout << "found " << std::get<1>(jetsTrackRec).size() << " rec track jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
 
             // full jets (rec)
-            auto jetsTrackRec = findJets(1.0, "anti-kt", jetf_full_px, jetf_full_py, jetf_full_pz, jetf_full_E);
-            // if(verbosity>1) cout << "found " << std::get<1>(jetsTrackRec).size() << " rec full jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
+            auto jetsFullRec = findJets(1.0, "anti-kt", jetf_full_px, jetf_full_py, jetf_full_pz, jetf_full_E);
+            if(verbosity>1) cout << "found " << std::get<1>(jetsFullRec).size() << " rec full jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
 
-            jetresolutionhistos(jetsTrackRec,jetsTrue);
+            // hcal jets (rec)
+            auto jetsHcalRec = findJets(1.0, "anti-kt", jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz, jetf_hcal_E);
+            if(verbosity>1) cout << "found " << std::get<1>(jetsHcalRec).size() << " rec hcal jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
+
+            // calo jets (rec)
+            auto jetsCaloRec = findJets(1.0, "anti-kt", jetf_calo_px, jetf_calo_py, jetf_calo_pz, jetf_calo_E);
+            if(verbosity>1) cout << "found " << std::get<1>(jetsCaloRec).size() << " rec calo jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
+
+            // all jets (rec)
+            auto jetsAllRec = findJets(1.0, "anti-kt", jetf_all_px, jetf_all_py, jetf_all_pz, jetf_all_E);
+            if(verbosity>1) cout << "found " << std::get<1>(jetsAllRec).size() << " rec all jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
+
+            jetresolutionhistos(jetsTrackRec,jetsTrue,0);
+            jetresolutionhistos(jetsFullRec,jetsTrue,1);
+            jetresolutionhistos(jetsHcalRec,jetsTrue,2);
+            jetresolutionhistos(jetsCaloRec,jetsTrue,3);
+            jetresolutionhistos(jetsAllRec,jetsTrue,4);
+// TString jettype[njettypes] = {"track", "full","hcal","calo","all"};
+
         }
         resolutionhistos();
         clusterstudies();
-        if(_do_NxNclusterizer) trackmatchingstudies(kNxN, kFHCAL,true);
-        if(_do_NxNclusterizerFEMC) trackmatchingstudies(kNxN, kFEMC,true);
-        if(_do_V3clusterizer) trackmatchingstudies(kV3, kFHCAL,true);
-        if(_do_V3clusterizerFEMC) trackmatchingstudies(kV3, kFEMC,true);
+        // if(_do_NxNclusterizer) trackmatchingstudies(kNxN, kFHCAL,true);
+        // if(_do_NxNclusterizerFEMC) trackmatchingstudies(kNxN, kFEMC,true);
+        // if(_do_V3clusterizer) trackmatchingstudies(kV3, kFHCAL,true);
+        // if(_do_V3clusterizerFEMC) trackmatchingstudies(kV3, kFEMC,true);
 
     } // event loop end
     jetresolutionhistosSave();
@@ -341,5 +400,6 @@ void treeProcessing(
     clusterstudiesSave();
     trackingefficiencyhistosSave();
     hitstudiesSave();
-    trackmatchingstudiesSave();
+    // trackmatchingstudiesSave();
+    clusterizerSave();
 }

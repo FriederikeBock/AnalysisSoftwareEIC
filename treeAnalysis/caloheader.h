@@ -13,6 +13,7 @@ enum calotype {
     kEEMC         = 3,
     kCEMC         = 4
 };
+TString str_calorimeter[5] = {"FHCAL", "FEMC", "DRCALO", "EEMC", "CEMC"};
 
 enum clusterizertype {
     kV1         = 0,
@@ -20,6 +21,8 @@ enum clusterizertype {
     kNxN        = 2,
     kXN         = 3
 };
+TString str_clusterizer[4] = {"V1", "V3", "NxN", "XN"};
+
 // sorting function for towers
 bool acompare(towersStrct lhs, towersStrct rhs) { return lhs.tower_E > rhs.tower_E; }
 
@@ -93,13 +96,21 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
     }
     returnVariables[2]=vecTwr.Eta();
     returnVariables[3]=(vecTwr.Phi()<0 ? vecTwr.Phi()+TMath::Pi() : vecTwr.Phi()-TMath::Pi());
-    // vecTwr*=(zHC/vecTwr.Z());
-    returnVariables[4]=TowerPositionVectorFromIndices(cluster_towers.at(0).tower_iEta,cluster_towers.at(0).tower_iPhi, caloSelect).X();
-    returnVariables[5]=TowerPositionVectorFromIndices(cluster_towers.at(0).tower_iEta,cluster_towers.at(0).tower_iPhi, caloSelect).Y();
-    returnVariables[6]=TowerPositionVectorFromIndices(cluster_towers.at(0).tower_iEta,cluster_towers.at(0).tower_iPhi, caloSelect).Z();
-    // returnVariables[4]=vecTwr.X();
-    // returnVariables[5]=vecTwr.Y();
-    // returnVariables[6]=vecTwr.Z();
+    vecTwr*=(zHC/vecTwr.Z());
+    // returnVariables[4]=TowerPositionVectorFromIndices(cluster_towers.at(0).tower_iEta,cluster_towers.at(0).tower_iPhi, caloSelect).X();
+    // returnVariables[5]=TowerPositionVectorFromIndices(cluster_towers.at(0).tower_iEta,cluster_towers.at(0).tower_iPhi, caloSelect).Y();
+    // returnVariables[6]=TowerPositionVectorFromIndices(cluster_towers.at(0).tower_iEta,cluster_towers.at(0).tower_iPhi, caloSelect).Z();
+    returnVariables[4]=vecTwr.X();
+    returnVariables[5]=vecTwr.Y();
+    returnVariables[6]=vecTwr.Z();
+    // if(vecTwr.X()>1e3 || (abs(vecTwr.X()) < 1 && abs(vecTwr.X()) !=0)) cout << "CALO " << caloSelect << "\tx: " << vecTwr.X()<< "\ty: " << vecTwr.Y()<< "\tz: " << vecTwr.Z() << endl;
+    if((vecTwr.Z()>351) || (vecTwr.Z()<290)){
+      cout << "CALO " << caloSelect << "\tx: " << vecTwr.X()<< "\ty: " << vecTwr.Y()<< "\tz: " << vecTwr.Z() << endl;
+      for(int cellI=0; cellI<cluster_towers.size(); cellI++){
+        TVector3 vectemp = TowerPositionVectorFromIndices(cluster_towers.at(cellI).tower_iEta,cluster_towers.at(cellI).tower_iPhi, caloSelect);
+        cout << "\tx: " << vectemp.X()<< "\ty: " << vectemp.Y()<< "\tz: " << vectemp.Z() << endl;
+      }
+    }
 
     //calculation of M02
     float delta_phi_phi[4] = {0};

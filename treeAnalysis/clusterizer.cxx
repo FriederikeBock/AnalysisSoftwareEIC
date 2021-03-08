@@ -13,8 +13,15 @@ bool _do_V3clusterizerFEMC = false;
 bool _do_XNclusterizerFEMC = false;
 bool _do_NxNclusterizerFEMC = false;
 
+TH2F*  h_clusterizer_matched_dx_dy[5][4]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_all_dx_dy[5][4]; // [calorimeter_enum][algorithm_enum]
+TH1F*  h_clusterizer_clsspec_E[5][4]; // [calorimeter_enum][algorithm_enum]
+TH1F*  h_clusterizer_clsspec_matched_E[5][4]; // [calorimeter_enum][algorithm_enum]
+TH1F*  h_clusterizer_clsspec_PDG[5][4]; // [calorimeter_enum][algorithm_enum]
+TH1F*  h_clusterizer_clsspec_matched_PDG[5][4]; // [calorimeter_enum][algorithm_enum]
 
-bool isClusterMatched(int clsID, float matchingwindow, float* clusters_Eta, float* clusters_Phi, float* clusters_E, bool useProjection = false, int projectionlayer = 0);
+
+bool isClusterMatched(int clsID, float matchingwindow, float* clusters_X, float* clusters_Y, float* clusters_E, int caloEnum, int clusterizerEnum, bool useProjection = true);
 
 // ANCHOR main function to be called in event loop
 void runclusterizer(
@@ -39,6 +46,15 @@ void runclusterizer(
   nclusters = 0;
   if(verbosityCLS>1)cout << "XN: new event" << endl;
 
+  for(int icalo=0;icalo<5;icalo++){
+    for(int ialgo=0;ialgo<4;ialgo++){
+      if(!h_clusterizer_clsspec_E[icalo][ialgo])h_clusterizer_clsspec_E[icalo][ialgo] 	= new TH1F(Form("h_clusterizer_clsspec_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,100);
+      if(!h_clusterizer_clsspec_matched_E[icalo][ialgo])h_clusterizer_clsspec_matched_E[icalo][ialgo] 	= new TH1F(Form("h_clusterizer_clsspec_matched_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,100);
+      if(!h_clusterizer_clsspec_PDG[icalo][ialgo])h_clusterizer_clsspec_PDG[icalo][ialgo] 	= new TH1F(Form("h_clusterizer_clsspec_PDG_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 2500,0,2500);
+      if(!h_clusterizer_clsspec_matched_PDG[icalo][ialgo])h_clusterizer_clsspec_matched_PDG[icalo][ialgo] 	= new TH1F(Form("h_clusterizer_clsspec_matched_PDG_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 2500,0,2500);
+    }
+  }
+
   // vector of towers used in the clusterizer
   std::vector<towersStrct> input_towers;
   // vector of towers within the currently found cluster
@@ -52,7 +68,7 @@ void runclusterizer(
         tempstructT.tower_E = _tower_FHCAL_E[itow];
         tempstructT.tower_iEta = _tower_FHCAL_iEta[itow];
         tempstructT.tower_iPhi = _tower_FHCAL_iPhi[itow];
-        tempstructT.tower_trueID = _tower_FHCAL_trueID[itow]-1;
+        tempstructT.tower_trueID = _tower_FHCAL_trueID[itow];
         input_towers.push_back(tempstructT);
       }
     }
@@ -63,7 +79,7 @@ void runclusterizer(
         tempstructT.tower_E = _tower_FEMC_E[itow];
         tempstructT.tower_iEta = _tower_FEMC_iEta[itow];
         tempstructT.tower_iPhi = _tower_FEMC_iPhi[itow];
-        tempstructT.tower_trueID = _tower_FEMC_trueID[itow]-1;
+        tempstructT.tower_trueID = _tower_FEMC_trueID[itow];
         input_towers.push_back(tempstructT);
       }
     }
@@ -162,12 +178,18 @@ void runclusterizer(
       clusters_X[nclusters] = showershape_eta_phi[4];
       clusters_Y[nclusters] = showershape_eta_phi[5];
       clusters_Z[nclusters] = showershape_eta_phi[6];
-      clusters_isMatched[nclusters] = isClusterMatched(nclusters, 0.3,clusters_Eta,clusters_Phi,clusters_E);
+      clusters_isMatched[nclusters] = isClusterMatched(nclusters, 20,clusters_X,clusters_Y,clusters_E, caloEnum, clusterizerEnum, true);
      // if(verbosityCLS>1) cout << "\tXN cluster with E = " << clusters_E[nclusters] << "\tEta: " << clusters_Eta[nclusters]<< "\tPhi: " << clusters_Phi[nclusters]<< "\tntowers: " << clusters_NTower[nclusters] << "\ttrueID: " << clusters_trueID[nclusters] << endl;
       // remove clusterized towers
       if(!(clusterizerEnum==kV3)){
         input_towers.erase(input_towers.begin());
       }
+
+      h_clusterizer_clsspec_E[caloEnum][clusterizerEnum]->Fill(clusters_E[nclusters]);
+      if(clusters_isMatched[nclusters]) h_clusterizer_clsspec_matched_E[caloEnum][clusterizerEnum]->Fill(clusters_E[nclusters]);
+      h_clusterizer_clsspec_PDG[caloEnum][clusterizerEnum]->Fill(_mcpart_PDG[clusters_trueID[nclusters]-1]);
+      if(clusters_isMatched[nclusters]) h_clusterizer_clsspec_matched_PDG[caloEnum][clusterizerEnum]->Fill(_mcpart_PDG[clusters_trueID[nclusters]-1]);
+
       nclusters++;
     } else {
       input_towers.clear();
@@ -178,36 +200,84 @@ void runclusterizer(
 
 // ANCHOR track/projection matching function
 // TODO at some point we might want E/p
-bool isClusterMatched(int clsID, float matchingwindow, float* clusters_Eta, float* clusters_Phi, float* clusters_E, bool useProjection = false, int projectionlayer /*FTTL2*/){
+bool isClusterMatched(int clsID, float matchingwindow, float* clusters_X, float* clusters_Y, float* clusters_E, int caloEnum, int clusterizerEnum, bool useProjection = true){
+  for(int icalo=0;icalo<5;icalo++){
+    for(int ialgo=0;ialgo<4;ialgo++){
+      if(!h_clusterizer_all_dx_dy[icalo][ialgo])h_clusterizer_all_dx_dy[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_all_dx_dy_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 100,-100,100, 100,-100,100);
+      if(!h_clusterizer_matched_dx_dy[icalo][ialgo])h_clusterizer_matched_dx_dy[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_matched_dx_dy_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 100,-100,100, 100,-100,100);
+    }
+  }
   if(useProjection){
+    int projectionlayer = 0;
+    if(caloEnum==kFHCAL)projectionlayer = 2;
+    else if(caloEnum==kFEMC)projectionlayer = 1;
+    else {
+      cout << "isClusterMatched: caloEnum noch defined, returning FALSE" << endl;
+      return false;
+    }
     for(Int_t iproj=0; iproj<_nProjections; iproj++){
       if(_track_ProjLayer[iproj]!=projectionlayer) continue;
+      if(_track_Proj_t[iproj]<-9000) continue;
+      if(_track_Proj_x[iproj]==0 && _track_Proj_y[iproj]==0) continue;
+      if(clusters_X[iproj]==0 && clusters_Y[iproj]==0) continue;
       // check eta difference
-      TVector3 trackvec(_track_Proj_x[iproj],_track_Proj_y[iproj],_track_Proj_z[iproj]);
-      if(abs(trackvec.Eta()-clusters_Eta[clsID]) < matchingwindow){
-        if(verbosityCLS>1) cout << "\tProj matched in eta! trk: " << trackvec.Eta() << "\tcls: " << clusters_Eta[clsID] << "\tdelta: " << abs(trackvec.Eta()-clusters_Eta[clsID]) << endl;
-        float trkphi = (trackvec.Phi()<0 ? trackvec.Phi()+TMath::Pi() : trackvec.Phi()-TMath::Pi());
+      h_clusterizer_all_dx_dy[caloEnum][clusterizerEnum]->Fill(_track_Proj_x[iproj]-clusters_X[clsID],_track_Proj_y[iproj]-clusters_Y[clsID]);
+
+      if(abs(_track_Proj_x[iproj]-clusters_X[clsID]) < matchingwindow){
+        if(verbosityCLS>1) cout << "\tProj matched in x! prj: " << _track_Proj_x[iproj] << "\tcls: " << clusters_X[clsID] << "\tdelta: " << abs(_track_Proj_x[iproj]-clusters_X[clsID]) << endl;
         // check phi difference
-        if(abs(trkphi-clusters_Phi[clsID]) < matchingwindow){
-          if(verbosityCLS>1) cout << "\tProj matched in phi! trk: " << trackvec.Mag() << "\tcls: " << clusters_E[clsID] << "\tdelta: " << abs(trkphi-clusters_Phi[clsID]) << endl;
+        if(abs(_track_Proj_y[iproj]-clusters_Y[clsID]) < matchingwindow){
+          if(verbosityCLS>1) cout << "\tProj matched in y! prj: " << _track_Proj_y[iproj] << "\tcls: " << clusters_Y[clsID] << "\tdelta: " << abs(_track_Proj_y[iproj]-clusters_Y[clsID]) << endl;
+          h_clusterizer_matched_dx_dy[caloEnum][clusterizerEnum]->Fill(_track_Proj_x[iproj]-clusters_X[clsID],_track_Proj_y[iproj]-clusters_Y[clsID]);
           return true;
         }
       }
     }
   } else {
+    float zHC = 400;
+    if(caloEnum==kFHCAL)zHC=350;
+    if(caloEnum==kFEMC)zHC=291;
     for(Int_t itrk=0; itrk<_nTracks; itrk++){
       // check eta difference
       TVector3 trackvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
-      if(abs(trackvec.Eta()-clusters_Eta[clsID]) < matchingwindow){
-        if(verbosityCLS>1) cout << "\tTrack matched in eta! trk: " << trackvec.Mag() << "\tcls: " << clusters_E[clsID] << "\tdelta: " << abs(trackvec.Eta()-clusters_Eta[clsID]) << endl;
+      trackvec*=(zHC/trackvec.Z());
+
+      h_clusterizer_all_dx_dy[caloEnum][clusterizerEnum]->Fill(trackvec.X()-clusters_X[clsID],trackvec.Y()-clusters_Y[clsID]);
+
+      if(abs(trackvec.X()-clusters_X[clsID]) < matchingwindow){
+        // if(verbosityCLS>1) cout << "\tTrck matched in x! trk: " << trackvec.X() << "\tcls: " << clusters_X[clsID] << "\tdelta: " << abs(trackvec.X()-clusters_X[clsID]) << endl;
         float trkphi = (trackvec.Phi()<0 ? trackvec.Phi()+TMath::Pi() : trackvec.Phi()-TMath::Pi());
         // check phi difference
-        if(abs(trkphi-clusters_Phi[clsID]) < matchingwindow){
-          if(verbosityCLS>1) cout << "\tTrack matched in phi! trk: " << trackvec.Mag() << "\tcls: " << clusters_E[clsID] << "\tdelta: " << abs(trkphi-clusters_Phi[clsID]) << endl;
+        if(abs(trackvec.Y()-clusters_Y[clsID]) < matchingwindow){
+          h_clusterizer_matched_dx_dy[caloEnum][clusterizerEnum]->Fill(trackvec.X()-clusters_X[clsID],trackvec.Y()-clusters_Y[clsID]);
+          // if(verbosityCLS>1)  cout << "\tTrck matched in y! prj: " << trackvec.Y() << "\tcls: " << clusters_Y[clsID] << "\tdelta: " << abs(trackvec.Y()-clusters_Y[clsID]) << endl;
           return true;
         }
       }
     }
   }
   return false;
+}
+
+
+void clusterizerSave(){
+// make output directory
+    gSystem->Exec("mkdir -p "+outputDir + "/clusterizer");
+
+  // define output file
+  TFile* fileOutput = new TFile(Form("%s/clusterizer/output_CLSIZER.root",outputDir.Data()),"RECREATE");
+
+  for(int icalo=0;icalo<5;icalo++){
+    for(int ialgo=0;ialgo<4;ialgo++){
+      if(h_clusterizer_all_dx_dy[icalo][ialgo]) h_clusterizer_all_dx_dy[icalo][ialgo]->Write();
+      if(h_clusterizer_matched_dx_dy[icalo][ialgo]) h_clusterizer_matched_dx_dy[icalo][ialgo]->Write();
+      if(h_clusterizer_clsspec_E[icalo][ialgo]) h_clusterizer_clsspec_E[icalo][ialgo]->Write();
+      if(h_clusterizer_clsspec_matched_E[icalo][ialgo]) h_clusterizer_clsspec_matched_E[icalo][ialgo]->Write();
+      if(h_clusterizer_clsspec_PDG[icalo][ialgo]) h_clusterizer_clsspec_PDG[icalo][ialgo]->Write();
+      if(h_clusterizer_clsspec_matched_PDG[icalo][ialgo]) h_clusterizer_clsspec_matched_PDG[icalo][ialgo]->Write();
+    }
+  }
+  // write output file
+  fileOutput->Write();
+  fileOutput->Close();
 }

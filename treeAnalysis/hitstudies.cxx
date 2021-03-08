@@ -113,27 +113,27 @@ void hitstudiesSave(){
   }
 
   if(h_trackProj_FTTL1_xy){
-    h_trackProj_FTTL1_xy->Scale(1/_nEventsTree);
+    // h_trackProj_FTTL1_xy->Scale(1/_nEventsTree);
     h_trackProj_FTTL1_xy->Write();
   }
   if(h_trackProj_FTTL1_etaphi){
-    h_trackProj_FTTL1_etaphi->Scale(1/_nEventsTree);
+    // h_trackProj_FTTL1_etaphi->Scale(1/_nEventsTree);
     h_trackProj_FTTL1_etaphi->Write();
   }
   if(h_trackProj_FTTL2_xy){
-    h_trackProj_FTTL2_xy->Scale(1/_nEventsTree);
+    // h_trackProj_FTTL2_xy->Scale(1/_nEventsTree);
     h_trackProj_FTTL2_xy->Write();
   }
   if(h_trackProj_FTTL2_etaphi){
-    h_trackProj_FTTL2_etaphi->Scale(1/_nEventsTree);
+    // h_trackProj_FTTL2_etaphi->Scale(1/_nEventsTree);
     h_trackProj_FTTL2_etaphi->Write();
   }
   if(h_trackProj_CTTL0_etaphi){
-    h_trackProj_CTTL0_etaphi->Scale(1/_nEventsTree);
+    // h_trackProj_CTTL0_etaphi->Scale(1/_nEventsTree);
     h_trackProj_CTTL0_etaphi->Write();
   }
   if(h_trackProj_CTTL1_etaphi){
-    h_trackProj_CTTL1_etaphi->Scale(1/_nEventsTree);
+    // h_trackProj_CTTL1_etaphi->Scale(1/_nEventsTree);
     h_trackProj_CTTL1_etaphi->Write();
   }
   // write output file

@@ -56,7 +56,7 @@ void trackingefficiency(){
     float pt = TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2));
     float truept = TMath::Sqrt(TMath::Power(_mcpart_px[(int)_track_trueID[itrk]-1],2)+TMath::Power(_mcpart_py[(int)_track_trueID[itrk]-1],2));
     float pmom = TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)+TMath::Power(_track_pz[itrk],2));
-    float truepmom = TMath::Sqrt(TMath::Power(_mcpart_px[(int)_track_trueID[itrk]-1],2)+TMath::Power(_mcpart_py[(int)_track_trueID[itrk]-1],2)+TMath::Power(_mcpart_pz[(int)_track_trueID[itrk]-1],2));
+    float truepmom = TMath::Sqrt(TMath::Power(_mcpart_px[(int)_track_trueID[itrk]-1],2)+TMath::Power(_mcpart_py[(int)_track_trueID[itrk]],2)+TMath::Power(_mcpart_pz[(int)_track_trueID[itrk]-1],2));
     for(int ipart=0;ipart<5;ipart++){
       if(abs(_mcpart_PDG[(int)_track_trueID[itrk]-1])==int_TRKEFF_mcparticles_PDG[ipart]){
         h_particle_rec_pT[ipart]->Fill(pt,receta);

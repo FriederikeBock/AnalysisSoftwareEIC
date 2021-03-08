@@ -41,7 +41,7 @@ bool trackmatchingstudies(int enum_clusterizer, int enum_calorimeter, bool usePr
 
   for(int iclr=0;iclr<5;iclr++){
     for(int ialgo=0;ialgo<4;ialgo++){
-      if(!h_TMstudies_dx_dy[iclr][ialgo])h_TMstudies_dx_dy[iclr][ialgo] 	= new TH2F(Form("h_TMstudies_dx_dy_%d_%d",iclr,ialgo), "", 100,-100,100, 100,-100,100);
+      if(!h_TMstudies_dx_dy[iclr][ialgo])h_TMstudies_dx_dy[iclr][ialgo] 	= new TH2F(Form("h_TMstudies_dx_dy_%s_%s",str_calorimeter[iclr].Data(),str_clusterizer[ialgo].Data()), "", 100,-100,100, 100,-100,100);
     }
   }
 
@@ -50,15 +50,18 @@ bool trackmatchingstudies(int enum_clusterizer, int enum_calorimeter, bool usePr
   if(enum_calorimeter==kFEMC) projectionlayer = 1;
 
   for(Int_t iclus=0; iclus<_nclusters_TM; iclus++){
-    if(!(clusters_TM_M02[iclus]<0.1))continue;
+    // if(!(clusters_TM_M02[iclus]<0.1))continue;
+    if(!(clusters_TM_Eta[iclus]>3.0))continue;
     // if(!(clusters_TM_NTower[iclus]<3))continue;
     // bool matchfound = false;
     if(useProjection){
       for(Int_t iproj=0; iproj<_nProjections; iproj++){
         // if(matchfound) continue;
         if(_track_ProjLayer[iproj]!=projectionlayer) continue;
+        // if((abs(_track_Proj_x[iclus])<15 && abs(_track_Proj_y[iclus])<15))continue;
         if(_track_Proj_t[iproj]<-9000) continue;
-        // if(_track_Proj_x[iproj]==0 && _track_Proj_y[iproj]==0) continue;
+        if(_track_Proj_x[iproj]==0 && _track_Proj_y[iproj]==0) continue;
+        if(clusters_TM_X[iproj]==0 && clusters_TM_Y[iproj]==0) continue;
         // check eta difference
         h_TMstudies_dx_dy[enum_calorimeter][enum_clusterizer]->Fill(_track_Proj_x[iproj]-clusters_TM_X[iclus],_track_Proj_y[iproj]-clusters_TM_Y[iclus]);
         // if(TMath::Sqrt(TMath::Power(_track_Proj_x[iproj]-clusters_TM_X[iclus],2)+TMath::Power(_track_Proj_y[iproj]-clusters_TM_Y[iclus],2)) <15)matchfound=true;
