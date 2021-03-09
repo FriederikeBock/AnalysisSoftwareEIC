@@ -280,6 +280,20 @@ void loadClusterizerInput(
       clusters_X = _clusters_NxN_FEMC_X;
       clusters_Y = _clusters_NxN_FEMC_Y;
       clusters_Z = _clusters_NxN_FEMC_Z;
+    } else {
+      nclusters = 0;
+      clusters_E = {0};
+      clusters_Eta = {0};
+      clusters_Phi = {0};
+      clusters_M02 = {0};
+      clusters_M20 = {0};
+      clusters_isMatched = {0};
+      clusters_NTower = {0};
+      clusters_trueID = {0};
+      clusters_NtrueID = {0};
+      clusters_X = {0};
+      clusters_Y = {0};
+      clusters_Z = {0};
     }
   }
 // V3 global cluster variables
@@ -312,6 +326,20 @@ void loadClusterizerInput(
       clusters_X = _clusters_V3_FEMC_X;
       clusters_Y = _clusters_V3_FEMC_Y;
       clusters_Z = _clusters_V3_FEMC_Z;
+    } else {
+      nclusters = 0;
+      clusters_E = {0};
+      clusters_Eta = {0};
+      clusters_Phi = {0};
+      clusters_M02 = {0};
+      clusters_M20 = {0};
+      clusters_isMatched = {0};
+      clusters_NTower = {0};
+      clusters_trueID = {0};
+      clusters_NtrueID = {0};
+      clusters_X = {0};
+      clusters_Y = {0};
+      clusters_Z = {0};
     }
   }
 // V1 global cluster variables
@@ -340,6 +368,20 @@ void loadClusterizerInput(
       clusters_isMatched = {0};
       clusters_NTower = _clusters_FEMC_NTower;
       clusters_trueID = _clusters_FEMC_trueID;
+      clusters_NtrueID = {0};
+      clusters_X = {0};
+      clusters_Y = {0};
+      clusters_Z = {0};
+    } else {
+      nclusters = 0;
+      clusters_E = {0};
+      clusters_Eta = {0};
+      clusters_Phi = {0};
+      clusters_M02 = {0};
+      clusters_M20 = {0};
+      clusters_isMatched = {0};
+      clusters_NTower = {0};
+      clusters_trueID = {0};
       clusters_NtrueID = {0};
       clusters_X = {0};
       clusters_Y = {0};
@@ -377,6 +419,20 @@ void loadClusterizerInput(
       clusters_X = _clusters_XN_FEMC_X;
       clusters_Y = _clusters_XN_FEMC_Y;
       clusters_Z = _clusters_XN_FEMC_Z;
+    } else {
+      nclusters = 0;
+      clusters_E = {0};
+      clusters_Eta = {0};
+      clusters_Phi = {0};
+      clusters_M02 = {0};
+      clusters_M20 = {0};
+      clusters_isMatched = {0};
+      clusters_NTower = {0};
+      clusters_trueID = {0};
+      clusters_NtrueID = {0};
+      clusters_X = {0};
+      clusters_Y = {0};
+      clusters_Z = {0};
     }
   }
 }

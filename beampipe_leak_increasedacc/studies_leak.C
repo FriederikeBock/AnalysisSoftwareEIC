@@ -3,7 +3,6 @@
 
 void fill_histogram(TH1F * const h, TTree * const t, const Float_t true_energy,
 		    const Float_t min_value,const Float_t min_towers, const bool normalize, Float_t etalow, Float_t etahigh);
-void split_canvas(TCanvas* &cPNG, TString canvName, Int_t numInputs);
 
 void studies_leak(
   Double_t jetradiusplot = 0.7,
@@ -56,10 +55,10 @@ void studies_leak(
     }
 
     // h_EtaPhiMap[epart] 	= new TH2F(Form("h_EtaPhiMap%d",epart), "", 55, -0.5, 54.5, 55, -0.5, 54.5);
-    h_leakTruefrac_Mean_Eta[epart] 	= new TH1F(Form("h_leakTruefrac_Mean_Eta%d",epart), "", 60, 2.5, 4.5);
-    h_leakfrac_Mean_Eta[epart] 	= new TH1F(Form("h_leakfrac_Mean_Eta%d",epart), "", 60, 2.5, 4.5);
-    h2D_leakfrac_E_vs_Eta[epart] 	= new TH2F(Form("h2D_leakfrac_E_vs_Eta_%d",epart), "", 60, 2.5, 4.5,120,0,1.2);
-    h2D_leakTruefrac_E_vs_Eta[epart] 	= new TH2F(Form("h2D_leakTruefrac_E_vs_Eta_%d",epart), "", 60, 2.5, 4.5,120,0,1.2);
+    h_leakTruefrac_Mean_Eta[epart] 	= new TH1F(Form("h_leakTruefrac_Mean_Eta%d",epart), "", 60, 1.5, 3.47);
+    h_leakfrac_Mean_Eta[epart] 	= new TH1F(Form("h_leakfrac_Mean_Eta%d",epart), "", 60, 1.5, 3.47);
+    h2D_leakfrac_E_vs_Eta[epart] 	= new TH2F(Form("h2D_leakfrac_E_vs_Eta_%d",epart), "", 60, 1.5, 3.47,60,0,1.2);
+    h2D_leakTruefrac_E_vs_Eta[epart] 	= new TH2F(Form("h2D_leakTruefrac_E_vs_Eta_%d",epart), "", 60, 1.5, 3.47,60,0,1.2);
     // if(partE[epart]<10 || partE[epart]>10) continue;
     if(partE[epart]!=40) continue;
     if(t_clusters_fhcal_fulleta && t_towers_fhcal_fulleta){
@@ -123,7 +122,7 @@ void studies_leak(
         // if(clusterID !=idMaxEcluster) continue;
         // if(clusterEta<3.0) continue;
         // if(clusterTrueEta<1.0) continue;
-        // if(clusterTrueEta>4.5) continue;
+        if(clusterTrueEta>3.47) continue;
         // if(clusterEta>4.0) continue;
         // if(clusterEta<3.5) continue;
         // cout << clusterEvent << endl;
@@ -136,7 +135,7 @@ void studies_leak(
           t_towers_fhcal_fulleta->GetEntry(k);
           // h_EtaPhiMap[epart]->Fill(towerIEta,towerIPhi);
           if(towerEvent == clusterEvent){
-            if(towerIEta>25 && towerIEta<29 && towerIPhi>25 && towerIPhi<29){
+            if(towerIEta>24 && towerIEta<30 && towerIPhi>24 && towerIPhi<30){
               energyLeak += towerE;
               lastEntryUsed = k;
             }
@@ -155,12 +154,12 @@ void studies_leak(
         // }
       }
     }
-    for (Int_t i=1; i < h2D_leakTruefrac_E_vs_Eta[epart]->GetNbinsX(); i++){
+    for (Int_t i=1; i < h2D_leakTruefrac_E_vs_Eta[epart]->GetNbinsX()+1; i++){
       TH1D* projectionYdummy = (TH1D*)h2D_leakTruefrac_E_vs_Eta[epart]->ProjectionY(Form("projectionYdummy%d%d",i,epart), i,i+1,"e");
       h_leakTruefrac_Mean_Eta[epart]->SetBinContent(i,projectionYdummy->GetMean());
       h_leakTruefrac_Mean_Eta[epart]->SetBinError(i,projectionYdummy->GetMeanError());
     }
-    for (Int_t i=1; i < h2D_leakfrac_E_vs_Eta[epart]->GetNbinsX(); i++){
+    for (Int_t i=1; i < h2D_leakfrac_E_vs_Eta[epart]->GetNbinsX()+1; i++){
       TH1D* projectionYdummy = (TH1D*)h2D_leakfrac_E_vs_Eta[epart]->ProjectionY(Form("projectionYdummy%d%d",i,epart), i,i+1,"e");
       h_leakfrac_Mean_Eta[epart]->SetBinContent(i,projectionYdummy->GetMean());
       h_leakfrac_Mean_Eta[epart]->SetBinError(i,projectionYdummy->GetMeanError());
@@ -175,7 +174,7 @@ void studies_leak(
 
 // 	split_canvas(cPNG, "cPNG1", activeE);
 //   TH2F* histEPlotDummy                           = new TH2F("histEPlotDummy","histEPlotDummy", 55, -0.5, 54.5, 55, -0.5, 54.5);
-//   SetStyleHistoTH2ForGraphs(histEPlotDummy, "#eta_{tower}","#phi_{tower}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.81);
+//   SetStyleHistoTH2ForGraphs(histEPlotDummy, "#it{#eta}_{tower}","#phi_{tower}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.81);
 //   histEPlotDummy->GetXaxis()->SetNoExponent();
 //   histEPlotDummy->GetYaxis()->SetNdivisions(505,kTRUE);
 //   histEPlotDummy->GetXaxis()->SetMoreLogLabels(kTRUE);
@@ -203,12 +202,12 @@ void studies_leak(
   	cPNG->SetBottomMargin(0.1);
   	cPNG->cd(padnum+1);
     // DrawGammaSetMarker(h2D_leakfrac_E_vs_Eta[epart], markerInput[0], 2, colorInput[0], colorInput[0]);
-    SetStyleHistoTH2ForGraphs(h2D_leakfrac_E_vs_Eta[epart], "#eta_{cluster}","#it{E}_{leak} / #it{E}_{cluster}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.81);
+    SetStyleHistoTH2ForGraphs(h2D_leakfrac_E_vs_Eta[epart], "#it{#eta}_{cluster}","#it{E}_{leak} / #it{E}_{cluster}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.81);
     h2D_leakfrac_E_vs_Eta[epart]->GetYaxis()->SetRangeUser(0,1.2);
     h2D_leakfrac_E_vs_Eta[epart]->Draw("colz");
     drawLatexAdd(Form("%1.1f GeV #pi^{-} on FHCAL",partE[epart]),0.85,0.85,1.3*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    // drawLatexAdd("#it{E}_{leak} = #sum_{#eta>4} #it{E}_{tower}",0.15,0.85,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-    drawLatexAdd("#it{E}_{leak} = #it{E}^{#eta>4}_{shower}",0.15,0.85,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+    // drawLatexAdd("#it{E}_{leak} = #sum_{#it{#eta}>4} #it{E}_{tower}",0.15,0.85,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+    drawLatexAdd("#it{E}_{leak} = #it{E}^{#it{#eta}>4}_{shower}",0.15,0.85,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
     DrawGammaSetMarker(h_leakfrac_Mean_Eta[epart], 20, 1, kOrange+2, kOrange+2);
     h_leakfrac_Mean_Eta[epart]->Draw("same");
     padnum++;
@@ -225,14 +224,14 @@ void studies_leak(
   	// cPNG->SetRightMargin(0.02);
   	// cPNG->SetBottomMargin(0.11);
   	// cPNG->cd(padnum+1);
-    SetStyleHistoTH2ForGraphs(h2D_leakTruefrac_E_vs_Eta[epart], "#eta_{#pi}^{true}","#it{E}^{rec}_{leak} / #it{E}^{#pi}_{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.99);
+    SetStyleHistoTH2ForGraphs(h2D_leakTruefrac_E_vs_Eta[epart], "#it{#eta}_{#pi}^{true}","#it{E}_{leak} / #it{E}^{#pi}_{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.99);
     // DrawGammaSetMarker(h2D_leakfrac_E_vs_Eta[epart], markerInput[0], 2, colorInput[0], colorInput[0]);
-    h2D_leakTruefrac_E_vs_Eta[epart]->GetYaxis()->SetRangeUser(0,0.79);
-    h2D_leakTruefrac_E_vs_Eta[epart]->GetXaxis()->SetRangeUser(3.01,4.0);
+    h2D_leakTruefrac_E_vs_Eta[epart]->GetYaxis()->SetRangeUser(0,0.68);
+    h2D_leakTruefrac_E_vs_Eta[epart]->GetXaxis()->SetRangeUser(2.51,3.47);
     h2D_leakTruefrac_E_vs_Eta[epart]->Draw("col");
     drawLatexAdd(Form("%1.1f GeV #pi^{-} on FHCAL",partE[epart]),0.15,0.90,1*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-    // drawLatexAdd("#it{E}_{leak} = #sum_{#eta>4} #it{E}_{tower}",0.15,0.85,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-    drawLatexAdd("#it{E}_{leak} = #it{E}^{#eta>4}_{shower}",0.15,0.83,1*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+    // drawLatexAdd("#it{E}_{leak} = #sum_{#it{#eta}>4} #it{E}_{tower}",0.15,0.85,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+    drawLatexAdd("#it{E}_{leak} = #it{E}^{#it{#eta}>3.5}_{shower}",0.15,0.83,1*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
     DrawGammaSetMarker(h_leakTruefrac_Mean_Eta[epart], 20, 3, kOrange+2, kOrange+2);
     h_leakTruefrac_Mean_Eta[epart]->Draw("same");
     TLegend* legendJES  = GetAndSetLegend2(0.13, 0.83-(2*textSizeLabelsRel), 0.6, 0.83-(1*textSizeLabelsRel),textSizeLabelsPixel, 1, "", 43, 0.15);
@@ -291,34 +290,4 @@ void fill_histogram(TH1F * const h, TTree * const t, const Float_t true_energy,
 
 	h->SetXTitle("E_{cluster} / E_{true}");
 	h->SetYTitle("entries / #scale[0.5]{#sum} entries      ");
-}
-
-void split_canvas(TCanvas* &cPNG, TString canvName, Int_t numInputs)
-{
-  if(numInputs<2){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 1, gStyle->GetCanvasDefH()*1);
-	  // cPNG->Divide(2, 2);
-  }else if(numInputs<5){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 2, gStyle->GetCanvasDefH()*2);
-	  cPNG->Divide(2, 2);
-  }else if(numInputs<7){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 3, gStyle->GetCanvasDefH()*2);
-	  cPNG->Divide(3, 2);
-  }else if(numInputs<10){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 3, gStyle->GetCanvasDefH()*3);
-	  cPNG->Divide(3, 3);
-  } else if(numInputs<13){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 4, gStyle->GetCanvasDefH()*3);
-	  cPNG->Divide(4, 3);
-  } else if(numInputs<17){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 4, gStyle->GetCanvasDefH()*4);
-	  cPNG->Divide(4, 4);
-  } else if(numInputs<21){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 5, gStyle->GetCanvasDefH()*4);
-	  cPNG->Divide(5, 4);
-  } else {
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 5, gStyle->GetCanvasDefH()*5);
-	  cPNG->Divide(5, 5);
-  }
-
 }

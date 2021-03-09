@@ -20,6 +20,17 @@ TH1F*  h_clusterizer_clsspec_matched_E[5][4]; // [calorimeter_enum][algorithm_en
 TH1F*  h_clusterizer_clsspec_PDG[5][4]; // [calorimeter_enum][algorithm_enum]
 TH1F*  h_clusterizer_clsspec_matched_PDG[5][4]; // [calorimeter_enum][algorithm_enum]
 
+bool _doCalibration = false;
+
+float calibrationFEMC(float clusterE){
+  float paramsECALcalib[5]= {3.15612e+00,1.57658e-01,1.66441e+00,-2.50979e+02,3.81511e+02}; //noshift
+  return (( paramsECALcalib[0] + paramsECALcalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramsECALcalib[2] * TMath::Exp( ( clusterE - paramsECALcalib[3] ) / paramsECALcalib[4] ) ) ));
+}
+
+float calibrationFHCAL(float clusterE){
+  float paramsFHCALcalib[5]= {1.75773e+00, 3.87923e-01, 1.20862e+00, -1.25194e+02, 7.54438e+01}; //noshift
+  return (( paramsFHCALcalib[0] + paramsFHCALcalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramsFHCALcalib[2] * TMath::Exp( ( clusterE - paramsFHCALcalib[3] ) / paramsFHCALcalib[4] ) ) ));
+}
 
 bool isClusterMatched(int clsID, float matchingwindow, float* clusters_X, float* clusters_Y, float* clusters_E, int caloEnum, int clusterizerEnum, bool useProjection = true);
 
@@ -43,6 +54,9 @@ void runclusterizer(
   float* &clusters_Y,
   float* &clusters_Z
 ){
+
+
+
   nclusters = 0;
   if(verbosityCLS>1)cout << "XN: new event" << endl;
 
@@ -183,6 +197,14 @@ void runclusterizer(
       // remove clusterized towers
       if(!(clusterizerEnum==kV3)){
         input_towers.erase(input_towers.begin());
+      }
+
+      // apply calibration if desired
+      if(_doCalibration){
+        if(caloEnum==kFHCAL)
+          clusters_E[nclusters]/=calibrationFHCAL(clusters_E[nclusters]);
+        else if(caloEnum==kFEMC)
+          clusters_E[nclusters]/=calibrationFEMC(clusters_E[nclusters]);
       }
 
       h_clusterizer_clsspec_E[caloEnum][clusterizerEnum]->Fill(clusters_E[nclusters]);

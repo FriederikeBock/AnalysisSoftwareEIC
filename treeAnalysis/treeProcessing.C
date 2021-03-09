@@ -17,8 +17,8 @@
 
 void treeProcessing(
     
-    // TString fileName       = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_epMB.root",
-    TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_pTHard5.root",
+    TString fileName       = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_epMB.root",
+    // TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_pTHard5.root",
     // TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_epMB_pTHard5.root",
     // TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-TREXTOUT_epMB.root",
     // TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-TREXTOUT_pTHard5.root",
@@ -343,6 +343,10 @@ void treeProcessing(
             std::vector<float> jetf_truth_py;
             std::vector<float> jetf_truth_pz;
             std::vector<float> jetf_truth_E;
+            std::vector<float> jetf_truthcharged_px;
+            std::vector<float> jetf_truthcharged_py;
+            std::vector<float> jetf_truthcharged_pz;
+            std::vector<float> jetf_truthcharged_E;
             for(Int_t imc=0; imc<_nMCPart; imc++){
                 TVector3 truevec(_mcpart_px[imc],_mcpart_py[imc],_mcpart_pz[imc]);
                 if(truevec.Eta()<0) continue;
@@ -352,12 +356,22 @@ void treeProcessing(
                 jetf_truth_py.push_back(_mcpart_py[imc]);
                 jetf_truth_pz.push_back(_mcpart_pz[imc]);
                 jetf_truth_E.push_back(_mcpart_E[imc]);
+                // fill charged only inputs (reject neutral particles)
+                if(abs(_mcpart_PDG[imc])==22) continue; // photon
+                if(abs(_mcpart_PDG[imc])==2112) continue; // neutron
+                jetf_truthcharged_px.push_back(_mcpart_px[imc]);
+                jetf_truthcharged_py.push_back(_mcpart_py[imc]);
+                jetf_truthcharged_pz.push_back(_mcpart_pz[imc]);
+                jetf_truthcharged_E.push_back(_mcpart_E[imc]);
             }
 
             // ANCHOR JET FINDING
             // truth jets
             auto jetsTrue = findJets(1.0, "anti-kt", jetf_truth_px, jetf_truth_py, jetf_truth_pz, jetf_truth_E);
             if(verbosity>1)cout << "found " << std::get<1>(jetsTrue).size() << " true jets" << endl;        // printJets(std::get<1>(jetsTrue));
+
+            auto jetsTrueCharged = findJets(1.0, "anti-kt", jetf_truthcharged_px, jetf_truthcharged_py, jetf_truthcharged_pz, jetf_truthcharged_E);
+            if(verbosity>1)cout << "found " << std::get<1>(jetsTrueCharged).size() << " true charged jets" << endl;        // printJets(std::get<1>(jetsTrue));
 
             // track-based jets (rec)
             auto jetsTrackRec = findJets(1.0, "anti-kt", jetf_track_px, jetf_track_py, jetf_track_pz, jetf_track_E);
@@ -379,7 +393,7 @@ void treeProcessing(
             auto jetsAllRec = findJets(1.0, "anti-kt", jetf_all_px, jetf_all_py, jetf_all_pz, jetf_all_E);
             if(verbosity>1) cout << "found " << std::get<1>(jetsAllRec).size() << " rec all jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
 
-            jetresolutionhistos(jetsTrackRec,jetsTrue,0);
+            jetresolutionhistos(jetsTrackRec,jetsTrueCharged,0);
             jetresolutionhistos(jetsFullRec,jetsTrue,1);
             jetresolutionhistos(jetsHcalRec,jetsTrue,2);
             jetresolutionhistos(jetsCaloRec,jetsTrue,3);
