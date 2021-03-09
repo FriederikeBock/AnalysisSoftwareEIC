@@ -16,27 +16,22 @@
 #include "trackmatchingstudies.cxx"
 
 void treeProcessing(
-    
-    TString fileName       = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_epMB.root",
-    // TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_pTHard5.root",
-    // TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_epMB_pTHard5.root",
-    // TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-TREXTOUT_epMB.root",
-    // TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-TREXTOUT_pTHard5.root",
-    // TString fileName    = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-TREXTOUT_epMB_pTHard5.root",
+    TString fileName            = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_pTHard5.root",
+    TString addOutputName       = "",
     bool do_NxNclusterizer      = true,
     bool do_V3clusterizer       = true,
     bool do_XNclusterizer       = true,
-    bool do_NxNclusterizerFEMC      = true,
-    bool do_V3clusterizerFEMC       = true,
-    bool do_XNclusterizerFEMC       = true,
+    bool do_NxNclusterizerFEMC  = true,
+    bool do_V3clusterizerFEMC   = true,
+    bool do_XNclusterizerFEMC   = true,
     bool do_jetfinding          = false,
     // Double_t maxNEvent = 1e5,
-    Double_t maxNEvent = -1,
-    Int_t verbosity = 0
+    Double_t maxNEvent          = -1,
+    Int_t verbosity             = 0
 ){
     // make output directory
     TString dateForOutput                       = ReturnDateStr();
-    outputDir 						                  = Form("treeProcessing/%s",dateForOutput.Data());
+    outputDir 						                  = Form("treeProcessing/%s_%s",addOutputName.Data(), dateForOutput.Data());
     gSystem->Exec("mkdir -p "+outputDir);
 
     if(do_jetfinding) _do_jetfinding = true;

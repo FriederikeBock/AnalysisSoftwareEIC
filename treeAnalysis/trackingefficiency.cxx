@@ -90,10 +90,10 @@ void trackingefficiencyhistosSave(){
   if(h_chargedpart_MC_pT && h_chargedpart_rec_pT && h_chargedpart_rec_truepT) {
     TH2F*  h_chargedpart_eff_pT = (TH2F*)h_chargedpart_rec_pT->Clone("h_chargedpart_eff_pT");
     h_chargedpart_eff_pT->Divide(h_chargedpart_MC_pT);
-    h_chargedpart_eff_pT->Write();
+    h_chargedpart_eff_pT->Write("h_chargedpart_eff_pT", TObject::kOverwrite);
     TH2F*  h_chargedpart_eff_truepT = (TH2F*)h_chargedpart_rec_truepT->Clone("h_chargedpart_eff_truepT");
     h_chargedpart_eff_truepT->Divide(h_chargedpart_MC_pT);
-    h_chargedpart_eff_truepT->Write();
+    h_chargedpart_eff_truepT->Write("h_chargedpart_eff_truepT", TObject::kOverwrite);
   }
   if(h_chargedpart_MC_p) h_chargedpart_MC_p->Write();
   if(h_chargedpart_rec_p) h_chargedpart_rec_p->Write();
@@ -101,10 +101,10 @@ void trackingefficiencyhistosSave(){
   if(h_chargedpart_MC_p && h_chargedpart_rec_p && h_chargedpart_rec_truep) {
     TH2F*  h_chargedpart_eff_p = (TH2F*)h_chargedpart_rec_p->Clone("h_chargedpart_eff_p");
     h_chargedpart_eff_p->Divide(h_chargedpart_MC_p);
-    h_chargedpart_eff_p->Write();
+    h_chargedpart_eff_p->Write("h_chargedpart_eff_p",TObject::kOverwrite);
     TH2F*  h_chargedpart_eff_truep = (TH2F*)h_chargedpart_rec_truep->Clone("h_chargedpart_eff_truep");
     h_chargedpart_eff_truep->Divide(h_chargedpart_MC_p);
-    h_chargedpart_eff_truep->Write();
+    h_chargedpart_eff_truep->Write("h_chargedpart_eff_truep",TObject::kOverwrite);
   }
   TH2F*  h_particle_eff_pT[4];
   TH2F*  h_particle_eff_truepT[4];
@@ -117,10 +117,10 @@ void trackingefficiencyhistosSave(){
     if(h_particle_MC_pT[ipart] && h_particle_rec_pT[ipart] && h_particle_rec_truepT[ipart]) {
       h_particle_eff_pT[ipart] = (TH2F*)h_particle_rec_pT[ipart]->Clone(Form("h_%s_eff_pT",str_TRKEFF_mcparticles[ipart].Data()));
       h_particle_eff_pT[ipart]->Divide(h_particle_MC_pT[ipart]);
-      h_particle_eff_pT[ipart]->Write();
+      h_particle_eff_pT[ipart]->Write(Form("h_%s_eff_pT",str_TRKEFF_mcparticles[ipart].Data()),TObject::kOverwrite);
       h_particle_eff_truepT[ipart] = (TH2F*)h_particle_rec_truepT[ipart]->Clone(Form("h_%s_eff_truepT",str_TRKEFF_mcparticles[ipart].Data()));
       h_particle_eff_truepT[ipart]->Divide(h_particle_MC_pT[ipart]);
-      h_particle_eff_truepT[ipart]->Write();
+      h_particle_eff_truepT[ipart]->Write(Form("h_%s_eff_truepT",str_TRKEFF_mcparticles[ipart].Data()),TObject::kOverwrite);
     }
     if(h_particle_MC_p[ipart]) h_particle_MC_p[ipart]->Write();
     if(h_particle_rec_p[ipart]) h_particle_rec_p[ipart]->Write();
@@ -128,10 +128,10 @@ void trackingefficiencyhistosSave(){
     if(h_particle_MC_p[ipart] && h_particle_rec_p[ipart] && h_particle_rec_truep[ipart]) {
       h_particle_eff_p[ipart] = (TH2F*)h_particle_rec_p[ipart]->Clone(Form("h_%s_eff_p",str_TRKEFF_mcparticles[ipart].Data()));
       h_particle_eff_p[ipart]->Divide(h_particle_MC_p[ipart]);
-      h_particle_eff_p[ipart]->Write();
+      h_particle_eff_p[ipart]->Write(Form("h_%s_eff_p",str_TRKEFF_mcparticles[ipart].Data()),TObject::kOverwrite);
       h_particle_eff_truep[ipart] = (TH2F*)h_particle_rec_truep[ipart]->Clone(Form("h_%s_eff_truep",str_TRKEFF_mcparticles[ipart].Data()));
       h_particle_eff_truep[ipart]->Divide(h_particle_MC_p[ipart]);
-      h_particle_eff_truep[ipart]->Write();
+      h_particle_eff_truep[ipart]->Write(Form("h_%s_eff_truep",str_TRKEFF_mcparticles[ipart].Data()),TObject::kOverwrite);
     }
   }
   // write output file
