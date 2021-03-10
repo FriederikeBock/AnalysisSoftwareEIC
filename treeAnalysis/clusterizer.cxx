@@ -5,27 +5,33 @@ int verbosityCLS = 1;
 // ANCHOR define global variables
 bool _do_V1clusterizer = false;
 bool _do_V3clusterizer = false;
+float aggregation_margin_V3 = 0.03;
+bool _do_V4clusterizer = false;
+float aggregation_margin_V4 = 0.03;
 bool _do_XNclusterizer = false;
 bool _do_NxNclusterizer = false;
 
 bool _do_V1clusterizerFEMC = false;
 bool _do_V3clusterizerFEMC = false;
+bool _do_V4clusterizerFEMC = false;
 bool _do_XNclusterizerFEMC = false;
 bool _do_NxNclusterizerFEMC = false;
 
-TH2F*  h_clusterizer_matched_dx_dy[5][4]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_clusterizer_all_dx_dy[5][4]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_clusterizer_clsspec_matched_E_eta[5][4]; // [calorimeter_enum][algorithm_enum]
-TH1F*  h_clusterizer_clsspec_PDG[5][4]; // [calorimeter_enum][algorithm_enum]
-TH1F*  h_clusterizer_clsspec_matched_PDG[5][4]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_nonagg_towers[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+
+TH2F*  h_clusterizer_matched_dx_dy[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_all_dx_dy[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_clsspec_matched_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH1F*  h_clusterizer_clsspec_PDG[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH1F*  h_clusterizer_clsspec_matched_PDG[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 
 TString str_CLSRZR_mcparticles[5] = {"electron", "cpion", "proton", "ckaon", "muon"};
 int int_CLSRZR_mcparticles_PDG[5] = {11 /*e*/,211  /*pi*/,  2212/*p*/,  321/*K*/,  13/*mu*/};
 
-TH2F*  h_clusterizer_clsspec_E_eta[5][4]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_clusterizer_clsspecMC_E_eta[5][4]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_clusterizer_clsspec_particle_E_eta[5][4][5]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_clusterizer_clsspecMC_particle_E_eta[5][4][5]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_clsspec_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_clsspecMC_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_clsspec_particle_E_eta[_active_calo][_active_algo][5]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_clsspecMC_particle_E_eta[_active_calo][_active_algo][5]; // [calorimeter_enum][algorithm_enum]
 
 bool _doCalibration = false;
 
@@ -67,8 +73,10 @@ void runclusterizer(
   nclusters = 0;
   if(verbosityCLS>1)cout << "XN: new event" << endl;
 
-  for(int icalo=0;icalo<5;icalo++){
-    for(int ialgo=0;ialgo<4;ialgo++){
+  for(int icalo=0;icalo<_active_calo;icalo++){
+    for(int ialgo=0;ialgo<_active_algo;ialgo++){
+      if(!h_clusterizer_nonagg_towers[icalo][ialgo])h_clusterizer_nonagg_towers[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_nonagg_towers%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 50,0,50,120,0,0.6);
+
       if(!h_clusterizer_clsspec_PDG[icalo][ialgo])h_clusterizer_clsspec_PDG[icalo][ialgo] 	= new TH1F(Form("h_clusterizer_clsspec_PDG_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 2500,0,2500);
       if(!h_clusterizer_clsspec_matched_PDG[icalo][ialgo])h_clusterizer_clsspec_matched_PDG[icalo][ialgo] 	= new TH1F(Form("h_clusterizer_clsspec_matched_PDG_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 2500,0,2500);
       if(!h_clusterizer_clsspec_matched_E_eta[icalo][ialgo])h_clusterizer_clsspec_matched_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspec_matched_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
@@ -178,7 +186,35 @@ void runclusterizer(
             int iPhiTwrAgg = input_towers.at(ait).tower_iPhi;
             if( (TMath::Abs(iEtaTwrAgg-iEtaTwr)+TMath::Abs(iPhiTwrAgg-iPhiTwr)) == 1){
               // only aggregate towers with lower energy than current tower
-              if(input_towers.at(ait).tower_E >= cluster_towers.at(tit).tower_E) continue;
+              if(input_towers.at(ait).tower_E >= (cluster_towers.at(tit).tower_E + aggregation_margin_V3)) continue;
+              clusters_E[nclusters]+=input_towers.at(ait).tower_E;
+              clusters_NTower[nclusters]++;
+              cluster_towers.push_back(input_towers.at(ait));
+              if(!(std::find(clslabels.begin(), clslabels.end(), input_towers.at(ait).tower_trueID) != clslabels.end())){
+                clusters_NtrueID[nclusters]++;
+                clslabels.push_back(input_towers.at(ait).tower_trueID);
+              }
+              input_towers.erase(input_towers.begin()+ait);
+            }
+          }
+        }
+      }
+
+      // ANCHOR V4 clusterizer logic
+      else if(clusterizerEnum==kV4){
+        // remove seed tower from sample
+        input_towers.erase(input_towers.begin());
+        for (int tit = 0; tit < cluster_towers.size(); tit++){
+          // Now go recursively to all neighbours and add them to the cluster if they fulfill the conditions
+          int iEtaTwr = cluster_towers.at(tit).tower_iEta;
+          int iPhiTwr = cluster_towers.at(tit).tower_iPhi;
+          for (int ait = 0; ait < input_towers.size(); ait++){
+            int iEtaTwrAgg = input_towers.at(ait).tower_iEta;
+            int iPhiTwrAgg = input_towers.at(ait).tower_iPhi;
+            // first condition asks for V3-like neighbors, while second condition also checks diagonally attached towers
+            if( ((TMath::Abs(iEtaTwrAgg-iEtaTwr)+TMath::Abs(iPhiTwrAgg-iPhiTwr)) == 1) || ((TMath::Abs(iEtaTwrAgg-iEtaTwr)==1) && (TMath::Abs(iPhiTwrAgg-iPhiTwr)==1))){
+              // only aggregate towers with lower energy than current tower
+              if(input_towers.at(ait).tower_E >= (cluster_towers.at(tit).tower_E + aggregation_margin_V3)) continue;
               clusters_E[nclusters]+=input_towers.at(ait).tower_E;
               clusters_NTower[nclusters]++;
               cluster_towers.push_back(input_towers.at(ait));
@@ -208,7 +244,7 @@ void runclusterizer(
       clusters_isMatched[nclusters] = isClusterMatched(nclusters, 20,clusters_X,clusters_Y,clusters_E, caloEnum, clusterizerEnum, true);
      // if(verbosityCLS>1) cout << "\tXN cluster with E = " << clusters_E[nclusters] << "\tEta: " << clusters_Eta[nclusters]<< "\tPhi: " << clusters_Phi[nclusters]<< "\tntowers: " << clusters_NTower[nclusters] << "\ttrueID: " << clusters_trueID[nclusters] << endl;
       // remove clusterized towers
-      if(!(clusterizerEnum==kV3)){
+      if(!(clusterizerEnum==kV3) && !(clusterizerEnum==kV4)){
         input_towers.erase(input_towers.begin());
       }
 
@@ -237,6 +273,9 @@ void runclusterizer(
 
       nclusters++;
     } else {
+      for (int ait = 0; ait < input_towers.size(); ait++){
+        h_clusterizer_nonagg_towers[caloEnum][clusterizerEnum]->Fill(input_towers.size(),input_towers.at(ait).tower_E);
+      }
       input_towers.clear();
     }
   }
@@ -246,8 +285,8 @@ void runclusterizer(
 // ANCHOR track/projection matching function
 // TODO at some point we might want E/p
 bool isClusterMatched(int clsID, float matchingwindow, float* clusters_X, float* clusters_Y, float* clusters_E, int caloEnum, int clusterizerEnum, bool useProjection = true){
-  for(int icalo=0;icalo<5;icalo++){
-    for(int ialgo=0;ialgo<4;ialgo++){
+  for(int icalo=0;icalo<_active_calo;icalo++){
+    for(int ialgo=0;ialgo<_active_algo;ialgo++){
       if(!h_clusterizer_all_dx_dy[icalo][ialgo])h_clusterizer_all_dx_dy[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_all_dx_dy_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 100,-100,100, 100,-100,100);
       if(!h_clusterizer_matched_dx_dy[icalo][ialgo])h_clusterizer_matched_dx_dy[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_matched_dx_dy_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 100,-100,100, 100,-100,100);
     }
@@ -312,8 +351,9 @@ void clusterizerSave(){
   // define output file
   TFile* fileOutput = new TFile(Form("%s/clusterizer/output_CLSIZER.root",outputDir.Data()),"RECREATE");
 
-  for(int icalo=0;icalo<5;icalo++){
-    for(int ialgo=0;ialgo<4;ialgo++){
+  for(int icalo=0;icalo<_active_calo;icalo++){
+    for(int ialgo=0;ialgo<_active_algo;ialgo++){
+      if(h_clusterizer_nonagg_towers[icalo][ialgo]) h_clusterizer_nonagg_towers[icalo][ialgo]->Write();
       if(h_clusterizer_all_dx_dy[icalo][ialgo]) h_clusterizer_all_dx_dy[icalo][ialgo]->Write();
       if(h_clusterizer_matched_dx_dy[icalo][ialgo]) h_clusterizer_matched_dx_dy[icalo][ialgo]->Write();
       if(h_clusterizer_clsspec_matched_E_eta[icalo][ialgo]) h_clusterizer_clsspec_matched_E_eta[icalo][ialgo]->Write();

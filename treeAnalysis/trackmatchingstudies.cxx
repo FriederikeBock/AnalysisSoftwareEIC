@@ -3,7 +3,7 @@
 int verbosityTM = 1;
 
 
-TH2F*  h_TMstudies_dx_dy[5][4]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_TMstudies_dx_dy[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 
 // ANCHOR track/projection matching function
 // TODO at some point we might want E/p
@@ -39,9 +39,9 @@ bool trackmatchingstudies(int enum_clusterizer, int enum_calorimeter, bool usePr
     clusters_TM_Y,
     clusters_TM_Z);
 
-  for(int iclr=0;iclr<5;iclr++){
-    for(int ialgo=0;ialgo<4;ialgo++){
-      if(!h_TMstudies_dx_dy[iclr][ialgo])h_TMstudies_dx_dy[iclr][ialgo] 	= new TH2F(Form("h_TMstudies_dx_dy_%s_%s",str_calorimeter[iclr].Data(),str_clusterizer[ialgo].Data()), "", 100,-100,100, 100,-100,100);
+  for(int icalo=0;icalo<_active_calo;icalo++){
+    for(int ialgo=0;ialgo<_active_algo;ialgo++){
+      if(!h_TMstudies_dx_dy[icalo][ialgo])h_TMstudies_dx_dy[icalo][ialgo] 	= new TH2F(Form("h_TMstudies_dx_dy_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 100,-100,100, 100,-100,100);
     }
   }
 
@@ -100,9 +100,9 @@ void trackmatchingstudiesSave(){
   // define output file
   TFile* fileOutput = new TFile(Form("%s/trackmatchingstudies/output_TMSTUD.root",outputDir.Data()),"RECREATE");
 
-  for(int iclr=0;iclr<5;iclr++){
-    for(int ialgo=0;ialgo<4;ialgo++){
-      if(h_TMstudies_dx_dy[iclr][ialgo]) h_TMstudies_dx_dy[iclr][ialgo]->Write();
+  for(int icalo=0;icalo<_active_calo;icalo++){
+    for(int ialgo=0;ialgo<_active_algo;ialgo++){
+      if(h_TMstudies_dx_dy[icalo][ialgo]) h_TMstudies_dx_dy[icalo][ialgo]->Write();
     }
   }
   // write output file

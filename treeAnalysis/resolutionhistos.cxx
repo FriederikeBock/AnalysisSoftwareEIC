@@ -3,22 +3,22 @@
 Int_t verbosityRH = 2;
 
 // ANCHOR create histograms globally
-TH2F*  h_RH_Reso_E[5][4];
-TH2F*  h_RH_Reso_gamma_E[5][4];
-TH2F*  h_RH_Reso_electron_E[5][4];
-TH2F*  h_RH_Reso_pion_E[5][4];
-TH2F*  h_RH_ResoCalib_E[5][4];
-TH2F*  h_RH_ResoCalib_gamma_E[5][4];
-TH2F*  h_RH_ResoCalib_electron_E[5][4];
-TH2F*  h_RH_ResoCalib_pion_E[5][4];
-TH2F*  h_RH_ResoComb_E[5][4];
-TH2F*  h_RH_ResoComb_gamma_E[5][4];
-TH2F*  h_RH_ResoComb_electron_E[5][4];
-TH2F*  h_RH_ResoComb_pion_E[5][4];
-TH2F*  h_RH_ResoCombCalib_E[5][4];
-TH2F*  h_RH_ResoCombCalib_gamma_E[5][4];
-TH2F*  h_RH_ResoCombCalib_electron_E[5][4];
-TH2F*  h_RH_ResoCombCalib_pion_E[5][4];
+TH2F*  h_RH_Reso_E[_active_calo][_active_algo];
+TH2F*  h_RH_Reso_gamma_E[_active_calo][_active_algo];
+TH2F*  h_RH_Reso_electron_E[_active_calo][_active_algo];
+TH2F*  h_RH_Reso_pion_E[_active_calo][_active_algo];
+TH2F*  h_RH_ResoCalib_E[_active_calo][_active_algo];
+TH2F*  h_RH_ResoCalib_gamma_E[_active_calo][_active_algo];
+TH2F*  h_RH_ResoCalib_electron_E[_active_calo][_active_algo];
+TH2F*  h_RH_ResoCalib_pion_E[_active_calo][_active_algo];
+TH2F*  h_RH_ResoComb_E[_active_calo][_active_algo];
+TH2F*  h_RH_ResoComb_gamma_E[_active_calo][_active_algo];
+TH2F*  h_RH_ResoComb_electron_E[_active_calo][_active_algo];
+TH2F*  h_RH_ResoComb_pion_E[_active_calo][_active_algo];
+TH2F*  h_RH_ResoCombCalib_E[_active_calo][_active_algo];
+TH2F*  h_RH_ResoCombCalib_gamma_E[_active_calo][_active_algo];
+TH2F*  h_RH_ResoCombCalib_electron_E[_active_calo][_active_algo];
+TH2F*  h_RH_ResoCombCalib_pion_E[_active_calo][_active_algo];
 
 // Double_t paramsFEMCcalib[5]= {3.15612e+00,1.57658e-01,1.66441e+00,-2.50979e+02,3.81511e+02}; //noshift
 // TF1* f_FEMC_calib   = new TF1("f_FEMC_calib",   "( [0] + [1] * TMath::Log(x) ) / ( 1 + ( [2] * TMath::Exp( ( x - [3] ) / [4] ) ) )",   1, 120);
@@ -46,8 +46,8 @@ void resolutionhistos(){
   float* clusters_RH_X         = new float[_maxNclusters];
   float* clusters_RH_Y         = new float[_maxNclusters];
   float* clusters_RH_Z         = new float[_maxNclusters];
-  for(int icalo=0;icalo<5;icalo++){
-    for(int ialgo=0;ialgo<4;ialgo++){
+  for(int icalo=0;icalo<_active_calo;icalo++){
+    for(int ialgo=0;ialgo<_active_algo;ialgo++){
       loadClusterizerInput(
         ialgo,
         icalo,
@@ -124,7 +124,7 @@ void resolutionhistos(){
   float* clusters_comb_RH_X         = new float[_maxNclusters];
   float* clusters_comb_RH_Y         = new float[_maxNclusters];
   float* clusters_comb_RH_Z         = new float[_maxNclusters];
-  for(int ialgo=0;ialgo<4;ialgo++){
+  for(int ialgo=0;ialgo<_active_algo;ialgo++){
     loadClusterizerInput(
       ialgo,
       icalo,
@@ -217,8 +217,8 @@ void resolutionhistosSave(){
   TFile* fileOutput = new TFile(Form("%s/resolutionhistos/output_RH.root",outputDir.Data()),"RECREATE");
 
   // write histograms
-  for(int icalo=0;icalo<5;icalo++){
-    for(int ialgo=0;ialgo<4;ialgo++){
+  for(int icalo=0;icalo<_active_calo;icalo++){
+    for(int ialgo=0;ialgo<_active_algo;ialgo++){
       if(h_RH_Reso_E[icalo][ialgo])h_RH_Reso_E[icalo][ialgo]->Write();
       if(h_RH_Reso_gamma_E[icalo][ialgo])h_RH_Reso_gamma_E[icalo][ialgo]->Write();
       if(h_RH_Reso_electron_E[icalo][ialgo])h_RH_Reso_electron_E[icalo][ialgo]->Write();

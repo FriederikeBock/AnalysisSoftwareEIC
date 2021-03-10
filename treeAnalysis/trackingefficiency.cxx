@@ -3,25 +3,26 @@
 Int_t verbosityTRKEFF = 0;
 
 // ANCHOR create histograms globally
-TString str_TRKEFF_mcparticles[5] = {"electron", "cpion", "proton", "ckaon", "muon"};
-int int_TRKEFF_mcparticles_PDG[5] = {11 /*e*/,211  /*pi*/,  2212/*p*/,  321/*K*/,  13/*mu*/};
+const int nPart_TRKEFF = 5;
+TString str_TRKEFF_mcparticles[nPart_TRKEFF] = {"electron", "cpion", "proton", "ckaon", "muon"};
+int int_TRKEFF_mcparticles_PDG[nPart_TRKEFF] = {11 /*e*/,211  /*pi*/,  2212/*p*/,  321/*K*/,  13/*mu*/};
 
 TH2F*  h_chargedpart_MC_pT 	= new TH2F("h_chargedpart_MC_pT", "", 60, 0,30,80, -4.0,4.0);
-TH2F*  h_particle_MC_pT[5];
+TH2F*  h_particle_MC_pT[nPart_TRKEFF];
 TH2F*  h_chargedpart_rec_pT 	= new TH2F("h_chargedpart_rec_pT", "", 60, 0,30,80, -4.0,4.0);
 TH2F*  h_chargedpart_rec_truepT 	= new TH2F("h_chargedpart_rec_truepT", "", 60, 0,30,80, -4.0,4.0);
-TH2F*  h_particle_rec_pT[5];
-TH2F*  h_particle_rec_truepT[5];
+TH2F*  h_particle_rec_pT[nPart_TRKEFF];
+TH2F*  h_particle_rec_truepT[nPart_TRKEFF];
 
 TH2F*  h_chargedpart_MC_p 	= new TH2F("h_chargedpart_MC_p", "", nBinsP, binningP, 80, -4.0,4.0);
-TH2F*  h_particle_MC_p[5];
+TH2F*  h_particle_MC_p[nPart_TRKEFF];
 TH2F*  h_chargedpart_rec_p 	= new TH2F("h_chargedpart_rec_p", "", nBinsP, binningP, 80, -4.0,4.0);
 TH2F*  h_chargedpart_rec_truep 	= new TH2F("h_chargedpart_rec_truep", "", nBinsP, binningP, 80, -4.0,4.0);
-TH2F*  h_particle_rec_p[5];
-TH2F*  h_particle_rec_truep[5];
+TH2F*  h_particle_rec_p[nPart_TRKEFF];
+TH2F*  h_particle_rec_truep[nPart_TRKEFF];
 
 TH2F*  h_chargedpart_MC_E 	= new TH2F("h_chargedpart_MC_E", "", nBinsP, binningP, 80, -4.0,4.0);
-TH2F*  h_particle_MC_E[5];
+TH2F*  h_particle_MC_E[nPart_TRKEFF];
 
 // ANCHOR main function to be called in event loop
 void trackingefficiency(){
@@ -33,7 +34,7 @@ void trackingefficiency(){
     float truep   = mcpartvec.Mag();
 
     // cout << "\tMCID " << imc << "\tPDG: " << _mcpart_PDG[imc] << "\tpT: " << TMath::Sqrt(TMath::Power(_mcpart_px[imc],2)+TMath::Power(_mcpart_py[imc],2)) << "\tEta " << trueeta << endl;
-    for(int ipart=0;ipart<5;ipart++){
+    for(int ipart=0;ipart<nPart_TRKEFF;ipart++){
       if(!h_particle_MC_pT[ipart]) h_particle_MC_pT[ipart] 	= new TH2F(Form("h_%s_MC_pT",str_TRKEFF_mcparticles[ipart].Data()), "", 60, 0,30,80, -4.0,4.0);
       if(!h_particle_rec_pT[ipart]) h_particle_rec_pT[ipart] 	= new TH2F(Form("h_%s_rec_pT",str_TRKEFF_mcparticles[ipart].Data()), "", 60, 0,30,80, -4.0,4.0);
       if(!h_particle_rec_truepT[ipart]) h_particle_rec_truepT[ipart] 	= new TH2F(Form("h_%s_rec_truepT",str_TRKEFF_mcparticles[ipart].Data()), "", 60, 0,30,80, -4.0,4.0);
@@ -67,7 +68,7 @@ void trackingefficiency(){
     float truept = mcpartvec.Pt();
     float pmom = recpartvec.Mag();
     float truepmom = mcpartvec.Mag();
-    for(int ipart=0;ipart<5;ipart++){
+    for(int ipart=0;ipart<nPart_TRKEFF;ipart++){
       if(abs(_mcpart_PDG[(int)_track_trueID[itrk]-1])==int_TRKEFF_mcparticles_PDG[ipart]){
         h_particle_rec_pT[ipart]->Fill(pt,trueeta);
         h_particle_rec_truepT[ipart]->Fill(truept,trueeta);
@@ -117,11 +118,11 @@ void trackingefficiencyhistosSave(){
     h_chargedpart_eff_truep->Write("h_chargedpart_eff_truep",TObject::kOverwrite);
   }
   if(h_chargedpart_MC_E) h_chargedpart_MC_E->Write();
-  TH2F*  h_particle_eff_pT[4];
-  TH2F*  h_particle_eff_truepT[4];
-  TH2F*  h_particle_eff_p[4];
-  TH2F*  h_particle_eff_truep[4];
-  for(int ipart=0;ipart<5;ipart++){
+  TH2F*  h_particle_eff_pT[nPart_TRKEFF];
+  TH2F*  h_particle_eff_truepT[nPart_TRKEFF];
+  TH2F*  h_particle_eff_p[nPart_TRKEFF];
+  TH2F*  h_particle_eff_truep[nPart_TRKEFF];
+  for(int ipart=0;ipart<nPart_TRKEFF;ipart++){
     if(h_particle_MC_pT[ipart]) h_particle_MC_pT[ipart]->Write();
     if(h_particle_rec_pT[ipart]) h_particle_rec_pT[ipart]->Write();
     if(h_particle_rec_truepT[ipart]) h_particle_rec_truepT[ipart]->Write();

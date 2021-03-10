@@ -20,11 +20,13 @@ void treeProcessing(
     TString addOutputName       = "",
     bool do_NxNclusterizer      = true,
     bool do_V3clusterizer       = true,
+    bool do_V4clusterizer       = true,
     bool do_XNclusterizer       = true,
     bool do_NxNclusterizerFEMC  = true,
     bool do_V3clusterizerFEMC   = true,
+    bool do_V4clusterizerFEMC   = true,
     bool do_XNclusterizerFEMC   = true,
-    bool do_jetfinding          = false,
+    bool do_jetfinding          = true,
     // Double_t maxNEvent = 1e5,
     Double_t maxNEvent          = -1,
     Int_t verbosity             = 0
@@ -65,10 +67,12 @@ void treeProcessing(
             TVector3 truevec(_mcpart_px[imc],_mcpart_py[imc],_mcpart_pz[imc]);
             _mcpart_Eta[imc]=truevec.Eta();
         }
+        float seed_E = 0.5;
+        float aggregation_E = 0.1;
         // run clusterizers FHCAL
         if(do_NxNclusterizer){
             _do_NxNclusterizer = true;
-            runclusterizer(kNxN, kFHCAL,0.5, 0.1,
+            runclusterizer(kNxN, kFHCAL,seed_E, aggregation_E,
                 _nclusters_NxN_FHCAL,
                 _clusters_NxN_FHCAL_E,
                 _clusters_NxN_FHCAL_Eta,
@@ -85,7 +89,7 @@ void treeProcessing(
         }
         if(do_V3clusterizer){
             _do_V3clusterizer = true;
-            runclusterizer(kV3, kFHCAL,0.5, 0.1,
+            runclusterizer(kV3, kFHCAL,seed_E, aggregation_E,
                 _nclusters_V3_FHCAL,
                 _clusters_V3_FHCAL_E,
                 _clusters_V3_FHCAL_Eta,
@@ -100,9 +104,26 @@ void treeProcessing(
                 _clusters_V3_FHCAL_Y,
                 _clusters_V3_FHCAL_Z);
         }
+        if(do_V4clusterizer){
+            _do_V4clusterizer = true;
+            runclusterizer(kV4, kFHCAL,seed_E, aggregation_E,
+                _nclusters_V4_FHCAL,
+                _clusters_V4_FHCAL_E,
+                _clusters_V4_FHCAL_Eta,
+                _clusters_V4_FHCAL_Phi,
+                _clusters_V4_FHCAL_M02,
+                _clusters_V4_FHCAL_M20,
+                _clusters_V4_FHCAL_isMatched,
+                _clusters_V4_FHCAL_NTower,
+                _clusters_V4_FHCAL_trueID,
+                _clusters_V4_FHCAL_NtrueID,
+                _clusters_V4_FHCAL_X,
+                _clusters_V4_FHCAL_Y,
+                _clusters_V4_FHCAL_Z);
+        }
         if(do_XNclusterizer){
             _do_XNclusterizer = true;
-            runclusterizer(kXN, kFHCAL,0.5, 0.1,
+            runclusterizer(kXN, kFHCAL,seed_E, aggregation_E,
                 _nclusters_XN_FHCAL,
                 _clusters_XN_FHCAL_E,
                 _clusters_XN_FHCAL_Eta,
@@ -120,7 +141,7 @@ void treeProcessing(
         // run clusterizers FEMC
         if(do_NxNclusterizerFEMC){
             _do_NxNclusterizerFEMC = true;
-            runclusterizer(kNxN, kFEMC,0.5, 0.1,
+            runclusterizer(kNxN, kFEMC,seed_E, aggregation_E,
                 _nclusters_NxN_FEMC,
                 _clusters_NxN_FEMC_E,
                 _clusters_NxN_FEMC_Eta,
@@ -137,7 +158,7 @@ void treeProcessing(
         }
         if(do_V3clusterizerFEMC){
             _do_V3clusterizerFEMC = true;
-            runclusterizer(kV3, kFEMC,0.5, 0.1,
+            runclusterizer(kV3, kFEMC,seed_E, aggregation_E,
                 _nclusters_V3_FEMC,
                 _clusters_V3_FEMC_E,
                 _clusters_V3_FEMC_Eta,
@@ -152,9 +173,26 @@ void treeProcessing(
                 _clusters_V3_FEMC_Y,
                 _clusters_V3_FEMC_Z);
         }
+        if(do_V4clusterizerFEMC){
+            _do_V4clusterizerFEMC = true;
+            runclusterizer(kV4, kFEMC,seed_E, aggregation_E,
+                _nclusters_V4_FEMC,
+                _clusters_V4_FEMC_E,
+                _clusters_V4_FEMC_Eta,
+                _clusters_V4_FEMC_Phi,
+                _clusters_V4_FEMC_M02,
+                _clusters_V4_FEMC_M20,
+                _clusters_V4_FEMC_isMatched,
+                _clusters_V4_FEMC_NTower,
+                _clusters_V4_FEMC_trueID,
+                _clusters_V4_FEMC_NtrueID,
+                _clusters_V4_FEMC_X,
+                _clusters_V4_FEMC_Y,
+                _clusters_V4_FEMC_Z);
+        }
         if(do_XNclusterizerFEMC){
             _do_XNclusterizerFEMC = true;
-            runclusterizer(kXN, kFEMC,0.5, 0.1,
+            runclusterizer(kXN, kFEMC,seed_E, aggregation_E,
                 _nclusters_XN_FEMC,
                 _clusters_XN_FEMC_E,
                 _clusters_XN_FEMC_Eta,
@@ -349,7 +387,7 @@ void treeProcessing(
             std::vector<float> jetf_truthcharged_E;
             for(Int_t imc=0; imc<_nMCPart; imc++){
                 TVector3 truevec(_mcpart_px[imc],_mcpart_py[imc],_mcpart_pz[imc]);
-                if(truevec.Eta()<0) continue;
+                if(truevec.Eta()<1) continue;
                 if(verbosity>1) cout << "\tMC:  particle " << imc << "\twith E = " << _mcpart_E[imc] << " GeV" << endl;
                 //  create truth vector for jet finder
                 jetf_truth_px.push_back(_mcpart_px[imc]);

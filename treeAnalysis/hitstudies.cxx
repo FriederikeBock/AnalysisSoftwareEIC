@@ -13,9 +13,9 @@ TH2F*  h_trackProj_layer_xy[_maxProjectionLayers] 	= {NULL};
 TH2F*  h_trackProj_layer_etaphi[_maxProjectionLayers] 	= {NULL};
 
 TH2F*  h_hitslayer_vs_tracks[_maxProjectionLayers] 	= {NULL};
-TH2F*  h_hitslayer_vs_clusters[_maxProjectionLayers][2] 	= {{NULL}};
-TH2F*  h_hitslayer_vs_towers[_maxProjectionLayers][2] 	= {{NULL}};
-TH2F*  h_fwdtracks_vs_clusters[2] 	= {NULL};
+TH2F*  h_hitslayer_vs_clusters[_maxProjectionLayers][_active_calo] 	= {{NULL}};
+TH2F*  h_hitslayer_vs_towers[_maxProjectionLayers][_active_calo] 	= {{NULL}};
+TH2F*  h_fwdtracks_vs_clusters[_active_calo] 	= {NULL};
 
 
 // ANCHOR main function to be called in event loop
@@ -27,7 +27,7 @@ void hitstudies(){
     if(!h_trackProj_layer_etaphi[il])h_trackProj_layer_etaphi[il] 	= new TH2F(Form("h_trackProj_layer_etaphi_%s", GetProjectionNameFromIndex(il).Data()), "", 300, 1 , 4,300, -TMath::Pi(),TMath::Pi());
 
     if(!h_hitslayer_vs_tracks[il])h_hitslayer_vs_tracks[il] 	= new TH2F(Form("h_hitslayer_vs_tracks_%s", GetProjectionNameFromIndex(il).Data()), "", 100, 0 , 100,100, 0 , 100);
-    for(int icalo=0;icalo<2;icalo++){
+    for(int icalo=0;icalo<_active_calo;icalo++){
       if(!h_hitslayer_vs_clusters[il][icalo])h_hitslayer_vs_clusters[il][icalo] 	= new TH2F(Form("h_hitslayer_vs_clusters_%s_%s", GetProjectionNameFromIndex(il).Data(),str_calorimeter[icalo].Data()), "", 100, 0 , 100,30, 0 , 30);
       if(!h_hitslayer_vs_towers[il][icalo])h_hitslayer_vs_towers[il][icalo] 	= new TH2F(Form("h_hitslayer_vs_towers_%s_%s", GetProjectionNameFromIndex(il).Data(),str_calorimeter[icalo].Data()), "", 100, 0 , 100,300, 0 , 300);
       if(!h_fwdtracks_vs_clusters[icalo])h_fwdtracks_vs_clusters[icalo] 	= new TH2F(Form("h_fwdtracks_vs_clusters_%s",str_calorimeter[icalo].Data()), "", 100, 0 , 100,30, 0 , 30);
@@ -59,7 +59,7 @@ void hitstudies(){
   }
   for(int il=0;il<_maxProjectionLayers;il++){
     h_hitslayer_vs_tracks[il]->Fill(ihitslayer[il],itracksfwd);
-    for(int icalo=0;icalo<2;icalo++){
+    for(int icalo=0;icalo<_active_calo;icalo++){
       h_hitslayer_vs_clusters[il][icalo]->Fill(ihitslayer[il],icalo==0 ? _nclusters_V3_FHCAL : _nclusters_V3_FEMC);
       h_hitslayer_vs_towers[il][icalo]->Fill(ihitslayer[il],icalo==0 ? _nTowers_FHCAL : _nTowers_FEMC);
     }
@@ -105,7 +105,7 @@ void hitstudiesSave(){
 
     h_hitslayer_vs_tracks[il]->Scale(1./h_hitslayer_vs_tracks[il]->GetEntries());
     h_hitslayer_vs_tracks[il]->Write();
-    for(int icalo=0;icalo<2;icalo++){
+    for(int icalo=0;icalo<_active_calo;icalo++){
       h_hitslayer_vs_clusters[il][icalo]->Scale(1./h_hitslayer_vs_clusters[il][icalo]->GetEntries());
       h_hitslayer_vs_clusters[il][icalo]->Write();
       h_hitslayer_vs_towers[il][icalo]->Scale(1./h_hitslayer_vs_towers[il][icalo]->GetEntries());
