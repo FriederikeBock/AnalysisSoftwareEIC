@@ -58,7 +58,7 @@
                                       // 12: 2.5 < eta < 3.0 
                                       // 13: 3.0 < eta < 3.5 
                                       // 14: 3.5 < eta < 4.0
-  Bool_t enablePlot[nEta+1]               = {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 
+  Bool_t enablePlot[nEta+1]               = {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
                                               1, 1, 1, 1, 0, 0};
   const Int_t rebinEta_PtResol[nEta+1]    = { 4, 4, 2, 2, 2, 2, 2, 2, 2, 2, 
                                               2, 2, 2, 2, 4, 1};
@@ -114,7 +114,7 @@
   
   TString nameOutEtaRange[3]   = {"backward", "central", "forward"};
   TString labelEtaRange[3]     = {"     e-going", "     barrel", "     h-going"};
-  Int_t minEtaBin[3]           = {2,6,10};
+  Int_t minEtaBin[3]           = {1,6,10};
   Int_t maxEtaBin[3]           = {4,8,13};
-  Int_t maxNEtaBins[3]         = {3, 3, 4};
+  Int_t maxNEtaBins[3]         = {4, 3, 4};
     
