@@ -27,6 +27,10 @@
 
   TString partName[6]             = {"All", "Electron", "Muon", "Pion", "Kaon", "Proton" };
   TString partLabel[6]            = {"(h/e)^{#pm}",  "e^{#pm}", "#mu^{#pm}", "#pi^{#pm}", "K^{#pm}", "p/#bar{p}"};
+
+  TString partNameET[6]             = {"chargedpart", "electron", "muon", "cpion", "ckaon", "proton" };
+  TString partLabelET[6]            = {"(h/e)^{#pm}",  "e^{#pm}", "#mu^{#pm}", "#pi^{#pm}", "K^{#pm}", "p/#bar{p}"};
+
   //************************** Read data **************************************************
   const Int_t nPt                  = 13;
   const static Double_t partPt[]     = {0., 0.5, 1.0,  2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 

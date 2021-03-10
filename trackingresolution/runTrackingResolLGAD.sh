@@ -131,4 +131,10 @@ elif [ $1 = "tree" ]; then
   root -x -b -q -l 'analyseTreeForTrackingResolAndPID.C("LBL-MB","","files_ALLSILICON-epMB.txt",kFALSE,kFALSE)'
   root -x -b -q -l 'analyseTreeForTrackingResolAndPID.C("LBLandFullTTL-MB","","files_ALLSILICON_TTL-epMB.txt")'
   
+elif [ $1 = "effi" ]; then
+  root -b -x -q -b 'trackingeffi.C("/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBL_MB_2021_03_09/trackingefficiency/output_TRKEFF.root","pdf","LBL-MB")'
+  root -b -x -q -b 'trackingeffi.C("/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBL_pTHard_2021_03_09/trackingefficiency/output_TRKEFF.root","pdf","LBL-pTHard5GeV")'
+  root -b -x -q -b 'trackingeffi.C("/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLACLGAD_MB_2021_03_09/trackingefficiency/output_TRKEFF.root","pdf","LBLwithACLGAD-MB")'
+  root -b -x -q -b 'trackingeffi.C("/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLACLGAD_pTHard_2021_03_09/trackingefficiency/output_TRKEFF.root","pdf","LBLwithACLGAD-pTHard5GeV")'
+
 fi
