@@ -2,11 +2,6 @@
 #include "jet_finder.cxx"
 #include "caloheader.h"
 #include "clusterizer.cxx"
-// #include "clusterizerNxN.cxx"
-// #include "clusterizerV3.cxx"
-// #include "clusterizerXN.cxx"
-// #include "clusterizerNxNFEMC.cxx"
-// #include "clusterizerV3FEMC.cxx"
 
 #include "jetresolutionhistos.cxx"
 #include "resolutionhistos.cxx"
@@ -18,14 +13,18 @@
 void treeProcessing(
     TString fileName            = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_pTHard5.root",
     TString addOutputName       = "",
-    bool do_NxNclusterizer      = true,
+    bool do_3x3clusterizer      = true,
+    bool do_5x5clusterizer      = true,
     bool do_V3clusterizer       = true,
-    bool do_V4clusterizer       = true,
-    bool do_XNclusterizer       = true,
-    bool do_NxNclusterizerFEMC  = true,
+    bool do_MAclusterizer       = true,
+    bool do_C3clusterizer       = true,
+    bool do_C5clusterizer       = true,
+    bool do_3x3clusterizerFEMC  = true,
+    bool do_5x5clusterizerFEMC  = true,
     bool do_V3clusterizerFEMC   = true,
-    bool do_V4clusterizerFEMC   = true,
-    bool do_XNclusterizerFEMC   = true,
+    bool do_MAclusterizerFEMC   = true,
+    bool do_C3clusterizerFEMC   = true,
+    bool do_C5clusterizerFEMC   = true,
     bool do_jetfinding          = false,
     // Double_t maxNEvent = 1e5,
     Double_t maxNEvent          = -1,
@@ -70,22 +69,39 @@ void treeProcessing(
         float seed_E = 0.5;
         float aggregation_E = 0.1;
         // run clusterizers FHCAL
-        if(do_NxNclusterizer){
-            _do_NxNclusterizer = true;
-            runclusterizer(kNxN, kFHCAL,seed_E, aggregation_E,
-                _nclusters_NxN_FHCAL,
-                _clusters_NxN_FHCAL_E,
-                _clusters_NxN_FHCAL_Eta,
-                _clusters_NxN_FHCAL_Phi,
-                _clusters_NxN_FHCAL_M02,
-                _clusters_NxN_FHCAL_M20,
-                _clusters_NxN_FHCAL_isMatched,
-                _clusters_NxN_FHCAL_NTower,
-                _clusters_NxN_FHCAL_trueID,
-                _clusters_NxN_FHCAL_NtrueID,
-                _clusters_NxN_FHCAL_X,
-                _clusters_NxN_FHCAL_Y,
-                _clusters_NxN_FHCAL_Z);
+        if(do_3x3clusterizer){
+            _do_3x3clusterizer = true;
+            runclusterizer(k3x3, kFHCAL,seed_E, aggregation_E,
+                _nclusters_3x3_FHCAL,
+                _clusters_3x3_FHCAL_E,
+                _clusters_3x3_FHCAL_Eta,
+                _clusters_3x3_FHCAL_Phi,
+                _clusters_3x3_FHCAL_M02,
+                _clusters_3x3_FHCAL_M20,
+                _clusters_3x3_FHCAL_isMatched,
+                _clusters_3x3_FHCAL_NTower,
+                _clusters_3x3_FHCAL_trueID,
+                _clusters_3x3_FHCAL_NtrueID,
+                _clusters_3x3_FHCAL_X,
+                _clusters_3x3_FHCAL_Y,
+                _clusters_3x3_FHCAL_Z);
+        }
+        if(do_5x5clusterizer){
+            _do_5x5clusterizer = true;
+            runclusterizer(k5x5, kFHCAL,seed_E, aggregation_E,
+                _nclusters_5x5_FHCAL,
+                _clusters_5x5_FHCAL_E,
+                _clusters_5x5_FHCAL_Eta,
+                _clusters_5x5_FHCAL_Phi,
+                _clusters_5x5_FHCAL_M02,
+                _clusters_5x5_FHCAL_M20,
+                _clusters_5x5_FHCAL_isMatched,
+                _clusters_5x5_FHCAL_NTower,
+                _clusters_5x5_FHCAL_trueID,
+                _clusters_5x5_FHCAL_NtrueID,
+                _clusters_5x5_FHCAL_X,
+                _clusters_5x5_FHCAL_Y,
+                _clusters_5x5_FHCAL_Z);
         }
         if(do_V3clusterizer){
             _do_V3clusterizer = true;
@@ -104,57 +120,91 @@ void treeProcessing(
                 _clusters_V3_FHCAL_Y,
                 _clusters_V3_FHCAL_Z);
         }
-        if(do_V4clusterizer){
-            _do_V4clusterizer = true;
-            runclusterizer(kV4, kFHCAL,seed_E, aggregation_E,
-                _nclusters_V4_FHCAL,
-                _clusters_V4_FHCAL_E,
-                _clusters_V4_FHCAL_Eta,
-                _clusters_V4_FHCAL_Phi,
-                _clusters_V4_FHCAL_M02,
-                _clusters_V4_FHCAL_M20,
-                _clusters_V4_FHCAL_isMatched,
-                _clusters_V4_FHCAL_NTower,
-                _clusters_V4_FHCAL_trueID,
-                _clusters_V4_FHCAL_NtrueID,
-                _clusters_V4_FHCAL_X,
-                _clusters_V4_FHCAL_Y,
-                _clusters_V4_FHCAL_Z);
+        if(do_MAclusterizer){
+            _do_MAclusterizer = true;
+            runclusterizer(kMA, kFHCAL,seed_E, aggregation_E,
+                _nclusters_MA_FHCAL,
+                _clusters_MA_FHCAL_E,
+                _clusters_MA_FHCAL_Eta,
+                _clusters_MA_FHCAL_Phi,
+                _clusters_MA_FHCAL_M02,
+                _clusters_MA_FHCAL_M20,
+                _clusters_MA_FHCAL_isMatched,
+                _clusters_MA_FHCAL_NTower,
+                _clusters_MA_FHCAL_trueID,
+                _clusters_MA_FHCAL_NtrueID,
+                _clusters_MA_FHCAL_X,
+                _clusters_MA_FHCAL_Y,
+                _clusters_MA_FHCAL_Z);
         }
-        if(do_XNclusterizer){
-            _do_XNclusterizer = true;
-            runclusterizer(kXN, kFHCAL,seed_E, aggregation_E,
-                _nclusters_XN_FHCAL,
-                _clusters_XN_FHCAL_E,
-                _clusters_XN_FHCAL_Eta,
-                _clusters_XN_FHCAL_Phi,
-                _clusters_XN_FHCAL_M02,
-                _clusters_XN_FHCAL_M20,
-                _clusters_XN_FHCAL_isMatched,
-                _clusters_XN_FHCAL_NTower,
-                _clusters_XN_FHCAL_trueID,
-                _clusters_XN_FHCAL_NtrueID,
-                _clusters_XN_FHCAL_X,
-                _clusters_XN_FHCAL_Y,
-                _clusters_XN_FHCAL_Z);
+        if(do_C3clusterizer){
+            _do_C3clusterizer = true;
+            runclusterizer(kC3, kFHCAL,seed_E, aggregation_E,
+                _nclusters_C3_FHCAL,
+                _clusters_C3_FHCAL_E,
+                _clusters_C3_FHCAL_Eta,
+                _clusters_C3_FHCAL_Phi,
+                _clusters_C3_FHCAL_M02,
+                _clusters_C3_FHCAL_M20,
+                _clusters_C3_FHCAL_isMatched,
+                _clusters_C3_FHCAL_NTower,
+                _clusters_C3_FHCAL_trueID,
+                _clusters_C3_FHCAL_NtrueID,
+                _clusters_C3_FHCAL_X,
+                _clusters_C3_FHCAL_Y,
+                _clusters_C3_FHCAL_Z);
+        }
+        if(do_C5clusterizer){
+            _do_C5clusterizer = true;
+            runclusterizer(kC5, kFHCAL,seed_E, aggregation_E,
+                _nclusters_C5_FHCAL,
+                _clusters_C5_FHCAL_E,
+                _clusters_C5_FHCAL_Eta,
+                _clusters_C5_FHCAL_Phi,
+                _clusters_C5_FHCAL_M02,
+                _clusters_C5_FHCAL_M20,
+                _clusters_C5_FHCAL_isMatched,
+                _clusters_C5_FHCAL_NTower,
+                _clusters_C5_FHCAL_trueID,
+                _clusters_C5_FHCAL_NtrueID,
+                _clusters_C5_FHCAL_X,
+                _clusters_C5_FHCAL_Y,
+                _clusters_C5_FHCAL_Z);
         }
         // run clusterizers FEMC
-        if(do_NxNclusterizerFEMC){
-            _do_NxNclusterizerFEMC = true;
-            runclusterizer(kNxN, kFEMC,seed_E, aggregation_E,
-                _nclusters_NxN_FEMC,
-                _clusters_NxN_FEMC_E,
-                _clusters_NxN_FEMC_Eta,
-                _clusters_NxN_FEMC_Phi,
-                _clusters_NxN_FEMC_M02,
-                _clusters_NxN_FEMC_M20,
-                _clusters_NxN_FEMC_isMatched,
-                _clusters_NxN_FEMC_NTower,
-                _clusters_NxN_FEMC_trueID,
-                _clusters_NxN_FEMC_NtrueID,
-                _clusters_NxN_FEMC_X,
-                _clusters_NxN_FEMC_Y,
-                _clusters_NxN_FEMC_Z);
+        if(do_3x3clusterizerFEMC){
+            _do_3x3clusterizerFEMC = true;
+            runclusterizer(k3x3, kFEMC,seed_E, aggregation_E,
+                _nclusters_3x3_FEMC,
+                _clusters_3x3_FEMC_E,
+                _clusters_3x3_FEMC_Eta,
+                _clusters_3x3_FEMC_Phi,
+                _clusters_3x3_FEMC_M02,
+                _clusters_3x3_FEMC_M20,
+                _clusters_3x3_FEMC_isMatched,
+                _clusters_3x3_FEMC_NTower,
+                _clusters_3x3_FEMC_trueID,
+                _clusters_3x3_FEMC_NtrueID,
+                _clusters_3x3_FEMC_X,
+                _clusters_3x3_FEMC_Y,
+                _clusters_3x3_FEMC_Z);
+        }
+        if(do_5x5clusterizerFEMC){
+            _do_5x5clusterizerFEMC = true;
+            runclusterizer(k5x5, kFEMC,seed_E, aggregation_E,
+                _nclusters_5x5_FEMC,
+                _clusters_5x5_FEMC_E,
+                _clusters_5x5_FEMC_Eta,
+                _clusters_5x5_FEMC_Phi,
+                _clusters_5x5_FEMC_M02,
+                _clusters_5x5_FEMC_M20,
+                _clusters_5x5_FEMC_isMatched,
+                _clusters_5x5_FEMC_NTower,
+                _clusters_5x5_FEMC_trueID,
+                _clusters_5x5_FEMC_NtrueID,
+                _clusters_5x5_FEMC_X,
+                _clusters_5x5_FEMC_Y,
+                _clusters_5x5_FEMC_Z);
         }
         if(do_V3clusterizerFEMC){
             _do_V3clusterizerFEMC = true;
@@ -173,39 +223,56 @@ void treeProcessing(
                 _clusters_V3_FEMC_Y,
                 _clusters_V3_FEMC_Z);
         }
-        if(do_V4clusterizerFEMC){
-            _do_V4clusterizerFEMC = true;
-            runclusterizer(kV4, kFEMC,seed_E, aggregation_E,
-                _nclusters_V4_FEMC,
-                _clusters_V4_FEMC_E,
-                _clusters_V4_FEMC_Eta,
-                _clusters_V4_FEMC_Phi,
-                _clusters_V4_FEMC_M02,
-                _clusters_V4_FEMC_M20,
-                _clusters_V4_FEMC_isMatched,
-                _clusters_V4_FEMC_NTower,
-                _clusters_V4_FEMC_trueID,
-                _clusters_V4_FEMC_NtrueID,
-                _clusters_V4_FEMC_X,
-                _clusters_V4_FEMC_Y,
-                _clusters_V4_FEMC_Z);
+        if(do_MAclusterizerFEMC){
+            _do_MAclusterizerFEMC = true;
+            runclusterizer(kMA, kFEMC,seed_E, aggregation_E,
+                _nclusters_MA_FEMC,
+                _clusters_MA_FEMC_E,
+                _clusters_MA_FEMC_Eta,
+                _clusters_MA_FEMC_Phi,
+                _clusters_MA_FEMC_M02,
+                _clusters_MA_FEMC_M20,
+                _clusters_MA_FEMC_isMatched,
+                _clusters_MA_FEMC_NTower,
+                _clusters_MA_FEMC_trueID,
+                _clusters_MA_FEMC_NtrueID,
+                _clusters_MA_FEMC_X,
+                _clusters_MA_FEMC_Y,
+                _clusters_MA_FEMC_Z);
         }
-        if(do_XNclusterizerFEMC){
-            _do_XNclusterizerFEMC = true;
-            runclusterizer(kXN, kFEMC,seed_E, aggregation_E,
-                _nclusters_XN_FEMC,
-                _clusters_XN_FEMC_E,
-                _clusters_XN_FEMC_Eta,
-                _clusters_XN_FEMC_Phi,
-                _clusters_XN_FEMC_M02,
-                _clusters_XN_FEMC_M20,
-                _clusters_XN_FEMC_isMatched,
-                _clusters_XN_FEMC_NTower,
-                _clusters_XN_FEMC_trueID,
-                _clusters_XN_FEMC_NtrueID,
-                _clusters_XN_FEMC_X,
-                _clusters_XN_FEMC_Y,
-                _clusters_XN_FEMC_Z);
+        if(do_C3clusterizerFEMC){
+            _do_C3clusterizerFEMC = true;
+            runclusterizer(kC3, kFEMC,seed_E, aggregation_E,
+                _nclusters_C3_FEMC,
+                _clusters_C3_FEMC_E,
+                _clusters_C3_FEMC_Eta,
+                _clusters_C3_FEMC_Phi,
+                _clusters_C3_FEMC_M02,
+                _clusters_C3_FEMC_M20,
+                _clusters_C3_FEMC_isMatched,
+                _clusters_C3_FEMC_NTower,
+                _clusters_C3_FEMC_trueID,
+                _clusters_C3_FEMC_NtrueID,
+                _clusters_C3_FEMC_X,
+                _clusters_C3_FEMC_Y,
+                _clusters_C3_FEMC_Z);
+        }
+        if(do_C5clusterizerFEMC){
+            _do_C5clusterizerFEMC = true;
+            runclusterizer(kC5, kFEMC,seed_E, aggregation_E,
+                _nclusters_C5_FEMC,
+                _clusters_C5_FEMC_E,
+                _clusters_C5_FEMC_Eta,
+                _clusters_C5_FEMC_Phi,
+                _clusters_C5_FEMC_M02,
+                _clusters_C5_FEMC_M20,
+                _clusters_C5_FEMC_isMatched,
+                _clusters_C5_FEMC_NTower,
+                _clusters_C5_FEMC_trueID,
+                _clusters_C5_FEMC_NtrueID,
+                _clusters_C5_FEMC_X,
+                _clusters_C5_FEMC_Y,
+                _clusters_C5_FEMC_Z);
         }
 
         // ANCHOR Hits loop variables:
@@ -441,8 +508,8 @@ void treeProcessing(
         }
         resolutionhistos();
         clusterstudies();
-        // if(_do_NxNclusterizer) trackmatchingstudies(kNxN, kFHCAL,true);
-        // if(_do_NxNclusterizerFEMC) trackmatchingstudies(kNxN, kFEMC,true);
+        // if(_do_3x3clusterizer) trackmatchingstudies(k3x3, kFHCAL,true);
+        // if(_do_3x3clusterizerFEMC) trackmatchingstudies(k3x3, kFEMC,true);
         // if(_do_V3clusterizer) trackmatchingstudies(kV3, kFHCAL,true);
         // if(_do_V3clusterizerFEMC) trackmatchingstudies(kV3, kFEMC,true);
 

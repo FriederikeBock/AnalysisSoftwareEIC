@@ -6,16 +6,20 @@ int verbosityCLS = 1;
 bool _do_V1clusterizer = false;
 bool _do_V3clusterizer = false;
 float aggregation_margin_V3 = 0.03;
-bool _do_V4clusterizer = false;
-float aggregation_margin_V4 = 0.03;
-bool _do_XNclusterizer = false;
-bool _do_NxNclusterizer = false;
+bool _do_MAclusterizer = false;
+float aggregation_margin_MA = 0.03;
+bool _do_C3clusterizer = false;
+bool _do_C5clusterizer = false;
+bool _do_3x3clusterizer = false;
+bool _do_5x5clusterizer = false;
 
 bool _do_V1clusterizerFEMC = false;
 bool _do_V3clusterizerFEMC = false;
-bool _do_V4clusterizerFEMC = false;
-bool _do_XNclusterizerFEMC = false;
-bool _do_NxNclusterizerFEMC = false;
+bool _do_MAclusterizerFEMC = false;
+bool _do_C3clusterizerFEMC = false;
+bool _do_C5clusterizerFEMC = false;
+bool _do_3x3clusterizerFEMC = false;
+bool _do_5x5clusterizerFEMC = false;
 
 TH2F*  h_clusterizer_nonagg_towers[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 
@@ -30,6 +34,8 @@ int int_CLSRZR_mcparticles_PDG[5] = {11 /*e*/,211  /*pi*/,  2212/*p*/,  321/*K*/
 
 TH2F*  h_clusterizer_clsspec_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_clsspecMC_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_clsspec_chargedparticle_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_clsspecMC_chargedparticle_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_clsspec_particle_E_eta[_active_calo][_active_algo][5]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_clsspecMC_particle_E_eta[_active_calo][_active_algo][5]; // [calorimeter_enum][algorithm_enum]
 
@@ -71,7 +77,7 @@ void runclusterizer(
 
 
   nclusters = 0;
-  if(verbosityCLS>1)cout << "XN: new event" << endl;
+  if(verbosityCLS>1)cout << "C3: new event" << endl;
 
   for(int icalo=0;icalo<_active_calo;icalo++){
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
@@ -83,6 +89,10 @@ void runclusterizer(
 
       if(!h_clusterizer_clsspec_E_eta[icalo][ialgo])h_clusterizer_clsspec_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspec_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
       if(!h_clusterizer_clsspecMC_E_eta[icalo][ialgo])h_clusterizer_clsspecMC_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspecMC_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+
+      if(!h_clusterizer_clsspec_chargedparticle_E_eta[icalo][ialgo])h_clusterizer_clsspec_chargedparticle_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspec_chargedparticle_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+      if(!h_clusterizer_clsspecMC_chargedparticle_E_eta[icalo][ialgo])h_clusterizer_clsspecMC_chargedparticle_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspecMC_chargedparticle_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+
       for(int ipart=0;ipart<5;ipart++){
         if(!h_clusterizer_clsspec_particle_E_eta[icalo][ialgo][ipart])h_clusterizer_clsspec_particle_E_eta[icalo][ialgo][ipart] 	= new TH2F(Form("h_clusterizer_clsspec_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CLSRZR_mcparticles[ipart].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
         if(!h_clusterizer_clsspecMC_particle_E_eta[icalo][ialgo][ipart])h_clusterizer_clsspecMC_particle_E_eta[icalo][ialgo][ipart] 	= new TH2F(Form("h_clusterizer_clsspecMC_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CLSRZR_mcparticles[ipart].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
@@ -138,10 +148,26 @@ void runclusterizer(
       cluster_towers.push_back(input_towers.at(0));
       clslabels.push_back(input_towers.at(0).tower_trueID);
 
-      // ANCHOR XN clusterizer logic
-      if(clusterizerEnum==kXN){
+      // ANCHOR C3 clusterizer logic
+      if(clusterizerEnum==kC3){
         for (int tit = 1; tit < input_towers.size(); tit++){
-          // towers must be within 3x3 matrix (delta Eta and delta Phi < 2)
+          // towers must be within cross of delta Eta and delta Phi <= 1
+          if( ( std::abs(input_towers.at(tit).tower_iEta-input_towers.at(0).tower_iEta) + std::abs(input_towers.at(tit).tower_iPhi-input_towers.at(0).tower_iPhi) ) <= 1 ){
+              clusters_E[nclusters]+=input_towers.at(tit).tower_E;
+              clusters_NTower[nclusters]++;
+              cluster_towers.push_back(input_towers.at(tit));
+              if(!(std::find(clslabels.begin(), clslabels.end(), input_towers.at(tit).tower_trueID) != clslabels.end())){
+                clusters_NtrueID[nclusters]++;
+                clslabels.push_back(input_towers.at(tit).tower_trueID);
+              }
+              input_towers.erase(input_towers.begin()+tit);
+          }
+        }
+      }
+      // ANCHOR C5 clusterizer logic
+      else if(clusterizerEnum==kC5){
+        for (int tit = 1; tit < input_towers.size(); tit++){
+          // towers must be within cross of delta Eta and delta Phi <= 2 (-> 3x3 plus 4 additional towers)
           if( ( std::abs(input_towers.at(tit).tower_iEta-input_towers.at(0).tower_iEta) + std::abs(input_towers.at(tit).tower_iPhi-input_towers.at(0).tower_iPhi) ) <= 2 ){
               clusters_E[nclusters]+=input_towers.at(tit).tower_E;
               clusters_NTower[nclusters]++;
@@ -154,12 +180,30 @@ void runclusterizer(
           }
         }
       }
-      // ANCHOR NxN clusterizer logic
-      else if(clusterizerEnum==kNxN){
+      // ANCHOR 3x3 clusterizer logic
+      else if(clusterizerEnum==k3x3){
         for (int tit = 1; tit < input_towers.size(); tit++){
           // towers must be within 3x3 matrix (delta Eta and delta Phi < 2)
           if(std::abs(input_towers.at(tit).tower_iEta-input_towers.at(0).tower_iEta)<2){
             if(std::abs(input_towers.at(tit).tower_iPhi-input_towers.at(0).tower_iPhi)<2){
+              clusters_E[nclusters]+=input_towers.at(tit).tower_E;
+              clusters_NTower[nclusters]++;
+              cluster_towers.push_back(input_towers.at(tit));
+              if(!(std::find(clslabels.begin(), clslabels.end(), input_towers.at(tit).tower_trueID) != clslabels.end())){
+                clusters_NtrueID[nclusters]++;
+                clslabels.push_back(input_towers.at(tit).tower_trueID);
+              }
+              input_towers.erase(input_towers.begin()+tit);
+            }
+          }
+        }
+      }
+      // ANCHOR 5x5 clusterizer logic
+      else if(clusterizerEnum==k5x5){
+        for (int tit = 1; tit < input_towers.size(); tit++){
+          // towers must be within 5x5 matrix (delta Eta and delta Phi < 2)
+          if(std::abs(input_towers.at(tit).tower_iEta-input_towers.at(0).tower_iEta)<3){
+            if(std::abs(input_towers.at(tit).tower_iPhi-input_towers.at(0).tower_iPhi)<3){
               clusters_E[nclusters]+=input_towers.at(tit).tower_E;
               clusters_NTower[nclusters]++;
               cluster_towers.push_back(input_towers.at(tit));
@@ -200,8 +244,8 @@ void runclusterizer(
         }
       }
 
-      // ANCHOR V4 clusterizer logic
-      else if(clusterizerEnum==kV4){
+      // ANCHOR MA clusterizer logic
+      else if(clusterizerEnum==kMA){
         // remove seed tower from sample
         input_towers.erase(input_towers.begin());
         for (int tit = 0; tit < cluster_towers.size(); tit++){
@@ -242,9 +286,9 @@ void runclusterizer(
       clusters_Y[nclusters] = showershape_eta_phi[5];
       clusters_Z[nclusters] = showershape_eta_phi[6];
       clusters_isMatched[nclusters] = isClusterMatched(nclusters, 20,clusters_X,clusters_Y,clusters_E, caloEnum, clusterizerEnum, true);
-     // if(verbosityCLS>1) cout << "\tXN cluster with E = " << clusters_E[nclusters] << "\tEta: " << clusters_Eta[nclusters]<< "\tPhi: " << clusters_Phi[nclusters]<< "\tntowers: " << clusters_NTower[nclusters] << "\ttrueID: " << clusters_trueID[nclusters] << endl;
+     // if(verbosityCLS>1) cout << "\tC3 cluster with E = " << clusters_E[nclusters] << "\tEta: " << clusters_Eta[nclusters]<< "\tPhi: " << clusters_Phi[nclusters]<< "\tntowers: " << clusters_NTower[nclusters] << "\ttrueID: " << clusters_trueID[nclusters] << endl;
       // remove clusterized towers
-      if(!(clusterizerEnum==kV3) && !(clusterizerEnum==kV4)){
+      if(!(clusterizerEnum==kV3) && !(clusterizerEnum==kMA)){
         input_towers.erase(input_towers.begin());
       }
 
@@ -261,9 +305,14 @@ void runclusterizer(
       h_clusterizer_clsspecMC_E_eta[caloEnum][clusterizerEnum]->Fill(_mcpart_E[clusters_trueID[nclusters]-1], _mcpart_Eta[clusters_trueID[nclusters]-1]);
 
       for(int ipart=0;ipart<5;ipart++){
-        if(int_CLSRZR_mcparticles_PDG[ipart]==_mcpart_PDG[clusters_trueID[nclusters]-1]){
+        if(int_CLSRZR_mcparticles_PDG[ipart]==abs(_mcpart_PDG[clusters_trueID[nclusters]-1])){
           h_clusterizer_clsspec_particle_E_eta[caloEnum][clusterizerEnum][ipart]->Fill(clusters_E[nclusters], clusters_Eta[nclusters]);
           h_clusterizer_clsspecMC_particle_E_eta[caloEnum][clusterizerEnum][ipart]->Fill(_mcpart_E[clusters_trueID[nclusters]-1], _mcpart_Eta[clusters_trueID[nclusters]-1]);
+          // fill also for charged particles (K,p,pi) combined
+          if(int_CLSRZR_mcparticles_PDG[ipart]==211  ||  int_CLSRZR_mcparticles_PDG[ipart]==2212 ||  int_CLSRZR_mcparticles_PDG[ipart]==321){
+            h_clusterizer_clsspec_chargedparticle_E_eta[caloEnum][clusterizerEnum]->Fill(clusters_E[nclusters], clusters_Eta[nclusters]);
+            h_clusterizer_clsspecMC_chargedparticle_E_eta[caloEnum][clusterizerEnum]->Fill(_mcpart_E[clusters_trueID[nclusters]-1], _mcpart_Eta[clusters_trueID[nclusters]-1]);
+          }
         }
       }
 
@@ -361,6 +410,8 @@ void clusterizerSave(){
       if(h_clusterizer_clsspec_matched_PDG[icalo][ialgo]) h_clusterizer_clsspec_matched_PDG[icalo][ialgo]->Write();
       if(h_clusterizer_clsspec_E_eta[icalo][ialgo]) h_clusterizer_clsspec_E_eta[icalo][ialgo]->Write();
       if(h_clusterizer_clsspecMC_E_eta[icalo][ialgo]) h_clusterizer_clsspecMC_E_eta[icalo][ialgo]->Write();
+      if(h_clusterizer_clsspec_chargedparticle_E_eta[icalo][ialgo]) h_clusterizer_clsspec_chargedparticle_E_eta[icalo][ialgo]->Write();
+      if(h_clusterizer_clsspecMC_chargedparticle_E_eta[icalo][ialgo]) h_clusterizer_clsspecMC_chargedparticle_E_eta[icalo][ialgo]->Write();
       for(int ipart=0;ipart<5;ipart++){
         if(h_clusterizer_clsspec_particle_E_eta[icalo][ialgo][ipart])h_clusterizer_clsspec_particle_E_eta[icalo][ialgo][ipart]->Write();
         if(h_clusterizer_clsspecMC_particle_E_eta[icalo][ialgo][ipart])h_clusterizer_clsspecMC_particle_E_eta[icalo][ialgo][ipart]->Write();
