@@ -20,6 +20,33 @@ TH2F*  h_RH_ResoCombCalib_gamma_E[_active_calo][_active_algo];
 TH2F*  h_RH_ResoCombCalib_electron_E[_active_calo][_active_algo];
 TH2F*  h_RH_ResoCombCalib_pion_E[_active_calo][_active_algo];
 
+int nclusters_RH = 0;
+float* clusters_RH_E            = new float[_maxNclusters];
+float* clusters_RH_Eta         = new float[_maxNclusters];
+float* clusters_RH_Phi         = new float[_maxNclusters];
+float* clusters_RH_M02         = new float[_maxNclusters];
+float* clusters_RH_M20         = new float[_maxNclusters];
+bool* clusters_RH_isMatched         = new bool[_maxNclusters];
+int* clusters_RH_NTower         = new int[_maxNclusters];
+int* clusters_RH_trueID       = new int[_maxNclusters];
+int* clusters_RH_NtrueID       = new int[_maxNclusters];
+float* clusters_RH_X         = new float[_maxNclusters];
+float* clusters_RH_Y         = new float[_maxNclusters];
+float* clusters_RH_Z         = new float[_maxNclusters];
+
+int nclusters_comb_RH = 0;
+float* clusters_comb_RH_E            = new float[_maxNclusters];
+float* clusters_comb_RH_Eta         = new float[_maxNclusters];
+float* clusters_comb_RH_Phi         = new float[_maxNclusters];
+float* clusters_comb_RH_M02         = new float[_maxNclusters];
+float* clusters_comb_RH_M20         = new float[_maxNclusters];
+bool* clusters_comb_RH_isMatched         = new bool[_maxNclusters];
+int* clusters_comb_RH_NTower         = new int[_maxNclusters];
+int* clusters_comb_RH_trueID       = new int[_maxNclusters];
+int* clusters_comb_RH_NtrueID       = new int[_maxNclusters];
+float* clusters_comb_RH_X         = new float[_maxNclusters];
+float* clusters_comb_RH_Y         = new float[_maxNclusters];
+float* clusters_comb_RH_Z         = new float[_maxNclusters];
 // Double_t paramsFEMCcalib[5]= {3.15612e+00,1.57658e-01,1.66441e+00,-2.50979e+02,3.81511e+02}; //noshift
 // TF1* f_FEMC_calib   = new TF1("f_FEMC_calib",   "( [0] + [1] * TMath::Log(x) ) / ( 1 + ( [2] * TMath::Exp( ( x - [3] ) / [4] ) ) )",   1, 120);
 // Double_t paramsHCALcalib[5]= {1.75773e+00, 3.87923e-01, 1.20862e+00, -1.25194e+02, 7.54438e+01}; //noshift
@@ -32,20 +59,6 @@ void resolutionhistos(){
 
   // f_FHCAL_calib->SetParameters(paramsHCALcalib);
 
-
-  int nclusters_RH = 0;
-  float* clusters_RH_E            = new float[_maxNclusters];
-  float* clusters_RH_Eta         = new float[_maxNclusters];
-  float* clusters_RH_Phi         = new float[_maxNclusters];
-  float* clusters_RH_M02         = new float[_maxNclusters];
-  float* clusters_RH_M20         = new float[_maxNclusters];
-  bool* clusters_RH_isMatched         = new bool[_maxNclusters];
-  int* clusters_RH_NTower         = new int[_maxNclusters];
-  int* clusters_RH_trueID       = new int[_maxNclusters];
-  int* clusters_RH_NtrueID       = new int[_maxNclusters];
-  float* clusters_RH_X         = new float[_maxNclusters];
-  float* clusters_RH_Y         = new float[_maxNclusters];
-  float* clusters_RH_Z         = new float[_maxNclusters];
   for(int icalo=0;icalo<_active_calo;icalo++){
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
       loadClusterizerInput(
@@ -111,19 +124,6 @@ void resolutionhistos(){
     }
   }
   int icalo = 0;
-  int nclusters_comb_RH = 0;
-  float* clusters_comb_RH_E            = new float[_maxNclusters];
-  float* clusters_comb_RH_Eta         = new float[_maxNclusters];
-  float* clusters_comb_RH_Phi         = new float[_maxNclusters];
-  float* clusters_comb_RH_M02         = new float[_maxNclusters];
-  float* clusters_comb_RH_M20         = new float[_maxNclusters];
-  bool* clusters_comb_RH_isMatched         = new bool[_maxNclusters];
-  int* clusters_comb_RH_NTower         = new int[_maxNclusters];
-  int* clusters_comb_RH_trueID       = new int[_maxNclusters];
-  int* clusters_comb_RH_NtrueID       = new int[_maxNclusters];
-  float* clusters_comb_RH_X         = new float[_maxNclusters];
-  float* clusters_comb_RH_Y         = new float[_maxNclusters];
-  float* clusters_comb_RH_Z         = new float[_maxNclusters];
   for(int ialgo=0;ialgo<_active_algo;ialgo++){
     loadClusterizerInput(
       ialgo,

@@ -21,14 +21,28 @@ enum clusterizertype {
     kV3         = 1,
     kNxN        = 2,
     kXN         = 3,
-    kV4
+    kV4         = 4
 };
 TString str_clusterizer[5] = {"V1", "V3", "NxN", "XN", "V4"};
 const int _active_algo = 5;
 // sorting function for towers
 bool acompare(towersStrct lhs, towersStrct rhs) { return lhs.tower_E > rhs.tower_E; }
 
-
+void setINTClusterArrayToZero(int* &arrayinput){
+  for(int iclus=0;iclus<_maxNclusters;iclus++){
+    arrayinput[iclus]=0;
+  }
+}
+void setFLOATClusterArrayToZero(float* &arrayinput){
+  for(int iclus=0;iclus<_maxNclusters;iclus++){
+    arrayinput[iclus]=0.;
+  }
+}
+void setBOOLClusterArrayToZero(bool* &arrayinput){
+  for(int iclus=0;iclus<_maxNclusters;iclus++){
+    arrayinput[iclus]=false;
+  }
+}
 // conversion functions for processing
 float* EtaPhiFromIndices(int ieta,int iphi, int granularity = 1,float energy = 0, int caloSelect = 0);
 TVector3 TowerPositionVectorFromIndices(int ieta,int iphi, int caloSelect = 0, int granularity = 1);
@@ -313,18 +327,18 @@ void loadClusterizerInput(
       clusters_Z = _clusters_NxN_FEMC_Z;
     } else {
       nclusters = 0;
-      clusters_E = {0};
-      clusters_Eta = {0};
-      clusters_Phi = {0};
-      clusters_M02 = {0};
-      clusters_M20 = {0};
-      clusters_isMatched = {0};
-      clusters_NTower = {0};
-      clusters_trueID = {0};
-      clusters_NtrueID = {0};
-      clusters_X = {0};
-      clusters_Y = {0};
-      clusters_Z = {0};
+      setFLOATClusterArrayToZero(clusters_E);
+      setFLOATClusterArrayToZero(clusters_Eta);
+      setFLOATClusterArrayToZero(clusters_Phi);
+      setFLOATClusterArrayToZero(clusters_M02);
+      setFLOATClusterArrayToZero(clusters_M20);
+      setBOOLClusterArrayToZero(clusters_isMatched);
+      setINTClusterArrayToZero(clusters_NTower);
+      setINTClusterArrayToZero(clusters_trueID);
+      setINTClusterArrayToZero(clusters_NtrueID);
+      setFLOATClusterArrayToZero(clusters_X);
+      setFLOATClusterArrayToZero(clusters_Y);
+      setFLOATClusterArrayToZero(clusters_Z);
     }
   }
 // V3 global cluster variables
@@ -359,18 +373,18 @@ void loadClusterizerInput(
       clusters_Z = _clusters_V3_FEMC_Z;
     } else {
       nclusters = 0;
-      clusters_E = {0};
-      clusters_Eta = {0};
-      clusters_Phi = {0};
-      clusters_M02 = {0};
-      clusters_M20 = {0};
-      clusters_isMatched = {0};
-      clusters_NTower = {0};
-      clusters_trueID = {0};
-      clusters_NtrueID = {0};
-      clusters_X = {0};
-      clusters_Y = {0};
-      clusters_Z = {0};
+      setFLOATClusterArrayToZero(clusters_E);
+      setFLOATClusterArrayToZero(clusters_Eta);
+      setFLOATClusterArrayToZero(clusters_Phi);
+      setFLOATClusterArrayToZero(clusters_M02);
+      setFLOATClusterArrayToZero(clusters_M20);
+      setBOOLClusterArrayToZero(clusters_isMatched);
+      setINTClusterArrayToZero(clusters_NTower);
+      setINTClusterArrayToZero(clusters_trueID);
+      setINTClusterArrayToZero(clusters_NtrueID);
+      setFLOATClusterArrayToZero(clusters_X);
+      setFLOATClusterArrayToZero(clusters_Y);
+      setFLOATClusterArrayToZero(clusters_Z);
     }
   }
 // V4 global cluster variables
@@ -405,18 +419,18 @@ void loadClusterizerInput(
       clusters_Z = _clusters_V4_FEMC_Z;
     } else {
       nclusters = 0;
-      clusters_E = {0};
-      clusters_Eta = {0};
-      clusters_Phi = {0};
-      clusters_M02 = {0};
-      clusters_M20 = {0};
-      clusters_isMatched = {0};
-      clusters_NTower = {0};
-      clusters_trueID = {0};
-      clusters_NtrueID = {0};
-      clusters_X = {0};
-      clusters_Y = {0};
-      clusters_Z = {0};
+      setFLOATClusterArrayToZero(clusters_E);
+      setFLOATClusterArrayToZero(clusters_Eta);
+      setFLOATClusterArrayToZero(clusters_Phi);
+      setFLOATClusterArrayToZero(clusters_M02);
+      setFLOATClusterArrayToZero(clusters_M20);
+      setBOOLClusterArrayToZero(clusters_isMatched);
+      setINTClusterArrayToZero(clusters_NTower);
+      setINTClusterArrayToZero(clusters_trueID);
+      setINTClusterArrayToZero(clusters_NtrueID);
+      setFLOATClusterArrayToZero(clusters_X);
+      setFLOATClusterArrayToZero(clusters_Y);
+      setFLOATClusterArrayToZero(clusters_Z);
     }
   }
 // V1 global cluster variables
@@ -426,43 +440,43 @@ void loadClusterizerInput(
       clusters_E = _clusters_FHCAL_E;
       clusters_Eta = _clusters_FHCAL_Eta;
       clusters_Phi = _clusters_FHCAL_Phi;
-      clusters_M02 = {0};
-      clusters_M20 = {0};
-      clusters_isMatched = {0};
+      setFLOATClusterArrayToZero(clusters_M02);
+      setFLOATClusterArrayToZero(clusters_M20);
+      setBOOLClusterArrayToZero(clusters_isMatched);
       clusters_NTower = _clusters_FHCAL_NTower;
       clusters_trueID = _clusters_FHCAL_trueID;
-      clusters_NtrueID = {0};
-      clusters_X = {0};
-      clusters_Y = {0};
-      clusters_Z = {0};
+      setINTClusterArrayToZero(clusters_NtrueID);
+      setFLOATClusterArrayToZero(clusters_X);
+      setFLOATClusterArrayToZero(clusters_Y);
+      setFLOATClusterArrayToZero(clusters_Z);
     } else if(caloEnum==kFEMC){
       nclusters = _nclusters_FEMC;
       clusters_E = _clusters_FEMC_E;
       clusters_Eta = _clusters_FEMC_Eta;
       clusters_Phi = _clusters_FEMC_Phi;
-      clusters_M02 = {0};
-      clusters_M20 = {0};
-      clusters_isMatched = {0};
+      setFLOATClusterArrayToZero(clusters_M02);
+      setFLOATClusterArrayToZero(clusters_M20);
+      setBOOLClusterArrayToZero(clusters_isMatched);
       clusters_NTower = _clusters_FEMC_NTower;
       clusters_trueID = _clusters_FEMC_trueID;
-      clusters_NtrueID = {0};
-      clusters_X = {0};
-      clusters_Y = {0};
-      clusters_Z = {0};
+      setINTClusterArrayToZero(clusters_NtrueID);
+      setFLOATClusterArrayToZero(clusters_X);
+      setFLOATClusterArrayToZero(clusters_Y);
+      setFLOATClusterArrayToZero(clusters_Z);
     } else {
       nclusters = 0;
-      clusters_E = {0};
-      clusters_Eta = {0};
-      clusters_Phi = {0};
-      clusters_M02 = {0};
-      clusters_M20 = {0};
-      clusters_isMatched = {0};
-      clusters_NTower = {0};
-      clusters_trueID = {0};
-      clusters_NtrueID = {0};
-      clusters_X = {0};
-      clusters_Y = {0};
-      clusters_Z = {0};
+      setFLOATClusterArrayToZero(clusters_E);
+      setFLOATClusterArrayToZero(clusters_Eta);
+      setFLOATClusterArrayToZero(clusters_Phi);
+      setFLOATClusterArrayToZero(clusters_M02);
+      setFLOATClusterArrayToZero(clusters_M20);
+      setBOOLClusterArrayToZero(clusters_isMatched);
+      setINTClusterArrayToZero(clusters_NTower);
+      setINTClusterArrayToZero(clusters_trueID);
+      setINTClusterArrayToZero(clusters_NtrueID);
+      setFLOATClusterArrayToZero(clusters_X);
+      setFLOATClusterArrayToZero(clusters_Y);
+      setFLOATClusterArrayToZero(clusters_Z);
     }
   }
 
@@ -498,33 +512,33 @@ void loadClusterizerInput(
       clusters_Z = _clusters_XN_FEMC_Z;
     } else {
       nclusters = 0;
-      clusters_E = {0};
-      clusters_Eta = {0};
-      clusters_Phi = {0};
-      clusters_M02 = {0};
-      clusters_M20 = {0};
-      clusters_isMatched = {0};
-      clusters_NTower = {0};
-      clusters_trueID = {0};
-      clusters_NtrueID = {0};
-      clusters_X = {0};
-      clusters_Y = {0};
-      clusters_Z = {0};
+      setFLOATClusterArrayToZero(clusters_E);
+      setFLOATClusterArrayToZero(clusters_Eta);
+      setFLOATClusterArrayToZero(clusters_Phi);
+      setFLOATClusterArrayToZero(clusters_M02);
+      setFLOATClusterArrayToZero(clusters_M20);
+      setBOOLClusterArrayToZero(clusters_isMatched);
+      setINTClusterArrayToZero(clusters_NTower);
+      setINTClusterArrayToZero(clusters_trueID);
+      setINTClusterArrayToZero(clusters_NtrueID);
+      setFLOATClusterArrayToZero(clusters_X);
+      setFLOATClusterArrayToZero(clusters_Y);
+      setFLOATClusterArrayToZero(clusters_Z);
     }
   } else {
     nclusters = 0;
-    clusters_E = {0};
-    clusters_Eta = {0};
-    clusters_Phi = {0};
-    clusters_M02 = {0};
-    clusters_M20 = {0};
-    clusters_isMatched = {0};
-    clusters_NTower = {0};
-    clusters_trueID = {0};
-    clusters_NtrueID = {0};
-    clusters_X = {0};
-    clusters_Y = {0};
-    clusters_Z = {0};
+    setFLOATClusterArrayToZero(clusters_E);
+    setFLOATClusterArrayToZero(clusters_Eta);
+    setFLOATClusterArrayToZero(clusters_Phi);
+    setFLOATClusterArrayToZero(clusters_M02);
+    setFLOATClusterArrayToZero(clusters_M20);
+    setBOOLClusterArrayToZero(clusters_isMatched);
+    setINTClusterArrayToZero(clusters_NTower);
+    setINTClusterArrayToZero(clusters_trueID);
+    setINTClusterArrayToZero(clusters_NtrueID);
+    setFLOATClusterArrayToZero(clusters_X);
+    setFLOATClusterArrayToZero(clusters_Y);
+    setFLOATClusterArrayToZero(clusters_Z);
   }
 }
 

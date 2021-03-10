@@ -5,10 +5,6 @@ int verbosityTM = 1;
 
 TH2F*  h_TMstudies_dx_dy[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 
-// ANCHOR track/projection matching function
-// TODO at some point we might want E/p
-bool trackmatchingstudies(int enum_clusterizer, int enum_calorimeter, bool useProjection = false){
-
   int _nclusters_TM = 0;
   float* clusters_TM_E            = new float[_maxNclusters];
   float* clusters_TM_Eta         = new float[_maxNclusters];
@@ -22,6 +18,11 @@ bool trackmatchingstudies(int enum_clusterizer, int enum_calorimeter, bool usePr
   float* clusters_TM_X         = new float[_maxNclusters];
   float* clusters_TM_Y         = new float[_maxNclusters];
   float* clusters_TM_Z         = new float[_maxNclusters];
+
+// ANCHOR track/projection matching function
+// TODO at some point we might want E/p
+bool trackmatchingstudies(int enum_clusterizer, int enum_calorimeter, bool useProjection = false){
+
   loadClusterizerInput(
     enum_clusterizer,
     enum_calorimeter,

@@ -2,224 +2,84 @@
 // ANCHOR debug output verbosity
 int int_CS_verbosity = 2;
 
-int int_CS_mcparticles_PDG[6] = {11 /*e*/,22 /*gamma*/,211  /*pi*/,  2212/*p*/,  2112/*n*/,  321/*K*/};
+const int nParticlesPDG_CS = 6;
+int int_CS_mcparticles_PDG[nParticlesPDG_CS] = {11 /*e*/,22 /*gamma*/,211  /*pi*/,  2212/*p*/,  2112/*n*/,  321/*K*/};
+TString str_CS_mcparticles[nParticlesPDG_CS] = {"electron", "photon", "cpion", "proton", "neutron", "kaon"};
 
 // ANCHOR create histograms globally
-TH1F*  h_CS_clusters_fhcal_V1_E 	= new TH1F("h_CS_clusters_fhcal_V1_E", "", nBinsP, binningP);
-TH1F*  h_CS_clusters_fhcal_NxN_E 	= new TH1F("h_CS_clusters_fhcal_NxN_E", "", nBinsP, binningP);
-TH1F*  h_CS_clusters_fhcal_XN_E 	= new TH1F("h_CS_clusters_fhcal_XN_E", "", nBinsP, binningP);
-TH1F*  h_CS_clusters_fhcal_V3_E 	= new TH1F("h_CS_clusters_fhcal_V3_E", "", nBinsP, binningP);
-TH2F*  h_CS_clusters_M02_fhcal_V1_E 	= new TH2F("h_CS_clusters_M02_fhcal_V1_E", "", 100, 0, 2, nBinsP, binningP);
-TH2F*  h_CS_clusters_M02_fhcal_NxN_E 	= new TH2F("h_CS_clusters_M02_fhcal_NxN_E", "", 100, 0, 2, nBinsP, binningP);
-TH2F*  h_CS_clusters_M02_fhcal_XN_E 	= new TH2F("h_CS_clusters_M02_fhcal_XN_E", "", 100, 0, 2, nBinsP, binningP);
-TH2F*  h_CS_clusters_M02_fhcal_V3_E 	= new TH2F("h_CS_clusters_M02_fhcal_V3_E", "", 100, 0, 2, nBinsP, binningP);
-TH2F*  h_CS_clusters_M02_fhcal_V1_E_truth[6] = {NULL};
-TH2F*  h_CS_clusters_M02_fhcal_V3_E_truth[6] = {NULL};
-TH2F*  h_CS_clusters_M02_fhcal_NxN_E_truth[6] = {NULL};
-TH2F*  h_CS_clusters_M02_fhcal_XN_E_truth[6] = {NULL};
-TH2F*  h_CS_clusters_M20_fhcal_V1_E 	= new TH2F("h_CS_clusters_M20_fhcal_V1_E", "", 100, 0, 2, nBinsP, binningP);
-TH2F*  h_CS_clusters_M20_fhcal_NxN_E 	= new TH2F("h_CS_clusters_M20_fhcal_NxN_E", "", 100, 0, 2, nBinsP, binningP);
-TH2F*  h_CS_clusters_M20_fhcal_XN_E 	= new TH2F("h_CS_clusters_M20_fhcal_XN_E", "", 100, 0, 2, nBinsP, binningP);
-TH2F*  h_CS_clusters_M20_fhcal_V3_E 	= new TH2F("h_CS_clusters_M20_fhcal_V3_E", "", 100, 0, 2, nBinsP, binningP);
-TH2F*  h_CS_clusters_NTower_fhcal_V1_E 	= new TH2F("h_CS_clusters_nTower_fhcal_V1_E", "", nBinsP, binningP, 30, -0.5, 29.5);
-TH2F*  h_CS_clusters_nTower_fhcal_NxN_E 	= new TH2F("h_CS_clusters_nTower_fhcal_NxN_E", "", nBinsP, binningP, 30, -0.5, 29.5);
-TH2F*  h_CS_clusters_nTower_fhcal_XN_E 	= new TH2F("h_CS_clusters_nTower_fhcal_XN_E", "", nBinsP, binningP, 30, -0.5, 29.5);
-TH2F*  h_CS_clusters_nTower_fhcal_V3_E 	= new TH2F("h_CS_clusters_nTower_fhcal_V3_E", "", nBinsP, binningP, 30, -0.5, 29.5);
+TH1F*  h_CS_clusters_E[_active_calo][_active_algo] = {{NULL}};
+TH2F*  h_CS_clusters_M02_E[_active_calo][_active_algo] = {{NULL}};
+TH2F*  h_CS_clusters_M02_part_E_truth[_active_calo][_active_algo][nParticlesPDG_CS] = {{{NULL}}};
+TH2F*  h_CS_clusters_M20_E[_active_calo][_active_algo] = {{NULL}};
+TH2F*  h_CS_clusters_M20_part_E_truth[_active_calo][_active_algo][nParticlesPDG_CS] = {{{NULL}}};
+TH2F*  h_CS_clusters_NTower_E[_active_calo][_active_algo] = {{NULL}};
 
-TH1F*  h_CS_clusters_femc_V1_E 	= new TH1F("h_CS_clusters_femc_V1_E", "", nBinsP, binningP);
-TH1F*  h_CS_clusters_femc_NxN_E 	= new TH1F("h_CS_clusters_femc_NxN_E", "", nBinsP, binningP);
-TH1F*  h_CS_clusters_femc_XN_E 	= new TH1F("h_CS_clusters_femc_XN_E", "", nBinsP, binningP);
-TH1F*  h_CS_clusters_femc_V3_E 	= new TH1F("h_CS_clusters_femc_V3_E", "", nBinsP, binningP);
-TH2F*  h_CS_clusters_M02_femc_V1_E 	= new TH2F("h_CS_clusters_M02_femc_V1_E", "", 100, 0, 2, nBinsP, binningP);
-TH2F*  h_CS_clusters_M02_femc_NxN_E 	= new TH2F("h_CS_clusters_M02_femc_NxN_E", "", 100, 0, 2, nBinsP, binningP);
-TH2F*  h_CS_clusters_M02_femc_XN_E 	= new TH2F("h_CS_clusters_M02_femc_XN_E", "", 100, 0, 2, nBinsP, binningP);
-TH2F*  h_CS_clusters_M02_femc_V3_E 	= new TH2F("h_CS_clusters_M02_femc_V3_E", "", 100, 0, 2, nBinsP, binningP);
-TH2F*  h_CS_clusters_M02_femc_V1_E_truth[6] = {NULL};
-TH2F*  h_CS_clusters_M02_femc_V3_E_truth[6] = {NULL};
-TH2F*  h_CS_clusters_M02_femc_NxN_E_truth[6] = {NULL};
-TH2F*  h_CS_clusters_M02_femc_XN_E_truth[6] = {NULL};
-TH2F*  h_CS_clusters_M20_femc_V1_E 	= new TH2F("h_CS_clusters_M20_femc_V1_E", "", 100, 0, 2, nBinsP, binningP);
-TH2F*  h_CS_clusters_M20_femc_NxN_E 	= new TH2F("h_CS_clusters_M20_femc_NxN_E", "", 100, 0, 2, nBinsP, binningP);
-TH2F*  h_CS_clusters_M20_femc_XN_E 	= new TH2F("h_CS_clusters_M20_femc_XN_E", "", 100, 0, 2, nBinsP, binningP);
-TH2F*  h_CS_clusters_M20_femc_V3_E 	= new TH2F("h_CS_clusters_M20_femc_V3_E", "", 100, 0, 2, nBinsP, binningP);
-TH2F*  h_CS_clusters_NTower_femc_V1_E 	= new TH2F("h_CS_clusters_nTower_femc_V1_E", "", nBinsP, binningP, 30, -0.5, 29.5);
-TH2F*  h_CS_clusters_nTower_femc_NxN_E 	= new TH2F("h_CS_clusters_nTower_femc_NxN_E", "", nBinsP, binningP, 30, -0.5, 29.5);
-TH2F*  h_CS_clusters_nTower_femc_XN_E 	= new TH2F("h_CS_clusters_nTower_femc_XN_E", "", nBinsP, binningP, 30, -0.5, 29.5);
-TH2F*  h_CS_clusters_nTower_femc_V3_E 	= new TH2F("h_CS_clusters_nTower_femc_V3_E", "", nBinsP, binningP, 30, -0.5, 29.5);
+int nclusters_CLSTD = 0;
+float* clusters_CLSTD_E         = new float[_maxNclusters];
+float* clusters_CLSTD_Eta       = new float[_maxNclusters];
+float* clusters_CLSTD_Phi       = new float[_maxNclusters];
+float* clusters_CLSTD_M02       = new float[_maxNclusters];
+float* clusters_CLSTD_M20       = new float[_maxNclusters];
+bool* clusters_CLSTD_isMatched  = new bool[_maxNclusters];
+int* clusters_CLSTD_NTower      = new int[_maxNclusters];
+int* clusters_CLSTD_trueID      = new int[_maxNclusters];
+int* clusters_CLSTD_NtrueID     = new int[_maxNclusters];
+float* clusters_CLSTD_X         = new float[_maxNclusters];
+float* clusters_CLSTD_Y         = new float[_maxNclusters];
+float* clusters_CLSTD_Z         = new float[_maxNclusters];
 
 // ANCHOR main function to be called in event loop
 void clusterstudies(){
+  for(int icalo=0;icalo<_active_calo;icalo++){
+    for(int ialgo=0;ialgo<_active_algo;ialgo++){
 
-  for(Int_t iclus=0; iclus<_nclusters_FHCAL; iclus++){
-    // if(int_CS_verbosity>1) cout << "\tFHCAL: cluster " << iclus << "\twith E = " << _clusters_FHCAL_E[iclus] << " GeV" << endl;
-    // if(int_CS_verbosity>1) cout << "\tFHCAL: cluster MC ID " << _clusters_FHCAL_trueID[iclus] << endl;
+      // initialize histos if not yet done
+      if(!h_CS_clusters_E[icalo][ialgo])h_CS_clusters_E[icalo][ialgo]= new TH1F(Form("h_CS_clusters_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP);
+      if(!h_CS_clusters_M02_E[icalo][ialgo])h_CS_clusters_M02_E[icalo][ialgo]= new TH2F(Form("h_CS_clusters_M02_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "" , 100, 0, 2, nBinsP, binningP);
+      if(!h_CS_clusters_M20_E[icalo][ialgo])h_CS_clusters_M20_E[icalo][ialgo]= new TH2F(Form("h_CS_clusters_M20_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "" , 100, 0, 2, nBinsP, binningP);
+      if(!h_CS_clusters_NTower_E[icalo][ialgo])h_CS_clusters_NTower_E[icalo][ialgo]= new TH2F(Form("h_CS_clusters_NTower_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "" , nBinsP, binningP, 30, -0.5, 29.5);
+      for (int iPDG = 0; iPDG < nParticlesPDG_CS; iPDG++){
+        if(!h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG])h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG]= new TH2F(Form("h_CS_clusters_M02_part_E_truth_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "" , 100, 0, 2, nBinsP, binningP);
+        if(!h_CS_clusters_M20_part_E_truth[icalo][ialgo][iPDG])h_CS_clusters_M20_part_E_truth[icalo][ialgo][iPDG]= new TH2F(Form("h_CS_clusters_M20_part_E_truth_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "" , 100, 0, 2, nBinsP, binningP);
+      }
 
-    // cluster should have at least 2 towers
-    // if(_clusters_FHCAL_NTower[iclus]<2) continue;
-    h_CS_clusters_NTower_fhcal_V1_E->Fill(_clusters_FHCAL_E[iclus],_clusters_FHCAL_NTower[iclus]);
+      loadClusterizerInput(
+        ialgo,
+        icalo,
+        nclusters_CLSTD,
+        clusters_CLSTD_E,
+        clusters_CLSTD_Eta,
+        clusters_CLSTD_Phi,
+        clusters_CLSTD_M02,
+        clusters_CLSTD_M20,
+        clusters_CLSTD_isMatched,
+        clusters_CLSTD_NTower,
+        clusters_CLSTD_trueID,
+        clusters_CLSTD_NtrueID,
+        clusters_CLSTD_X,
+        clusters_CLSTD_Y,
+        clusters_CLSTD_Z
+      );
 
-    // // loop over MC particles
-    // for(Int_t imc=0; imc<_nMCPart; imc++){
+      for(Int_t iclus=0; iclus<nclusters_CLSTD; iclus++){
+        h_CS_clusters_NTower_E[icalo][ialgo]->Fill(clusters_CLSTD_E[iclus],clusters_CLSTD_NTower[iclus]);
 
-    //   // find true MC particle for given cluster
-    //   if(_clusters_FHCAL_trueID[iclus]==_mcpart_ID[imc]){
-    //     // if(int_CS_verbosity>1) cout << "\tfound MC:  particle " << imc << "\twith E = " << _mcpart_E[imc] << " GeV" << endl;
+        h_CS_clusters_E[icalo][ialgo]->Fill(clusters_CLSTD_E[iclus]);
 
-    //     // h_CS_clusters_M02_fhcal_V1_E->Fill(_mcpart_E[imc],_clusters_FHCAL_E[iclus]/_mcpart_E[imc]);
-    //   }
-    // }
-  }
-  if(_do_NxNclusterizer){
-    for(Int_t iclus=0; iclus<_nclusters_NxN_FHCAL; iclus++){
-      // if(int_CS_verbosity>1) cout << "\tFHCAL: cluster " << iclus << "\twith E = " << _clusters_FHCAL_E[iclus] << " GeV" << endl;
-      // if(int_CS_verbosity>1) cout << "\tFHCAL: cluster MC ID " << _clusters_FHCAL_trueID[iclus] << endl;
 
-      h_CS_clusters_fhcal_NxN_E->Fill(_clusters_NxN_FHCAL_E[iclus]);
-      h_CS_clusters_M02_fhcal_NxN_E->Fill(_clusters_NxN_FHCAL_M02[iclus],_clusters_NxN_FHCAL_E[iclus]);
-      h_CS_clusters_M20_fhcal_NxN_E->Fill(_clusters_NxN_FHCAL_M20[iclus],_clusters_NxN_FHCAL_E[iclus]);
+        h_CS_clusters_M02_E[icalo][ialgo]->Fill(clusters_CLSTD_M02[iclus],clusters_CLSTD_E[iclus]);
+        h_CS_clusters_M20_E[icalo][ialgo]->Fill(clusters_CLSTD_M20[iclus],clusters_CLSTD_E[iclus]);
 
-      h_CS_clusters_nTower_fhcal_NxN_E->Fill(_clusters_NxN_FHCAL_E[iclus],_clusters_NxN_FHCAL_NTower[iclus]);
-
-      for (int iPDG = 0; iPDG < 6; iPDG++)
-      {
-        if(!h_CS_clusters_M02_fhcal_NxN_E_truth[iPDG]) h_CS_clusters_M02_fhcal_NxN_E_truth[iPDG] = new TH2F(Form("h_CS_clusters_M02_fhcal_NxN_E_truth_%d",int_CS_mcparticles_PDG[iPDG]), "", 100, 0, 2, 120, 0,60);
-        if(abs(_mcpart_PDG[_clusters_NxN_FHCAL_trueID[iclus]-1]) == abs(int_CS_mcparticles_PDG[iPDG])){
-          h_CS_clusters_M02_fhcal_NxN_E_truth[iPDG]->Fill(_clusters_NxN_FHCAL_M02[iclus],_clusters_NxN_FHCAL_E[iclus]);
+        for (int iPDG = 0; iPDG < nParticlesPDG_CS; iPDG++)
+        {
+          if(abs(_mcpart_PDG[clusters_CLSTD_NtrueID[iclus]-1]) == abs(int_CS_mcparticles_PDG[iPDG])){
+            h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG]->Fill(clusters_CLSTD_M02[iclus],clusters_CLSTD_E[iclus]);
+            h_CS_clusters_M20_part_E_truth[icalo][ialgo][iPDG]->Fill(clusters_CLSTD_M20[iclus],clusters_CLSTD_E[iclus]);
+          }
         }
       }
     }
   }
-  if(_do_XNclusterizer){
-    for(Int_t iclus=0; iclus<_nclusters_XN_FHCAL; iclus++){
-      // if(int_CS_verbosity>1) cout << "\tFHCAL: cluster " << iclus << "\twith E = " << _clusters_FHCAL_E[iclus] << " GeV" << endl;
-      // if(int_CS_verbosity>1) cout << "\tFHCAL: cluster MC ID " << _clusters_FHCAL_trueID[iclus] << endl;
-
-      h_CS_clusters_fhcal_XN_E->Fill(_clusters_XN_FHCAL_E[iclus]);
-      h_CS_clusters_M02_fhcal_XN_E->Fill(_clusters_XN_FHCAL_M02[iclus],_clusters_XN_FHCAL_E[iclus]);
-      h_CS_clusters_M20_fhcal_XN_E->Fill(_clusters_XN_FHCAL_M20[iclus],_clusters_XN_FHCAL_E[iclus]);
-
-      h_CS_clusters_nTower_fhcal_XN_E->Fill(_clusters_XN_FHCAL_E[iclus],_clusters_XN_FHCAL_NTower[iclus]);
-
-      for (int iPDG = 0; iPDG < 6; iPDG++)
-      {
-        if(!h_CS_clusters_M02_fhcal_XN_E_truth[iPDG]) h_CS_clusters_M02_fhcal_XN_E_truth[iPDG] = new TH2F(Form("h_CS_clusters_M02_fhcal_XN_E_truth_%d",int_CS_mcparticles_PDG[iPDG]), "", 100, 0, 2, 120, 0,60);
-        if(abs(_mcpart_PDG[_clusters_XN_FHCAL_trueID[iclus]-1]) == abs(int_CS_mcparticles_PDG[iPDG])){
-          h_CS_clusters_M02_fhcal_XN_E_truth[iPDG]->Fill(_clusters_XN_FHCAL_M02[iclus],_clusters_XN_FHCAL_E[iclus]);
-        }
-      }
-    }
-  }
-  if(_do_V3clusterizer){
-    for(Int_t iclus=0; iclus<_nclusters_V3_FHCAL; iclus++){
-      // if(int_CS_verbosity>1) cout << "\tFHCAL: cluster " << iclus << "\twith E = " << _clusters_FHCAL_E[iclus] << " GeV" << endl;
-      // if(int_CS_verbosity>1) cout << "\tFHCAL: cluster MC ID " << _clusters_FHCAL_trueID[iclus] << endl;
-
-      h_CS_clusters_fhcal_V3_E->Fill(_clusters_V3_FHCAL_E[iclus]);
-
-      h_CS_clusters_M02_fhcal_V3_E->Fill(_clusters_V3_FHCAL_M02[iclus],_clusters_V3_FHCAL_E[iclus]);
-      h_CS_clusters_M20_fhcal_V3_E->Fill(_clusters_V3_FHCAL_M20[iclus],_clusters_V3_FHCAL_E[iclus]);
-
-      h_CS_clusters_nTower_fhcal_V3_E->Fill(_clusters_V3_FHCAL_E[iclus],_clusters_V3_FHCAL_NTower[iclus]);
-
-      // cluster should have at least 2 towers
-      // if(_clusters_V3_FHCAL_NTower[iclus]<2) continue;
-      // if(_clusters_V3_FHCAL_M02[iclus]>1)cout << "clsTrueID: " << _clusters_V3_FHCAL_trueID[iclus] << "\tnIDMC: " << _nMCPart<< "\tPDG: "   << abs(_mcpart_PDG[_clusters_V3_FHCAL_trueID[iclus]]) << endl;
-      // find true MC particle for given cluster
-      for (int iPDG = 0; iPDG < 6; iPDG++)
-      {
-        if(!h_CS_clusters_M02_fhcal_V3_E_truth[iPDG]) h_CS_clusters_M02_fhcal_V3_E_truth[iPDG] = new TH2F(Form("h_CS_clusters_M02_fhcal_V3_E_truth_%d",int_CS_mcparticles_PDG[iPDG]), "", 100, 0, 2, 120, 0,60);
-        if(abs(_mcpart_PDG[_clusters_V3_FHCAL_trueID[iclus]-1]) == abs(int_CS_mcparticles_PDG[iPDG])){
-          h_CS_clusters_M02_fhcal_V3_E_truth[iPDG]->Fill(_clusters_V3_FHCAL_M02[iclus],_clusters_V3_FHCAL_E[iclus]);
-        }
-      }
-    }
-  }
-
-  for(Int_t iclus=0; iclus<_nclusters_FEMC; iclus++){
-    // if(int_CS_verbosity>1) cout << "\tFEMC: cluster " << iclus << "\twith E = " << _clusters_FEMC_E[iclus] << " GeV" << endl;
-    // if(int_CS_verbosity>1) cout << "\tFEMC: cluster MC ID " << _clusters_FEMC_trueID[iclus] << endl;
-
-    // cluster should have at least 2 towers
-    // if(_clusters_FEMC_NTower[iclus]<2) continue;
-    h_CS_clusters_NTower_femc_V1_E->Fill(_clusters_FEMC_E[iclus],_clusters_FEMC_NTower[iclus]);
-
-    // // loop over MC particles
-    // for(Int_t imc=0; imc<_nMCPart; imc++){
-
-    //   // find true MC particle for given cluster
-    //   if(_clusters_FEMC_trueID[iclus]==_mcpart_ID[imc]){
-    //     // if(int_CS_verbosity>1) cout << "\tfound MC:  particle " << imc << "\twith E = " << _mcpart_E[imc] << " GeV" << endl;
-
-    //     // h_CS_clusters_M02_femc_V1_E->Fill(_mcpart_E[imc],_clusters_FEMC_E[iclus]/_mcpart_E[imc]);
-    //   }
-    // }
-  }
-  if(_do_NxNclusterizerFEMC){
-    for(Int_t iclus=0; iclus<_nclusters_NxN_FEMC; iclus++){
-      // if(int_CS_verbosity>1) cout << "\tFEMC: cluster " << iclus << "\twith E = " << _clusters_FEMC_E[iclus] << " GeV" << endl;
-      // if(int_CS_verbosity>1) cout << "\tFEMC: cluster MC ID " << _clusters_FEMC_trueID[iclus] << endl;
-
-      h_CS_clusters_femc_NxN_E->Fill(_clusters_NxN_FEMC_E[iclus]);
-      h_CS_clusters_M02_femc_NxN_E->Fill(_clusters_NxN_FEMC_M02[iclus],_clusters_NxN_FEMC_E[iclus]);
-      h_CS_clusters_M20_femc_NxN_E->Fill(_clusters_NxN_FEMC_M20[iclus],_clusters_NxN_FEMC_E[iclus]);
-
-      h_CS_clusters_nTower_femc_NxN_E->Fill(_clusters_NxN_FEMC_E[iclus],_clusters_NxN_FEMC_NTower[iclus]);
-
-      for (int iPDG = 0; iPDG < 6; iPDG++)
-      {
-        if(!h_CS_clusters_M02_femc_NxN_E_truth[iPDG]) h_CS_clusters_M02_femc_NxN_E_truth[iPDG] = new TH2F(Form("h_CS_clusters_M02_femc_NxN_E_truth_%d",int_CS_mcparticles_PDG[iPDG]), "", 100, 0, 2, 120, 0,60);
-        if(abs(_mcpart_PDG[_clusters_NxN_FEMC_trueID[iclus]-1]) == abs(int_CS_mcparticles_PDG[iPDG])){
-          h_CS_clusters_M02_femc_NxN_E_truth[iPDG]->Fill(_clusters_NxN_FEMC_M02[iclus],_clusters_NxN_FEMC_E[iclus]);
-        }
-      }
-    }
-  }
-  if(_do_XNclusterizerFEMC){
-    for(Int_t iclus=0; iclus<_nclusters_XN_FEMC; iclus++){
-      // if(int_CS_verbosity>1) cout << "\tFEMC: cluster " << iclus << "\twith E = " << _clusters_FEMC_E[iclus] << " GeV" << endl;
-      // if(int_CS_verbosity>1) cout << "\tFEMC: cluster MC ID " << _clusters_FEMC_trueID[iclus] << endl;
-
-      h_CS_clusters_femc_XN_E->Fill(_clusters_XN_FEMC_E[iclus]);
-      h_CS_clusters_M02_femc_XN_E->Fill(_clusters_XN_FEMC_M02[iclus],_clusters_XN_FEMC_E[iclus]);
-      h_CS_clusters_M20_femc_XN_E->Fill(_clusters_XN_FEMC_M20[iclus],_clusters_XN_FEMC_E[iclus]);
-
-      h_CS_clusters_nTower_femc_XN_E->Fill(_clusters_XN_FEMC_E[iclus],_clusters_XN_FEMC_NTower[iclus]);
-
-      for (int iPDG = 0; iPDG < 6; iPDG++)
-      {
-        if(!h_CS_clusters_M02_femc_XN_E_truth[iPDG]) h_CS_clusters_M02_femc_XN_E_truth[iPDG] = new TH2F(Form("h_CS_clusters_M02_femc_XN_E_truth_%d",int_CS_mcparticles_PDG[iPDG]), "", 100, 0, 2, 120, 0,60);
-        if(abs(_mcpart_PDG[_clusters_XN_FEMC_trueID[iclus]-1]) == abs(int_CS_mcparticles_PDG[iPDG])){
-          h_CS_clusters_M02_femc_XN_E_truth[iPDG]->Fill(_clusters_XN_FEMC_M02[iclus],_clusters_XN_FEMC_E[iclus]);
-        }
-      }
-    }
-  }
-  if(_do_V3clusterizerFEMC){
-    for(Int_t iclus=0; iclus<_nclusters_V3_FEMC; iclus++){
-      // if(int_CS_verbosity>1) cout << "\tFEMC: cluster " << iclus << "\twith E = " << _clusters_FEMC_E[iclus] << " GeV" << endl;
-      // if(int_CS_verbosity>1) cout << "\tFEMC: cluster MC ID " << _clusters_FEMC_trueID[iclus] << endl;
-
-      h_CS_clusters_femc_V3_E->Fill(_clusters_V3_FEMC_E[iclus]);
-
-      h_CS_clusters_M02_femc_V3_E->Fill(_clusters_V3_FEMC_M02[iclus],_clusters_V3_FEMC_E[iclus]);
-      h_CS_clusters_M20_femc_V3_E->Fill(_clusters_V3_FEMC_M20[iclus],_clusters_V3_FEMC_E[iclus]);
-
-      h_CS_clusters_nTower_femc_V3_E->Fill(_clusters_V3_FEMC_E[iclus],_clusters_V3_FEMC_NTower[iclus]);
-
-      // cluster should have at least 2 towers
-      // if(_clusters_V3_FEMC_NTower[iclus]<2) continue;
-      // if(_clusters_V3_FEMC_M02[iclus]>1)cout << "clsTrueID: " << _clusters_V3_FEMC_trueID[iclus] << "\tnIDMC: " << _nMCPart<< "\tPDG: "   << abs(_mcpart_PDG[_clusters_V3_FEMC_trueID[iclus]]) << endl;
-      // find true MC particle for given cluster
-      for (int iPDG = 0; iPDG < 6; iPDG++)
-      {
-        if(!h_CS_clusters_M02_femc_V3_E_truth[iPDG]) h_CS_clusters_M02_femc_V3_E_truth[iPDG] = new TH2F(Form("h_CS_clusters_M02_femc_V3_E_truth_%d",int_CS_mcparticles_PDG[iPDG]), "", 100, 0, 2, 120, 0,60);
-        if(abs(_mcpart_PDG[_clusters_V3_FEMC_trueID[iclus]-1]) == abs(int_CS_mcparticles_PDG[iPDG])){
-          h_CS_clusters_M02_femc_V3_E_truth[iPDG]->Fill(_clusters_V3_FEMC_M02[iclus],_clusters_V3_FEMC_E[iclus]);
-        }
-      }
-    }
-  }
-
 }
 
 // ANCHOR save function after event loop
@@ -232,50 +92,19 @@ void clusterstudiesSave(){
   TFile* fileOutput = new TFile(Form("%s/clusterstudies/output_RH.root",outputDir.Data()),"RECREATE");
 
   // write histograms
-  if(h_CS_clusters_fhcal_NxN_E) h_CS_clusters_fhcal_NxN_E->Write();
-  if(h_CS_clusters_fhcal_XN_E) h_CS_clusters_fhcal_XN_E->Write();
-  if(h_CS_clusters_fhcal_V3_E) h_CS_clusters_fhcal_V3_E->Write();
-  if(h_CS_clusters_NTower_fhcal_V1_E) h_CS_clusters_NTower_fhcal_V1_E->Write();
-  if(h_CS_clusters_nTower_fhcal_NxN_E) h_CS_clusters_nTower_fhcal_NxN_E->Write();
-  if(h_CS_clusters_nTower_fhcal_XN_E) h_CS_clusters_nTower_fhcal_XN_E->Write();
-  if(h_CS_clusters_nTower_fhcal_V3_E) h_CS_clusters_nTower_fhcal_V3_E->Write();
+  for(int icalo=0;icalo<_active_calo;icalo++){
+    for(int ialgo=0;ialgo<_active_algo;ialgo++){
+      if(h_CS_clusters_NTower_E[icalo][ialgo]) h_CS_clusters_NTower_E[icalo][ialgo]->Write();
+      if(h_CS_clusters_E[icalo][ialgo]) h_CS_clusters_E[icalo][ialgo]->Write();
+      if(h_CS_clusters_M02_E[icalo][ialgo]) h_CS_clusters_M02_E[icalo][ialgo]->Write();
+      if(h_CS_clusters_M20_E[icalo][ialgo]) h_CS_clusters_M20_E[icalo][ialgo]->Write();
 
-  if(h_CS_clusters_M02_fhcal_V1_E) h_CS_clusters_M02_fhcal_V1_E->Write();
-  if(h_CS_clusters_M02_fhcal_NxN_E) h_CS_clusters_M02_fhcal_NxN_E->Write();
-  if(h_CS_clusters_M02_fhcal_XN_E) h_CS_clusters_M02_fhcal_XN_E->Write();
-  if(h_CS_clusters_M02_fhcal_V3_E) h_CS_clusters_M02_fhcal_V3_E->Write();
-  for (int iPDG = 0; iPDG < 6; iPDG++){
-      if(h_CS_clusters_M02_fhcal_V3_E_truth[iPDG]) h_CS_clusters_M02_fhcal_V3_E_truth[iPDG]->Write();;
-      if(h_CS_clusters_M02_fhcal_NxN_E_truth[iPDG]) h_CS_clusters_M02_fhcal_NxN_E_truth[iPDG]->Write();;
-      if(h_CS_clusters_M02_fhcal_XN_E_truth[iPDG]) h_CS_clusters_M02_fhcal_XN_E_truth[iPDG]->Write();;
+      for (int iPDG = 0; iPDG < nParticlesPDG_CS; iPDG++){
+        if(h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG]) h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG]->Write();
+        if(h_CS_clusters_M20_part_E_truth[icalo][ialgo][iPDG]) h_CS_clusters_M20_part_E_truth[icalo][ialgo][iPDG]->Write();
+      }
+    }
   }
-  if(h_CS_clusters_M20_fhcal_V1_E) h_CS_clusters_M20_fhcal_V1_E->Write();
-  if(h_CS_clusters_M20_fhcal_NxN_E) h_CS_clusters_M20_fhcal_NxN_E->Write();
-  if(h_CS_clusters_M20_fhcal_XN_E) h_CS_clusters_M20_fhcal_XN_E->Write();
-  if(h_CS_clusters_M20_fhcal_V3_E) h_CS_clusters_M20_fhcal_V3_E->Write();
-
-  if(h_CS_clusters_femc_NxN_E) h_CS_clusters_femc_NxN_E->Write();
-  if(h_CS_clusters_femc_XN_E) h_CS_clusters_femc_XN_E->Write();
-  if(h_CS_clusters_femc_V3_E) h_CS_clusters_femc_V3_E->Write();
-  if(h_CS_clusters_NTower_femc_V1_E) h_CS_clusters_NTower_femc_V1_E->Write();
-  if(h_CS_clusters_nTower_femc_NxN_E) h_CS_clusters_nTower_femc_NxN_E->Write();
-  if(h_CS_clusters_nTower_femc_XN_E) h_CS_clusters_nTower_femc_XN_E->Write();
-  if(h_CS_clusters_nTower_femc_V3_E) h_CS_clusters_nTower_femc_V3_E->Write();
-
-  if(h_CS_clusters_M02_femc_V1_E) h_CS_clusters_M02_femc_V1_E->Write();
-  if(h_CS_clusters_M02_femc_NxN_E) h_CS_clusters_M02_femc_NxN_E->Write();
-  if(h_CS_clusters_M02_femc_XN_E) h_CS_clusters_M02_femc_XN_E->Write();
-  if(h_CS_clusters_M02_femc_V3_E) h_CS_clusters_M02_femc_V3_E->Write();
-  for (int iPDG = 0; iPDG < 6; iPDG++){
-      if(h_CS_clusters_M02_femc_V3_E_truth[iPDG]) h_CS_clusters_M02_femc_V3_E_truth[iPDG]->Write();;
-      if(h_CS_clusters_M02_femc_NxN_E_truth[iPDG]) h_CS_clusters_M02_femc_NxN_E_truth[iPDG]->Write();;
-      if(h_CS_clusters_M02_femc_XN_E_truth[iPDG]) h_CS_clusters_M02_femc_XN_E_truth[iPDG]->Write();;
-  }
-  if(h_CS_clusters_M20_femc_V1_E) h_CS_clusters_M20_femc_V1_E->Write();
-  if(h_CS_clusters_M20_femc_NxN_E) h_CS_clusters_M20_femc_NxN_E->Write();
-  if(h_CS_clusters_M20_femc_XN_E) h_CS_clusters_M20_femc_XN_E->Write();
-  if(h_CS_clusters_M20_femc_V3_E) h_CS_clusters_M20_femc_V3_E->Write();
-  
   // write output file
   fileOutput->Write();
   fileOutput->Close();

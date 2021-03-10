@@ -26,7 +26,7 @@ void treeProcessing(
     bool do_V3clusterizerFEMC   = true,
     bool do_V4clusterizerFEMC   = true,
     bool do_XNclusterizerFEMC   = true,
-    bool do_jetfinding          = true,
+    bool do_jetfinding          = false,
     // Double_t maxNEvent = 1e5,
     Double_t maxNEvent          = -1,
     Int_t verbosity             = 0
