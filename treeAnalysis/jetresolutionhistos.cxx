@@ -20,12 +20,12 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
 
   for( int isel=0;isel<njettypes;isel++){
     if(!h_jetscale_pT[isel])h_jetscale_pT[isel] = new TH2F(Form("h_jetscale_%s_pT",jettype[isel].Data()),"",150,0,30,200,-1,1);
-    if(!h_jetscale_E[isel])h_jetscale_E[isel]  = new TH2F(Form("h_jetscale_%s_E",jettype[isel].Data()),"",200,0,200,200,-1,1);
+    if(!h_jetscale_E[isel])h_jetscale_E[isel]  = new TH2F(Form("h_jetscale_%s_E",jettype[isel].Data()),"",100,0,200,200,-1,1);
 
     if(!h_JES_pT[isel])h_JES_pT[isel]      = new TH1D(Form("h_JES_%s_pT",jettype[isel].Data()),"",150,0,30);
     if(!h_JER_pT[isel])h_JER_pT[isel]      = new TH1D(Form("h_JER_%s_pT",jettype[isel].Data()),"",150,0,30);
-    if(!h_JES_E[isel])h_JES_E[isel]      = new TH1D(Form("h_JES_%s_E",jettype[isel].Data()),"",200,0,200);
-    if(!h_JER_E[isel])h_JER_E[isel]      = new TH1D(Form("h_JER_%s_E",jettype[isel].Data()),"",200,0,200);
+    if(!h_JES_E[isel])h_JES_E[isel]      = new TH1D(Form("h_JES_%s_E",jettype[isel].Data()),"",100,0,200);
+    if(!h_JER_E[isel])h_JER_E[isel]      = new TH1D(Form("h_JER_%s_E",jettype[isel].Data()),"",100,0,200);
   }
 
   for (std::size_t i = 0; i < std::get<1>(recjets).size(); i++) {

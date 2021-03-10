@@ -166,3 +166,22 @@ TString ReturnDateStr(){
     int iDay            = iDate%100;
     return Form("%i_%02d_%02d",iYear, iMonth, iDay);
 }
+
+const int _maxProjectionLayers = 5;
+TString GetProjectionNameFromIndex(int projindex)
+{
+    switch (projindex)
+    {
+    case 0:    return "FTTL_0";
+    case 1:    return "FTTL_1";
+    case 2:    return "FTTL_2";
+    case 3:    return "ETTL_0";
+    case 4:    return "ETTL_1";
+    // case 5:    return "FHCAL_0";
+    // case 6:    return "FEMC_0";
+    // case 7:    return "CTTL_0";
+    // case 8:    return "CTTL_1";
+    // case 9:    return "CTTL_2";
+    default:   return "NOTHING";
+    }
+}
