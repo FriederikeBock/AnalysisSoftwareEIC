@@ -209,7 +209,10 @@ void runclusterizer(
           clusters_E[nclusters]/=calibrationFEMC(clusters_E[nclusters]);
       }
 
+      // fill inputs for efficiency
       h_clusterizer_clsspec_E_eta[caloEnum][clusterizerEnum]->Fill(clusters_E[nclusters], clusters_Eta[nclusters]);
+      h_clusterizer_clsspecMC_E_eta[caloEnum][clusterizerEnum]->Fill(_mcpart_E[clusters_trueID[nclusters]-1], _mcpart_Eta[clusters_trueID[nclusters]-1]);
+
       if(clusters_isMatched[nclusters]) h_clusterizer_clsspec_matched_E_eta[caloEnum][clusterizerEnum]->Fill(clusters_E[nclusters], clusters_Eta[nclusters]);
       h_clusterizer_clsspec_PDG[caloEnum][clusterizerEnum]->Fill(_mcpart_PDG[clusters_trueID[nclusters]-1]);
       if(clusters_isMatched[nclusters]) h_clusterizer_clsspec_matched_PDG[caloEnum][clusterizerEnum]->Fill(_mcpart_PDG[clusters_trueID[nclusters]-1]);
@@ -296,6 +299,7 @@ void clusterizerSave(){
       if(h_clusterizer_all_dx_dy[icalo][ialgo]) h_clusterizer_all_dx_dy[icalo][ialgo]->Write();
       if(h_clusterizer_matched_dx_dy[icalo][ialgo]) h_clusterizer_matched_dx_dy[icalo][ialgo]->Write();
       if(h_clusterizer_clsspec_E_eta[icalo][ialgo]) h_clusterizer_clsspec_E_eta[icalo][ialgo]->Write();
+      if(h_clusterizer_clsspecMC_E_eta[icalo][ialgo]) h_clusterizer_clsspecMC_E_eta[icalo][ialgo]->Write();
       if(h_clusterizer_clsspec_matched_E_eta[icalo][ialgo]) h_clusterizer_clsspec_matched_E_eta[icalo][ialgo]->Write();
       if(h_clusterizer_clsspec_PDG[icalo][ialgo]) h_clusterizer_clsspec_PDG[icalo][ialgo]->Write();
       if(h_clusterizer_clsspec_matched_PDG[icalo][ialgo]) h_clusterizer_clsspec_matched_PDG[icalo][ialgo]->Write();

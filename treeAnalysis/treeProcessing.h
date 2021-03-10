@@ -81,6 +81,7 @@ float* _mcpart_E                 = new float[_maxNMCPart];
 float* _mcpart_px                = new float[_maxNMCPart];
 float* _mcpart_py                = new float[_maxNMCPart];
 float* _mcpart_pz                = new float[_maxNMCPart];
+float* _mcpart_Eta                = new float[_maxNMCPart];
 
 
 void SetBranchAddressesTree(TTree* inputTree){

@@ -60,6 +60,11 @@ void treeProcessing(
         if(i>0 && i%(nEntriesTree/(20)) ==0) cout << "//processed " << 100*(i)/nEntriesTree << "%"  << endl;
         // if(verbosity>1) cout << "event " << i << endl;
 
+        // calculate useful quantities
+        for(Int_t imc=0; imc<_nMCPart; imc++){
+            TVector3 truevec(_mcpart_px[imc],_mcpart_py[imc],_mcpart_pz[imc]);
+            _mcpart_Eta[imc]=truevec.Eta();
+        }
         // run clusterizers FHCAL
         if(do_NxNclusterizer){
             _do_NxNclusterizer = true;
