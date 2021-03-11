@@ -6,6 +6,8 @@ const int _maxNProjections = 2000;
 const int _maxNTracks = 200;
 const int _maxNMCPart = 1000;
 
+float _nEventsTree;
+
 
 // track hits
 int _nHitsLayers;
@@ -31,19 +33,19 @@ int* _tower_FEMC_trueID        = new int[_maxNTowers];
 
 // clusters
 int _nclusters_FHCAL;
-float* _cluster_FHCAL_E            = new float[_maxNclusters];
-float* _cluster_FHCAL_Eta         = new float[_maxNclusters];
-float* _cluster_FHCAL_Phi         = new float[_maxNclusters];
-int* _cluster_FHCAL_NTower         = new int[_maxNclusters];
-int* _cluster_FHCAL_trueID       = new int[_maxNclusters];
+float* _clusters_FHCAL_E            = new float[_maxNclusters];
+float* _clusters_FHCAL_Eta         = new float[_maxNclusters];
+float* _clusters_FHCAL_Phi         = new float[_maxNclusters];
+int* _clusters_FHCAL_NTower         = new int[_maxNclusters];
+int* _clusters_FHCAL_trueID       = new int[_maxNclusters];
 
 // clusters
 int _nclusters_FEMC;
-float* _cluster_FEMC_E             = new float[_maxNclusters];
-float* _cluster_FEMC_Eta          = new float[_maxNclusters];
-float* _cluster_FEMC_Phi          = new float[_maxNclusters];
-int* _cluster_FEMC_NTower          = new int[_maxNclusters];
-int* _cluster_FEMC_trueID        = new int[_maxNclusters];
+float* _clusters_FEMC_E             = new float[_maxNclusters];
+float* _clusters_FEMC_Eta          = new float[_maxNclusters];
+float* _clusters_FEMC_Phi          = new float[_maxNclusters];
+int* _clusters_FEMC_NTower          = new int[_maxNclusters];
+int* _clusters_FEMC_trueID        = new int[_maxNclusters];
 
 // vertex
 int _vertex_x;
@@ -79,6 +81,7 @@ float* _mcpart_E                 = new float[_maxNMCPart];
 float* _mcpart_px                = new float[_maxNMCPart];
 float* _mcpart_py                = new float[_maxNMCPart];
 float* _mcpart_pz                = new float[_maxNMCPart];
+float* _mcpart_Eta                = new float[_maxNMCPart];
 
 
 void SetBranchAddressesTree(TTree* inputTree){
@@ -125,19 +128,19 @@ void SetBranchAddressesTree(TTree* inputTree){
 
     // clusters HCAL
     inputTree->SetBranchAddress("cluster_FHCAL_N",                &_nclusters_FHCAL);
-    inputTree->SetBranchAddress("cluster_FHCAL_E",                _cluster_FHCAL_E);
-    inputTree->SetBranchAddress("cluster_FHCAL_Eta",             _cluster_FHCAL_Eta);
-    inputTree->SetBranchAddress("cluster_FHCAL_Phi",             _cluster_FHCAL_Phi);
-    inputTree->SetBranchAddress("cluster_FHCAL_NTower",             _cluster_FHCAL_NTower);
-    inputTree->SetBranchAddress("cluster_FHCAL_trueID",           _cluster_FHCAL_trueID);
+    inputTree->SetBranchAddress("cluster_FHCAL_E",                _clusters_FHCAL_E);
+    inputTree->SetBranchAddress("cluster_FHCAL_Eta",             _clusters_FHCAL_Eta);
+    inputTree->SetBranchAddress("cluster_FHCAL_Phi",             _clusters_FHCAL_Phi);
+    inputTree->SetBranchAddress("cluster_FHCAL_NTower",             _clusters_FHCAL_NTower);
+    inputTree->SetBranchAddress("cluster_FHCAL_trueID",           _clusters_FHCAL_trueID);
 
     // clusters EMC
     inputTree->SetBranchAddress("cluster_FEMC_N",                 &_nclusters_FEMC);
-    inputTree->SetBranchAddress("cluster_FEMC_E",                 _cluster_FEMC_E);
-    inputTree->SetBranchAddress("cluster_FEMC_Eta",              _cluster_FEMC_Eta);
-    inputTree->SetBranchAddress("cluster_FEMC_Phi",              _cluster_FEMC_Phi);
-    inputTree->SetBranchAddress("cluster_FEMC_NTower",              _cluster_FEMC_NTower);
-    inputTree->SetBranchAddress("cluster_FEMC_trueID",            _cluster_FEMC_trueID);
+    inputTree->SetBranchAddress("cluster_FEMC_E",                 _clusters_FEMC_E);
+    inputTree->SetBranchAddress("cluster_FEMC_Eta",              _clusters_FEMC_Eta);
+    inputTree->SetBranchAddress("cluster_FEMC_Phi",              _clusters_FEMC_Phi);
+    inputTree->SetBranchAddress("cluster_FEMC_NTower",              _clusters_FEMC_NTower);
+    inputTree->SetBranchAddress("cluster_FEMC_trueID",            _clusters_FEMC_trueID);
 
     // vertex
     inputTree->SetBranchAddress("vertex_x",                     &_vertex_x);
@@ -163,4 +166,23 @@ TString ReturnDateStr(){
     int iMonth          = (iDate%10000)/100;
     int iDay            = iDate%100;
     return Form("%i_%02d_%02d",iYear, iMonth, iDay);
+}
+
+const int _maxProjectionLayers = 5;
+TString GetProjectionNameFromIndex(int projindex)
+{
+    switch (projindex)
+    {
+    case 0:    return "FTTL_0";
+    case 1:    return "FTTL_1";
+    case 2:    return "FTTL_2";
+    case 3:    return "ETTL_0";
+    case 4:    return "ETTL_1";
+    // case 5:    return "FHCAL_0";
+    // case 6:    return "FEMC_0";
+    // case 7:    return "CTTL_0";
+    // case 8:    return "CTTL_1";
+    // case 9:    return "CTTL_2";
+    default:   return "NOTHING";
+    }
 }

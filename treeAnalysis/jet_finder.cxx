@@ -9,6 +9,9 @@
 #include <fastjet/PseudoJet.hh>
 #include <fastjet/AreaDefinition.hh>
 #include <fastjet/GhostedAreaSpec.hh>
+
+bool _do_jetfinding = false;
+
 // Uncomment if you have a sufficiently recent fj contrib.
 //#include <fastjet/contrib/Centauro.hh>
 
