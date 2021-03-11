@@ -68,10 +68,8 @@ void jetresolutionhistosSave(){
       }
     }
   }
-  // make output directory
-    gSystem->Exec("mkdir -p "+outputDir + "/jetresolutionhistosSave");
   // define output file
-  TFile* fileOutput = new TFile(Form("%s/jetresolutionhistosSave/output_JRH.root",outputDir.Data()),"RECREATE");
+  TFile* fileOutput = new TFile(Form("%s/output_JRH.root",outputDir.Data()),"RECREATE");
 
   // write histograms
   for( int isel=0;isel<njettypes;isel++){

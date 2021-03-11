@@ -32,7 +32,7 @@ void treeProcessing(
 ){
     // make output directory
     TString dateForOutput                       = ReturnDateStr();
-    outputDir 						                  = Form("treeProcessing/%s_%s",addOutputName.Data(), dateForOutput.Data());
+    outputDir 						                  = Form("treeProcessing/%s",addOutputName.Data());
     gSystem->Exec("mkdir -p "+outputDir);
 
     if(do_jetfinding) _do_jetfinding = true;

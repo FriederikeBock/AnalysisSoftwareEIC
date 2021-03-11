@@ -394,11 +394,9 @@ bool isClusterMatched(int clsID, float matchingwindow, float* clusters_X, float*
 
 
 void clusterizerSave(){
-// make output directory
-    gSystem->Exec("mkdir -p "+outputDir + "/clusterizer");
 
   // define output file
-  TFile* fileOutput = new TFile(Form("%s/clusterizer/output_CLSIZER.root",outputDir.Data()),"RECREATE");
+  TFile* fileOutput = new TFile(Form("%s/output_CLSIZER.root",outputDir.Data()),"RECREATE");
 
   for(int icalo=0;icalo<_active_calo;icalo++){
     for(int ialgo=0;ialgo<_active_algo;ialgo++){

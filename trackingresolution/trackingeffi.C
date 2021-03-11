@@ -2,6 +2,16 @@
 #include "../common/binningheader.h"
 #define NELEMS(arr) (sizeof(arr)/sizeof(arr[0]))
 
+void NormalizeByBinWidth(TH1D * hist) {
+//	hist->Scale(1,"width");
+//	return;
+  int nBins = hist->GetNbinsX();
+  for (int i = 1; i <= nBins; i++) {
+    double fBinWidth = hist->GetXaxis()->GetBinWidth(i);
+    hist->SetBinContent(i,hist->GetBinContent(i)/fBinWidth);
+    hist->SetBinError(i,hist->GetBinError(i)/fBinWidth);
+  }
+}
 
 void trackingeffi(
                             TString inputFileName   = "file.root",
@@ -145,29 +155,42 @@ void trackingeffi(
                                                                           h_trackMapMC_eta_MCpT[pid]->GetYaxis()->FindBin(etaMin+0.001), h_trackMapMC_eta_MCpT[pid]->GetYaxis()->FindBin(etaMax-0.001),"e"); 
       h_spectraReb_MC_MCpT[pid][iEta]      = (TH1D*)h_spectra_MC_MCpT[pid][iEta]->Rebin(nPt, Form("spectraRebMC%s_MCpT_%d",partName[pid].Data(), iEta),
                                                                                           partPt);
+      NormalizeByBinWidth(h_spectra_MC_MCpT[pid][iEta]);
+      NormalizeByBinWidth(h_spectraReb_MC_MCpT[pid][iEta]);
+      
       h_spectra_rec_pT[pid][iEta]          = (TH1D*)h_trackMapRec_eta_pT[pid]->ProjectionX(Form("spectraRec%s_pT_%d",partName[pid].Data(), iEta), 
                                                                           h_trackMapRec_eta_pT[pid]->GetYaxis()->FindBin(etaMin+0.001), h_trackMapRec_eta_pT[pid]->GetYaxis()->FindBin(etaMax-0.001),"e"); 
       h_spectraReb_rec_pT[pid][iEta]       = (TH1D*)h_spectra_rec_pT[pid][iEta]->Rebin(nPt, Form("spectraRebRec%s_pT_%d",partName[pid].Data(), iEta),
                                                                                           partPt);
+      NormalizeByBinWidth(h_spectra_rec_pT[pid][iEta]);
+      NormalizeByBinWidth(h_spectraReb_rec_pT[pid][iEta]);
       h_spectra_rec_MCpT[pid][iEta]        = (TH1D*)h_trackMapRec_eta_MCpT[pid]->ProjectionX(Form("spectraRec%s_MCpT_%d",partName[pid].Data(), iEta), 
                                                                           h_trackMapRec_eta_MCpT[pid]->GetYaxis()->FindBin(etaMin+0.001), h_trackMapRec_eta_MCpT[pid]->GetYaxis()->FindBin(etaMax-0.001),"e"); 
       h_spectraReb_rec_MCpT[pid][iEta]     = (TH1D*)h_spectra_rec_MCpT[pid][iEta]->Rebin(nPt, Form("spectraRebRec%s_MCpT_%d",partName[pid].Data(), iEta),
                                                                                           partPt);
+      NormalizeByBinWidth(h_spectra_rec_MCpT[pid][iEta]);
+      NormalizeByBinWidth(h_spectraReb_rec_MCpT[pid][iEta]);
       h_spectra_MC_MCp[pid][iEta]          = (TH1D*)h_trackMapMC_eta_MCp[pid]->ProjectionX(Form("spectraMC%s_MCp_%d",partName[pid].Data(), iEta), 
-                                                                          h_trackMapMC_eta_MCp[pid]->GetYaxis()->FindBin(etaMin+0.001), h_trackMapMC_eta_MCp[pid]->GetYaxis()->FindBin(etaMax-0.001),"e"); 
-      
+                                                                          h_trackMapMC_eta_MCp[pid]->GetYaxis()->FindBin(etaMin+0.001), h_trackMapMC_eta_MCp[pid]->GetYaxis()->FindBin(etaMax-0.001),"e");       
       h_spectraReb_MC_MCp[pid][iEta]       = (TH1D*)h_spectra_MC_MCp[pid][iEta]->Rebin(nP-2, Form("spectraRebMC%s_MCp_%d",partName[pid].Data(), iEta),
                                                                                           partP);
-      
+      NormalizeByBinWidth(h_spectra_MC_MCp[pid][iEta]);
+      NormalizeByBinWidth(h_spectraReb_MC_MCp[pid][iEta]);
+
       h_spectra_rec_p[pid][iEta]           = (TH1D*)h_trackMapRec_eta_p[pid]->ProjectionX(Form("spectraRec%s_p_%d",partName[pid].Data(), iEta), 
                                                                           h_trackMapRec_eta_p[pid]->GetYaxis()->FindBin(etaMin+0.001), h_trackMapRec_eta_p[pid]->GetYaxis()->FindBin(etaMax-0.001),"e"); 
       h_spectraReb_rec_p[pid][iEta]        = (TH1D*)h_spectra_rec_p[pid][iEta]->Rebin(nP-2, Form("spectraRebRec%s_p_%d",partName[pid].Data(), iEta),
                                                                                           partP);
+      NormalizeByBinWidth(h_spectra_rec_p[pid][iEta]);
+      NormalizeByBinWidth(h_spectraReb_rec_p[pid][iEta]);
 
       h_spectra_rec_MCp[pid][iEta]         = (TH1D*)h_trackMapRec_eta_MCp[pid]->ProjectionX(Form("spectraRec%s_MCp_%d",partName[pid].Data(), iEta), 
                                                                           h_trackMapRec_eta_MCp[pid]->GetYaxis()->FindBin(etaMin+0.001), h_trackMapRec_eta_MCp[pid]->GetYaxis()->FindBin(etaMax-0.001),"e"); 
       h_spectraReb_rec_MCp[pid][iEta]      = (TH1D*)h_spectra_rec_MCp[pid][iEta]->Rebin(nP-2, Form("spectraRebRec%s_MCp_%d",partName[pid].Data(), iEta),
                                                                                           partP);
+      NormalizeByBinWidth(h_spectra_rec_MCp[pid][iEta]);
+      NormalizeByBinWidth(h_spectraReb_rec_MCp[pid][iEta]);
+
       h_effi_rec_pT[pid][iEta]             = (TH1D*)h_spectraReb_rec_pT[pid][iEta]->Clone(Form("effi%s_pT_%d",partName[pid].Data(), iEta));
       h_effi_rec_pT[pid][iEta]->Divide(h_spectraReb_rec_pT[pid][iEta],h_spectraReb_MC_MCpT[pid][iEta],1,1,"B");
       h_effi_rec_MCpT[pid][iEta]           = (TH1D*)h_spectraReb_rec_MCpT[pid][iEta]->Clone(Form("effi%s_MCpT_%d",partName[pid].Data(), iEta));
@@ -417,33 +440,42 @@ void trackingeffi(
     }
   }
   
-  /*  
+  TH1D* h_spectra_MC_MCpT[nPID][nEta+1]         = {{NULL}};
+  TH1D* h_spectra_rec_pT[nPID][nEta+1]          = {{NULL}};
+  TH1D* h_spectra_rec_MCpT[nPID][nEta+1]        = {{NULL}};
+  TH1D* h_spectra_MC_MCp[nPID][nEta+1]          = {{NULL}};
+  TH1D* h_spectra_rec_p[nPID][nEta+1]           = {{NULL}};
+  TH1D* h_spectra_rec_MCp[nPID][nEta+1]         = {{NULL}};
+  
+  TH1D* h_spectraReb_MC_MCpT[nPID][nEta+1]      = {{NULL}};
+  TH1D* h_spectraReb_rec_pT[nPID][nEta+1]       = {{NULL}};
+  TH1D* h_spectraReb_rec_MCpT[nPID][nEta+1]     = {{NULL}};
+  TH1D* h_spectraReb_MC_MCp[nPID][nEta+1]       = {{NULL}};
+  TH1D* h_spectraReb_rec_p[nPID][nEta+1]        = {{NULL}};
+  TH1D* h_spectraReb_rec_MCp[nPID][nEta+1]      = {{NULL}};
+  
+   
   TFile* outputFile  = new TFile(inputFileName.Data(),"UPDATE");
   for (Int_t iEta = 0; iEta < nEta+1; iEta++){
-    if (properFit){
-      for (Int_t pid = 0; pid < 6; pid++){
-        h_tracks_mean_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_FitMean_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
-        h_tracks_sigma_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_FitSigma_%d",writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
-        h_tracks_mean_p_resoP[pid][iEta]->Write(Form("histPResol%s_%s_FitMean_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
-        h_tracks_sigma_p_resoP[pid][iEta]->Write(Form("histPResol%s_%s_FitSigma_%d",writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
-      }
-      h_tracks_mean_pt_resoEta[iEta]->Write(Form("histEtaResol%s_FitMean_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
-      h_tracks_sigma_pt_resoEta[iEta]->Write(Form("histEtaResol%s_FitSigma_%d",writeLabel.Data(), iEta),TObject::kOverwrite);
-      h_tracks_mean_pt_resoPhi[iEta]->Write(Form("histPhiResol%s_FitMean_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
-      h_tracks_sigma_pt_resoPhi[iEta]->Write(Form("histPhiResol%s_FitSigma_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
-    } else {
-      for (Int_t pid = 0; pid < nPID; pid++){
-        h_tracks_mean_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_mean_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
-        h_tracks_sigma_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_sigma_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);      
-        h_tracks_mean_p_resoP[pid][iEta]->Write(Form("histPResol%s_%s_mean_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
-        h_tracks_sigma_p_resoP[pid][iEta]->Write(Form("histPResol%s_%s_sigma_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);      
-      }
-      h_tracks_mean_pt_resoEta[iEta]->Write(Form("histEtaResol%s_mean_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
-      h_tracks_sigma_pt_resoEta[iEta]->Write(Form("histEtaResol%s_sigma_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
-      h_tracks_mean_pt_resoPhi[iEta]->Write(Form("histPhiResol%s_mean_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
-      h_tracks_sigma_pt_resoPhi[iEta]->Write(Form("histPhiResol%s_sigma_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
+    for (Int_t pid = 0; pid < 6; pid++){
+      h_effi_rec_pT[pid][iEta]->Write(Form("effi%s_pT_%d",partName[pid].Data(), iEta), iEta),TObject::kOverwrite);
+      h_effi_rec_MCpT[pid][iEta]->Write(Form(Form("effi%s_MCpT_%d",partName[pid].Data(), iEta),TObject::kOverwrite);
+      h_effi_rec_p[pid][iEta]->Write(Form("effi%s_p_%d",partName[pid].Data(), iEta),TObject::kOverwrite);
+      h_effi_rec_MCp[pid][iEta]->Write(Form("effi%s_MCp_%d",partName[pid].Data(), iEta),TObject::kOverwrite);
+      h_spectra_MC_MCpT[pid][iEta]->Write(Form("spectraMC%s_MCpT_%d",partName[pid].Data(), iEta), TObject::kOverwrite);
+      h_spectra_rec_pT[pid][iEta]->Write(Form("spectraRec%s_pT_%d",partName[pid].Data(), iEta), TObject::kOverwrite);
+      h_spectra_rec_MCpT[pid][iEta]->Write(Form("spectraRec%s_MCpT_%d",partName[pid].Data(), iEta), TObject::kOverwrite); 
+      h_spectra_MC_MCp[pid][iEta]->Write( Form("spectraMC%s_MCp_%d",partName[pid].Data(), iEta), TObject::kOverwrite);
+      h_spectra_rec_p[pid][iEta]->Write( Form("spectraRec%s_p_%d",partName[pid].Data(), iEta), TObject::kOverwrite);
+      h_spectra_rec_MCp[pid][iEta]->Write( Form("spectraRec%s_MCp_%d",partName[pid].Data(), iEta), TObject::kOverwrite);
+      h_spectraReb_MC_MCpT[pid][iEta]->Write( Form("spectraRebMC%s_MCpT_%d", TObject::kOverwrite);
+      h_spectraReb_rec_pT[pid][iEta]->Write( Form("spectraRebRec%s_pT_%d",partName[pid].Data(), iEta), TObject::kOverwrite);
+      h_spectraReb_rec_MCpT[pid][iEta]->Write( Form("spectraRebRec%s_MCpT_%d",partName[pid].Data(), iEta), TObject::kOverwrite);      
+      h_spectraReb_MC_MCp[pid][iEta]->Write( Form("spectraRebMC%s_MCp_%d",partName[pid].Data(), iEta), TObject::kOverwrite);
+      h_spectraReb_rec_p[pid][iEta]->Write( Form("spectraRebRec%s_p_%d",partName[pid].Data(), iEta), TObject::kOverwrite);
+      h_spectraReb_rec_MCp[pid][iEta]->Write( Form("spectraRebRec%s_MCp_%d",partName[pid].Data(), iEta), TObject::kOverwrite);
     }
   }
   outputFile->Write();
-  outputFile->Close();*/
+  outputFile->Close();
 }

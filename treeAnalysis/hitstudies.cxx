@@ -84,11 +84,8 @@ void hitstudies(){
 
 // ANCHOR save function after event loop
 void hitstudiesSave(){
-  // make output directory
-    gSystem->Exec("mkdir -p "+outputDir + "/hitstudies");
-
   // define output file
-  TFile* fileOutput = new TFile(Form("%s/hitstudies/output_HITS.root",outputDir.Data()),"RECREATE");
+  TFile* fileOutput = new TFile(Form("%s/output_HITS.root",outputDir.Data()),"RECREATE");
 
   // write histograms
   for(int il=0;il<_maxProjectionLayers;il++){

@@ -84,12 +84,9 @@ void clusterstudies(){
 
 // ANCHOR save function after event loop
 void clusterstudiesSave(){
-  // make output directory
-    gSystem->Exec("mkdir -p "+outputDir + "/clusterstudies");
-
   // gSystem->Exec("mkdir -p treeProcessing/clusterstudies");
   // define output file
-  TFile* fileOutput = new TFile(Form("%s/clusterstudies/output_RH.root",outputDir.Data()),"RECREATE");
+  TFile* fileOutput = new TFile(Form("%s/output_RH.root",outputDir.Data()),"RECREATE");
 
   // write histograms
   for(int icalo=0;icalo<_active_calo;icalo++){

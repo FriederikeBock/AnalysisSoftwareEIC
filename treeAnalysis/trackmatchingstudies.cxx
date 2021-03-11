@@ -95,11 +95,9 @@ bool trackmatchingstudies(int enum_clusterizer, int enum_calorimeter, bool usePr
 }
 
 void trackmatchingstudiesSave(){
-// make output directory
-    gSystem->Exec("mkdir -p "+outputDir + "/trackmatchingstudies");
 
   // define output file
-  TFile* fileOutput = new TFile(Form("%s/trackmatchingstudies/output_TMSTUD.root",outputDir.Data()),"RECREATE");
+  TFile* fileOutput = new TFile(Form("%s/output_TMSTUD.root",outputDir.Data()),"RECREATE");
 
   for(int icalo=0;icalo<_active_calo;icalo++){
     for(int ialgo=0;ialgo<_active_algo;ialgo++){

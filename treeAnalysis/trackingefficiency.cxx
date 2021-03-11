@@ -87,12 +87,9 @@ void trackingefficiency(){
 
 // ANCHOR save function after event loop
 void trackingefficiencyhistosSave(){
-  // make output directory
-    gSystem->Exec("mkdir -p "+outputDir + "/trackingefficiency");
 
-  // gSystem->Exec("mkdir -p treeProcessing/trackingefficiency");
   // define output file
-  TFile* fileOutput = new TFile(Form("%s/trackingefficiency/output_TRKEFF.root",outputDir.Data()),"RECREATE");
+  TFile* fileOutput = new TFile(Form("%s/output_TRKEFF.root",outputDir.Data()),"RECREATE");
 
   // write histograms
   if(h_chargedpart_MC_pT) h_chargedpart_MC_pT->Write();

@@ -209,12 +209,8 @@ void resolutionhistos(){
 
 // ANCHOR save function after event loop
 void resolutionhistosSave(){
-  // make output directory
-    gSystem->Exec("mkdir -p "+outputDir + "/resolutionhistos");
-
-  // gSystem->Exec("mkdir -p treeProcessing/resolutionhistos");
   // define output file
-  TFile* fileOutput = new TFile(Form("%s/resolutionhistos/output_RH.root",outputDir.Data()),"RECREATE");
+  TFile* fileOutput = new TFile(Form("%s/output_RH.root",outputDir.Data()),"RECREATE");
 
   // write histograms
   for(int icalo=0;icalo<_active_calo;icalo++){
