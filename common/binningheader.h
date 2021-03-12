@@ -118,3 +118,6 @@
   Int_t maxEtaBin[3]           = {4,8,13};
   Int_t maxNEtaBins[3]         = {4, 3, 4};
     
+
+  const Int_t nClus            = 8;
+  TString nameClus[nClus]      = {"V1", "V3", "3x3", "5x5", "3x3", "C3", "C5", "MA"};

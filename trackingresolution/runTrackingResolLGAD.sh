@@ -132,9 +132,13 @@ elif [ $1 = "tree" ]; then
   root -x -b -q -l 'analyseTreeForTrackingResolAndPID.C("LBLandFullTTL-MB","","files_ALLSILICON_TTL-epMB.txt")'
   
 elif [ $1 = "effi" ]; then
-  root -b -x -q -b 'trackingeffi.C("/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBL_MB_2021_03_09/trackingefficiency/output_TRKEFF.root","pdf","LBL-MB")'
-  root -b -x -q -b 'trackingeffi.C("/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBL_pTHard_2021_03_09/trackingefficiency/output_TRKEFF.root","pdf","LBL-pTHard5GeV")'
-  root -b -x -q -b 'trackingeffi.C("/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLACLGAD_MB_2021_03_09/trackingefficiency/output_TRKEFF.root","pdf","LBLwithACLGAD-MB")'
-  root -b -x -q -b 'trackingeffi.C("/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLACLGAD_pTHard_2021_03_09/trackingefficiency/output_TRKEFF.root","pdf","LBLwithACLGAD-pTHard5GeV")'
+  fileACLGADTREFFIMB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLACLGAD_MB/output_TRKEFF.root
+  fileACLGADTREFFIPTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLACLGAD_pTHard/output_TRKEFF.root
+  fileLBLTREFFIMB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBL_MB/output_TRKEFF.root
+  fileLBLTREFFIPTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBL_pTHard/output_TRKEFF.root
+  root -b -x -q -b 'trackingeffi.C("'$fileLBLTREFFIMB'","pdf","LBL-MB")'
+  root -b -x -q -b 'trackingeffi.C("'$fileLBLTREFFIPTHARD'","pdf","LBL-pTHard5GeV")'
+  root -b -x -q -b 'trackingeffi.C("'$fileACLGADTREFFIMB'","pdf","LBLwithACLGAD-MB")'
+  root -b -x -q -b 'trackingeffi.C("'$fileACLGADTREFFIPTHARD'","pdf","LBLwithACLGAD-pTHard5GeV")'
 
 fi
