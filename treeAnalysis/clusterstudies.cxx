@@ -60,7 +60,6 @@ void clusterstudies(){
         clusters_CLSTD_Y,
         clusters_CLSTD_Z
       );
-
       for(Int_t iclus=0; iclus<nclusters_CLSTD; iclus++){
         h_CS_clusters_NTower_E[icalo][ialgo]->Fill(clusters_CLSTD_E[iclus],clusters_CLSTD_NTower[iclus]);
 
@@ -86,7 +85,7 @@ void clusterstudies(){
 void clusterstudiesSave(){
   // gSystem->Exec("mkdir -p treeProcessing/clusterstudies");
   // define output file
-  TFile* fileOutput = new TFile(Form("%s/output_RH.root",outputDir.Data()),"RECREATE");
+  TFile* fileOutput = new TFile(Form("%s/output_CS.root",outputDir.Data()),"RECREATE");
 
   // write histograms
   for(int icalo=0;icalo<_active_calo;icalo++){

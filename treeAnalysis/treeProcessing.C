@@ -504,10 +504,9 @@ void treeProcessing(
             jetresolutionhistos(jetsCaloRec,jetsTrue,3);
             jetresolutionhistos(jetsAllRec,jetsTrue,4);
 // TString jettype[njettypes] = {"track", "full","hcal","calo","all"};
-
         }
-        resolutionhistos();
         clusterstudies();
+        resolutionhistos();
         // if(_do_3x3clusterizer) trackmatchingstudies(k3x3, kFHCAL,true);
         // if(_do_3x3clusterizerFEMC) trackmatchingstudies(k3x3, kFEMC,true);
         // if(_do_V3clusterizer) trackmatchingstudies(kV3, kFHCAL,true);

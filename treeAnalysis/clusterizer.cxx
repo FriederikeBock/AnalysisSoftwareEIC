@@ -29,27 +29,18 @@ TH2F*  h_clusterizer_clsspec_matched_E_eta[_active_calo][_active_algo]; // [calo
 TH1F*  h_clusterizer_clsspec_PDG[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH1F*  h_clusterizer_clsspec_matched_PDG[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 
-TString str_CLSRZR_mcparticles[5] = {"electron", "cpion", "proton", "ckaon", "muon"};
-int int_CLSRZR_mcparticles_PDG[5] = {11 /*e*/,211  /*pi*/,  2212/*p*/,  321/*K*/,  13/*mu*/};
+const int particles_CLZR = 6;
+TString str_CLSRZR_mcparticles[particles_CLZR] = {"electron", "cpion", "proton", "ckaon", "muon", "photon"};
+int int_CLSRZR_mcparticles_PDG[particles_CLZR] = {11 /*e*/,211  /*pi*/,  2212/*p*/,  321/*K*/,  13/*mu*/};
 
 TH2F*  h_clusterizer_clsspec_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_clsspecMC_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_clsspec_chargedparticle_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_clsspecMC_chargedparticle_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_clusterizer_clsspec_particle_E_eta[_active_calo][_active_algo][5]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_clusterizer_clsspecMC_particle_E_eta[_active_calo][_active_algo][5]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_clsspec_particle_E_eta[_active_calo][_active_algo][particles_CLZR]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_clsspecMC_particle_E_eta[_active_calo][_active_algo][particles_CLZR]; // [calorimeter_enum][algorithm_enum]
 
-bool _doCalibration = false;
-
-float calibrationFEMC(float clusterE){
-  float paramsECALcalib[5]= {3.15612e+00,1.57658e-01,1.66441e+00,-2.50979e+02,3.81511e+02}; //noshift
-  return (( paramsECALcalib[0] + paramsECALcalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramsECALcalib[2] * TMath::Exp( ( clusterE - paramsECALcalib[3] ) / paramsECALcalib[4] ) ) ));
-}
-
-float calibrationFHCAL(float clusterE){
-  float paramsFHCALcalib[5]= {1.75773e+00, 3.87923e-01, 1.20862e+00, -1.25194e+02, 7.54438e+01}; //noshift
-  return (( paramsFHCALcalib[0] + paramsFHCALcalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramsFHCALcalib[2] * TMath::Exp( ( clusterE - paramsFHCALcalib[3] ) / paramsFHCALcalib[4] ) ) ));
-}
+bool _doClusterECalibration = false;
 
 bool isClusterMatched(int clsID, float matchingwindow, float* clusters_X, float* clusters_Y, float* clusters_E, int caloEnum, int clusterizerEnum, bool useProjection = true);
 
@@ -93,7 +84,7 @@ void runclusterizer(
       if(!h_clusterizer_clsspec_chargedparticle_E_eta[icalo][ialgo])h_clusterizer_clsspec_chargedparticle_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspec_chargedparticle_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
       if(!h_clusterizer_clsspecMC_chargedparticle_E_eta[icalo][ialgo])h_clusterizer_clsspecMC_chargedparticle_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspecMC_chargedparticle_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
 
-      for(int ipart=0;ipart<5;ipart++){
+      for(int ipart=0;ipart<particles_CLZR;ipart++){
         if(!h_clusterizer_clsspec_particle_E_eta[icalo][ialgo][ipart])h_clusterizer_clsspec_particle_E_eta[icalo][ialgo][ipart] 	= new TH2F(Form("h_clusterizer_clsspec_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CLSRZR_mcparticles[ipart].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
         if(!h_clusterizer_clsspecMC_particle_E_eta[icalo][ialgo][ipart])h_clusterizer_clsspecMC_particle_E_eta[icalo][ialgo][ipart] 	= new TH2F(Form("h_clusterizer_clsspecMC_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CLSRZR_mcparticles[ipart].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
       }
@@ -106,11 +97,12 @@ void runclusterizer(
   std::vector<towersStrct> cluster_towers;
 
   // fill vector with towers for clusterization above aggregation threshold
+  float E_scaling = 2; // = 2 would be a first calibration fix
   if(caloEnum==kFHCAL){
     for(int itow=0; itow<_nTowers_FHCAL; itow++){
-      if(_tower_FHCAL_E[itow]>aggE){
+      if(_tower_FHCAL_E[itow]>(aggE/E_scaling)){
         towersStrct tempstructT;
-        tempstructT.tower_E = _tower_FHCAL_E[itow];
+        tempstructT.tower_E = _tower_FHCAL_E[itow]*E_scaling;
         tempstructT.tower_iEta = _tower_FHCAL_iEta[itow];
         tempstructT.tower_iPhi = _tower_FHCAL_iPhi[itow];
         tempstructT.tower_trueID = _tower_FHCAL_trueID[itow];
@@ -277,7 +269,7 @@ void runclusterizer(
       }
 
       // determine remaining cluster properties from its towers
-      float* showershape_eta_phi = CalculateM02andWeightedPosition(cluster_towers, weightM02, clusters_E[nclusters], caloEnum, kFALSE);
+      float* showershape_eta_phi = CalculateM02andWeightedPosition(cluster_towers, weightM02, clusters_E[nclusters], caloEnum, false);//(clusterizerEnum==kMA && caloEnum==kFHCAL) ? true : false);
       clusters_M02[nclusters] = showershape_eta_phi[0];
       clusters_M20[nclusters] = showershape_eta_phi[1];
       clusters_Eta[nclusters] = showershape_eta_phi[2];
@@ -293,18 +285,15 @@ void runclusterizer(
       }
 
       // apply calibration if desired
-      if(_doCalibration){
-        if(caloEnum==kFHCAL)
-          clusters_E[nclusters]/=calibrationFHCAL(clusters_E[nclusters]);
-        else if(caloEnum==kFEMC)
-          clusters_E[nclusters]/=calibrationFEMC(clusters_E[nclusters]);
+      if(_doClusterECalibration){
+          clusters_E[nclusters]/=getCalibrationValue(clusters_E[nclusters], caloEnum, clusterizerEnum);
       }
 
       // fill inputs for efficiency
       h_clusterizer_clsspec_E_eta[caloEnum][clusterizerEnum]->Fill(clusters_E[nclusters], clusters_Eta[nclusters]);
       h_clusterizer_clsspecMC_E_eta[caloEnum][clusterizerEnum]->Fill(_mcpart_E[clusters_trueID[nclusters]-1], _mcpart_Eta[clusters_trueID[nclusters]-1]);
 
-      for(int ipart=0;ipart<5;ipart++){
+      for(int ipart=0;ipart<particles_CLZR;ipart++){
         if(int_CLSRZR_mcparticles_PDG[ipart]==abs(_mcpart_PDG[clusters_trueID[nclusters]-1])){
           h_clusterizer_clsspec_particle_E_eta[caloEnum][clusterizerEnum][ipart]->Fill(clusters_E[nclusters], clusters_Eta[nclusters]);
           h_clusterizer_clsspecMC_particle_E_eta[caloEnum][clusterizerEnum][ipart]->Fill(_mcpart_E[clusters_trueID[nclusters]-1], _mcpart_Eta[clusters_trueID[nclusters]-1]);
@@ -410,7 +399,7 @@ void clusterizerSave(){
       if(h_clusterizer_clsspecMC_E_eta[icalo][ialgo]) h_clusterizer_clsspecMC_E_eta[icalo][ialgo]->Write();
       if(h_clusterizer_clsspec_chargedparticle_E_eta[icalo][ialgo]) h_clusterizer_clsspec_chargedparticle_E_eta[icalo][ialgo]->Write();
       if(h_clusterizer_clsspecMC_chargedparticle_E_eta[icalo][ialgo]) h_clusterizer_clsspecMC_chargedparticle_E_eta[icalo][ialgo]->Write();
-      for(int ipart=0;ipart<5;ipart++){
+      for(int ipart=0;ipart<particles_CLZR;ipart++){
         if(h_clusterizer_clsspec_particle_E_eta[icalo][ialgo][ipart])h_clusterizer_clsspec_particle_E_eta[icalo][ialgo][ipart]->Write();
         if(h_clusterizer_clsspecMC_particle_E_eta[icalo][ialgo][ipart])h_clusterizer_clsspecMC_particle_E_eta[icalo][ialgo][ipart]->Write();
       }

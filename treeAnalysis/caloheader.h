@@ -23,7 +23,8 @@ enum clusterizertype {
     k5x5        = 3,
     kC3         = 4,
     kC5         = 5,
-    kMA         = 6
+    kMA         = 6,
+    kDummy      = 7
 };
 TString str_clusterizer[7] = {"V1", "V3", "3x3", "5x5", "C3", "C5", "MA"};
 const int _active_algo = 7;
@@ -97,7 +98,7 @@ TVector3 TowerPositionVectorFromIndices(int i_x,int i_y, int caloSelect = 0, int
 
 
 // ANCHOR function to determine shower shape
-float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers, float w_0, float cluster_E_calc, int caloSelect, Bool_t debugOutput){
+float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers, float w_0, float cluster_E_calc, int caloSelect, bool debugOutput){
     static float returnVariables[7]; //0:M02, 1:M20, 2:eta, 3: phi
     float w_tot = 0;
     std::vector<float> w_i;
@@ -115,20 +116,10 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
     returnVariables[2]=vecTwr.Eta();
     returnVariables[3]=(vecTwr.Phi()<0 ? vecTwr.Phi()+TMath::Pi() : vecTwr.Phi()-TMath::Pi());
     vecTwr*=(zHC/vecTwr.Z());
-    // returnVariables[4]=TowerPositionVectorFromIndices(cluster_towers.at(0).tower_iEta,cluster_towers.at(0).tower_iPhi, caloSelect).X();
-    // returnVariables[5]=TowerPositionVectorFromIndices(cluster_towers.at(0).tower_iEta,cluster_towers.at(0).tower_iPhi, caloSelect).Y();
-    // returnVariables[6]=TowerPositionVectorFromIndices(cluster_towers.at(0).tower_iEta,cluster_towers.at(0).tower_iPhi, caloSelect).Z();
     returnVariables[4]=vecTwr.X();
     returnVariables[5]=vecTwr.Y();
     returnVariables[6]=vecTwr.Z();
-    // if(vecTwr.X()>1e3 || (abs(vecTwr.X()) < 1 && abs(vecTwr.X()) !=0)) cout << "CALO " << caloSelect << "\tx: " << vecTwr.X()<< "\ty: " << vecTwr.Y()<< "\tz: " << vecTwr.Z() << endl;
-    if((vecTwr.Z()>351) || (vecTwr.Z()<290)){
-      cout << "CALO " << caloSelect << "\tx: " << vecTwr.X()<< "\ty: " << vecTwr.Y()<< "\tz: " << vecTwr.Z() << endl;
-      for(int cellI=0; cellI<cluster_towers.size(); cellI++){
-        TVector3 vectemp = TowerPositionVectorFromIndices(cluster_towers.at(cellI).tower_iEta,cluster_towers.at(cellI).tower_iPhi, caloSelect);
-        cout << "\tx: " << vectemp.X()<< "\ty: " << vectemp.Y()<< "\tz: " << vectemp.Z() << endl;
-      }
-    }
+
 
     //calculation of M02
     float delta_phi_phi[4] = {0};
@@ -711,4 +702,39 @@ void loadClusterizerInput(
                                       42., 44., 46., 48., 50., 52., 54., 56., 58., 60.,         // 130
                                       65., 70., 75., 80., 85., 90., 95., 100., 110., 120.,      // 140
                                       130., 140., 150., 160., 170., 180., 190., 200., 250.};    // 149
-                                       
+
+
+float getCalibrationValue(float clusterE, int caloEnum, int algoEnum){
+  if(caloEnum == kFHCAL){
+  // float paramsECALcalib[5]= {3.15612e+00,1.57658e-01,1.66441e+00,-2.50979e+02,3.81511e+02}; //noshift
+  // return (( paramsECALcalib[0] + paramsECALcalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramsECALcalib[2] * TMath::Exp( ( clusterE - paramsECALcalib[3] ) / paramsECALcalib[4] ) ) ));
+  } else if(caloEnum == kFEMC){
+    if(algoEnum==kV1){
+      float paramscalib[5]= {3.61545, 0.0317621, 1.80493, -1159.32, 1869.31}; //noshift
+      return (( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
+    } else if(algoEnum==kV3){
+      float paramscalib[5]= {3.48283, 0.0507623, 1.94421, -1062.14, 1689.39}; //noshift
+      return (( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
+    } else if(algoEnum==k3x3){
+      float paramscalib[5]= {3.66257, 0.0291583, 2.09469, -1799.62, 2795.61}; //noshift
+      return (( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
+    } else if(algoEnum==k5x5){
+      float paramscalib[5]= {3.64167, 0.0288047, 2.06243, -2506.92, 3843.72}; //noshift
+      return (( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
+    } else if(algoEnum==kC3){
+      float paramscalib[5]= {3.85225, 0.0153552, 2.22351, -2221.65, 3445.8}; //noshift
+      return (( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
+    } else if(algoEnum==kC5){
+      float paramscalib[5]= {3.78109, 0.0301875, 2.18153, -2171.59, 3377.11}; //noshift
+      return (( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
+    } else if(algoEnum==kMA){
+      float paramscalib[5]= {3.43486, 0.120574, 1.81206, -613.209, 913.285}; //noshift
+      return (( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
+    } else {
+      return 1.0;
+    }
+  } else {
+    return 1.0;
+  }
+  return 1.0;
+}
