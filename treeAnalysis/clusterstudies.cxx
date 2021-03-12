@@ -2,9 +2,9 @@
 // ANCHOR debug output verbosity
 int int_CS_verbosity = 2;
 
-const int nParticlesPDG_CS = 6;
-int int_CS_mcparticles_PDG[nParticlesPDG_CS] = {11 /*e*/,22 /*gamma*/,211  /*pi*/,  2212/*p*/,  2112/*n*/,  321/*K*/};
-TString str_CS_mcparticles[nParticlesPDG_CS] = {"electron", "photon", "cpion", "proton", "neutron", "kaon"};
+const int nParticlesPDG_CS = 7;
+int int_CS_mcparticles_PDG[nParticlesPDG_CS] = {11 /*e*/,22 /*gamma*/,211  /*pi*/,  2212/*p*/,  2112/*n*/,  321/*K*/, 13/*mu*/};
+TString str_CS_mcparticles[nParticlesPDG_CS] = {"electron", "photon", "cpion", "proton", "neutron", "ckaon", "muon"};
 
 // ANCHOR create histograms globally
 TH1F*  h_CS_clusters_E[_active_calo][_active_algo] = {{NULL}};
@@ -13,6 +13,23 @@ TH2F*  h_CS_clusters_M02_part_E_truth[_active_calo][_active_algo][nParticlesPDG_
 TH2F*  h_CS_clusters_M20_E[_active_calo][_active_algo] = {{NULL}};
 TH2F*  h_CS_clusters_M20_part_E_truth[_active_calo][_active_algo][nParticlesPDG_CS] = {{{NULL}}};
 TH2F*  h_CS_clusters_NTower_E[_active_calo][_active_algo] = {{NULL}};
+TH2F*  h_clusterizer_clsspec_matched_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH1F*  h_clusterizer_clsspec_PDG[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH1F*  h_clusterizer_clsspec_matched_PDG[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+
+TH2F*  h_clusterizer_1tower_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_1towerMC_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_clsspec_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_clsspecMC_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_clsspec_particle_E_eta[_active_calo][_active_algo][nParticlesPDG_CS]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_clsspecMC_particle_E_eta[_active_calo][_active_algo][nParticlesPDG_CS]; // [calorimeter_enum][algorithm_enum]
+
+TH2F*  h_clusterizer_clsspecSE_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_clsspecSEMC_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_clsspecSE_E_NCl[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_clsspecSEMC_E_NCl[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_clsspecSE_particle_E_eta[_active_calo][_active_algo][nParticlesPDG_CS]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_clsspecSEMC_particle_E_eta[_active_calo][_active_algo][nParticlesPDG_CS]; // [calorimeter_enum][algorithm_enum]
 
 int nclusters_CLSTD = 0;
 float* clusters_CLSTD_E         = new float[_maxNclusters];
@@ -38,9 +55,30 @@ void clusterstudies(){
       if(!h_CS_clusters_M02_E[icalo][ialgo])h_CS_clusters_M02_E[icalo][ialgo]= new TH2F(Form("h_CS_clusters_M02_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "" , 100, 0, 2, nBinsP, binningP);
       if(!h_CS_clusters_M20_E[icalo][ialgo])h_CS_clusters_M20_E[icalo][ialgo]= new TH2F(Form("h_CS_clusters_M20_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "" , 100, 0, 2, nBinsP, binningP);
       if(!h_CS_clusters_NTower_E[icalo][ialgo])h_CS_clusters_NTower_E[icalo][ialgo]= new TH2F(Form("h_CS_clusters_NTower_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "" , nBinsP, binningP, 30, -0.5, 29.5);
+      if(!h_clusterizer_clsspec_matched_E_eta[icalo][ialgo])h_clusterizer_clsspec_matched_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspec_matched_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+
+      if(!h_clusterizer_1tower_E_eta[icalo][ialgo])h_clusterizer_1tower_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_1tower_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+      if(!h_clusterizer_1towerMC_E_eta[icalo][ialgo])h_clusterizer_1towerMC_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_1towerMC_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+
+      if(!h_clusterizer_clsspec_E_eta[icalo][ialgo])h_clusterizer_clsspec_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspec_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+      if(!h_clusterizer_clsspecMC_E_eta[icalo][ialgo])h_clusterizer_clsspecMC_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspecMC_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+
+      if(!h_clusterizer_clsspecSE_E_eta[icalo][ialgo])h_clusterizer_clsspecSE_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspecSE_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+      if(!h_clusterizer_clsspecSEMC_E_eta[icalo][ialgo])h_clusterizer_clsspecSEMC_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspecSEMC_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+
+      if(!h_clusterizer_clsspecSE_E_NCl[icalo][ialgo])h_clusterizer_clsspecSE_E_NCl[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspecSE_E_NCl_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, 0.5, 80.5);
+      if(!h_clusterizer_clsspecSEMC_E_NCl[icalo][ialgo])h_clusterizer_clsspecSEMC_E_NCl[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspecSEMC_E_NCl_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, 0.5, 80.5);
+
+      if(!h_clusterizer_clsspec_PDG[icalo][ialgo])h_clusterizer_clsspec_PDG[icalo][ialgo] 	= new TH1F(Form("h_clusterizer_clsspec_PDG_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 2500,0,2500);
+      if(!h_clusterizer_clsspec_matched_PDG[icalo][ialgo])h_clusterizer_clsspec_matched_PDG[icalo][ialgo] 	= new TH1F(Form("h_clusterizer_clsspec_matched_PDG_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 2500,0,2500);
+      
       for (int iPDG = 0; iPDG < nParticlesPDG_CS; iPDG++){
         if(!h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG])h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG]= new TH2F(Form("h_CS_clusters_M02_part_E_truth_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "" , 100, 0, 2, nBinsP, binningP);
         if(!h_CS_clusters_M20_part_E_truth[icalo][ialgo][iPDG])h_CS_clusters_M20_part_E_truth[icalo][ialgo][iPDG]= new TH2F(Form("h_CS_clusters_M20_part_E_truth_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "" , 100, 0, 2, nBinsP, binningP);
+        if(!h_clusterizer_clsspec_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspec_particle_E_eta[icalo][ialgo][iPDG] 	= new TH2F(Form("h_clusterizer_clsspec_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+        if(!h_clusterizer_clsspecMC_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspecMC_particle_E_eta[icalo][ialgo][iPDG] 	= new TH2F(Form("h_clusterizer_clsspecMC_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+        if(!h_clusterizer_clsspecSE_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspecSE_particle_E_eta[icalo][ialgo][iPDG] 	= new TH2F(Form("h_clusterizer_clsspecSE_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+        if(!h_clusterizer_clsspecSEMC_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspecSEMC_particle_E_eta[icalo][ialgo][iPDG] 	= new TH2F(Form("h_clusterizer_clsspecSEMC_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
       }
 
       loadClusterizerInput(
@@ -60,23 +98,91 @@ void clusterstudies(){
         clusters_CLSTD_Y,
         clusters_CLSTD_Z
       );
+
+      std::vector<occuranceStrct> uniqueIDs;
+      
       for(Int_t iclus=0; iclus<nclusters_CLSTD; iclus++){
+        Bool_t particleFilled   = kFALSE;
+        Double_t highestEnergy  = clusters_CLSTD_E[iclus];; 
+        Bool_t isHighest        = kFALSE; 
+        Int_t nClPerParticle    = 1;
+        for (Int_t bclus = iclus+1; bclus < nclusters_CLSTD; bclus++ ){
+            if (clusters_CLSTD_trueID[iclus] != clusters_CLSTD_trueID[bclus]) continue;
+            if (clusters_CLSTD_E[bclus] > clusters_CLSTD_E[iclus])
+              highestEnergy = clusters_CLSTD_E[iclus];
+            nClPerParticle++;
+        }
+        if (clusters_CLSTD_E[iclus] == highestEnergy)
+          isHighest = kTRUE;
+        for (int id = 0; id < uniqueIDs.size() && !particleFilled ; id++){ 
+          if ( uniqueIDs.at(id).particle_ID == (int)(clusters_CLSTD_trueID[iclus]) ) 
+             particleFilled = kTRUE;
+        }
+         
+        
         h_CS_clusters_NTower_E[icalo][ialgo]->Fill(clusters_CLSTD_E[iclus],clusters_CLSTD_NTower[iclus]);
-
         h_CS_clusters_E[icalo][ialgo]->Fill(clusters_CLSTD_E[iclus]);
-
-
         h_CS_clusters_M02_E[icalo][ialgo]->Fill(clusters_CLSTD_M02[iclus],clusters_CLSTD_E[iclus]);
         h_CS_clusters_M20_E[icalo][ialgo]->Fill(clusters_CLSTD_M20[iclus],clusters_CLSTD_E[iclus]);
 
-        for (int iPDG = 0; iPDG < nParticlesPDG_CS; iPDG++)
-        {
+        for (int iPDG = 0; iPDG < nParticlesPDG_CS; iPDG++){
           if(abs(_mcpart_PDG[clusters_CLSTD_NtrueID[iclus]-1]) == abs(int_CS_mcparticles_PDG[iPDG])){
             h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG]->Fill(clusters_CLSTD_M02[iclus],clusters_CLSTD_E[iclus]);
             h_CS_clusters_M20_part_E_truth[icalo][ialgo][iPDG]->Fill(clusters_CLSTD_M20[iclus],clusters_CLSTD_E[iclus]);
           }
         }
+        if (clusters_CLSTD_NTower[iclus] < 2){
+          h_clusterizer_1tower_E_eta[icalo][ialgo]->Fill(clusters_CLSTD_E[iclus], clusters_CLSTD_Eta[iclus]);
+          h_clusterizer_1towerMC_E_eta[icalo][ialgo]->Fill(_mcpart_E[clusters_CLSTD_trueID[iclus]-1], _mcpart_Eta[clusters_CLSTD_trueID[iclus]-1]);
+          if (!particleFilled && isHighest){
+            h_clusterizer_clsspecSE_E_eta[icalo][ialgo]->Fill(clusters_CLSTD_E[iclus], clusters_CLSTD_Eta[iclus]);
+            h_clusterizer_clsspecSEMC_E_eta[icalo][ialgo]->Fill(_mcpart_E[clusters_CLSTD_trueID[iclus]-1], _mcpart_Eta[clusters_CLSTD_trueID[iclus]-1]);          
+            h_clusterizer_clsspecSE_E_NCl[icalo][ialgo]->Fill(clusters_CLSTD_E[iclus], nClPerParticle);
+            h_clusterizer_clsspecSEMC_E_NCl[icalo][ialgo]->Fill(_mcpart_E[clusters_CLSTD_trueID[iclus]-1], nClPerParticle);          
+            for(int iPDG=0;iPDG<nParticlesPDG_CS;iPDG++){
+              if(int_CS_mcparticles_PDG[iPDG]==abs(_mcpart_PDG[clusters_CLSTD_trueID[iclus]-1])){
+                h_clusterizer_clsspecSE_particle_E_eta[icalo][ialgo][iPDG]->Fill(clusters_CLSTD_E[iclus], clusters_CLSTD_Eta[iclus]);
+                h_clusterizer_clsspecSEMC_particle_E_eta[icalo][ialgo][iPDG]->Fill(_mcpart_E[clusters_CLSTD_trueID[iclus]-1], _mcpart_Eta[clusters_CLSTD_trueID[iclus]-1]);
+              }
+            }
+          }
+        } else {
+          // fill inputs for efficiency
+          h_clusterizer_clsspec_E_eta[icalo][ialgo]->Fill(clusters_CLSTD_E[iclus], clusters_CLSTD_Eta[iclus]);
+          h_clusterizer_clsspecMC_E_eta[icalo][ialgo]->Fill(_mcpart_E[clusters_CLSTD_trueID[iclus]-1], _mcpart_Eta[clusters_CLSTD_trueID[iclus]-1]);
+          if (!particleFilled && isHighest){
+            h_clusterizer_clsspecSE_E_eta[icalo][ialgo]->Fill(clusters_CLSTD_E[iclus], clusters_CLSTD_Eta[iclus]);
+            h_clusterizer_clsspecSEMC_E_eta[icalo][ialgo]->Fill(_mcpart_E[clusters_CLSTD_trueID[iclus]-1], _mcpart_Eta[clusters_CLSTD_trueID[iclus]-1]);          
+            h_clusterizer_clsspecSE_E_NCl[icalo][ialgo]->Fill(clusters_CLSTD_E[iclus], nClPerParticle);
+            h_clusterizer_clsspecSEMC_E_NCl[icalo][ialgo]->Fill(_mcpart_E[clusters_CLSTD_trueID[iclus]-1], nClPerParticle);          
+
+          }
+          
+          for(int iPDG=0;iPDG<nParticlesPDG_CS;iPDG++){
+            if(int_CS_mcparticles_PDG[iPDG]==abs(_mcpart_PDG[clusters_CLSTD_trueID[iclus]-1])){
+              h_clusterizer_clsspec_particle_E_eta[icalo][ialgo][iPDG]->Fill(clusters_CLSTD_E[iclus], clusters_CLSTD_Eta[iclus]);
+              h_clusterizer_clsspecMC_particle_E_eta[icalo][ialgo][iPDG]->Fill(_mcpart_E[clusters_CLSTD_trueID[iclus]-1], _mcpart_Eta[clusters_CLSTD_trueID[iclus]-1]);
+              if (!particleFilled && isHighest){
+                h_clusterizer_clsspecSE_particle_E_eta[icalo][ialgo][iPDG]->Fill(clusters_CLSTD_E[iclus], clusters_CLSTD_Eta[iclus]);
+                h_clusterizer_clsspecSEMC_particle_E_eta[icalo][ialgo][iPDG]->Fill(_mcpart_E[clusters_CLSTD_trueID[iclus]-1], _mcpart_Eta[clusters_CLSTD_trueID[iclus]-1]);
+              }
+            }
+          }
+
+          if(clusters_CLSTD_isMatched[iclus]) h_clusterizer_clsspec_matched_E_eta[icalo][ialgo]->Fill(clusters_CLSTD_E[iclus], clusters_CLSTD_Eta[iclus]);
+          h_clusterizer_clsspec_PDG[icalo][ialgo]->Fill(_mcpart_PDG[clusters_CLSTD_trueID[iclus]-1]);
+          if(clusters_CLSTD_isMatched[iclus]) h_clusterizer_clsspec_matched_PDG[icalo][ialgo]->Fill(_mcpart_PDG[clusters_CLSTD_trueID[iclus]-1]);
+        }
+        if (!particleFilled && isHighest){
+          occuranceStrct tempstructCl;
+          tempstructCl.particle_ID = clusters_CLSTD_trueID[iclus];
+          tempstructCl.highest_E = highestEnergy;
+          tempstructCl.nClusters = nClPerParticle;
+          uniqueIDs.push_back(tempstructCl);
+//           if (tempstructCl.nClusters > 1) cout << "particle: " << tempstructCl.particle_ID << " has multiple clusters (" << tempstructCl.nClusters << ") for " << str_calorimeter[icalo].Data() << " " << str_clusterizer[ialgo].Data() << endl;
+        }
       }
+      uniqueIDs.clear();
     }
   }
 }
@@ -94,10 +200,25 @@ void clusterstudiesSave(){
       if(h_CS_clusters_E[icalo][ialgo]) h_CS_clusters_E[icalo][ialgo]->Write();
       if(h_CS_clusters_M02_E[icalo][ialgo]) h_CS_clusters_M02_E[icalo][ialgo]->Write();
       if(h_CS_clusters_M20_E[icalo][ialgo]) h_CS_clusters_M20_E[icalo][ialgo]->Write();
-
+      if(h_clusterizer_clsspec_matched_E_eta[icalo][ialgo]) h_clusterizer_clsspec_matched_E_eta[icalo][ialgo]->Write();
+      if(h_clusterizer_clsspec_PDG[icalo][ialgo]) h_clusterizer_clsspec_PDG[icalo][ialgo]->Write();
+      if(h_clusterizer_clsspec_matched_PDG[icalo][ialgo]) h_clusterizer_clsspec_matched_PDG[icalo][ialgo]->Write();
+      if(h_clusterizer_1tower_E_eta[icalo][ialgo]) h_clusterizer_1tower_E_eta[icalo][ialgo]->Write();
+      if(h_clusterizer_1towerMC_E_eta[icalo][ialgo]) h_clusterizer_1towerMC_E_eta[icalo][ialgo]->Write();
+      if(h_clusterizer_clsspec_E_eta[icalo][ialgo]) h_clusterizer_clsspec_E_eta[icalo][ialgo]->Write();
+      if(h_clusterizer_clsspecMC_E_eta[icalo][ialgo]) h_clusterizer_clsspecMC_E_eta[icalo][ialgo]->Write();
+      if(h_clusterizer_clsspecSE_E_eta[icalo][ialgo]) h_clusterizer_clsspecSE_E_eta[icalo][ialgo]->Write();
+      if(h_clusterizer_clsspecSEMC_E_eta[icalo][ialgo]) h_clusterizer_clsspecSEMC_E_eta[icalo][ialgo]->Write();
+      if(h_clusterizer_clsspecSE_E_NCl[icalo][ialgo]) h_clusterizer_clsspecSE_E_NCl[icalo][ialgo]->Write();
+      if(h_clusterizer_clsspecSEMC_E_NCl[icalo][ialgo]) h_clusterizer_clsspecSEMC_E_NCl[icalo][ialgo]->Write();
+    
       for (int iPDG = 0; iPDG < nParticlesPDG_CS; iPDG++){
         if(h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG]) h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG]->Write();
         if(h_CS_clusters_M20_part_E_truth[icalo][ialgo][iPDG]) h_CS_clusters_M20_part_E_truth[icalo][ialgo][iPDG]->Write();
+        if(h_clusterizer_clsspec_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspec_particle_E_eta[icalo][ialgo][iPDG]->Write();
+        if(h_clusterizer_clsspecMC_particle_E_eta[icalo][ialgo][iPDG]) h_clusterizer_clsspecMC_particle_E_eta[icalo][ialgo][iPDG]->Write();
+        if(h_clusterizer_clsspecSE_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspecSE_particle_E_eta[icalo][ialgo][iPDG]->Write();
+        if(h_clusterizer_clsspecSEMC_particle_E_eta[icalo][ialgo][iPDG]) h_clusterizer_clsspecSEMC_particle_E_eta[icalo][ialgo][iPDG]->Write();
       }
     }
   }

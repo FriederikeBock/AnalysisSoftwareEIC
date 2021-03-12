@@ -6,6 +6,12 @@ typedef struct {
   int tower_trueID;
 } towersStrct;
 
+typedef struct {
+  int particle_ID;
+  float highest_E;
+  int nClusters;
+} occuranceStrct;
+
 enum calotype {
     kFHCAL         = 0,
     kFEMC         = 1,
