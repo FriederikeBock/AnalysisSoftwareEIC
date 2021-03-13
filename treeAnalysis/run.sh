@@ -30,16 +30,16 @@ file3TLBLLGAD18275pTHard=/home/fbock/eic/simulationOutput/ModularBeast/output_AL
 root -x -l -b -q 'treeProcessing.C("'$fileSinglePionOnlyCalo'","CaloOnly_SinglePi",true,true,true,true,true,true,true,true,true,true,true,true,false,-1,0)'
 # 
 # # LBL AC-LGAD 
-root -x -l -b -q 'treeProcessing.C("'$fileLBLACLGADpTHard'","LBLACLGAD_pTHard",true,true,true,true,true,true,true,true,true,true,true,true,true,-1,0)'
-root -x -l -b -q 'treeProcessing.C("'$fileLBLACLGADMB'","LBLACLGAD_MB",true,true,true,true,true,true,true,true,true,true,true,true,true,-1,0)'
+root -x -l -b -q 'treeProcessing.C("'$fileLBLACLGADpTHard'","LBLACLGAD_pTHard",true,true,true,true,true,true,true,true,true,true,true,true,false,-1,0)'
+root -x -l -b -q 'treeProcessing.C("'$fileLBLACLGADMB'","LBLACLGAD_MB",true,true,true,true,true,true,true,true,true,true,true,true,false,-1,0)'
 # # LBL 
-root -x -l -b -q 'treeProcessing.C("'$fileLBLpTHard'","LBL_pTHard",true,true,true,true,true,true,true,true,true,true,true,true,true,-1,0)'
-root -x -l -b -q 'treeProcessing.C("'$fileLBLMB'","LBL_MB",true,true,true,true,true,true,true,true,true,true,true,true,true,-1,0)'
+root -x -l -b -q 'treeProcessing.C("'$fileLBLpTHard'","LBL_pTHard",true,true,true,true,true,true,true,true,true,true,true,true,false,-1,0)'
+root -x -l -b -q 'treeProcessing.C("'$fileLBLMB'","LBL_MB",true,true,true,true,true,true,true,true,true,true,true,true,false,-1,0)'
 # # LBL LGAD
-root -x -l -b -q 'treeProcessing.C("'$fileLBLLGADMB'","LBLLGAD_MB",true,true,true,true,true,true,true,true,true,true,true,true,true,-1,0)'
-root -x -l -b -q 'treeProcessing.C("'$fileLBLLGADpTHard'","LBLLGAD_pTHard",true,true,true,true,true,true,true,true,true,true,true,true,true,-1,0)'
+root -x -l -b -q 'treeProcessing.C("'$fileLBLLGADMB'","LBLLGAD_MB",true,true,true,true,true,true,true,true,true,true,true,true,false,-1,0)'
+root -x -l -b -q 'treeProcessing.C("'$fileLBLLGADpTHard'","LBLLGAD_pTHard",true,true,true,true,true,true,true,true,true,true,true,true,false,-1,0)'
 # # LBL LGAD double granul 
-root -x -l -b -q 'treeProcessing.C("'$fileLBLLGADpTHard2x'","LBLLGAD2x_pTHard",true,true,true,true,true,true,true,true,true,true,true,true,true,-1,0)'
+root -x -l -b -q 'treeProcessing.C("'$fileLBLLGADpTHard2x'","LBLLGAD2x_pTHard",true,true,true,true,true,true,true,true,true,true,true,true,false,-1,0)'
 
 # LBL LGAD other cms energies
 root -x -l -b -q 'treeProcessing.C("'$fileLBLLGAD5100MB'","LBLLGAD_e5p100_MB",true,true,true,true,true,true,true,true,true,true,true,true,false,-1,0)'

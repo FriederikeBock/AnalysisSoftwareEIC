@@ -53,7 +53,7 @@ void clustereffi(
     nLinesCol++;
   }
 
-  TString outputDir                 = Form("plots/%s/Effi%s",dateForOutput.Data(),addLabel.Data());
+  TString outputDir                 = Form("plots/%s/ClusterEffi%s",dateForOutput.Data(),addLabel.Data());
   gSystem->Exec("mkdir -p "+outputDir);
   for (Int_t iCl = 0; iCl < nClus; iCl++) gSystem->Exec("mkdir -p "+outputDir+"/"+calo+nameClus[iCl]);
   
@@ -398,6 +398,7 @@ void clustereffi(
 
   if (calo.CompareTo("FHCAL") == 0) histoDummyNClPerParMean->GetYaxis()->SetRangeUser(0, 10);
   histoDummyNClPerParMean->Draw();
+  DrawGammaLines(0.2, 200, 1., 1., 2, kGray+2, 7);
   for (Int_t iCl = 0; iCl < nClus; iCl++){
     if (!enableClus[iCl]) continue;
     DrawGammaSetMarker(h_cluster_NClMean_E[iCl], markerStyleClus[iCl], markerSizeClus[iCl], colorClus[0][iCl], colorClus[0][iCl]);
@@ -412,6 +413,7 @@ void clustereffi(
 
   histoDummyNClPerParMean->SetXTitle("#it{E}_{MC} (GeV)");
   histoDummyNClPerParMean->Draw();
+  DrawGammaLines(0.2, 200, 1., 1., 2, kGray+2, 7);
   for (Int_t iCl = 0; iCl < nClus; iCl++){
     if (!enableClus[iCl]) continue;
     DrawGammaSetMarker(h_cluster_NClMean_MCE[iCl], markerStyleClus[iCl], markerSizeClus[iCl], colorClus[0][iCl], colorClus[0][iCl]);

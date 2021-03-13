@@ -7,24 +7,44 @@ const int nPart_TRKEFF = 5;
 TString str_TRKEFF_mcparticles[nPart_TRKEFF] = {"electron", "cpion", "proton", "ckaon", "muon"};
 int int_TRKEFF_mcparticles_PDG[nPart_TRKEFF] = {11 /*e*/,211  /*pi*/,  2212/*p*/,  321/*K*/,  13/*mu*/};
 
-TH2F*  h_chargedpart_MC_pT 	= new TH2F("h_chargedpart_MC_pT", "", 60, 0,30,80, -4.0,4.0);
+// **********************************************************************************************
+// ********************************** Set up histos efficiency histos ***************************
+// **********************************************************************************************
+TH2F*  h_chargedpart_MC_pT        = new TH2F("h_chargedpart_MC_pT", "", 60, 0,30,80, -4.0,4.0);
 TH2F*  h_particle_MC_pT[nPart_TRKEFF];
-TH2F*  h_chargedpart_rec_pT 	= new TH2F("h_chargedpart_rec_pT", "", 60, 0,30,80, -4.0,4.0);
-TH2F*  h_chargedpart_rec_truepT 	= new TH2F("h_chargedpart_rec_truepT", "", 60, 0,30,80, -4.0,4.0);
+TH2F*  h_chargedpart_rec_pT       = new TH2F("h_chargedpart_rec_pT", "", 60, 0,30,80, -4.0,4.0);
+TH2F*  h_chargedpart_rec_truepT   = new TH2F("h_chargedpart_rec_truepT", "", 60, 0,30,80, -4.0,4.0);
 TH2F*  h_particle_rec_pT[nPart_TRKEFF];
 TH2F*  h_particle_rec_truepT[nPart_TRKEFF];
 
-TH2F*  h_chargedpart_MC_p 	= new TH2F("h_chargedpart_MC_p", "", nBinsP, binningP, 80, -4.0,4.0);
+TH2F*  h_chargedpart_MC_p         = new TH2F("h_chargedpart_MC_p", "", nBinsP, binningP, 80, -4.0,4.0);
 TH2F*  h_particle_MC_p[nPart_TRKEFF];
-TH2F*  h_chargedpart_rec_p 	= new TH2F("h_chargedpart_rec_p", "", nBinsP, binningP, 80, -4.0,4.0);
-TH2F*  h_chargedpart_rec_truep 	= new TH2F("h_chargedpart_rec_truep", "", nBinsP, binningP, 80, -4.0,4.0);
+TH2F*  h_chargedpart_rec_p        = new TH2F("h_chargedpart_rec_p", "", nBinsP, binningP, 80, -4.0,4.0);
+TH2F*  h_chargedpart_rec_truep    = new TH2F("h_chargedpart_rec_truep", "", nBinsP, binningP, 80, -4.0,4.0);
 TH2F*  h_particle_rec_p[nPart_TRKEFF];
 TH2F*  h_particle_rec_truep[nPart_TRKEFF];
 
-TH2F*  h_chargedpart_MC_E 	= new TH2F("h_chargedpart_MC_E", "", nBinsP, binningP, 80, -4.0,4.0);
+TH2F*  h_chargedpart_MC_E         = new TH2F("h_chargedpart_MC_E", "", nBinsP, binningP, 80, -4.0,4.0);
 TH2F*  h_particle_MC_E[nPart_TRKEFF];
 
-// ANCHOR main function to be called in event loop
+// **********************************************************************************************
+// ********************************** Set up histos resolution histos ***************************
+// **********************************************************************************************
+TH1D* hNEvents                                = new TH1D("nEvents","",1,0,1);
+TH1D* hNTracks                                = new TH1D("nTracks","",200,-0.5,199.5);
+TH2F* h_tracks_reso_pT[5][nEta+1][6]          = {{{NULL}}};
+TH2F* h_tracks_reso_p[5][nEta+1][6]           = {{NULL}};
+TH2F* h_tracks_resoEta_pT[5][nEta+1]          = {{NULL}};
+TH2F* h_tracks_resoPhi_pT[5][nEta+1]          = {{NULL}};
+TH2F* h_tracksTrue_Eta_pT[6][12]              = {{NULL}};
+TH2F* h_tracksRec_Eta_pT[6][12]               = {{NULL}};
+TH2F* h_tracksTrue_Eta_p[6][12]               = {{NULL}};
+TH2F* h_tracksRec_Eta_p[6][12]                = {{NULL}};
+
+
+// **********************************************************************************************
+// **************************** tracking efficiency processing **********************************
+// **********************************************************************************************
 void trackingefficiency(){
   // cout << "new evt" << endl;
   for(int imc=0; imc<_nMCPart; imc++){
@@ -82,8 +102,14 @@ void trackingefficiency(){
       }
     }
   }
-
 }
+
+
+// **********************************************************************************************
+// **************************** tracking resolution processing **********************************
+// **********************************************************************************************
+
+
 
 // ANCHOR save function after event loop
 void trackingefficiencyhistosSave(){
