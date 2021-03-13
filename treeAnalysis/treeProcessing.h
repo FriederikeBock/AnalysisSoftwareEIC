@@ -180,9 +180,8 @@ TString GetProjectionNameFromIndex(int projindex)
     case 4:    return "ETTL_1";
     // case 5:    return "FHCAL_0";
     // case 6:    return "FEMC_0";
-    // case 7:    return "CTTL_0";
-    // case 8:    return "CTTL_1";
-    // case 9:    return "CTTL_2";
+    case 7:    return "CTTL_0";
+    case 8:    return "CTTL_1";
     default:   return "NOTHING";
     }
 }

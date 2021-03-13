@@ -124,7 +124,7 @@ std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea>, std::vector<fastjet::P
     std::vector<float> E = {100.0, 5.0, 99.0};
 
     // Perform the actual jet finding.
-    auto res = findJets(1.0, "anti-kt", px, py, pz, E);
+    auto res = findJets(0.5, "anti-kt", px, py, pz, E);
     // Reminder of how to get values out of a tuple.
     printJets(std::get<1>(res));
 

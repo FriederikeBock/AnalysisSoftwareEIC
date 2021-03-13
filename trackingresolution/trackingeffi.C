@@ -40,10 +40,11 @@ void trackingeffi(
     writeLabel                      = "LI3";
     labelPlotCuts                   = "#geq 3 tracker hits";
   }
-  
+    
   for (Int_t eR = 0; eR < 3; eR++) cout << "before: "<< labelEtaRange[eR].Data() << endl;
   
-  TString collisionSystem = "Pythia 6, e+p, 10+250 GeV";
+  TString collisionSystem = GetCollisionEnergy(addLabel);
+  TString magnetLabel     = GetMagnetLabel(addLabel);
   TString pTHard = "";
   Int_t nLinesCol = 1;
   if (addLabel.Contains("pTHard5GeV")) {
@@ -54,34 +55,11 @@ void trackingeffi(
   TString outputDir                 = Form("plots/%s/Effi%s",dateForOutput.Data(),addLabel.Data());
   gSystem->Exec("mkdir -p "+outputDir);
 
-  TString detLabel = "";
-  Int_t nActiveEta            = 14;
-  Double_t maxPtSigma         = 0.175;
-  Double_t maxEtaSigma        = 0.005;
-  Double_t maxPhiSigma        = 0.01;
-  if (addLabel.Contains("defaultLBL") ){
-    detLabel  = "LBL";
-  } else if (addLabel.Contains("LBLwithLGAD") ){
-    detLabel  = "LBL+TTL";
-  } else if (addLabel.Contains("LBLwithACLGAD") ){
-    detLabel  = "LBL+TTL(AC-LGAD)";
-  } else if (addLabel.Contains("LBLwithFTTLS2LC-ETTL-CTTL") ){
-    detLabel  = "LBL+TTL(2 l's)";
-  } else if (addLabel.Contains("LBLwithFTTLS3LVC-ETTLLC-CTTLLC") ){
-    detLabel  = "LBL+TTL(1.3mm)";
-  } else if (addLabel.Contains("LBLwithFTTLSE1LC-ETTLSE1-CTTLSE1") ){
-    detLabel  = "LBL+TTL(1 l b. ECal)";
-  } else if (addLabel.Contains("LBLwithFTTLSE2LC-ETTL-CTTLSE1") ){
-    detLabel  = "LBL+TTL(1|2 l b. ECal)";
-  } else if (addLabel.Contains("defaultLANL") ){
-    detLabel  = "LANL";
-  } else if (addLabel.Contains("LANLwithLGAD") ){
-    detLabel  = "LANL+TTL";
-  } else if (addLabel.Contains("LANLwithACLGAD") ){
-    detLabel  = "LANL+TTL(AC-LGAD)";
-  } else if (addLabel.Contains("LANLwithFTTLS3LVC-ETTLLC-CTTLLC") ){
-    detLabel  = "LANL+TTL(1.3mm)";
-  }
+  TString detLabel        = GetTrackerLabel(addLabel);
+  Int_t nActiveEta        = 14;
+  Double_t maxPtSigma     = 0.175;
+  Double_t maxEtaSigma    = 0.005;
+  Double_t maxPhiSigma    = 0.01;
   if (addLabel.Contains("Hist")){
     maxPtSigma         = 0.42;
     maxEtaSigma        = 0.01;
@@ -221,23 +199,23 @@ void trackingeffi(
   DrawGammaCanvasSettings( cReso, 0.085, 0.025, 0.02, 0.105);
   // cReso->SetLogz();
 
-  TH2F* histoDummyEffiPt   = new TH2F("histoDummyEffiPt","histoDummyEffiPt",1000,0, 20,1000,0.0, 1.25);
-  SetStyleHistoTH2ForGraphs(histoDummyEffiPt, "#it{p}_{T} (GeV/#it{c})","#varepsilon", 0.85*textSizeSinglePad,textSizeSinglePad, textSizeSinglePad,textSizeSinglePad, 0.9,0.87);
+  TH2F* histoDummyEffiPt   = new TH2F("histoDummyEffiPt","histoDummyEffiPt",1000,0, 20,1000,0.0, 1.35);
+  SetStyleHistoTH2ForGraphs(histoDummyEffiPt, "#it{p}_{T} (GeV/#it{c})","#varepsilon", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad, 1.15*textSizeSinglePad, 0.9, 0.75);
   histoDummyEffiPt->GetXaxis()->SetNoExponent();
   histoDummyEffiPt->GetYaxis()->SetNdivisions(510,kTRUE);
   histoDummyEffiPt->GetXaxis()->SetMoreLogLabels(kTRUE);
-  TH2F* histoDummyEffiMCPt   = new TH2F("histoDummyEffiMCPt","histoDummyEffiMCPt",1000,0, 20,1000,0.0, 1.25);
-  SetStyleHistoTH2ForGraphs(histoDummyEffiMCPt, "#it{p}_{T}^{MC} (GeV/#it{c})","#varepsilon", 0.85*textSizeSinglePad,textSizeSinglePad, textSizeSinglePad,textSizeSinglePad, 0.9,0.87);
+  TH2F* histoDummyEffiMCPt   = new TH2F("histoDummyEffiMCPt","histoDummyEffiMCPt",1000,0, 20,1000,0.0, 1.35);
+  SetStyleHistoTH2ForGraphs(histoDummyEffiMCPt, "#it{p}_{T}^{MC} (GeV/#it{c})","#varepsilon", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad, 1.15*textSizeSinglePad, 0.9, 0.75);;
   histoDummyEffiMCPt->GetXaxis()->SetNoExponent();
   histoDummyEffiMCPt->GetYaxis()->SetNdivisions(510,kTRUE);
   histoDummyEffiMCPt->GetXaxis()->SetMoreLogLabels(kTRUE);
-  TH2F* histoDummyEffiP   = new TH2F("histoDummyEffiP","histoDummyEffiP",1000,0, 100,1000,0.0, 1.25);
-  SetStyleHistoTH2ForGraphs(histoDummyEffiP, "#it{p} (GeV/#it{c})","#varepsilon", 0.85*textSizeSinglePad,textSizeSinglePad, textSizeSinglePad,textSizeSinglePad, 0.9,0.87);
+  TH2F* histoDummyEffiP   = new TH2F("histoDummyEffiP","histoDummyEffiP",1000,0, 100,1000,0.0, 1.35);
+  SetStyleHistoTH2ForGraphs(histoDummyEffiP, "#it{p} (GeV/#it{c})","#varepsilon", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad, 1.15*textSizeSinglePad, 0.9, 0.75);
   histoDummyEffiP->GetXaxis()->SetNoExponent();
   histoDummyEffiP->GetYaxis()->SetNdivisions(510,kTRUE);
   histoDummyEffiP->GetXaxis()->SetMoreLogLabels(kTRUE);
-  TH2F* histoDummyEffiMCP   = new TH2F("histoDummyEffiMCP","histoDummyEffiMCP",1000,0, 100,1000,0.0, 1.25);
-  SetStyleHistoTH2ForGraphs(histoDummyEffiMCP, "#it{p}^{MC} (GeV/#it{c})","#varepsilon", 0.85*textSizeSinglePad,textSizeSinglePad, textSizeSinglePad,textSizeSinglePad, 0.9,0.87);
+  TH2F* histoDummyEffiMCP   = new TH2F("histoDummyEffiMCP","histoDummyEffiMCP",1000,0, 100,1000,0.0, 1.35);
+  SetStyleHistoTH2ForGraphs(histoDummyEffiMCP, "#it{p}^{MC} (GeV/#it{c})","#varepsilon", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad, 1.15*textSizeSinglePad, 0.9, 0.75);
   histoDummyEffiMCP->GetXaxis()->SetNoExponent();
   histoDummyEffiMCP->GetYaxis()->SetNdivisions(510,kTRUE);
   histoDummyEffiMCP->GetXaxis()->SetMoreLogLabels(kTRUE);
@@ -266,7 +244,8 @@ void trackingeffi(
     drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
     drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/Effi_%s_pT.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
 
     histoDummyEffiMCPt->Draw();
@@ -281,7 +260,8 @@ void trackingeffi(
     drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
     drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/Effi_%s_MCpT.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
 
     cReso->SetLogx();
@@ -302,7 +282,8 @@ void trackingeffi(
     drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
     drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/Effi_%s_p.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
 
     histoDummyEffiMCP->Draw();
@@ -316,7 +297,8 @@ void trackingeffi(
     drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
     drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
 
     cReso->Print(Form("%s/Effi_%s_MCp.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
     cReso->SetLogx(kFALSE);
@@ -343,7 +325,8 @@ void trackingeffi(
     drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
     drawLatexAdd(Form("%1.1f<#eta<%1.1f, %s", etaMin, etaMax, detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/EffiPID_MCpT_%d_%d.%s", outputDir.Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
 
     cReso->SetLogx();
@@ -358,7 +341,8 @@ void trackingeffi(
     drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
     drawLatexAdd(Form("%1.1f<#eta<%1.1f, %s", etaMin, etaMax, detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/EffiPID_MCp_%d_%d.%s", outputDir.Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
     cReso->SetLogx(kFALSE);
   }
@@ -390,7 +374,8 @@ void trackingeffi(
       drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
       drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-      if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       cReso->Print(Form("%s/Effi_%s_%s_MCpT.%s", outputDir.Data(), nameOutEtaRange[eR].Data(), partName[pid].Data(), suffix.Data()));
 
       histoDummyEffiPt->Draw();
@@ -406,7 +391,8 @@ void trackingeffi(
       drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
       drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-      if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       cReso->Print(Form("%s/Effi_%s_%s_pT.%s", outputDir.Data(), nameOutEtaRange[eR].Data(), partName[pid].Data(), suffix.Data()));
 
       cReso->SetLogx();
@@ -430,7 +416,8 @@ void trackingeffi(
       drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
       drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-      if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       cReso->Print(Form("%s/Effi_%s_%s_MCp.%s", outputDir.Data(), nameOutEtaRange[eR].Data(), partName[pid].Data(), suffix.Data()));
 
       histoDummyEffiP->Draw();
@@ -446,7 +433,8 @@ void trackingeffi(
       drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
       drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-      if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       cReso->Print(Form("%s/Effi_%s_%s_p.%s", outputDir.Data(), nameOutEtaRange[eR].Data(), partName[pid].Data(), suffix.Data()));
 
       cReso->SetLogx(kFALSE);

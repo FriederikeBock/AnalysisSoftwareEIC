@@ -499,3 +499,51 @@ void SetPlotStyle() {
   gStyle->SetNumberContours(nCont);
 }
 
+
+TString GetTrackerLabel(TString label){
+  TString detLabel = "";
+  if (label.Contains("defaultLBL") ){
+    detLabel  = "ALL-SI";
+  } else if (label.Contains("LBLwithLGAD") ){
+    detLabel  = "ALL-SI+TTL";
+  } else if (label.Contains("LBLwithACLGAD") ){
+    detLabel  = "ALL-SI+TTL(AC-LGAD)";
+  } else if (label.Contains("LBLwithFTTLS2LC-ETTL-CTTL") ){
+    detLabel  = "ALL-SI+TTL(2 l's)";
+  } else if (label.Contains("LBLwithFTTLS3LVC-ETTLLC-CTTLLC") ){
+    detLabel  = "ALL-SI+TTL(1.3mm)";
+  } else if (label.Contains("LBLwithFTTLSE1LC-ETTLSE1-CTTLSE1") ){
+    detLabel  = "ALL-SI+TTL(1 l b. ECal)";
+  } else if (label.Contains("LBLwithFTTLSE2LC-ETTL-CTTLSE1") ){
+    detLabel  = "ALL-SI+TTL(1|2 l b. ECal)";
+  } else if (label.Contains("defaultLANL") ){
+    detLabel  = "LANL";
+  } else if (label.Contains("LANLwithLGAD") ){
+    detLabel  = "LANL+TTL";
+  } else if (label.Contains("LANLwithACLGAD") ){
+    detLabel  = "LANL+TTL(AC-LGAD)";
+  } else if (label.Contains("LANLwithFTTLS3LVC-ETTLLC-CTTLLC") ){
+    detLabel  = "LANL+TTL(1.3mm)";
+  }
+  return detLabel;
+}
+
+TString GetMagnetLabel(TString label){
+  TString magnetLabel = "BABAR (B = 1.5T)";
+  if (label.Contains("3T")){
+    magnetLabel = "BEAST (B = 3T)";
+  }
+  return magnetLabel;
+}
+
+TString GetCollisionEnergy(TString label){
+  TString collLabel = "Pythia 6, e+p, 10+250 GeV";
+  if (label.Contains("e5p100") ){
+    collLabel = "Pythia 6, e+p, 5+100 GeV";
+  } else if (label.Contains("e18p275") ){
+    collLabel = "Pythia 6, e+p, 18+275 GeV";
+  } else if (label.Contains("EnergyDep") ){
+    collLabel = "Pythia 6, e+p";
+  }
+  return collLabel;
+}

@@ -13,6 +13,8 @@ TH2F*  h_CS_clusters_M02_part_E_truth[_active_calo][_active_algo][nParticlesPDG_
 TH2F*  h_CS_clusters_M20_E[_active_calo][_active_algo] = {{NULL}};
 TH2F*  h_CS_clusters_M20_part_E_truth[_active_calo][_active_algo][nParticlesPDG_CS] = {{{NULL}}};
 TH2F*  h_CS_clusters_NTower_E[_active_calo][_active_algo] = {{NULL}};
+TH1D*  h_CS_clusters_NTowerMean_E[_active_calo][_active_algo] = {{NULL}};
+
 TH2F*  h_clusterizer_clsspec_matched_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH1F*  h_clusterizer_clsspec_PDG[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH1F*  h_clusterizer_clsspec_matched_PDG[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
@@ -28,6 +30,9 @@ TH2F*  h_clusterizer_clsspecSE_E_eta[_active_calo][_active_algo]; // [calorimete
 TH2F*  h_clusterizer_clsspecSEMC_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_clsspecSE_E_NCl[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_clsspecSEMC_E_NCl[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH1D*  h_clusterizer_NClMean_E[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH1D*  h_clusterizer_NClMean_MCE[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+
 TH2F*  h_clusterizer_clsspecSE_particle_E_eta[_active_calo][_active_algo][nParticlesPDG_CS]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_clsspecSEMC_particle_E_eta[_active_calo][_active_algo][nParticlesPDG_CS]; // [calorimeter_enum][algorithm_enum]
 
@@ -191,12 +196,51 @@ void clusterstudies(){
 void clusterstudiesSave(){
   // gSystem->Exec("mkdir -p treeProcessing/clusterstudies");
   // define output file
+  for(int icalo=0;icalo<_active_calo;icalo++){
+    for(int ialgo=0;ialgo<_active_algo;ialgo++){
+
+      h_CS_clusters_NTowerMean_E[icalo][ialgo]  = new TH1D(Form("h_CS_NTowerMean_%s_%s_E",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()),"",nP, partP);
+      h_clusterizer_NClMean_E[icalo][ialgo]     = new TH1D(Form("h_CS_NClMean_%s_%s_E",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()),"",nP, partP);
+      h_clusterizer_NClMean_MCE[icalo][ialgo]   = new TH1D(Form("h_CS_NClMean_%s_%s_MCE",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()),"",nP, partP);
+
+      if(h_CS_clusters_NTower_E[icalo][ialgo]){
+        // make projections for JES and JER
+        for (Int_t i=1; i < nP+1; i++){
+          TH1D* projectionYdummy = (TH1D*)h_CS_clusters_NTower_E[icalo][ialgo]->ProjectionY(Form("projectionYdummy%d_%d_%d",icalo, ialgo,i), h_CS_clusters_NTower_E[icalo][ialgo]->GetXaxis()->FindBin(partP[i-1]+0.001), h_CS_clusters_NTower_E[icalo][ialgo]->GetXaxis()->FindBin(partP[i]+0.001),"e");
+          // projectionYdummy->GetXaxis()->SetRangeUser(-0.6,0);
+          h_CS_clusters_NTowerMean_E[icalo][ialgo]->SetBinContent(i,projectionYdummy->GetMean());
+          h_CS_clusters_NTowerMean_E[icalo][ialgo]->SetBinError(i,projectionYdummy->GetStdDev());
+        }
+      }
+      if(h_clusterizer_clsspecSE_E_NCl[icalo][ialgo]){
+        // make projections for JES and JER
+        for (Int_t i=1; i < nP+1; i++){
+          TH1D* projectionYdummy = (TH1D*)h_clusterizer_clsspecSE_E_NCl[icalo][ialgo]->ProjectionY(Form("projectionYdummy%d_%d_%d",icalo, ialgo,i), h_clusterizer_clsspecSE_E_NCl[icalo][ialgo]->GetXaxis()->FindBin(partP[i-1]+0.001), h_clusterizer_clsspecSE_E_NCl[icalo][ialgo]->GetXaxis()->FindBin(partP[i]+0.001),"e");
+          // projectionYdummy->GetXaxis()->SetRangeUser(-0.6,0);
+          h_clusterizer_NClMean_E[icalo][ialgo]->SetBinContent(i,projectionYdummy->GetMean());
+          h_clusterizer_NClMean_E[icalo][ialgo]->SetBinError(i,projectionYdummy->GetStdDev());
+        }
+      }
+      if(h_clusterizer_clsspecSEMC_E_NCl[icalo][ialgo]){
+        // make projections for JES and JER
+        for (Int_t i=1; i < nP+1; i++){
+          TH1D* projectionYdummy = (TH1D*)h_clusterizer_clsspecSEMC_E_NCl[icalo][ialgo]->ProjectionY(Form("projectionYdummy%d_%d_%d",icalo, ialgo,i), h_clusterizer_clsspecSEMC_E_NCl[icalo][ialgo]->GetXaxis()->FindBin(partP[i-1]+0.001), h_clusterizer_clsspecSEMC_E_NCl[icalo][ialgo]->GetXaxis()->FindBin(partP[i]+0.001),"e");
+          // projectionYdummy->GetXaxis()->SetRangeUser(-0.6,0);
+          h_clusterizer_NClMean_MCE[icalo][ialgo]->SetBinContent(i,projectionYdummy->GetMean());
+          h_clusterizer_NClMean_MCE[icalo][ialgo]->SetBinError(i,projectionYdummy->GetStdDev());
+        }
+      }
+    }
+  }
+
+  
   TFile* fileOutput = new TFile(Form("%s/output_CS.root",outputDir.Data()),"RECREATE");
 
   // write histograms
   for(int icalo=0;icalo<_active_calo;icalo++){
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
       if(h_CS_clusters_NTower_E[icalo][ialgo]) h_CS_clusters_NTower_E[icalo][ialgo]->Write();
+      if(h_CS_clusters_NTowerMean_E[icalo][ialgo]) h_CS_clusters_NTowerMean_E[icalo][ialgo]->Write();
       if(h_CS_clusters_E[icalo][ialgo]) h_CS_clusters_E[icalo][ialgo]->Write();
       if(h_CS_clusters_M02_E[icalo][ialgo]) h_CS_clusters_M02_E[icalo][ialgo]->Write();
       if(h_CS_clusters_M20_E[icalo][ialgo]) h_CS_clusters_M20_E[icalo][ialgo]->Write();
@@ -210,7 +254,9 @@ void clusterstudiesSave(){
       if(h_clusterizer_clsspecSE_E_eta[icalo][ialgo]) h_clusterizer_clsspecSE_E_eta[icalo][ialgo]->Write();
       if(h_clusterizer_clsspecSEMC_E_eta[icalo][ialgo]) h_clusterizer_clsspecSEMC_E_eta[icalo][ialgo]->Write();
       if(h_clusterizer_clsspecSE_E_NCl[icalo][ialgo]) h_clusterizer_clsspecSE_E_NCl[icalo][ialgo]->Write();
+      if(h_clusterizer_NClMean_E[icalo][ialgo]) h_clusterizer_NClMean_E[icalo][ialgo]->Write();
       if(h_clusterizer_clsspecSEMC_E_NCl[icalo][ialgo]) h_clusterizer_clsspecSEMC_E_NCl[icalo][ialgo]->Write();
+      if(h_clusterizer_NClMean_MCE[icalo][ialgo]) h_clusterizer_NClMean_MCE[icalo][ialgo]->Write();
     
       for (int iPDG = 0; iPDG < nParticlesPDG_CS; iPDG++){
         if(h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG]) h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG]->Write();

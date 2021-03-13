@@ -24,36 +24,7 @@ bool _do_5x5clusterizerFEMC = false;
 TH2F*  h_clusterizer_nonagg_towers[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_matched_dx_dy[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_all_dx_dy[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
-<<<<<<< HEAD
-TH2F*  h_clusterizer_clsspec_matched_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
-TH1F*  h_clusterizer_clsspec_PDG[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
-TH1F*  h_clusterizer_clsspec_matched_PDG[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
-
-const int particles_CLZR = 6;
-TString str_CLSRZR_mcparticles[particles_CLZR] = {"electron", "cpion", "proton", "ckaon", "muon", "photon"};
-int int_CLSRZR_mcparticles_PDG[particles_CLZR] = {11 /*e*/,211  /*pi*/,  2212/*p*/,  321/*K*/,  13/*mu*/};
-
-TH2F*  h_clusterizer_clsspec_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_clusterizer_clsspecMC_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_clusterizer_clsspec_chargedparticle_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_clusterizer_clsspecMC_chargedparticle_E_eta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_clusterizer_clsspec_particle_E_eta[_active_calo][_active_algo][particles_CLZR]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_clusterizer_clsspecMC_particle_E_eta[_active_calo][_active_algo][particles_CLZR]; // [calorimeter_enum][algorithm_enum]
-
 bool _doClusterECalibration = false;
-=======
-bool _doCalibration = false;
-
-float calibrationFEMC(float clusterE){
-  float paramsECALcalib[5]= {3.15612e+00,1.57658e-01,1.66441e+00,-2.50979e+02,3.81511e+02}; //noshift
-  return (( paramsECALcalib[0] + paramsECALcalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramsECALcalib[2] * TMath::Exp( ( clusterE - paramsECALcalib[3] ) / paramsECALcalib[4] ) ) ));
-}
-
-float calibrationFHCAL(float clusterE){
-  float paramsFHCALcalib[5]= {1.75773e+00, 3.87923e-01, 1.20862e+00, -1.25194e+02, 7.54438e+01}; //noshift
-  return (( paramsFHCALcalib[0] + paramsFHCALcalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramsFHCALcalib[2] * TMath::Exp( ( clusterE - paramsFHCALcalib[3] ) / paramsFHCALcalib[4] ) ) ));
-}
->>>>>>> added cluster effi
 
 bool isClusterMatched(int clsID, float matchingwindow, float* clusters_X, float* clusters_Y, float* clusters_E, int caloEnum, int clusterizerEnum, bool useProjection = true);
 
@@ -121,9 +92,9 @@ void runclusterizer(
       }
     }
   } else {
-      cout << "Incorrect calorimeter selected! Enum " << clusterizerEnum << " not defined!" << endl;
-      return;
-    }
+    cout << "Incorrect calorimeter selected! Enum " << clusterizerEnum << " not defined!" << endl;
+    return;
+  }
   // sort vector in descending energy order
   std::sort(input_towers.begin(), input_towers.end(), &acompare);
   std::vector<int> clslabels;
@@ -142,6 +113,7 @@ void runclusterizer(
 
       // ANCHOR C3 clusterizer logic
       if(clusterizerEnum==kC3){
+//         cout << "running C3" << endl;
         for (int tit = 1; tit < input_towers.size(); tit++){
           // towers must be within cross of delta Eta and delta Phi <= 1
           if( ( std::abs(input_towers.at(tit).tower_iEta-input_towers.at(0).tower_iEta) + std::abs(input_towers.at(tit).tower_iPhi-input_towers.at(0).tower_iPhi) ) <= 1 ){
@@ -158,6 +130,7 @@ void runclusterizer(
       }
       // ANCHOR C5 clusterizer logic
       else if(clusterizerEnum==kC5){
+//         cout << "running C5" << endl;
         for (int tit = 1; tit < input_towers.size(); tit++){
           // towers must be within cross of delta Eta and delta Phi <= 2 (-> 3x3 plus 4 additional towers)
           if( ( std::abs(input_towers.at(tit).tower_iEta-input_towers.at(0).tower_iEta) + std::abs(input_towers.at(tit).tower_iPhi-input_towers.at(0).tower_iPhi) ) <= 2 ){
@@ -174,6 +147,7 @@ void runclusterizer(
       }
       // ANCHOR 3x3 clusterizer logic
       else if(clusterizerEnum==k3x3){
+//         cout << "running 3x3" << endl;
         for (int tit = 1; tit < input_towers.size(); tit++){
           // towers must be within 3x3 matrix (delta Eta and delta Phi < 2)
           if(std::abs(input_towers.at(tit).tower_iEta-input_towers.at(0).tower_iEta)<2){
@@ -192,6 +166,7 @@ void runclusterizer(
       }
       // ANCHOR 5x5 clusterizer logic
       else if(clusterizerEnum==k5x5){
+//         cout << "running 5x5" << endl;
         for (int tit = 1; tit < input_towers.size(); tit++){
           // towers must be within 5x5 matrix (delta Eta and delta Phi < 2)
           if(std::abs(input_towers.at(tit).tower_iEta-input_towers.at(0).tower_iEta)<3){
@@ -211,6 +186,7 @@ void runclusterizer(
 
       // ANCHOR V3 clusterizer logic
       else if(clusterizerEnum==kV3){
+//         cout << "running V3" << endl;
         // remove seed tower from sample
         input_towers.erase(input_towers.begin());
         for (int tit = 0; tit < cluster_towers.size(); tit++){
@@ -238,6 +214,7 @@ void runclusterizer(
 
       // ANCHOR MA clusterizer logic
       else if(clusterizerEnum==kMA){
+//         cout << "running MA" << endl;
         // remove seed tower from sample
         input_towers.erase(input_towers.begin());
         for (int tit = 0; tit < cluster_towers.size(); tit++){
@@ -278,7 +255,7 @@ void runclusterizer(
       clusters_Y[nclusters] = showershape_eta_phi[5];
       clusters_Z[nclusters] = showershape_eta_phi[6];
       clusters_isMatched[nclusters] = isClusterMatched(nclusters, 20,clusters_X,clusters_Y,clusters_E, caloEnum, clusterizerEnum, true);
-     // if(verbosityCLS>1) cout << "\tC3 cluster with E = " << clusters_E[nclusters] << "\tEta: " << clusters_Eta[nclusters]<< "\tPhi: " << clusters_Phi[nclusters]<< "\tntowers: " << clusters_NTower[nclusters] << "\ttrueID: " << clusters_trueID[nclusters] << endl;
+      if(verbosityCLS>1) cout << clusterizerEnum << "\t" << nclusters << "\tC3 cluster with E = " << clusters_E[nclusters] << "\tEta: " << clusters_Eta[nclusters]<< "\tPhi: " << clusters_Phi[nclusters]<< "\tntowers: " << clusters_NTower[nclusters] << "\ttrueID: " << clusters_trueID[nclusters] << endl;
       // remove clusterized towers
       if(!(clusterizerEnum==kV3) && !(clusterizerEnum==kMA)){
         input_towers.erase(input_towers.begin());
@@ -288,7 +265,7 @@ void runclusterizer(
       if(_doClusterECalibration){
           clusters_E[nclusters]/=getCalibrationValue(clusters_E[nclusters], caloEnum, clusterizerEnum);
       }
-
+      nclusters++;
     } else {
       for (int ait = 0; ait < input_towers.size(); ait++){
         h_clusterizer_nonagg_towers[caloEnum][clusterizerEnum]->Fill(input_towers.size(),input_towers.at(ait).tower_E);

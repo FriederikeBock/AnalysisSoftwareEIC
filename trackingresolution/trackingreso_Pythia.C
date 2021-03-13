@@ -53,34 +53,11 @@ void trackingreso_Pythia(
 
   for (Int_t pid = 0; pid < nPID; pid++) gSystem->Exec("mkdir -p "+outputDir+"/"+partName[pid]);
     
-  TString detLabel = "";
   Int_t nActiveEta            = 14;
   Double_t maxPtSigma         = 0.175;
   Double_t maxEtaSigma        = 0.005;
   Double_t maxPhiSigma        = 0.01;
-  if (addLabel.Contains("defaultLBL") ){
-    detLabel  = "LBL";
-  } else if (addLabel.Contains("LBLwithLGAD") ){
-    detLabel  = "LBL+TTL";
-  } else if (addLabel.Contains("LBLwithACLGAD") ){
-    detLabel  = "LBL+TTL(AC-LGAD)";
-  } else if (addLabel.Contains("LBLwithFTTLS2LC-ETTL-CTTL") ){
-    detLabel  = "LBL+TTL(2 l's)";
-  } else if (addLabel.Contains("LBLwithFTTLS3LVC-ETTLLC-CTTLLC") ){
-    detLabel  = "LBL+TTL(1.3mm)";
-  } else if (addLabel.Contains("LBLwithFTTLSE1LC-ETTLSE1-CTTLSE1") ){
-    detLabel  = "LBL+TTL(1 l b. ECal)";
-  } else if (addLabel.Contains("LBLwithFTTLSE2LC-ETTL-CTTLSE1") ){
-    detLabel  = "LBL+TTL(1|2 l b. ECal)";
-  } else if (addLabel.Contains("defaultLANL") ){
-    detLabel  = "LANL";
-  } else if (addLabel.Contains("LANLwithLGAD") ){
-    detLabel  = "LANL+TTL";
-  } else if (addLabel.Contains("LANLwithACLGAD") ){
-    detLabel  = "LANL+TTL(AC-LGAD)";
-  } else if (addLabel.Contains("LANLwithFTTLS3LVC-ETTLLC-CTTLLC") ){
-    detLabel  = "LANL+TTL(1.3mm)";
-  }
+  TString detLabel = GetTrackerLabel(addLabel);
   if (addLabel.Contains("Hist")){
     maxPtSigma         = 0.42;
     maxEtaSigma        = 0.01;

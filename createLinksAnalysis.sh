@@ -17,3 +17,4 @@ ln -s $EICANA/treeAnalysis/*.C treeAnalysis/
 ln -s $EICANA/treeAnalysis/*.sh treeAnalysis/
 ln -s $EICANA/clusterProperties/*.C clusterProperties/
 ln -s $EICANA/common/*.h common/
+ln -s $EICANA/*.sh .

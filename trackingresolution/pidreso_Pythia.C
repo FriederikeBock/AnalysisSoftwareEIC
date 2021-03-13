@@ -47,7 +47,7 @@ void pidreso_Pythia(
   gSystem->Exec("mkdir -p "+outputDir);
   gSystem->Exec("mkdir -p "+outputDirBetaRes);
   gSystem->Exec("mkdir -p "+outputDirBeta);
-  TString detLabel = "";
+  TString detLabel = GetTrackerLabel(addLabel);
   
   TString collisionSystem = "Pythia 6, e+p, 10+250 GeV";
   TString pTHard = "";
@@ -59,25 +59,6 @@ void pidreso_Pythia(
 
   Int_t nActiveEta            = 14;
   Double_t maxBetaSigma       = 0.05;
-  if (addLabel.Contains("LBLwithLGAD") ){
-    detLabel  = "LBL+TTL";
-  } else if (addLabel.Contains("LBLwithACLGAD") ){
-    detLabel  = "LBL+TTL(AC-LGAD)";
-  } else if (addLabel.Contains("LBLwithFTTLS2LC-ETTL-CTTL") ){
-    detLabel  = "LBL+TTL(2 l's)";
-  } else if (addLabel.Contains("LBLwithFTTLS3LVC-ETTLLC-CTTLLC") ){
-    detLabel  = "LBL+TTL(1.3mm)";
-  } else if (addLabel.Contains("LBLwithFTTLSE1LC-ETTLSE1-CTTLSE1") ){
-    detLabel  = "LBL+TTL(1 l b. ECal)";
-  } else if (addLabel.Contains("LBLwithFTTLSE2LC-ETTL-CTTLSE1") ){
-    detLabel  = "LBL+TTL(1|2 l b. ECal)";
-  } else if (addLabel.Contains("LANLwithLGAD") ){
-    detLabel  = "LANL+TTL";
-  } else if (addLabel.Contains("LANLwithACLGAD") ){
-    detLabel  = "LANL+TTL(AC-LGAD)";
-  } else if (addLabel.Contains("LANLwithFTTLS3LVC-ETTLLC-CTTLLC") ){
-    detLabel  = "LANL+TTL(1.3mm)";
-  }
   if (addLabel.Contains("Hist")){
     maxBetaSigma         = 0.05;
   }

@@ -1,3 +1,4 @@
+#include "../common/binningheader.h"
 #include "treeProcessing.h"
 #include "jet_finder.cxx"
 #include "caloheader.h"
@@ -308,13 +309,13 @@ void treeProcessing(
 
             if(_do_jetfinding){
                 TVector3 trackvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
-                if(trackvec.Eta()<0) continue;
                 float Etrack = TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)+TMath::Power(_track_pz[itrk],2));
                 // create track vector for jet finder
                 jetf_track_px.push_back(_track_px[itrk]);
                 jetf_track_py.push_back(_track_py[itrk]);
                 jetf_track_pz.push_back(_track_pz[itrk]);
                 jetf_track_E.push_back(Etrack);
+                if(trackvec.Eta()<0) continue;
                 jetf_full_px.push_back(_track_px[itrk]);
                 jetf_full_py.push_back(_track_py[itrk]);
                 jetf_full_pz.push_back(_track_pz[itrk]);
@@ -454,48 +455,50 @@ void treeProcessing(
             std::vector<float> jetf_truthcharged_E;
             for(Int_t imc=0; imc<_nMCPart; imc++){
                 TVector3 truevec(_mcpart_px[imc],_mcpart_py[imc],_mcpart_pz[imc]);
-                if(truevec.Eta()<1) continue;
-                if(verbosity>1) cout << "\tMC:  particle " << imc << "\twith E = " << _mcpart_E[imc] << " GeV" << endl;
-                //  create truth vector for jet finder
-                jetf_truth_px.push_back(_mcpart_px[imc]);
-                jetf_truth_py.push_back(_mcpart_py[imc]);
-                jetf_truth_pz.push_back(_mcpart_pz[imc]);
-                jetf_truth_E.push_back(_mcpart_E[imc]);
+//                 if(truevec.Eta()<1){
+                    if(verbosity>1) cout << "\tMC:  particle " << imc << "\twith E = " << _mcpart_E[imc] << " GeV" << endl;
+                    //  create truth vector for jet finder
+                    jetf_truth_px.push_back(_mcpart_px[imc]);
+                    jetf_truth_py.push_back(_mcpart_py[imc]);
+                    jetf_truth_pz.push_back(_mcpart_pz[imc]);
+                    jetf_truth_E.push_back(_mcpart_E[imc]);
+//                 } 
                 // fill charged only inputs (reject neutral particles)
-                if(abs(_mcpart_PDG[imc])==22) continue; // photon
-                if(abs(_mcpart_PDG[imc])==2112) continue; // neutron
-                jetf_truthcharged_px.push_back(_mcpart_px[imc]);
-                jetf_truthcharged_py.push_back(_mcpart_py[imc]);
-                jetf_truthcharged_pz.push_back(_mcpart_pz[imc]);
-                jetf_truthcharged_E.push_back(_mcpart_E[imc]);
+//                 cout << _mcpart_PDG[imc] << endl;
+                if(abs(_mcpart_PDG[imc])==211 || abs(_mcpart_PDG[imc])==321 || abs(_mcpart_PDG[imc])==2212 || abs(_mcpart_PDG[imc])==11 || abs(_mcpart_PDG[imc])==13){ 
+                    jetf_truthcharged_px.push_back(_mcpart_px[imc]);
+                    jetf_truthcharged_py.push_back(_mcpart_py[imc]);
+                    jetf_truthcharged_pz.push_back(_mcpart_pz[imc]);
+                    jetf_truthcharged_E.push_back(_mcpart_E[imc]);
+                }
             }
 
             // ANCHOR JET FINDING
             // truth jets
-            auto jetsTrue = findJets(1.0, "anti-kt", jetf_truth_px, jetf_truth_py, jetf_truth_pz, jetf_truth_E);
+            auto jetsTrue = findJets(0.5, "anti-kt", jetf_truth_px, jetf_truth_py, jetf_truth_pz, jetf_truth_E);
             if(verbosity>1)cout << "found " << std::get<1>(jetsTrue).size() << " true jets" << endl;        // printJets(std::get<1>(jetsTrue));
 
-            auto jetsTrueCharged = findJets(1.0, "anti-kt", jetf_truthcharged_px, jetf_truthcharged_py, jetf_truthcharged_pz, jetf_truthcharged_E);
+            auto jetsTrueCharged = findJets(0.5, "anti-kt", jetf_truthcharged_px, jetf_truthcharged_py, jetf_truthcharged_pz, jetf_truthcharged_E);
             if(verbosity>1)cout << "found " << std::get<1>(jetsTrueCharged).size() << " true charged jets" << endl;        // printJets(std::get<1>(jetsTrue));
 
             // track-based jets (rec)
-            auto jetsTrackRec = findJets(1.0, "anti-kt", jetf_track_px, jetf_track_py, jetf_track_pz, jetf_track_E);
+            auto jetsTrackRec = findJets(0.5, "anti-kt", jetf_track_px, jetf_track_py, jetf_track_pz, jetf_track_E);
             if(verbosity>1)cout << "found " << std::get<1>(jetsTrackRec).size() << " rec track jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
 
             // full jets (rec)
-            auto jetsFullRec = findJets(1.0, "anti-kt", jetf_full_px, jetf_full_py, jetf_full_pz, jetf_full_E);
+            auto jetsFullRec = findJets(0.5, "anti-kt", jetf_full_px, jetf_full_py, jetf_full_pz, jetf_full_E);
             if(verbosity>1) cout << "found " << std::get<1>(jetsFullRec).size() << " rec full jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
 
             // hcal jets (rec)
-            auto jetsHcalRec = findJets(1.0, "anti-kt", jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz, jetf_hcal_E);
+            auto jetsHcalRec = findJets(0.5, "anti-kt", jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz, jetf_hcal_E);
             if(verbosity>1) cout << "found " << std::get<1>(jetsHcalRec).size() << " rec hcal jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
 
             // calo jets (rec)
-            auto jetsCaloRec = findJets(1.0, "anti-kt", jetf_calo_px, jetf_calo_py, jetf_calo_pz, jetf_calo_E);
+            auto jetsCaloRec = findJets(0.5, "anti-kt", jetf_calo_px, jetf_calo_py, jetf_calo_pz, jetf_calo_E);
             if(verbosity>1) cout << "found " << std::get<1>(jetsCaloRec).size() << " rec calo jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
 
             // all jets (rec)
-            auto jetsAllRec = findJets(1.0, "anti-kt", jetf_all_px, jetf_all_py, jetf_all_pz, jetf_all_E);
+            auto jetsAllRec = findJets(0.5, "anti-kt", jetf_all_px, jetf_all_py, jetf_all_pz, jetf_all_E);
             if(verbosity>1) cout << "found " << std::get<1>(jetsAllRec).size() << " rec all jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
 
             jetresolutionhistos(jetsTrackRec,jetsTrueCharged,0);
