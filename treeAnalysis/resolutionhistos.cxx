@@ -95,21 +95,21 @@ void resolutionhistos(){
         clusters_RH_X,
         clusters_RH_Y,
         clusters_RH_Z);
-      if(!h_RH_Reso_E[icalo][ialgo])h_RH_Reso_E[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-      if(!h_RH_Reso_gamma_E[icalo][ialgo])h_RH_Reso_gamma_E[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_gamma_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-      if(!h_RH_Reso_pion_E[icalo][ialgo])h_RH_Reso_pion_E[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_pion_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
+      if(!h_RH_Reso_E[icalo][ialgo])h_RH_Reso_E[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+      if(!h_RH_Reso_gamma_E[icalo][ialgo])h_RH_Reso_gamma_E[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_gamma_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+      if(!h_RH_Reso_pion_E[icalo][ialgo])h_RH_Reso_pion_E[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_pion_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
 
-      if(!h_RH_Reso_Erec[icalo][ialgo])h_RH_Reso_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-      if(!h_RH_Reso_gamma_Erec[icalo][ialgo])h_RH_Reso_gamma_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_gamma_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-      if(!h_RH_Reso_pion_Erec[icalo][ialgo])h_RH_Reso_pion_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_pion_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
+      if(!h_RH_Reso_Erec[icalo][ialgo])h_RH_Reso_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+      if(!h_RH_Reso_gamma_Erec[icalo][ialgo])h_RH_Reso_gamma_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_gamma_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+      if(!h_RH_Reso_pion_Erec[icalo][ialgo])h_RH_Reso_pion_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_pion_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
 
-      if(!h_RH_ResoCalib_E[icalo][ialgo])h_RH_ResoCalib_E[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCalib_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-      if(!h_RH_ResoCalib_gamma_E[icalo][ialgo])h_RH_ResoCalib_gamma_E[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCalib_gamma_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-      if(!h_RH_ResoCalib_pion_E[icalo][ialgo])h_RH_ResoCalib_pion_E[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCalib_pion_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
+      if(!h_RH_ResoCalib_E[icalo][ialgo])h_RH_ResoCalib_E[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCalib_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+      if(!h_RH_ResoCalib_gamma_E[icalo][ialgo])h_RH_ResoCalib_gamma_E[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCalib_gamma_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+      if(!h_RH_ResoCalib_pion_E[icalo][ialgo])h_RH_ResoCalib_pion_E[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCalib_pion_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
 
-      if(!h_RH_ResoCalib_Erec[icalo][ialgo])h_RH_ResoCalib_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCalib_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-      if(!h_RH_ResoCalib_gamma_Erec[icalo][ialgo])h_RH_ResoCalib_gamma_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCalib_gamma_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-      if(!h_RH_ResoCalib_pion_Erec[icalo][ialgo])h_RH_ResoCalib_pion_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCalib_pion_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
+      if(!h_RH_ResoCalib_Erec[icalo][ialgo])h_RH_ResoCalib_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCalib_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+      if(!h_RH_ResoCalib_gamma_Erec[icalo][ialgo])h_RH_ResoCalib_gamma_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCalib_gamma_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+      if(!h_RH_ResoCalib_pion_Erec[icalo][ialgo])h_RH_ResoCalib_pion_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCalib_pion_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
 
 
       for(Int_t iclus=0; iclus<nclusters_RH; iclus++){
@@ -183,18 +183,18 @@ void resolutionhistos(){
       clusters_comb_RE_X,
       clusters_comb_RE_Y,
       clusters_comb_RE_Z);
-    if(!h_RH_ResoComb_E[icalo][ialgo])h_RH_ResoComb_E[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoComb_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-    if(!h_RH_ResoComb_gamma_E[icalo][ialgo])h_RH_ResoComb_gamma_E[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoComb_gamma_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-    if(!h_RH_ResoComb_pion_E[icalo][ialgo])h_RH_ResoComb_pion_E[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoComb_pion_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-    if(!h_RH_ResoCombCalib_E[icalo][ialgo])h_RH_ResoCombCalib_E[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCombCalib_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-    if(!h_RH_ResoCombCalib_gamma_E[icalo][ialgo])h_RH_ResoCombCalib_gamma_E[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCombCalib_gamma_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-    if(!h_RH_ResoCombCalib_pion_E[icalo][ialgo])h_RH_ResoCombCalib_pion_E[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCombCalib_pion_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-    if(!h_RH_ResoComb_Erec[icalo][ialgo])h_RH_ResoComb_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoComb_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-    if(!h_RH_ResoComb_gamma_Erec[icalo][ialgo])h_RH_ResoComb_gamma_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoComb_gamma_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-    if(!h_RH_ResoComb_pion_Erec[icalo][ialgo])h_RH_ResoComb_pion_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoComb_pion_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-    if(!h_RH_ResoCombCalib_Erec[icalo][ialgo])h_RH_ResoCombCalib_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCombCalib_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-    if(!h_RH_ResoCombCalib_gamma_Erec[icalo][ialgo])h_RH_ResoCombCalib_gamma_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCombCalib_gamma_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
-    if(!h_RH_ResoCombCalib_pion_Erec[icalo][ialgo])h_RH_ResoCombCalib_pion_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCombCalib_pion_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250, 200, 0, 2);
+    if(!h_RH_ResoComb_E[icalo][ialgo])h_RH_ResoComb_E[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoComb_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+    if(!h_RH_ResoComb_gamma_E[icalo][ialgo])h_RH_ResoComb_gamma_E[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoComb_gamma_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+    if(!h_RH_ResoComb_pion_E[icalo][ialgo])h_RH_ResoComb_pion_E[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoComb_pion_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+    if(!h_RH_ResoCombCalib_E[icalo][ialgo])h_RH_ResoCombCalib_E[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCombCalib_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+    if(!h_RH_ResoCombCalib_gamma_E[icalo][ialgo])h_RH_ResoCombCalib_gamma_E[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCombCalib_gamma_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+    if(!h_RH_ResoCombCalib_pion_E[icalo][ialgo])h_RH_ResoCombCalib_pion_E[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCombCalib_pion_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+    if(!h_RH_ResoComb_Erec[icalo][ialgo])h_RH_ResoComb_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoComb_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+    if(!h_RH_ResoComb_gamma_Erec[icalo][ialgo])h_RH_ResoComb_gamma_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoComb_gamma_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+    if(!h_RH_ResoComb_pion_Erec[icalo][ialgo])h_RH_ResoComb_pion_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoComb_pion_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+    if(!h_RH_ResoCombCalib_Erec[icalo][ialgo])h_RH_ResoCombCalib_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCombCalib_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+    if(!h_RH_ResoCombCalib_gamma_Erec[icalo][ialgo])h_RH_ResoCombCalib_gamma_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCombCalib_gamma_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+    if(!h_RH_ResoCombCalib_pion_Erec[icalo][ialgo])h_RH_ResoCombCalib_pion_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCombCalib_pion_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
 
 
     for(Int_t iclus=0; iclus<nclusters_comb_RH; iclus++){
