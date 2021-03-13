@@ -360,6 +360,17 @@ void treeProcessing(
         // for(Int_t iclus=0; iclus<_nclusters_FHCAL; iclus++){
         //     if(verbosity>1) cout << "\tcls " << iclus << "\tE " << _clusters_FHCAL_E[iclus] << "\tEta " << _clusters_FHCAL_Eta[iclus] << "\tPhi " << _clusters_FHCAL_Phi[iclus] << "\tntowers: " << _clusters_FHCAL_NTower[iclus] << "\ttrueID: " << _clusters_FHCAL_trueID[iclus] << endl;
         // }
+                // apply calibration if desired
+        for(Int_t iclus=0; iclus<_nclusters_FHCAL; iclus++){
+            if(_doClusterECalibration){
+                _clusters_FHCAL_E[iclus]/=getCalibrationValue(_clusters_FHCAL_E[iclus], kFHCAL, kV1);
+            }
+        }
+        for(Int_t iclus=0; iclus<_nclusters_FEMC; iclus++){
+            if(_doClusterECalibration){
+                _clusters_FEMC_E[iclus]/=getCalibrationValue(_clusters_FEMC_E[iclus], kFEMC, kV1);
+            }
+        }
         if(do_V3clusterizer){
             for(Int_t iclus=0; iclus<_nclusters_V3_FHCAL; iclus++){
                 if(!_clusters_V3_FHCAL_isMatched[iclus]){

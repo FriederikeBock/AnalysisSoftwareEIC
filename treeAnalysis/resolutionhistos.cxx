@@ -232,7 +232,7 @@ void resolutionhistos(){
           h_RH_ResoComb_Erec[icalo][ialgo]->Fill(clusterenergy,clusterenergy/_mcpart_E[imc]);
           if(abs(_mcpart_PDG[imc])==22)h_RH_ResoComb_gamma_Erec[icalo][ialgo]->Fill(clusterenergy,clusterenergy/_mcpart_E[imc]);
           if(abs(_mcpart_PDG[imc])==211)h_RH_ResoComb_pion_Erec[icalo][ialgo]->Fill(clusterenergy,clusterenergy/_mcpart_E[imc]);
-          h_RH_ResoCombCalib_E[icalo][ialgo]->Fill(clusterenergy,clusterenergyCalib/_mcpart_E[imc]);
+          h_RH_ResoCombCalib_Erec[icalo][ialgo]->Fill(clusterenergy,clusterenergyCalib/_mcpart_E[imc]);
           if(abs(_mcpart_PDG[imc])==22)h_RH_ResoCombCalib_gamma_Erec[icalo][ialgo]->Fill(clusterenergy,clusterenergyCalib/_mcpart_E[imc]);
           if(abs(_mcpart_PDG[imc])==211)h_RH_ResoCombCalib_pion_Erec[icalo][ialgo]->Fill(clusterenergy,clusterenergyCalib/_mcpart_E[imc]);
         }

@@ -24,7 +24,7 @@ bool _do_5x5clusterizerFEMC = false;
 TH2F*  h_clusterizer_nonagg_towers[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_matched_dx_dy[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_all_dx_dy[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
-bool _doClusterECalibration = false;
+bool _doClusterECalibration = true;
 
 bool isClusterMatched(int clsID, float matchingwindow, float* clusters_X, float* clusters_Y, float* clusters_E, int caloEnum, int clusterizerEnum, bool useProjection = true);
 
