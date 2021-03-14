@@ -6,6 +6,8 @@ Int_t verbosityRH = 2;
 TH2F*  h_RH_Reso_E[_active_calo][_active_algo];
 TH2F*  h_RH_Reso_gamma_E[_active_calo][_active_algo];
 TH2F*  h_RH_Reso_pion_E[_active_calo][_active_algo];
+TH2F*  h_RH_Reso_gamma_E_Eta[_active_calo][_active_algo][nEta+1];
+TH2F*  h_RH_Reso_pion_E_Eta[_active_calo][_active_algo][nEta+1];
 TH2F*  h_RH_Reso_Erec[_active_calo][_active_algo];
 TH2F*  h_RH_Reso_gamma_Erec[_active_calo][_active_algo];
 TH2F*  h_RH_Reso_pion_Erec[_active_calo][_active_algo];
@@ -95,10 +97,15 @@ void resolutionhistos(){
         clusters_RH_X,
         clusters_RH_Y,
         clusters_RH_Z);
+        int nbinsx = 400;
+        if(icalo==kFHCAL) nbinsx = 200;
       if(!h_RH_Reso_E[icalo][ialgo])h_RH_Reso_E[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
       if(!h_RH_Reso_gamma_E[icalo][ialgo])h_RH_Reso_gamma_E[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_gamma_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
       if(!h_RH_Reso_pion_E[icalo][ialgo])h_RH_Reso_pion_E[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_pion_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
-
+      for (Int_t eT = 0; eT < nEta+1; eT++){
+        if(!h_RH_Reso_gamma_E_Eta[icalo][ialgo][eT])h_RH_Reso_gamma_E_Eta[icalo][ialgo][eT] 	= new TH2F(Form("h_RH_Reso_gamma_E_Eta_%s_%s_%d",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),eT), "", 500,0,250,100, 0, 2);
+        if(!h_RH_Reso_pion_E_Eta[icalo][ialgo][eT])h_RH_Reso_pion_E_Eta[icalo][ialgo][eT] 	= new TH2F(Form("h_RH_Reso_pion_E_Eta_%s_%s_%d",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),eT), "", 500,0,250,100, 0, 2);
+      }
       if(!h_RH_Reso_Erec[icalo][ialgo])h_RH_Reso_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
       if(!h_RH_Reso_gamma_Erec[icalo][ialgo])h_RH_Reso_gamma_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_gamma_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
       if(!h_RH_Reso_pion_Erec[icalo][ialgo])h_RH_Reso_pion_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_pion_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
@@ -130,6 +137,11 @@ void resolutionhistos(){
             h_RH_Reso_E[icalo][ialgo]->Fill(_mcpart_E[imc],clusters_RH_E[iclus]/_mcpart_E[imc]);
             if(abs(_mcpart_PDG[imc])==22)h_RH_Reso_gamma_E[icalo][ialgo]->Fill(_mcpart_E[imc],clusters_RH_E[iclus]/_mcpart_E[imc]);
             if(abs(_mcpart_PDG[imc])==211)h_RH_Reso_pion_E[icalo][ialgo]->Fill(_mcpart_E[imc],clusters_RH_E[iclus]/_mcpart_E[imc]);
+
+            Int_t et = 0;
+            while ( ( clusters_RH_Eta[iclus] > partEta[et+1] ) && ( et < nEta )) et++;
+            if(abs(_mcpart_PDG[imc])==22)h_RH_Reso_gamma_E_Eta[icalo][ialgo][et]->Fill(_mcpart_E[imc],clusters_RH_E[iclus]/_mcpart_E[imc]);
+            if(abs(_mcpart_PDG[imc])==211)h_RH_Reso_pion_E_Eta[icalo][ialgo][et]->Fill(_mcpart_E[imc],clusters_RH_E[iclus]/_mcpart_E[imc]);
 
             h_RH_Reso_Erec[icalo][ialgo]->Fill(clusters_RH_E[iclus],clusters_RH_E[iclus]/_mcpart_E[imc]);
             if(abs(_mcpart_PDG[imc])==22)h_RH_Reso_gamma_Erec[icalo][ialgo]->Fill(clusters_RH_E[iclus],clusters_RH_E[iclus]/_mcpart_E[imc]);
@@ -252,6 +264,11 @@ void resolutionhistosSave(){
       if(h_RH_Reso_E[icalo][ialgo])h_RH_Reso_E[icalo][ialgo]->Write();
       if(h_RH_Reso_gamma_E[icalo][ialgo])h_RH_Reso_gamma_E[icalo][ialgo]->Write();
       if(h_RH_Reso_pion_E[icalo][ialgo])h_RH_Reso_pion_E[icalo][ialgo]->Write();
+
+      for (Int_t eT = 0; eT < nEta+1; eT++){
+        if(h_RH_Reso_gamma_E_Eta[icalo][ialgo][eT])h_RH_Reso_gamma_E_Eta[icalo][ialgo][eT]->Write();
+        if(h_RH_Reso_pion_E_Eta[icalo][ialgo][eT])h_RH_Reso_pion_E_Eta[icalo][ialgo][eT]->Write();
+      }
 
       if(h_RH_Reso_Erec[icalo][ialgo])h_RH_Reso_Erec[icalo][ialgo]->Write();
       if(h_RH_Reso_gamma_Erec[icalo][ialgo])h_RH_Reso_gamma_Erec[icalo][ialgo]->Write();

@@ -26,7 +26,7 @@ void treeProcessing(
     bool do_MAclusterizerFEMC   = true,
     bool do_C3clusterizerFEMC   = true,
     bool do_C5clusterizerFEMC   = true,
-    bool do_jetfinding          = true,
+    bool do_jetfinding          = false,
     // Double_t maxNEvent = 1e5,
     bool hasTiming              = true,
     bool isALLSILICON           = true, 

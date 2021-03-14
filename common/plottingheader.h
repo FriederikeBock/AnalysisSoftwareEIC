@@ -61,6 +61,23 @@ void DrawVirtualPadSettings( TVirtualPad* c1,
   c1->SetBottomMargin(bottomMargin);
   c1->SetFillColor(0);
 }
+//__________________________________________________________________________________________________________
+void DrawVirtualPadSettingsLogY( TVirtualPad* c1,
+                      Double_t leftMargin,
+                      Double_t rightMargin,
+                      Double_t topMargin,
+                      Double_t bottomMargin){
+  c1->SetTickx();
+  c1->SetTicky();
+  c1->SetGridx(0);
+  c1->SetGridy(0);
+  c1->SetLogy(true);
+  c1->SetLeftMargin(leftMargin);
+  c1->SetRightMargin(rightMargin);
+  c1->SetTopMargin(topMargin);
+  c1->SetBottomMargin(bottomMargin);
+  c1->SetFillColor(0);
+}
 
 //__________________________________________________________________________________________________________
 TF1* DivideTF1(TF1* f1, TF1* f2, TString name) {
@@ -321,6 +338,39 @@ void DrawGammaSetMarker(    TH1* histo1,
   histo1->GetYaxis()->SetTitleFont(62);
   histo1->GetXaxis()->SetTitleFont(62);
 }
+
+
+    TF1* ScaleTF1(TF1* func, Double_t constant, TString name) {
+
+        if (!func) return NULL;
+
+        Double_t    xMin, xMax;
+        TString     formula         = func->GetExpFormula();
+        func->GetRange(xMin, xMax);
+            #if !defined (__CINT__) || defined (__CLING__)
+            for (Int_t i=0; i<func->GetNpar(); i++) {
+                formula.ReplaceAll(Form("[p%d]", i), Form("[placeholder%d]",i+1));
+            }
+            for (Int_t i=1; i<func->GetNpar()+1; i++) {
+                formula.ReplaceAll(Form("[placeholder%d]", i), Form("[p%d]",i));
+            }
+        #else
+            for (Int_t i=0; i<func->GetNpar(); i++) {
+                formula.ReplaceAll(Form("[%d]", i), Form("[placeholder%d]",i+1));
+            }
+            for (Int_t i=1; i<func->GetNpar()+1; i++) {
+                formula.ReplaceAll(Form("[placeholder%d]", i), Form("[%d]",i));
+            }
+        #endif
+
+        TF1* result                 = new TF1(name.Data(), Form("[0] * (%s)", formula.Data()), xMin, xMax);
+        for (Int_t i=0; i<func->GetNpar()+1; i++) {
+            if (i==0)   result->SetParameter(i, constant);
+            else        result->SetParameter(i, func->GetParameter(i-1));
+        }
+
+        return result;
+    }
 
 //__________________________________________________________________________________________________________
 void StyleSettingsThesis( TString format = ""){

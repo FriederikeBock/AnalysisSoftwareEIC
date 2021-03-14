@@ -693,27 +693,28 @@ void loadClusterizerInput(
 
 float getCalibrationValue(float clusterE, int caloEnum, int algoEnum){
   if(caloEnum == kFHCAL){
+    float addCorr = 1.03;
     if(algoEnum==kV1){
       float paramscalib[5]= { 2.29669, 0.48742, 2.09749, -703.543, 469.853 }; //noshift
-      return (( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
+      return (addCorr * ( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
     } else if(algoEnum==kV3){
       float paramscalib[5]= { 4.54775, 1.59832, 6.90497, -10110.7, 11986.3 }; //noshift
-      return (( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
+      return (addCorr * ( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
     } else if(algoEnum==k3x3){
       float paramscalib[5]= { 0.403972, 0.324973, 2.77029, -170466, -578827 }; //noshift
-      return (( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
+      return (addCorr * ( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
     } else if(algoEnum==k5x5){
       float paramscalib[5]= { 31.7632, 5.39668, 78.4091, -83027.6, 556743 }; //noshift
-      return (( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
+      return (addCorr * ( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
     } else if(algoEnum==kC3){
       float paramscalib[5]= { -3.77545, 4.13685, 2.15795, -656.349, 301.55 }; //noshift
-      return (( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
+      return (addCorr * ( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
     } else if(algoEnum==kC5){
       float paramscalib[5]= { 97.7482, 17.6935, 262.447, -191344, 1.51638e+06 }; //noshift
-      return (( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
+      return (addCorr * ( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
     } else if(algoEnum==kMA){
       float paramscalib[5]= { 3.02343, 0.408232, 2.49633, -2426.69, 3259.87 }; //noshift
-      return (( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
+      return (addCorr * ( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
     } else {
       return 1.0;
     }
