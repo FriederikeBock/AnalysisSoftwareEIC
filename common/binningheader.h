@@ -18,7 +18,8 @@
                                        
   const Int_t nCuts               = 12;
   const Int_t nPID                = 6;
-
+  const Int_t nResoSt             = 5;
+  
   TString nameCuts[nCuts]            = {"N", "L3", "L3F", "LI", "LIF", "BE", "BEF", "AE", "AEF", "T", "LI2", "LI3" };
   TString nameResoAdd[5]          = {"All", "woT", "wT","LI2", "LI3"};
   TString nameAddBeta[4]          = {"", "AEMC", "LI3", "LI3AEMC"};
@@ -28,6 +29,7 @@
   TString partName[6]             = {"All", "Electron", "Muon", "Pion", "Kaon", "Proton" };
   TString partLabel[6]            = {"(h/e)^{#pm}",  "e^{#pm}", "#mu^{#pm}", "#pi^{#pm}", "K^{#pm}", "p/#bar{p}"};
 
+  TString partNameET2[6]            = {"all", "electron", "muon", "cpion", "ckaon", "proton" };
   TString partNameET[6]             = {"chargedpart", "electron", "muon", "cpion", "ckaon", "proton" };
   TString partLabelET[6]            = {"(h/e)^{#pm}",  "e^{#pm}", "#mu^{#pm}", "#pi^{#pm}", "K^{#pm}", "p/#bar{p}"};
 

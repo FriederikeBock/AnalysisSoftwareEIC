@@ -100,7 +100,6 @@ elif [ $1 = "plotsPID" ]; then
   fileLBLMB=rootfiles/histosTrackingPerformance_LBL-MB.root
   fileLBLLGADMB=rootfiles/histosTrackingPerformance_LBLandFullTTL-MB.root
     
-
   root -b -x -q -l pidreso_Pythia.C\(\"$fileLBLLGAD\"\,\"pdf\"\,\"LBLwithLGAD-Hist-pTHard5GeV\"\,kFALSE\)
   root -b -x -q -l pidreso_Pythia.C\(\"$fileLBLACLGAD\"\,\"pdf\"\,\"LBLwithACLGAD-Hist-pTHard5GeV\"\,kFALSE\)
   root -b -x -q -l pidreso_Pythia.C\(\"$fileLBL2LTTL\"\,\"pdf\"\,\"LBLwithFTTLS2LC-ETTL-CTTL-Hist-pTHard5GeV\"\,kFALSE\)
@@ -146,36 +145,94 @@ elif [ $1 = "treeOld" ]; then
   root -x -b -q -l 'trackingresolution/analyseTreeForTrackingResolAndPID.C("LANLandTTLCoarse","","files_LANL-LGADCoarse.txt",kTRUE)'
   root -x -b -q -l 'trackingresolution/analyseTreeForTrackingResolAndPID.C("LBL-MB","","files_ALLSILICON-epMB.txt",kFALSE,kFALSE)'
   root -x -b -q -l 'trackingresolution/analyseTreeForTrackingResolAndPID.C("LBLandFullTTL-MB","","files_ALLSILICON_TTL-epMB.txt")'
+
+elif [ $1 = "trackingReso" ]; then
+  baseDir=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing
+  fileACLGADMB=$baseDir/LBLACLGAD_MB
+  fileACLGADPTHARD=$baseDir/LBLACLGAD_pTHard
+  fileLBLMB=$baseDir/LBL_MB
+  fileLBLPTHARD=$baseDir/LBL_pTHard
+  fileLGADMB=$baseDir/LBLLGAD_MB
+  fileLGADPTHARD=$baseDir/LBLLGAD_pTHard
+  
+  fileLBLPTHARD2x=$baseDir/LBLLGAD2x_pTHard
+  
+  fileLBLLGAD18275MB=$baseDir/LBLLGAD_e18p275_MB
+  fileLBLLGAD18275PTHARD=$baseDir/LBLLGAD_e18p275_pTHard
+  fileLBLLGAD5100MB=$baseDir/LBLLGAD_e5p100_MB
+  fileLBLLGAD5100PTHARD=$baseDir/LBLLGAD_e5p100_pTHard
+  
+  file3TLBLMB=$baseDir/LBL_3T_MB
+  file3TLBLPTHARD=$baseDir/LBL_3T_pTHard
+  file3TACLGADMB=$baseDir/LBLACLGAD_3T_MB 
+  file3TACLGADPTHARD=$baseDir/LBLACLGAD_3T_pTHard
+  file3TLGADMB=$baseDir/LBLLGAD_3T_MB
+  file3TLGADPTHARD=$baseDir/LBLLGAD_3T_pTHard
+  
+  file3TLBLPTHARD2x=$baseDir/LBLLGAD2x_3T_pTHard
+  
+  file3TLBLLGAD18275MB=$baseDir/LBLLGAD_3T_e18p275_MB
+  file3TLBLLGAD18275PTHARD=$baseDir/LBLLGAD_3T_e18p275_pTHard
+  file3TLBLLGAD5100MB=$baseDir/LBLLGAD_3T_e5p100_MB
+  file3TLBLLGAD5100PTHARD=$baseDir/LBLLGAD_3T_e5p100_pTHard
+                    
+  for i in {1..3}; do
+#     root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$fileLBLMB'/output_TRKRS.root","pdf","defaultLBL-MB",kFALSE,'$i')'
+#     root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$fileLBLPTHARD'/output_TRKRS.root","pdf","defaultLBL-pTHard5GeV",kFALSE,'$i')'
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$fileACLGADMB'/output_TRKRS.root","pdf","LBLwithACLGAD-MB",kFALSE,'$i')'
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$fileACLGADPTHARD'/output_TRKRS.root","pdf","LBLwithACLGAD-pTHard5GeV",kFALSE,'$i')'
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$fileLGADMB'/output_TRKRS.root","pdf","LBLwithLGAD-MB",kFALSE,'$i')'
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$fileLGADPTHARD'/output_TRKRS.root","pdf","LBLwithLGAD-pTHard5GeV",kFALSE,'$i')'
+
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$fileLBLLGAD18275MB'/output_TRKRS.root","pdf","LBLwithLGAD-MB-e18p275",kFALSE,'$i')'
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$fileLBLLGAD18275PTHARD'/output_TRKRS.root","pdf","LBLwithLGAD-pTHard5GeV-e18p275",kFALSE,'$i')'
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$fileLBLLGAD5100MB'/output_TRKRS.root","pdf","LBLwithLGAD-MB-e5p100",kFALSE,'$i')'
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$fileLBLLGAD5100PTHARD'/output_TRKRS.root","pdf","LBLwithLGAD-pTHard5GeV-e5p100",kFALSE,'$i')'
+
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$file3TLBLMB'/output_TRKRS.root","pdf","defaultLBL-MB-3T",kFALSE,'$i')'
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$file3TLBLPTHARD'/output_TRKRS.root","pdf","defaultLBL-pTHard5GeV-3T",kFALSE,'$i')'
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$file3TACLGADMB'/output_TRKRS.root","pdf","LBLwithACLGAD-MB-3T",kFALSE,'$i')'
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$file3TACLGADPTHARD'/output_TRKRS.root","pdf","LBLwithACLGAD-pTHard5GeV-3T",kFALSE,'$i')'
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$file3TLGADMB'/output_TRKRS.root","pdf","LBLwithLGAD-MB-3T",kFALSE,'$i')'
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$file3TLGADPTHARD'/output_TRKRS.root","pdf","LBLwithLGAD-pTHard5GeV-3T",kFALSE,'$i')'
+
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$file3TLBLLGAD18275MB'/output_TRKRS.root","pdf","LBLwithLGAD-MB-e18p275-3T",kFALSE,'$i')'
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$file3TLBLLGAD18275PTHARD'/output_TRKRS.root","pdf","LBLwithLGAD-pTHard5GeV-e18p275-3T",kFALSE,'$i')'
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$file3TLBLLGAD5100MB'/output_TRKRS.root","pdf","LBLwithLGAD-MB-e5p100-3T",kFALSE,'$i')'
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$file3TLBLLGAD5100PTHARD'/output_TRKRS.root","pdf","LBLwithLGAD-pTHard5GeV-e5p100-3T",kFALSE,'$i')'
+  done;
+  
   
 elif [ $1 = "trackingEffi" ]; then
-  fileACLGADMB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLACLGAD_MB
-  fileACLGADPTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLACLGAD_pTHard
-  fileLBLMB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBL_MB
-  fileLBLPTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBL_pTHard
-  fileLGADMB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_MB
-  fileLGADPTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_pTHard
+  baseDir=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing
+  fileACLGADMB=$baseDir/LBLACLGAD_MB
+  fileACLGADPTHARD=$baseDir/LBLACLGAD_pTHard
+  fileLBLMB=$baseDir/LBL_MB
+  fileLBLPTHARD=$baseDir/LBL_pTHard
+  fileLGADMB=$baseDir/LBLLGAD_MB
+  fileLGADPTHARD=$baseDir/LBLLGAD_pTHard
   
-  fileLBLPTHARD2x=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD2x_pTHard
+  fileLBLPTHARD2x=$baseDir/LBLLGAD2x_pTHard
   
-  fileLBLLGAD18275MB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_e18p275_MB
-  fileLBLLGAD18275PTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_e18p275_pTHard
-  fileLBLLGAD5100MB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_e5p100_MB
-  fileLBLLGAD5100PTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_e5p100_pTHard
+  fileLBLLGAD18275MB=$baseDir/LBLLGAD_e18p275_MB
+  fileLBLLGAD18275PTHARD=$baseDir/LBLLGAD_e18p275_pTHard
+  fileLBLLGAD5100MB=$baseDir/LBLLGAD_e5p100_MB
+  fileLBLLGAD5100PTHARD=$baseDir/LBLLGAD_e5p100_pTHard
   
-  file3TLBLMB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBL_3T_MB
-  file3TLBLPTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBL_3T_pTHard
-  file3TACLGADMB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLACLGAD_3T_MB 
-  file3TACLGADPTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLACLGAD_3T_pTHard
-  file3TLGADMB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_3T_MB
-  file3TLGADPTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_3T_pTHard
+  file3TLBLMB=$baseDir/LBL_3T_MB
+  file3TLBLPTHARD=$baseDir/LBL_3T_pTHard
+  file3TACLGADMB=$baseDir/LBLACLGAD_3T_MB 
+  file3TACLGADPTHARD=$baseDir/LBLACLGAD_3T_pTHard
+  file3TLGADMB=$baseDir/LBLLGAD_3T_MB
+  file3TLGADPTHARD=$baseDir/LBLLGAD_3T_pTHard
   
-  file3TLBLPTHARD2x=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD2x_3T_pTHard
+  file3TLBLPTHARD2x=$baseDir/LBLLGAD2x_3T_pTHard
   
-  file3TLBLLGAD18275MB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_3T_e18p275_MB
-  file3TLBLLGAD18275PTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_3T_e18p275_pTHard
-  file3TLBLLGAD5100MB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_3T_e5p100_MB
-  file3TLBLLGAD5100PTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_3T_e5p100_pTHard
-                    
+  file3TLBLLGAD18275MB=$baseDir/LBLLGAD_3T_e18p275_MB
+  file3TLBLLGAD18275PTHARD=$baseDir/LBLLGAD_3T_e18p275_pTHard
+  file3TLBLLGAD5100MB=$baseDir/LBLLGAD_3T_e5p100_MB
+  file3TLBLLGAD5100PTHARD=$baseDir/LBLLGAD_3T_e5p100_pTHard
+
   root -b -x -q -b 'trackingresolution/trackingeffi.C("'$fileLBLMB'/output_TRKEFF.root","pdf","defaultLBL-MB")'
   root -b -x -q -b 'trackingresolution/trackingeffi.C("'$fileLBLPTHARD'/output_TRKEFF.root","pdf","defaultLBL-pTHard5GeV")'
   root -b -x -q -b 'trackingresolution/trackingeffi.C("'$fileACLGADMB'/output_TRKEFF.root","pdf","LBLwithACLGAD-MB")'
@@ -206,35 +263,37 @@ elif [ $1 = "CompTrackingEffi" ]; then
   root -b -x -q -l 'trackingresolution/compare_trackingeffi.C("filesCompareEffiBfields.txt","LBLBfield-pTHard5GeV","pdf")'
   root -b -x -q -l 'trackingresolution/compare_trackingeffi.C("filesCompareEffiEnergies.txt","LBLLGAD-EnergyDep-pTHard5GeV","pdf")'
 elif [ $1 = "clusterEffi" ]; then  
-  fileACLGADMB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLACLGAD_MB
-  fileACLGADPTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLACLGAD_pTHard
-  fileLBLMB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBL_MB
-  fileLBLPTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBL_pTHard
-  fileLGADMB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_MB
-  fileLGADPTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_pTHard
+  baseDir=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing_Temp
+  fileACLGADMB=$baseDir/LBLACLGAD_MB
+  fileACLGADPTHARD=$baseDir/LBLACLGAD_pTHard
+  fileLBLMB=$baseDir/LBL_MB
+  fileLBLPTHARD=$baseDir/LBL_pTHard
+  fileLGADMB=$baseDir/LBLLGAD_MB
+  fileLGADPTHARD=$baseDir/LBLLGAD_pTHard
   
-  fileLBLPTHARD2x=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD2x_pTHard
+  fileLBLPTHARD2x=$baseDir/LBLLGAD2x_pTHard
   
-  fileLBLLGAD18275MB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_e18p275_MB
-  fileLBLLGAD18275PTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_e18p275_pTHard
-  fileLBLLGAD5100MB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_e5p100_MB
-  fileLBLLGAD5100PTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_e5p100_pTHard
+  fileLBLLGAD18275MB=$baseDir/LBLLGAD_e18p275_MB
+  fileLBLLGAD18275PTHARD=$baseDir/LBLLGAD_e18p275_pTHard
+  fileLBLLGAD5100MB=$baseDir/LBLLGAD_e5p100_MB
+  fileLBLLGAD5100PTHARD=$baseDir/LBLLGAD_e5p100_pTHard
   
-  file3TLBLMB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBL_3T_MB
-  file3TLBLPTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBL_3T_pTHard
-  file3TACLGADMB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLACLGAD_3T_MB 
-  file3TACLGADPTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLACLGAD_3T_pTHard
-  file3TLGADMB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_3T_MB
-  file3TLGADPTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_3T_pTHard
+  file3TLBLMB=$baseDir/LBL_3T_MB
+  file3TLBLPTHARD=$baseDir/LBL_3T_pTHard
+  file3TACLGADMB=$baseDir/LBLACLGAD_3T_MB 
+  file3TACLGADPTHARD=$baseDir/LBLACLGAD_3T_pTHard
+  file3TLGADMB=$baseDir/LBLLGAD_3T_MB
+  file3TLGADPTHARD=$baseDir/LBLLGAD_3T_pTHard
   
-  file3TLBLPTHARD2x=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD2x_3T_pTHard
+  file3TLBLPTHARD2x=$baseDir/LBLLGAD2x_3T_pTHard
   
-  file3TLBLLGAD18275MB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_3T_e18p275_MB
-  file3TLBLLGAD18275PTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_3T_e18p275_pTHard
-  file3TLBLLGAD5100MB=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_3T_e5p100_MB
-  file3TLBLLGAD5100PTHARD=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/LBLLGAD_3T_e5p100_pTHard
+  file3TLBLLGAD18275MB=$baseDir/LBLLGAD_3T_e18p275_MB
+  file3TLBLLGAD18275PTHARD=$baseDir/LBLLGAD_3T_e18p275_pTHard
+  file3TLBLLGAD5100MB=$baseDir/LBLLGAD_3T_e5p100_MB
+  file3TLBLLGAD5100PTHARD=$baseDir/LBLLGAD_3T_e5p100_pTHard
 
-  fileCALO=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing/CaloOnly_SinglePi
+
+  fileCALO=$baseDir/CaloOnly_SinglePi
   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileCALO'/output_TRKEFF.root","'$fileCALO'/output_CS.root","FEMC","pdf","CaloStandalone")'
   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileCALO'/output_TRKEFF.root","'$fileCALO'/output_CS.root","FHCAL","pdf","CaloStandalone")'
 
@@ -288,5 +347,9 @@ elif [ $1 = "clusterEffi" ]; then
   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD5100MB'/output_TRKEFF.root","'$file3TLBLLGAD5100MB'/output_CS.root","FEMC","pdf","defaultLBL-MB-e5p100-3T")'
   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD5100PTHARD'/output_TRKEFF.root","'$file3TLBLLGAD5100PTHARD'/output_CS.root","FHCAL","pdf","defaultLBL-pTHard5GeV-e5p100-3T")'
   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD5100PTHARD'/output_TRKEFF.root","'$file3TLBLLGAD5100PTHARD'/output_CS.root","FEMC","pdf","defaultLBL-pTHard5GeV-e5p100-3T")'
+elif [ $1 = "CompClusterEffi" ]; then
+  root -b -x -q -l 'clusterProperties/compare_clustereffi.C("filesCompareClusterEffiGranularity.txt","CaloGranularity-pTHard5GeV","FHCAL","pdf")'
+  root -b -x -q -l 'clusterProperties/compare_clustereffi.C("filesCompareClusterEffiBfields.txt","LBLBfield-pTHard5GeV","FHCAL","pdf")'
+  root -b -x -q -l 'clusterProperties/compare_clustereffi.C("filesCompareClusterEffiEnergies.txt","LBLLGAD-EnergyDep-pTHard5GeV","FHCAL","pdf")'
 
 fi

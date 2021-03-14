@@ -34,7 +34,8 @@ void trackingreso_Pythia(
   
   for (Int_t eR = 0; eR < 3; eR++) cout << "before: "<< labelEtaRange[eR].Data() << endl;
   
-  TString collisionSystem = "Pythia 6, e+p, 10+250 GeV";
+  TString collisionSystem = GetCollisionEnergy(addLabel);
+  TString magnetLabel     = GetMagnetLabel(addLabel);
   TString pTHard = "";
   Int_t nLinesCol = 1;
   if (addLabel.Contains("pTHard5GeV")) {
@@ -108,7 +109,7 @@ void trackingreso_Pythia(
 
   for (Int_t iEta = 0; iEta < nEta+1; iEta++){
     for (Int_t pid = 0; pid < nPID; pid++){
-      h_tracks_reso[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_tracks_reso_pT_%s_%s_%d", readTrackClass.Data(), partName[pid].Data(), iEta));
+      h_tracks_reso[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_tracks_reso_pT_%s_%s_%d", readTrackClass.Data(), partNameET2[pid].Data(), iEta));
       h_tracks_reso[pid][iEta]->Sumw2();
       h_tracks_mean_pt_reso[pid][iEta] = new TH1D(Form("histPtResol_%s_mean_%d", partName[pid].Data(), iEta), 
                                             ";#it{p}_{T}^{MC} (GeV/#it{c}); #LT (#it{p}_{T}^{rec}-#it{p}_{T}^{MC})/#it{p}_{T}^{MC} #GT",
@@ -117,7 +118,7 @@ void trackingreso_Pythia(
                                               ";#it{p}_{T}^{MC} (GeV/#it{c}); #sigma( (#it{p}_{T}^{rec}-#it{p}_{T}^{MC})/#it{p}_{T}^{MC} )", 
                                               nPt, partPt);
 
-      h_tracks_resoP[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_tracks_reso_p_%s_%s_%d", readTrackClass.Data(), partName[pid].Data(), iEta));
+      h_tracks_resoP[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_tracks_reso_p_%s_%s_%d", readTrackClass.Data(), partNameET2[pid].Data(), iEta));
       h_tracks_resoP[pid][iEta]->Sumw2();
       h_tracks_mean_p_resoP[pid][iEta] = new TH1D(Form("histPResol_%s_mean_%d", partName[pid].Data(), iEta), 
                                             ";#it{p}^{MC} (GeV/#it{c}); #LT (#it{p}^{rec}-#it{p}^{MC})/#it{p}^{MC} #GT",
@@ -147,7 +148,7 @@ void trackingreso_Pythia(
   
   for (Int_t pid = 0; pid < nPID; pid++){
     for (Int_t cut = 0; cut < nCuts; cut++){
-      h_trackMap_eta_pT[pid][cut]   = (TH2F*)inputFile->Get(Form("h_tracks_%s_%s_True_Eta_pT", partName[pid].Data(), nameCuts[cut].Data()));
+      h_trackMap_eta_pT[pid][cut]   = (TH2F*)inputFile->Get(Form("h_tracks_%s_%s_True_Eta_pT", partNameET2[pid].Data(), nameCuts[cut].Data()));
       h_trackMap_eta_pT[pid][cut]->Sumw2();
       if (cut > 0 ){
         h_trackMapRatio_eta_pT[pid][cut-1] = (TH2F*)h_trackMap_eta_pT[pid][cut]->Clone(Form("h_tracksRatio_%s_%s_True_Eta_pT", partName[pid].Data(), nameCuts[cut].Data()));
@@ -160,7 +161,7 @@ void trackingreso_Pythia(
         h_trackMapRatio_eta_pT[pid][cut]->Divide(h_trackMap_eta_pT[pid][9]);
       
       }
-      h_trackMapRec_eta_pT[pid][cut]   = (TH2F*)inputFile->Get(Form("h_tracks_%s_%s_Rec_Eta_pT", partName[pid].Data(), nameCuts[cut].Data()));
+      h_trackMapRec_eta_pT[pid][cut]   = (TH2F*)inputFile->Get(Form("h_tracks_%s_%s_Rec_Eta_pT", partNameET2[pid].Data(), nameCuts[cut].Data()));
       h_trackMapRec_eta_pT[pid][cut]->Sumw2();
       if (cut > 0 ){
         h_trackMapRecRatio_eta_pT[pid][cut-1] = (TH2F*)h_trackMapRec_eta_pT[pid][cut]->Clone(Form("h_tracksRatio_%s_%s_Rec_Eta_pT", partName[pid].Data(), nameCuts[cut].Data()));
@@ -172,7 +173,7 @@ void trackingreso_Pythia(
         h_trackMapRecRatio_eta_pT[pid][cut]->Sumw2();
         h_trackMapRecRatio_eta_pT[pid][cut]->Divide(h_trackMapRec_eta_pT[pid][9]);
       }
-      h_trackMap_eta_p[pid][cut]   = (TH2F*)inputFile->Get(Form("h_tracks_%s_%s_True_Eta_p", partName[pid].Data(), nameCuts[cut].Data()));
+      h_trackMap_eta_p[pid][cut]   = (TH2F*)inputFile->Get(Form("h_tracks_%s_%s_True_Eta_p", partNameET2[pid].Data(), nameCuts[cut].Data()));
       h_trackMap_eta_p[pid][cut]->Sumw2();
       if (cut > 0 ){
         h_trackMapRatio_eta_p[pid][cut-1] = (TH2F*)h_trackMap_eta_p[pid][cut]->Clone(Form("h_tracksRatio_%s_%s_True_Eta_p", partName[pid].Data(), nameCuts[cut].Data()));
@@ -185,7 +186,7 @@ void trackingreso_Pythia(
         h_trackMapRatio_eta_p[pid][cut]->Divide(h_trackMap_eta_p[pid][9]);
         
       }
-      h_trackMapRec_eta_p[pid][cut]   = (TH2F*)inputFile->Get(Form("h_tracks_%s_%s_Rec_Eta_p", partName[pid].Data(), nameCuts[cut].Data()));
+      h_trackMapRec_eta_p[pid][cut]   = (TH2F*)inputFile->Get(Form("h_tracks_%s_%s_Rec_Eta_p", partNameET2[pid].Data(), nameCuts[cut].Data()));
       h_trackMapRec_eta_p[pid][cut]->Sumw2();
       if (cut > 0 ){
         h_trackMapRecRatio_eta_p[pid][cut-1] = (TH2F*)h_trackMapRec_eta_p[pid][cut]->Clone(Form("h_tracksRatio_%s_%s_Rec_Eta_p", partName[pid].Data(), nameCuts[cut].Data()));
@@ -762,7 +763,8 @@ void trackingreso_Pythia(
     drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
     drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/PtResolution_%s_Mean_pT.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
 
     histoDummyPtResSigma->Draw();
@@ -775,7 +777,8 @@ void trackingreso_Pythia(
     drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
     drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/PtResolution_%s_Sigma_pT.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
   }
   
@@ -799,7 +802,9 @@ void trackingreso_Pythia(
     drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
     drawLatexAdd(Form("%1.1f<#eta<%1.1f, %s", etaMin, etaMax, detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    
     cReso->Print(Form("%s/PtResolutionPID_Sigma_pT_%d_%d.%s", outputDir.Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
   }
   
@@ -843,7 +848,9 @@ void trackingreso_Pythia(
     drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
     drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    
     cReso->Print(Form("%s/PResolution_%s_Mean_p.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
 
     histoDummyPResSigma->Draw();
@@ -856,7 +863,8 @@ void trackingreso_Pythia(
     drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
     drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/PResolution_%s_Sigma_p.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
     
     for (Int_t eR = 0; eR < 3; eR++){
@@ -880,7 +888,8 @@ void trackingreso_Pythia(
       drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
       drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-      if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       cReso->Print(Form("%s/PResolution_%s_%s_Mean_p.%s", outputDir.Data(), nameOutEtaRange[eR].Data(), partName[pid].Data(), suffix.Data()));
 
       histoDummyPResSigma->Draw();
@@ -893,7 +902,8 @@ void trackingreso_Pythia(
       drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
       drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-      if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       cReso->Print(Form("%s/PResolution_%s_%s_Sigma_p.%s", outputDir.Data(), nameOutEtaRange[eR].Data() ,partName[pid].Data(), suffix.Data()));
     }
   }
@@ -918,7 +928,8 @@ void trackingreso_Pythia(
     drawLatexAdd(collisionSystem,0.95,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
     drawLatexAdd(Form("%1.1f<#eta<%1.1f, %s", etaMin, etaMax, detLabel.Data()),0.95,0.91-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/PResolutionPID_Sigma_p_%d_%d.%s", outputDir.Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
   }
   cReso->SetLogx(0);
@@ -947,7 +958,8 @@ void trackingreso_Pythia(
   drawLatexAdd(collisionSystem,0.95,0.88,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
   if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
   drawLatexAdd(Form("(h/e)^{#pm} in %s",detLabel.Data()),0.95,0.88-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-  if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.88-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
   cReso->Print(Form("%s/EtaResolution_Mean_pT.%s", outputDir.Data(), suffix.Data()));
 
   
@@ -967,7 +979,8 @@ void trackingreso_Pythia(
   drawLatexAdd(collisionSystem,0.95,0.88,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
   if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
   drawLatexAdd(Form("(h/e)^{#pm} in %s",detLabel.Data()),0.95,0.88-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-  if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.88-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
   cReso->Print(Form("%s/EtaResolution_Sigma_pT.%s", outputDir.Data(), suffix.Data()));
 
   TH2F* histoDummyPhiResMean   = new TH2F("histoDummyPhiResMean","histoDummyPhiResMean",1000,0, 20,1000,-0.01, 0.01);
@@ -992,7 +1005,8 @@ void trackingreso_Pythia(
   drawLatexAdd(collisionSystem,0.95,0.88,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
   if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
   drawLatexAdd(Form("(h/e)^{#pm} in %s",detLabel.Data()),0.95,0.88-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-  if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.88-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
   cReso->Print(Form("%s/PhiResolution_Mean_pT.%s", outputDir.Data(), suffix.Data()));
 
   TH2F* histoDummyPhiResSigma   = new TH2F("histoDummyPhiResSigma","histoDummyPhiResSigma",1000,0, 20,1000,-0.0, maxPhiSigma);
@@ -1011,7 +1025,8 @@ void trackingreso_Pythia(
   drawLatexAdd(collisionSystem,0.95,0.88,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
   if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
   drawLatexAdd(Form("(h/e)^{#pm} in %s",detLabel.Data()),0.95,0.88-nLinesCol*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-  if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  drawLatexAdd(Form("%s", magnetLabel.Data()),0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.88-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
   cReso->Print(Form("%s/PhiResolution_Sigma_pT.%s", outputDir.Data(), suffix.Data()));
   
   TFile* outputFile  = new TFile(inputFileName.Data(),"UPDATE");

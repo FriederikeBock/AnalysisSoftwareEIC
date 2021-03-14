@@ -28,6 +28,8 @@ void treeProcessing(
     bool do_C5clusterizerFEMC   = true,
     bool do_jetfinding          = true,
     // Double_t maxNEvent = 1e5,
+    bool hasTiming              = true,
+    bool isALLSILICON           = true, 
     Double_t maxNEvent          = -1,
     Int_t verbosity             = 0
 ){
@@ -51,6 +53,9 @@ void treeProcessing(
         nEntriesTree = maxNEvent;
         cout << "Will only analyze first " << maxNEvent << " events in the tree..." << endl;
     }
+    _do_TimingStudies         = hasTiming;
+    _is_ALLSILICON            = isALLSILICON;
+    
     _nEventsTree=0;
     // main event loop
     for (Long64_t i=0; i<nEntriesTree;i++) {
@@ -327,6 +332,7 @@ void treeProcessing(
             }
         }
         trackingefficiency();
+        trackingresolution();
 
         // ANCHOR Track projections loop variables:
         // float* _track_ProjTrackID[iproj]
@@ -531,6 +537,7 @@ void treeProcessing(
     resolutionhistosSave();
     clusterstudiesSave();
     trackingefficiencyhistosSave();
+    trackingresolutionhistosSave();
     hitstudiesSave();
     // trackmatchingstudiesSave();
     clusterizerSave();
