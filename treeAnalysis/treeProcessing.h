@@ -82,6 +82,8 @@ float* _mcpart_py                = new float[_maxNMCPart];
 float* _mcpart_pz                = new float[_maxNMCPart];
 float* _mcpart_Eta                = new float[_maxNMCPart];
 
+TRandom3  _fRandom;                                  // random for effi generation
+
 
 void SetBranchAddressesTree(TTree* inputTree){
     inputTree->SetBranchAddress("nHits",                        &_nHitsLayers);

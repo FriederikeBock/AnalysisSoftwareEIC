@@ -49,12 +49,14 @@ void calibration(
   TH2F*  h_RH_Reso_gammaCalib_E[_active_calo][_active_algo];
   TH2F*  h_RH_Reso_gammaCalib_Erec[_active_calo][_active_algo];
   TH2F*  h_RH_Reso_pion_E[_active_calo][_active_algo];
+  TH2F*  h_RH_Reso_pion_smear_E[_active_calo][_active_algo];
   TH2F*  h_RH_Reso_pion_E_Eta[_active_calo][_active_algo][nEta+1];
   TH2F*  h_RH_Reso_pion_Erec[_active_calo][_active_algo];
   TH2F*  h_RH_Reso_pionComb_E[_active_calo][_active_algo];
   TH2F*  h_RH_Reso_pionComb_Erec[_active_calo][_active_algo];
   TH2F*  h_RH_Reso_pionCombCalib_E[_active_calo][_active_algo];
   TH2F*  h_RH_Reso_pionCombCalib_Erec[_active_calo][_active_algo];
+  TH2F*  h_RH_Reso_pionCombCalib_smeared_Erec[_active_calo][_active_algo];
 
 
   for(int icalo=0;icalo<_active_calo;icalo++){
@@ -68,12 +70,16 @@ void calibration(
       h_RH_Reso_gamma_Erec[icalo][ialgo] 	= (TH2F*) inputFileCALOGamma->Get(Form("h_RH_Reso_gamma_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()));
       h_RH_Reso_gammaCalib_E[icalo][ialgo] 	= (TH2F*) inputFileCALOGamma->Get(Form("h_RH_ResoCalib_gamma_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()));
       h_RH_Reso_gammaCalib_Erec[icalo][ialgo] 	= (TH2F*) inputFileCALOGamma->Get(Form("h_RH_ResoCalib_gamma_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()));
+
       h_RH_Reso_pion_E[icalo][ialgo] 	= (TH2F*) inputFileFHCALPion->Get(Form("h_RH_Reso_pion_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()));
+      // h_RH_Reso_pion_smear_E[icalo][ialgo] 	= (TH2F*) inputFileFHCALPion->Get(Form("h_RH_Reso_pion_smear_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()));
+
       h_RH_Reso_pion_Erec[icalo][ialgo] 	= (TH2F*) inputFileFHCALPion->Get(Form("h_RH_Reso_pion_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()));
       h_RH_Reso_pionComb_E[icalo][ialgo] 	= (TH2F*) inputFileCALOPion->Get(Form("h_RH_Reso_pion_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()));
       h_RH_Reso_pionComb_Erec[icalo][ialgo] 	= (TH2F*) inputFileCALOPion->Get(Form("h_RH_Reso_pion_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()));
       h_RH_Reso_pionCombCalib_E[icalo][ialgo] 	= (TH2F*) inputFileCALOPion->Get(Form("h_RH_ResoCalib_pion_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()));
       h_RH_Reso_pionCombCalib_Erec[icalo][ialgo] 	= (TH2F*) inputFileCALOPion->Get(Form("h_RH_ResoCalib_pion_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()));
+      h_RH_Reso_pionCombCalib_smeared_Erec[icalo][ialgo] 	= (TH2F*) inputFileCALOPion->Get(Form("h_RH_ResoCalib_smeared_pion_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()));
     }
   }
 
@@ -85,12 +91,14 @@ void calibration(
   TH1F*  h_RH_Reso_gammaCalib_bin_E[_active_calo][_active_algo][nEne]= {NULL};
   TH1F*  h_RH_Reso_gammaCalib_bin_Erec[_active_calo][_active_algo][nEne]= {NULL};
   TH1F*  h_RH_Reso_pion_bin_E[_active_calo][_active_algo][nEne]= {NULL};
+  // TH1F*  h_RH_Reso_pion_bin_smear_E[_active_calo][_active_algo][nEne]= {NULL};
   TH1F*  h_RH_Reso_pion_bin_E_Eta[_active_calo][_active_algo][nEta+1][nEne]= {NULL};
   TH1F*  h_RH_Reso_pion_bin_Erec[_active_calo][_active_algo][nEne]= {NULL};
   TH1F*  h_RH_Reso_pionComb_bin_E[_active_calo][_active_algo][nEne]= {NULL};
   TH1F*  h_RH_Reso_pionComb_bin_Erec[_active_calo][_active_algo][nEne]= {NULL};
   TH1F*  h_RH_Reso_pionCombCalib_bin_E[_active_calo][_active_algo][nEne]= {NULL};
   TH1F*  h_RH_Reso_pionCombCalib_bin_Erec[_active_calo][_active_algo][nEne]= {NULL};
+  TH1F*  h_RH_Reso_pionCombCalib_bin_smeared_Erec[_active_calo][_active_algo][nEne]= {NULL};
 
   for(int icalo=0;icalo<_active_calo;icalo++){
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
@@ -115,6 +123,10 @@ void calibration(
           }
           h_RH_Reso_pion_bin_E[icalo][ialgo][epart] = (TH1F*)h_RH_Reso_pion_E[icalo][ialgo] ->ProjectionY(Form("h_pion_E_%s_%s_%d",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),epart),startBin,endBin,"e");
           h_RH_Reso_pion_bin_E[icalo][ialgo][epart]->Scale(1./h_RH_Reso_pion_bin_E[icalo][ialgo][epart]->GetEntries());
+
+          // h_RH_Reso_pion_bin_smear_E[icalo][ialgo][epart] = (TH1F*)h_RH_Reso_pion_smear_E[icalo][ialgo] ->ProjectionY(Form("h_pion_E_%s_%s_%d",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),epart),startBin,endBin,"e");
+          // h_RH_Reso_pion_bin_smear_E[icalo][ialgo][epart]->Scale(1./h_RH_Reso_pion_bin_smear_E[icalo][ialgo][epart]->GetEntries());
+
           h_RH_Reso_pion_bin_Erec[icalo][ialgo][epart] = (TH1F*)h_RH_Reso_pion_Erec[icalo][ialgo] ->ProjectionY(Form("h_pion_Erec_%s_%s_%d",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),epart),startBin,endBin,"e");
           h_RH_Reso_pion_bin_Erec[icalo][ialgo][epart]->Scale(1./h_RH_Reso_pion_bin_Erec[icalo][ialgo][epart]->GetEntries());
 
@@ -125,8 +137,12 @@ void calibration(
 
           h_RH_Reso_pionCombCalib_bin_E[icalo][ialgo][epart] = (TH1F*)h_RH_Reso_pionCombCalib_E[icalo][ialgo] ->ProjectionY(Form("h_pionCombCalib_E_%s_%s_%d",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),epart),startBin,endBin,"e");
           h_RH_Reso_pionCombCalib_bin_E[icalo][ialgo][epart]->Scale(1./h_RH_Reso_pionCombCalib_bin_E[icalo][ialgo][epart]->GetEntries());
-          h_RH_Reso_pionCombCalib_bin_Erec[icalo][ialgo][epart] = (TH1F*)h_RH_Reso_pionCombCalib_Erec[icalo][ialgo] ->ProjectionY(Form("h_pionCombCalib_Erec_%s_%s_%d",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),epart),startBin,endBin,"e");
+          h_RH_Reso_pionCombCalib_bin_Erec[icalo][ialgo][epart] = (TH1F*)h_RH_Reso_pionCombCalib_Erec[icalo][ialgo] ->ProjectionY(Form("h_RH_Reso_pionCombCalib_bin_Erec_%s_%s_%d",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),epart),startBin,endBin,"e");
           h_RH_Reso_pionCombCalib_bin_Erec[icalo][ialgo][epart]->Scale(1./h_RH_Reso_pionCombCalib_bin_Erec[icalo][ialgo][epart]->GetEntries());
+          if(h_RH_Reso_pionCombCalib_smeared_Erec[icalo][ialgo]){
+            h_RH_Reso_pionCombCalib_bin_smeared_Erec[icalo][ialgo][epart] = (TH1F*)h_RH_Reso_pionCombCalib_smeared_Erec[icalo][ialgo] ->ProjectionY(Form("h_RH_Reso_pionCombCalib_bin_smeared_Erec_%s_%s_%d",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),epart),startBin,endBin,"e");
+            h_RH_Reso_pionCombCalib_bin_smeared_Erec[icalo][ialgo][epart]->Scale(1./h_RH_Reso_pionCombCalib_bin_smeared_Erec[icalo][ialgo][epart]->GetEntries());
+          }
 
       }
     }
@@ -420,6 +436,7 @@ TCanvas* cResoEta2 = new TCanvas("cResoEta2","",0,0,1100,1000);
   TH1F*  h_FHCALSTANDALONE_pionComb_reso_1oErec[_active_calo][_active_algo] 	= {NULL};
   TH1F*  h_FHCALSTANDALONE_pionComb_meanE_Erec[_active_calo][_active_algo] 	= {NULL};
   TF1 *fit_reso_pionCombCalib_Erec[_active_algo][nEne] = {NULL};
+  TF1 *fit_reso_pionCombCalib_smeared_Erec[_active_algo][nEne] = {NULL};
   TH1F*  h_FHCALSTANDALONE_pionCombCalib_reso_1oErec[_active_calo][_active_algo] 	= {NULL};
   TH1F*  h_FHCALSTANDALONE_pionCombCalib_meanE_Erec[_active_calo][_active_algo] 	= {NULL};
   for(int icalo=0;icalo<_active_calo;icalo++){
@@ -551,7 +568,7 @@ TCanvas* cResoEta2 = new TCanvas("cResoEta2","",0,0,1100,1000);
 
   TCanvas* cReso2x2 = new TCanvas("cReso2x2","",0,0,1100,1000);
   DrawGammaCanvasSettings( cReso2x2, 0.12, 0.01, 0.01, 0.105);
-  TH2F* histEPlotDummy_SB_FH                           = new TH2F("histEPlotDummy_SB_FH","histEPlotDummy_SB_FH",1000,0.41, 1.34,1000,0, 0.029);
+  TH2F* histEPlotDummy_SB_FH                           = new TH2F("histEPlotDummy_SB_FH","histEPlotDummy_SB_FH",1000,0.41, 1.34,1000,0, 0.025);
   SetStyleHistoTH2ForGraphs(histEPlotDummy_SB_FH, "#it{E}_{rec} / #it{E}_{true}","norm. counts", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.2);
   histEPlotDummy_SB_FH->GetYaxis()->SetNoExponent();
   histEPlotDummy_SB_FH->GetXaxis()->SetNoExponent();
@@ -564,27 +581,31 @@ TCanvas* cResoEta2 = new TCanvas("cResoEta2","",0,0,1100,1000);
       for(Int_t epart=0; epart<NELEMS(partE)-1; epart++){
         if(partE[epart]!=60) continue;
         histEPlotDummy_SB_FH->DrawCopy();
+        TLegend* legendEB_wSmear           = GetAndSetLegend2(0.16, 0.95-(2*textSizeLabelsRel), 0.8, 0.95-(5.5*textSizeLabelsRel),1.2*textSizeLabelsPixel, 1, "", 43, 0.15);
         drawLatexAdd(Form("%1.0f GeV < #it{E} < %1.0f GeV",partE[epart],partE[epart+1]),0.16,0.90,1.1*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
         drawLatexAdd(Form("#pi^{-} on %s",str_calorimeter[icalo].Data()),0.93,0.90,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         if(h_RH_Reso_pionComb_bin_Erec[icalo][ialgo][epart]){
+          DrawGammaSetMarker(h_RH_Reso_pionComb_bin_Erec[icalo][ialgo][epart], marker_clusterizer[0], 3, colorClus[0][ialgo], colorClus[0][ialgo]);
           h_RH_Reso_pionComb_bin_Erec[icalo][ialgo][epart]->Draw("same");
           fit_reso_pionComb_Erec[ialgo][epart]    = new TF1(Form("fit_reso_pionComb_Erec_%s%s_%d",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),epart),"(x<[1])*([0]*(TMath::Exp(-0.5*((x-[1])/[2])^2)+TMath::Exp((x-[1])/[3])*(1.-TMath::Exp(-0.5*((x-[1])/[2])^2)))+[4]+[5]*x)+(x>=[1])*([0]*TMath::Exp(-0.5*((x-[1])/[2])^2)+[4]+[5]*x)",
                                       0.41, 0.9);
           fit_reso_pionComb_Erec[ialgo][epart]->SetParameter(0, 0.015);
           fit_reso_pionComb_Erec[ialgo][epart]->SetParameter(1, 0.73);
-          fit_reso_pionComb_Erec[ialgo][epart]->SetParameter(2, 0.01);
-          fit_reso_pionComb_Erec[ialgo][epart]->SetParameter(3, 0.012);
+          fit_reso_pionComb_Erec[ialgo][epart]->SetParameter(2, 0.08);
+          fit_reso_pionComb_Erec[ialgo][epart]->SetParameter(3, 0.03);
           h_RH_Reso_pionComb_bin_Erec[icalo][ialgo][epart]->Fit(fit_reso_pionComb_Erec[ialgo][epart],"L0MEQ", "", 0.41, 0.9);
           fit_reso_pionComb_Erec[ialgo][epart]->SetNpx(10000);
-          DrawGammaSetMarkerTF1(fit_reso_pionComb_Erec[ialgo][epart], linestyle_clusterizer[ialgo], 2, colorClus[0][ialgo]+2);
+          DrawGammaSetMarkerTF1(fit_reso_pionComb_Erec[ialgo][epart], linestyle_clusterizer[ialgo], 3, colorClus[0][ialgo]-1);
           fit_reso_pionComb_Erec[ialgo][epart]->Draw("same");
 
-          drawLatexAdd("uncalibrated:",0.16,0.84,1.1*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-          drawLatexAdd(Form("mean: %1.2f ",fit_reso_pionComb_Erec[ialgo][epart]->GetParameter(1)),0.16,0.78,1.1*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-          drawLatexAdd(Form("sigma: %1.2f ",fit_reso_pionComb_Erec[ialgo][epart]->GetParameter(2)),0.16,0.72,1.1*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-          drawLatexAdd(Form("#sigma/#it{E}: %1.2f %%",100*fit_reso_pionComb_Erec[ialgo][epart]->GetParameter(2)/fit_reso_pionComb_Erec[ialgo][epart]->GetParameter(1)),0.16,0.66,1.1*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+          legendEB_wSmear->AddEntry(h_RH_Reso_pionComb_bin_Erec[icalo][ialgo][epart], Form("uncalibrated: mean: %1.1f, #sigma/#it{E}: %1.2f",fit_reso_pionComb_Erec[ialgo][epart]->GetParameter(1),100*fit_reso_pionComb_Erec[ialgo][epart]->GetParameter(2)/fit_reso_pionComb_Erec[ialgo][epart]->GetParameter(1)), "pl");
+          // drawLatexAdd("uncalibrated:",0.16,0.84,1.1*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+          // drawLatexAdd(Form("mean: %1.2f ",fit_reso_pionComb_Erec[ialgo][epart]->GetParameter(1)),0.16,0.78,1.1*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+          // drawLatexAdd(Form("sigma: %1.2f ",fit_reso_pionComb_Erec[ialgo][epart]->GetParameter(2)),0.16,0.72,1.1*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+          // drawLatexAdd(Form("#sigma/#it{E}: %1.2f %%",100*fit_reso_pionComb_Erec[ialgo][epart]->GetParameter(2)/fit_reso_pionComb_Erec[ialgo][epart]->GetParameter(1)),0.16,0.66,1.1*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
         }
         if(h_RH_Reso_pionCombCalib_bin_Erec[icalo][ialgo][epart]){
+          DrawGammaSetMarker(h_RH_Reso_pionCombCalib_bin_Erec[icalo][ialgo][epart], marker_clusterizer[2], 3, colorClus[2][ialgo], colorClus[2][ialgo]);
           h_RH_Reso_pionCombCalib_bin_Erec[icalo][ialgo][epart]->Draw("same");
           fit_reso_pionCombCalib_Erec[ialgo][epart]    = new TF1(Form("fit_reso_pionCombCalib_Erec_%s%s_%d",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),epart),"(x<[1])*([0]*(TMath::Exp(-0.5*((x-[1])/[2])^2)+TMath::Exp((x-[1])/[3])*(1.-TMath::Exp(-0.5*((x-[1])/[2])^2)))+[4]+[5]*x)+(x>=[1])*([0]*TMath::Exp(-0.5*((x-[1])/[2])^2)+[4]+[5]*x)",
                                       0.7, 1.3);
@@ -594,14 +615,62 @@ TCanvas* cResoEta2 = new TCanvas("cResoEta2","",0,0,1100,1000);
           fit_reso_pionCombCalib_Erec[ialgo][epart]->SetParameter(3, 0.05);
           h_RH_Reso_pionCombCalib_bin_Erec[icalo][ialgo][epart]->Fit(fit_reso_pionCombCalib_Erec[ialgo][epart],"L0MEQ", "", 0.7, 1.3);
           fit_reso_pionCombCalib_Erec[ialgo][epart]->SetNpx(10000);
-          DrawGammaSetMarkerTF1(fit_reso_pionCombCalib_Erec[ialgo][epart], linestyle_clusterizer[ialgo], 2, colorClus[0][ialgo]+2);
+          DrawGammaSetMarkerTF1(fit_reso_pionCombCalib_Erec[ialgo][epart], linestyle_clusterizer[ialgo], 3, colorClus[2][ialgo]+1);
           fit_reso_pionCombCalib_Erec[ialgo][epart]->Draw("same");
+          
+          legendEB_wSmear->AddEntry(h_RH_Reso_pionCombCalib_bin_Erec[icalo][ialgo][epart], Form("calibrated: mean: %1.1f, #sigma/#it{E}: %1.2f",fit_reso_pionCombCalib_Erec[ialgo][epart]->GetParameter(1),100*fit_reso_pionCombCalib_Erec[ialgo][epart]->GetParameter(2)/fit_reso_pionCombCalib_Erec[ialgo][epart]->GetParameter(1)), "pl");
 
-          drawLatexAdd("calibrated:",0.93,0.84,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("mean: %1.2f ",fit_reso_pionCombCalib_Erec[ialgo][epart]->GetParameter(1)),0.93,0.78,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("sigma: %1.2f ",fit_reso_pionCombCalib_Erec[ialgo][epart]->GetParameter(2)),0.93,0.72,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd(Form("#sigma/#it{E}: %1.2f %%",100*fit_reso_pionCombCalib_Erec[ialgo][epart]->GetParameter(2)/fit_reso_pionCombCalib_Erec[ialgo][epart]->GetParameter(1)),0.93,0.66,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          // drawLatexAdd("calibrated:",0.93,0.84,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          // drawLatexAdd(Form("mean: %1.2f ",fit_reso_pionCombCalib_Erec[ialgo][epart]->GetParameter(1)),0.93,0.78,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          // drawLatexAdd(Form("sigma: %1.2f ",fit_reso_pionCombCalib_Erec[ialgo][epart]->GetParameter(2)),0.93,0.72,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          // drawLatexAdd(Form("#sigma/#it{E}: %1.2f %%",100*fit_reso_pionCombCalib_Erec[ialgo][epart]->GetParameter(2)/fit_reso_pionCombCalib_Erec[ialgo][epart]->GetParameter(1)),0.93,0.66,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         }
+        if(h_RH_Reso_pionCombCalib_bin_smeared_Erec[icalo][ialgo][epart]){
+          DrawGammaSetMarker(h_RH_Reso_pionCombCalib_bin_smeared_Erec[icalo][ialgo][epart], marker_clusterizer[1], 3, colorClus[1][ialgo], colorClus[1][ialgo]);
+          h_RH_Reso_pionCombCalib_bin_smeared_Erec[icalo][ialgo][epart]->Draw("same");
+          fit_reso_pionCombCalib_smeared_Erec[ialgo][epart]    = new TF1(Form("fit_reso_pionCombCalib_smeared_Erec_%s%s_%d",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),epart),"(x<[1])*([0]*(TMath::Exp(-0.5*((x-[1])/[2])^2)+TMath::Exp((x-[1])/[3])*(1.-TMath::Exp(-0.5*((x-[1])/[2])^2)))+[4]+[5]*x)+(x>=[1])*([0]*TMath::Exp(-0.5*((x-[1])/[2])^2)+[4]+[5]*x)",
+                                      0.7, 1.3);
+          fit_reso_pionCombCalib_smeared_Erec[ialgo][epart]->SetParameter(0, 0.015);
+          fit_reso_pionCombCalib_smeared_Erec[ialgo][epart]->SetParameter(1, 1.0);
+          fit_reso_pionCombCalib_smeared_Erec[ialgo][epart]->SetParameter(2, 0.11);
+          fit_reso_pionCombCalib_smeared_Erec[ialgo][epart]->SetParameter(3, 0.05);
+          h_RH_Reso_pionCombCalib_bin_smeared_Erec[icalo][ialgo][epart]->Fit(fit_reso_pionCombCalib_smeared_Erec[ialgo][epart],"L0MEQ", "", 0.7, 1.3);
+          fit_reso_pionCombCalib_smeared_Erec[ialgo][epart]->SetNpx(10000);
+          DrawGammaSetMarkerTF1(fit_reso_pionCombCalib_smeared_Erec[ialgo][epart], linestyle_clusterizer[ialgo], 3, colorClus[1][ialgo]+1);
+          fit_reso_pionCombCalib_smeared_Erec[ialgo][epart]->Draw("same");
+
+          legendEB_wSmear->AddEntry(h_RH_Reso_pionCombCalib_bin_smeared_Erec[icalo][ialgo][epart], Form("calib+smear: mean: %1.1f, #sigma/#it{E}: %1.2f",fit_reso_pionCombCalib_smeared_Erec[ialgo][epart]->GetParameter(1),100*fit_reso_pionCombCalib_smeared_Erec[ialgo][epart]->GetParameter(2)/fit_reso_pionCombCalib_smeared_Erec[ialgo][epart]->GetParameter(1)), "pl");
+
+          // drawLatexAdd("calibrated:",0.93,0.84,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          // drawLatexAdd(Form("mean: %1.2f ",fit_reso_pionCombCalib_smeared_Erec[ialgo][epart]->GetParameter(1)),0.93,0.78,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          // drawLatexAdd(Form("sigma: %1.2f ",fit_reso_pionCombCalib_smeared_Erec[ialgo][epart]->GetParameter(2)),0.93,0.72,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          // drawLatexAdd(Form("#sigma/#it{E}: %1.2f %%",100*fit_reso_pionCombCalib_smeared_Erec[ialgo][epart]->GetParameter(2)/fit_reso_pionCombCalib_smeared_Erec[ialgo][epart]->GetParameter(1)),0.93,0.66,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        }
+    legendEB_wSmear->Draw();
+    }
+    histEPlotDummy_SB_FH->Draw("same,axis");
+    cReso2x2->Print(Form("%s/FHCALSTANDALONE_pion_SingleBin_smear_%s%s_Erec.%s", outputDir.Data(),str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(), suffix.Data()));
+  
+      for(Int_t epart=0; epart<NELEMS(partE)-1; epart++){
+        if(partE[epart]!=60) continue;
+        histEPlotDummy_SB_FH->DrawCopy();
+        TLegend* legendEB_wSmear           = GetAndSetLegend2(0.16, 0.95-(2*textSizeLabelsRel), 0.8, 0.95-(5.5*textSizeLabelsRel),1.2*textSizeLabelsPixel, 1, "", 43, 0.15);
+        drawLatexAdd(Form("%1.0f GeV < #it{E} < %1.0f GeV",partE[epart],partE[epart+1]),0.16,0.90,1.1*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+        drawLatexAdd(Form("#pi^{-} on %s",str_calorimeter[icalo].Data()),0.93,0.90,1.1*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        if(h_RH_Reso_pionComb_bin_Erec[icalo][ialgo][epart]){
+          h_RH_Reso_pionComb_bin_Erec[icalo][ialgo][epart]->Draw("same");
+          fit_reso_pionComb_Erec[ialgo][epart]->Draw("same");
+
+          legendEB_wSmear->AddEntry(h_RH_Reso_pionComb_bin_Erec[icalo][ialgo][epart], Form("uncalibrated: mean: %1.1f, #sigma/#it{E}: %1.2f",fit_reso_pionComb_Erec[ialgo][epart]->GetParameter(1),100*fit_reso_pionComb_Erec[ialgo][epart]->GetParameter(2)/fit_reso_pionComb_Erec[ialgo][epart]->GetParameter(1)), "pl");
+        }
+        if(h_RH_Reso_pionCombCalib_bin_Erec[icalo][ialgo][epart]){
+          h_RH_Reso_pionCombCalib_bin_Erec[icalo][ialgo][epart]->Draw("same");
+          fit_reso_pionCombCalib_Erec[ialgo][epart]->Draw("same");
+          
+          legendEB_wSmear->AddEntry(h_RH_Reso_pionCombCalib_bin_Erec[icalo][ialgo][epart], Form("calibrated: mean: %1.1f, #sigma/#it{E}: %1.2f",fit_reso_pionCombCalib_Erec[ialgo][epart]->GetParameter(1),100*fit_reso_pionCombCalib_Erec[ialgo][epart]->GetParameter(2)/fit_reso_pionCombCalib_Erec[ialgo][epart]->GetParameter(1)), "pl");
+        }
+          legendEB_wSmear->AddEntry((TObject*)0, " ", "");
+    legendEB_wSmear->Draw();
     }
     histEPlotDummy_SB_FH->Draw("same,axis");
       cReso2x2->Print(Form("%s/FHCALSTANDALONE_pion_SingleBin_%s%s_Erec.%s", outputDir.Data(),str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(), suffix.Data()));
@@ -997,7 +1066,7 @@ TCanvas* cResoEta2 = new TCanvas("cResoEta2","",0,0,1100,1000);
             DrawGammaSetMarkerTF1(fit_reso_clusdep_pionComb_1oE[ialgo], 3, 3, colorPID[2]-10);
             fit_reso_clusdep_pionComb_1oE[ialgo]->SetLineStyle(linestyle_clusterizer[ialgo]);
             fit_reso_clusdep_pionComb_1oE[ialgo]->Draw("same");
-            legendHE_pion->AddEntry(h_FHCALSTANDALONE_pionComb_reso_1oE[icalo][ialgo],Form("#pi^{-} in FHCAL+FEMC: #sigma/#it{E} =  %1.2f/#sqrt{#it{E}} #oplus %1.2f",fit_reso_clusdep_pionComb_1oE[ialgo]->GetParameter(1),fit_reso_clusdep_pionComb_1oE[ialgo]->GetParameter(0)),"pl");
+            legendHE_pion->AddEntry(h_FHCALSTANDALONE_pionComb_reso_1oE[icalo][ialgo],Form("#pi^{-} in FHCAL (with material): #sigma/#it{E} =  %1.2f/#sqrt{#it{E}} #oplus %1.2f",fit_reso_clusdep_pionComb_1oE[ialgo]->GetParameter(1),fit_reso_clusdep_pionComb_1oE[ialgo]->GetParameter(0)),"pl");
           }
         }
         for(int ialgo=0;ialgo<_active_algo;ialgo++){

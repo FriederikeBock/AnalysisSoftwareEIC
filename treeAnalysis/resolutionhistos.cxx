@@ -6,6 +6,7 @@ Int_t verbosityRH = 2;
 TH2F*  h_RH_Reso_E[_active_calo][_active_algo];
 TH2F*  h_RH_Reso_gamma_E[_active_calo][_active_algo];
 TH2F*  h_RH_Reso_pion_E[_active_calo][_active_algo];
+TH2F*  h_RH_Reso_pion_smear_E[_active_calo][_active_algo];
 TH2F*  h_RH_Reso_gamma_E_Eta[_active_calo][_active_algo][nEta+1];
 TH2F*  h_RH_Reso_pion_E_Eta[_active_calo][_active_algo][nEta+1];
 TH2F*  h_RH_Reso_Erec[_active_calo][_active_algo];
@@ -17,6 +18,7 @@ TH2F*  h_RH_ResoCalib_pion_E[_active_calo][_active_algo];
 TH2F*  h_RH_ResoCalib_Erec[_active_calo][_active_algo];
 TH2F*  h_RH_ResoCalib_gamma_Erec[_active_calo][_active_algo];
 TH2F*  h_RH_ResoCalib_pion_Erec[_active_calo][_active_algo];
+TH2F*  h_RH_ResoCalib_smeared_pion_Erec[_active_calo][_active_algo];
 TH2F*  h_RH_ResoComb_E[_active_calo][_active_algo];
 TH2F*  h_RH_ResoComb_gamma_E[_active_calo][_active_algo];
 TH2F*  h_RH_ResoComb_pion_E[_active_calo][_active_algo];
@@ -27,6 +29,7 @@ TH2F*  h_RH_ResoComb_Erec[_active_calo][_active_algo];
 TH2F*  h_RH_ResoComb_gamma_Erec[_active_calo][_active_algo];
 TH2F*  h_RH_ResoComb_pion_Erec[_active_calo][_active_algo];
 TH2F*  h_RH_ResoCombCalib_Erec[_active_calo][_active_algo];
+TH2F*  h_RH_ResoCombCalib_smeared_Erec[_active_calo][_active_algo];
 TH2F*  h_RH_ResoCombCalib_gamma_Erec[_active_calo][_active_algo];
 TH2F*  h_RH_ResoCombCalib_pion_Erec[_active_calo][_active_algo];
 
@@ -102,6 +105,7 @@ void resolutionhistos(){
       if(!h_RH_Reso_E[icalo][ialgo])h_RH_Reso_E[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
       if(!h_RH_Reso_gamma_E[icalo][ialgo])h_RH_Reso_gamma_E[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_gamma_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
       if(!h_RH_Reso_pion_E[icalo][ialgo])h_RH_Reso_pion_E[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_pion_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+      if(!h_RH_Reso_pion_smear_E[icalo][ialgo])h_RH_Reso_pion_smear_E[icalo][ialgo] 	= new TH2F(Form("h_RH_Reso_pion_smear_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
       for (Int_t eT = 0; eT < nEta+1; eT++){
         if(!h_RH_Reso_gamma_E_Eta[icalo][ialgo][eT])h_RH_Reso_gamma_E_Eta[icalo][ialgo][eT] 	= new TH2F(Form("h_RH_Reso_gamma_E_Eta_%s_%s_%d",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),eT), "", 500,0,250,100, 0, 2);
         if(!h_RH_Reso_pion_E_Eta[icalo][ialgo][eT])h_RH_Reso_pion_E_Eta[icalo][ialgo][eT] 	= new TH2F(Form("h_RH_Reso_pion_E_Eta_%s_%s_%d",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),eT), "", 500,0,250,100, 0, 2);
@@ -117,6 +121,7 @@ void resolutionhistos(){
       if(!h_RH_ResoCalib_Erec[icalo][ialgo])h_RH_ResoCalib_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCalib_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
       if(!h_RH_ResoCalib_gamma_Erec[icalo][ialgo])h_RH_ResoCalib_gamma_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCalib_gamma_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
       if(!h_RH_ResoCalib_pion_Erec[icalo][ialgo])h_RH_ResoCalib_pion_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCalib_pion_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+      if(!h_RH_ResoCalib_smeared_pion_Erec[icalo][ialgo])h_RH_ResoCalib_smeared_pion_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCalib_smeared_pion_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
 
 
       for(Int_t iclus=0; iclus<nclusters_RH; iclus++){
@@ -138,6 +143,9 @@ void resolutionhistos(){
             if(abs(_mcpart_PDG[imc])==22)h_RH_Reso_gamma_E[icalo][ialgo]->Fill(_mcpart_E[imc],clusters_RH_E[iclus]/_mcpart_E[imc]);
             if(abs(_mcpart_PDG[imc])==211)h_RH_Reso_pion_E[icalo][ialgo]->Fill(_mcpart_E[imc],clusters_RH_E[iclus]/_mcpart_E[imc]);
 
+            float smearedClusE = clusters_RH_E[iclus]*=getEnergySmearing(icalo,ialgo);
+            if(abs(_mcpart_PDG[imc])==211)h_RH_Reso_pion_smear_E[icalo][ialgo]->Fill(_mcpart_E[imc],smearedClusE/_mcpart_E[imc]);
+
             Int_t et = 0;
             while ( ( clusters_RH_Eta[iclus] > partEta[et+1] ) && ( et < nEta )) et++;
             if(abs(_mcpart_PDG[imc])==22)h_RH_Reso_gamma_E_Eta[icalo][ialgo][et]->Fill(_mcpart_E[imc],clusters_RH_E[iclus]/_mcpart_E[imc]);
@@ -156,6 +164,7 @@ void resolutionhistos(){
             h_RH_ResoCalib_Erec[icalo][ialgo]->Fill(clusterE_calo,clusterE_calo/_mcpart_E[imc]);
             if(abs(_mcpart_PDG[imc])==22)h_RH_ResoCalib_gamma_Erec[icalo][ialgo]->Fill(clusterE_calo,clusterE_calo/_mcpart_E[imc]);
             if(abs(_mcpart_PDG[imc])==211)h_RH_ResoCalib_pion_Erec[icalo][ialgo]->Fill(clusterE_calo,clusterE_calo/_mcpart_E[imc]);
+            if(abs(_mcpart_PDG[imc])==211)h_RH_ResoCalib_smeared_pion_Erec[icalo][ialgo]->Fill(clusterE_calo,(clusterE_calo*getEnergySmearing(icalo,ialgo))/_mcpart_E[imc]);
           }
         }
       }
@@ -205,6 +214,7 @@ void resolutionhistos(){
     if(!h_RH_ResoComb_gamma_Erec[icalo][ialgo])h_RH_ResoComb_gamma_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoComb_gamma_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
     if(!h_RH_ResoComb_pion_Erec[icalo][ialgo])h_RH_ResoComb_pion_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoComb_pion_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
     if(!h_RH_ResoCombCalib_Erec[icalo][ialgo])h_RH_ResoCombCalib_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCombCalib_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
+    if(!h_RH_ResoCombCalib_smeared_Erec[icalo][ialgo])h_RH_ResoCombCalib_smeared_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCombCalib_smeared_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
     if(!h_RH_ResoCombCalib_gamma_Erec[icalo][ialgo])h_RH_ResoCombCalib_gamma_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCombCalib_gamma_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
     if(!h_RH_ResoCombCalib_pion_Erec[icalo][ialgo])h_RH_ResoCombCalib_pion_Erec[icalo][ialgo] 	= new TH2F(Form("h_RH_ResoCombCalib_pion_Erec_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 500,0,250,400, 0, 2);
 
@@ -218,6 +228,7 @@ void resolutionhistos(){
       float clusterenergy = clusters_comb_RH_E[iclus];
       float clusterenergyCalib = clusters_comb_RH_E[iclus];
       clusterenergyCalib/=getCalibrationValue(clusters_comb_RH_E[iclus], kFHCAL, ialgo);
+      float clusterengeryCalib_smeared = clusterenergyCalib*=getEnergySmearing(icalo,ialgo);
       // float clusterenergyCalib = clusters_comb_RH_E[iclus]/calibrationFHCAL(clusters_comb_RH_E[iclus]);;
       // loop over MC particles
       for(Int_t imc=0; imc<_nMCPart; imc++){
@@ -245,6 +256,7 @@ void resolutionhistos(){
           if(abs(_mcpart_PDG[imc])==22)h_RH_ResoComb_gamma_Erec[icalo][ialgo]->Fill(clusterenergy,clusterenergy/_mcpart_E[imc]);
           if(abs(_mcpart_PDG[imc])==211)h_RH_ResoComb_pion_Erec[icalo][ialgo]->Fill(clusterenergy,clusterenergy/_mcpart_E[imc]);
           h_RH_ResoCombCalib_Erec[icalo][ialgo]->Fill(clusterenergy,clusterenergyCalib/_mcpart_E[imc]);
+          h_RH_ResoCombCalib_smeared_Erec[icalo][ialgo]->Fill(clusterenergy,clusterengeryCalib_smeared/_mcpart_E[imc]);
           if(abs(_mcpart_PDG[imc])==22)h_RH_ResoCombCalib_gamma_Erec[icalo][ialgo]->Fill(clusterenergy,clusterenergyCalib/_mcpart_E[imc]);
           if(abs(_mcpart_PDG[imc])==211)h_RH_ResoCombCalib_pion_Erec[icalo][ialgo]->Fill(clusterenergy,clusterenergyCalib/_mcpart_E[imc]);
         }
@@ -264,6 +276,7 @@ void resolutionhistosSave(){
       if(h_RH_Reso_E[icalo][ialgo])h_RH_Reso_E[icalo][ialgo]->Write();
       if(h_RH_Reso_gamma_E[icalo][ialgo])h_RH_Reso_gamma_E[icalo][ialgo]->Write();
       if(h_RH_Reso_pion_E[icalo][ialgo])h_RH_Reso_pion_E[icalo][ialgo]->Write();
+      if(h_RH_Reso_pion_smear_E[icalo][ialgo])h_RH_Reso_pion_smear_E[icalo][ialgo]->Write();
 
       for (Int_t eT = 0; eT < nEta+1; eT++){
         if(h_RH_Reso_gamma_E_Eta[icalo][ialgo][eT])h_RH_Reso_gamma_E_Eta[icalo][ialgo][eT]->Write();
@@ -281,6 +294,7 @@ void resolutionhistosSave(){
       if(h_RH_ResoCalib_Erec[icalo][ialgo])h_RH_ResoCalib_Erec[icalo][ialgo]->Write();
       if(h_RH_ResoCalib_gamma_Erec[icalo][ialgo])h_RH_ResoCalib_gamma_Erec[icalo][ialgo]->Write();
       if(h_RH_ResoCalib_pion_Erec[icalo][ialgo])h_RH_ResoCalib_pion_Erec[icalo][ialgo]->Write();
+      if(h_RH_ResoCalib_smeared_pion_Erec[icalo][ialgo])h_RH_ResoCalib_smeared_pion_Erec[icalo][ialgo]->Write();
       if(icalo==0){
         if(h_RH_ResoComb_E[icalo][ialgo])h_RH_ResoComb_E[icalo][ialgo]->Write();
         if(h_RH_ResoComb_gamma_E[icalo][ialgo])h_RH_ResoComb_gamma_E[icalo][ialgo]->Write();
@@ -292,6 +306,7 @@ void resolutionhistosSave(){
         if(h_RH_ResoComb_gamma_Erec[icalo][ialgo])h_RH_ResoComb_gamma_Erec[icalo][ialgo]->Write();
         if(h_RH_ResoComb_pion_Erec[icalo][ialgo])h_RH_ResoComb_pion_Erec[icalo][ialgo]->Write();
         if(h_RH_ResoCombCalib_Erec[icalo][ialgo])h_RH_ResoCombCalib_Erec[icalo][ialgo]->Write();
+        if(h_RH_ResoCombCalib_smeared_Erec[icalo][ialgo])h_RH_ResoCombCalib_smeared_Erec[icalo][ialgo]->Write();
         if(h_RH_ResoCombCalib_gamma_Erec[icalo][ialgo])h_RH_ResoCombCalib_gamma_Erec[icalo][ialgo]->Write();
         if(h_RH_ResoCombCalib_pion_Erec[icalo][ialgo])h_RH_ResoCombCalib_pion_Erec[icalo][ialgo]->Write();
       }

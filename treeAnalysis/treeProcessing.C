@@ -31,7 +31,9 @@ void treeProcessing(
     bool hasTiming              = true,
     bool isALLSILICON           = true, 
     Double_t maxNEvent          = -1,
-    Int_t verbosity             = 0
+    Int_t verbosity             = 0,
+    int granularity_factor      = 1,
+    bool doCalibration          = true
 ){
     // make output directory
     TString dateForOutput                       = ReturnDateStr();
@@ -55,7 +57,11 @@ void treeProcessing(
     }
     _do_TimingStudies         = hasTiming;
     _is_ALLSILICON            = isALLSILICON;
-    
+    _granularityCalo          = granularity_factor;
+    _doClusterECalibration    = doCalibration;
+    if(_doClusterECalibration){
+        cout << "clusters will be energy-corrected and subsequently smeared to meet testbeam constant term!" << endl;
+    }
     _nEventsTree=0;
     // main event loop
     for (Long64_t i=0; i<nEntriesTree;i++) {
@@ -503,8 +509,8 @@ void treeProcessing(
             if(verbosity>1)cout << "found " << std::get<1>(jetsTrackRec).size() << " rec track jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
 
             // full jets (rec)
-            // auto jetsFullRec = findJets(0.5, "anti-kt", jetf_full_px, jetf_full_py, jetf_full_pz, jetf_full_E);
-            // if(verbosity>1) cout << "found " << std::get<1>(jetsFullRec).size() << " rec full jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
+            auto jetsFullRec = findJets(0.5, "anti-kt", jetf_full_px, jetf_full_py, jetf_full_pz, jetf_full_E);
+            if(verbosity>1) cout << "found " << std::get<1>(jetsFullRec).size() << " rec full jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
 
             // hcal jets (rec)
             // auto jetsHcalRec = findJets(0.5, "anti-kt", jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz, jetf_hcal_E);
@@ -519,7 +525,7 @@ void treeProcessing(
             if(verbosity>1) cout << "found " << std::get<1>(jetsAllRec).size() << " rec all jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
 
             jetresolutionhistos(jetsTrackRec,jetsTrueCharged,0);
-            // jetresolutionhistos(jetsFullRec,jetsTrue,1);
+            jetresolutionhistos(jetsFullRec,jetsTrue,1);
             // jetresolutionhistos(jetsHcalRec,jetsTrue,2);
             jetresolutionhistos(jetsCaloRec,jetsTrue,3);
             jetresolutionhistos(jetsAllRec,jetsTrue,4);

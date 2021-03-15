@@ -1,4 +1,6 @@
 // ANCHOR basic struct for towers in clusterizer
+int _granularityCalo = 1;
+
 typedef struct {
   float tower_E;
   int tower_iEta;
@@ -53,26 +55,27 @@ void setBOOLClusterArrayToZero(bool* &arrayinput){
   }
 }
 // conversion functions for processing
-float* EtaPhiFromIndices(int ieta,int iphi, int granularity = 1,float energy = 0, int caloSelect = 0);
-TVector3 TowerPositionVectorFromIndices(int ieta,int iphi, int caloSelect = 0, int granularity = 1);
+float* EtaPhiFromIndices(int ieta,int iphi,float energy = 0, int caloSelect = 0);
+TVector3 TowerPositionVectorFromIndices(int ieta,int iphi, int caloSelect = 0);
 
 float weightM02 = 4.5;
 float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers, float w_0, float cluster_E_calc, int caloSelect, Bool_t debugOutput);
 
 
 // ANCHOR function to return eta and phi from cell iEta and iPhi indices
-float * EtaPhiFromIndices(int i_x,int i_y, int granularity = 1, float energy, int caloSelect = 0){
+float * EtaPhiFromIndices(int i_x,int i_y, float energy, int caloSelect = 0){
   static float eta_phi[2];
   float zHC = 400;
-  float twrD = 10./granularity;
-  // center (x=0,y=0) at 27,27 with 10x10 granularity
-  int center_x = 27*granularity;
-  int center_y = 27*granularity;
+  float twrD = 10./_granularityCalo;
+  // center (x=0,y=0) at 27,27 with 10x10 granularity, and 53,53 with 5x5 granularity
+  int center_x = _granularityCalo==1 ? 27 : 53;
+  int center_y = _granularityCalo==1 ? 27 : 53;
+  // center (x=0,y=0) at 27,27 with 5.5x5.5 granularity, and 65,65 with 2.75x2.75 granularity
   if(caloSelect==kFEMC){
     zHC = 310;
-    twrD = 5.535/granularity;
-    center_x = 32*granularity;
-    center_y = 32*granularity;
+    twrD = 5.535/_granularityCalo;
+    center_x = _granularityCalo==1 ? 32 : 65;
+    center_y = _granularityCalo==1 ? 32 : 65;
   }
 
   TVector3 vecTwr((center_x-i_x)*twrD,(center_y-i_y)*twrD,zHC);
@@ -84,18 +87,18 @@ float * EtaPhiFromIndices(int i_x,int i_y, int granularity = 1, float energy, in
 }
 
 // ANCHOR function to return a TVector3 for the tower position based on iEta and iPhi indices
-TVector3 TowerPositionVectorFromIndices(int i_x,int i_y, int caloSelect = 0, int granularity = 1){
+TVector3 TowerPositionVectorFromIndices(int i_x,int i_y, int caloSelect = 0){
   float zHC = 350;
-  float twrD = 10./granularity;
+  float twrD = 10./_granularityCalo;
   // center (x=0,y=0) at 27,27 with 10x10 granularity
-  int center_x = 27*granularity;
-  int center_y = 27*granularity;
+  int center_x = 27*_granularityCalo;
+  int center_y = 27*_granularityCalo;
 
   if(caloSelect==kFEMC){
     zHC = 291;
-    twrD = 5.535/granularity;
-    center_x = 32*granularity;
-    center_y = 32*granularity;
+    twrD = 5.535/_granularityCalo;
+    center_x = 32*_granularityCalo;
+    center_y = 32*_granularityCalo;
   }
 
   TVector3 twrPositionVec((center_x-i_x)*twrD,(center_y-i_y)*twrD,zHC);
@@ -740,6 +743,24 @@ float getCalibrationValue(float clusterE, int caloEnum, int algoEnum){
     } else if(algoEnum==kMA){
       float paramscalib[5]= {3.43486, 0.120574, 1.81206, -613.209, 913.285}; //noshift
       return (( paramscalib[0] + paramscalib[1] * TMath::Log(clusterE) ) / ( 1 + ( paramscalib[2] * TMath::Exp( ( clusterE - paramscalib[3] ) / paramscalib[4] ) ) ));
+    } else {
+      return 1.0;
+    }
+  } else {
+    return 1.0;
+  }
+  return 1.0;
+}
+
+float getEnergySmearing( int caloEnum, int algoEnum){
+  _fRandom.SetSeed(0);
+  if(caloEnum==kFHCAL){
+    if(algoEnum==kMA){
+      return _fRandom.Gaus(1,0.0985);
+    } else if(algoEnum==kV1){
+      return _fRandom.Gaus(1,0.10);
+    } else if(algoEnum==kV3){
+      return _fRandom.Gaus(1,0.04);
     } else {
       return 1.0;
     }

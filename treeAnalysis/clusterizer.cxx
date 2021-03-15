@@ -264,6 +264,7 @@ void runclusterizer(
       // apply calibration if desired
       if(_doClusterECalibration){
           clusters_E[nclusters]/=getCalibrationValue(clusters_E[nclusters], caloEnum, clusterizerEnum);
+          clusters_E[nclusters]*=getEnergySmearing( caloEnum, clusterizerEnum);
       }
       nclusters++;
     } else {
