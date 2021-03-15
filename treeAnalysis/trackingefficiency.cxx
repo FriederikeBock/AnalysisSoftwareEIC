@@ -21,8 +21,10 @@ TH2F*  h_chargedpart_MC_p         = new TH2F("h_chargedpart_MC_p", "", nBinsP, b
 TH2F*  h_particle_MC_p[nPart_TRKEFF];
 TH2F*  h_chargedpart_rec_p        = new TH2F("h_chargedpart_rec_p", "", nBinsP, binningP, 80, -4.0,4.0);
 TH2F*  h_chargedpart_rec_truep    = new TH2F("h_chargedpart_rec_truep", "", nBinsP, binningP, 80, -4.0,4.0);
+TH2F*  h_chargedpart_rec_trueE    = new TH2F("h_chargedpart_rec_trueE", "", nBinsP, binningP, 80, -4.0,4.0);
 TH2F*  h_particle_rec_p[nPart_TRKEFF];
 TH2F*  h_particle_rec_truep[nPart_TRKEFF];
+TH2F*  h_particle_rec_trueE[nPart_TRKEFF];
 
 TH2F*  h_chargedpart_MC_E         = new TH2F("h_chargedpart_MC_E", "", nBinsP, binningP, 80, -4.0,4.0);
 TH2F*  h_particle_MC_E[nPart_TRKEFF];
@@ -62,6 +64,9 @@ void trackingefficiency(){
       if(!h_particle_MC_p[ipart]) h_particle_MC_p[ipart] 	= new TH2F(Form("h_%s_MC_p",str_TRKEFF_mcparticles[ipart].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
       if(!h_particle_rec_p[ipart]) h_particle_rec_p[ipart] 	= new TH2F(Form("h_%s_rec_p",str_TRKEFF_mcparticles[ipart].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
       if(!h_particle_rec_truep[ipart]) h_particle_rec_truep[ipart] 	= new TH2F(Form("h_%s_rec_truep",str_TRKEFF_mcparticles[ipart].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+      if(!h_particle_rec_trueE[ipart]) h_particle_rec_trueE[ipart] 	= new TH2F(Form("h_%s_rec_trueE",str_TRKEFF_mcparticles[ipart].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+      
+      
       if(!h_particle_MC_E[ipart]) h_particle_MC_E[ipart] 	= new TH2F(Form("h_%s_MC_E",str_TRKEFF_mcparticles[ipart].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
       
       if(abs(_mcpart_PDG[imc]) == int_TRKEFF_mcparticles_PDG[ipart]){
@@ -88,7 +93,10 @@ void trackingefficiency(){
     float truept = mcpartvec.Pt();
     float pmom = recpartvec.Mag();
     float truepmom = mcpartvec.Mag();
-        
+    TParticlePDG *part = TDatabasePDG::Instance()->GetParticle(abs(_mcpart_PDG[(int)_track_trueID[itrk]-1]));
+    Double_t mass = part->Mass();
+    float trueE     = TMath::Sqrt(truepmom*truepmom+mass*mass);
+    
     for(int ipart=0;ipart<nPart_TRKEFF;ipart++){
       if(abs(_mcpart_PDG[(int)_track_trueID[itrk]-1])==int_TRKEFF_mcparticles_PDG[ipart]){
         h_particle_rec_pT[ipart]->Fill(pt,trueeta);
@@ -98,8 +106,10 @@ void trackingefficiency(){
 
         h_particle_rec_p[ipart]->Fill(pmom,trueeta);
         h_particle_rec_truep[ipart]->Fill(truepmom,trueeta);
+        h_particle_rec_trueE[ipart]->Fill(trueE,trueeta);
         h_chargedpart_rec_p->Fill(pmom,trueeta);
         h_chargedpart_rec_truep->Fill(truepmom,trueeta);
+        h_chargedpart_rec_trueE->Fill(trueE,trueeta);
       }
     }
   }
@@ -123,7 +133,6 @@ void trackingresolution(){
         h_tracksRec_Eta_pT[ipart][k]          = new TH2F(Form("h_tracks_%s_%s_Rec_Eta_pT", str_TRKEFF_mcparticles[ipart].Data(), nameCuts[k].Data() ), "; #it{p}_{T,rec} (GeV/c); #eta_{rec}", 200, 0, 20, 200, -4, 4.);
         h_tracksTrue_Eta_p[ipart][k]          = new TH2F(Form("h_tracks_%s_%s_True_Eta_p", str_TRKEFF_mcparticles[ipart].Data(), nameCuts[k].Data() ), "; #it{p}_{MC} (GeV/c); #eta_{MC}", nBinsP, binningP,  200, -4, 4.);
         h_tracksRec_Eta_p[ipart][k]           = new TH2F(Form("h_tracks_%s_%s_Rec_Eta_p", str_TRKEFF_mcparticles[ipart].Data(), nameCuts[k].Data() ), "; #it{p}_{rc} (GeV/c); #eta_{rec}", nBinsP, binningP, 200, -4, 4.);
-        
 //         std::cout << h_tracksTrue_Eta_pT[ipart][k]->GetName() << "\t" << h_tracksRec_Eta_pT[ipart][k]->GetName()  << "\t" << h_tracksTrue_Eta_p[ipart][k]->GetName() << "\t" << h_tracksRec_Eta_p[ipart][k]->GetName()<< std::endl;
       }
     }
@@ -171,7 +180,7 @@ void trackingresolution(){
     float truept    = mcpartvec.Pt();
     float pmom      = recpartvec.Mag();
     float truepmom  = mcpartvec.Mag();
-            
+    
     Int_t parIdx = 5;
     if(abs(_mcpart_PDG[(int)_track_trueID[itrk]-1]) == 11)   parIdx = 0;
     if(abs(_mcpart_PDG[(int)_track_trueID[itrk]-1]) == 211)  parIdx = 1;
@@ -181,7 +190,8 @@ void trackingresolution(){
     
     TParticlePDG *part = TDatabasePDG::Instance()->GetParticle(abs(_mcpart_PDG[(int)_track_trueID[itrk]-1]));
     Double_t mass = part->Mass();
-
+    float trueE     = TMath::Sqrt(truepmom*truepmom+mass*mass);
+    
     Bool_t hasTL      = kFALSE;
     Bool_t hasTLAE    = kFALSE;
     Bool_t hasFTrL    = kFALSE;
@@ -348,6 +358,7 @@ void trackingefficiencyhistosSave(){
   if(h_chargedpart_MC_p) h_chargedpart_MC_p->Write();
   if(h_chargedpart_rec_p) h_chargedpart_rec_p->Write();
   if(h_chargedpart_rec_truep) h_chargedpart_rec_truep->Write();
+  if(h_chargedpart_rec_trueE) h_chargedpart_rec_trueE->Write();
   if(h_chargedpart_MC_p && h_chargedpart_rec_p && h_chargedpart_rec_truep) {
     TH2F*  h_chargedpart_eff_p = (TH2F*)h_chargedpart_rec_p->Clone("h_chargedpart_eff_p");
     h_chargedpart_eff_p->Divide(h_chargedpart_MC_p);
@@ -376,6 +387,7 @@ void trackingefficiencyhistosSave(){
     if(h_particle_MC_p[ipart]) h_particle_MC_p[ipart]->Write();
     if(h_particle_rec_p[ipart]) h_particle_rec_p[ipart]->Write();
     if(h_particle_rec_truep[ipart]) h_particle_rec_truep[ipart]->Write();
+    if(h_particle_rec_trueE[ipart]) h_particle_rec_trueE[ipart]->Write();
     if(h_particle_MC_p[ipart] && h_particle_rec_p[ipart] && h_particle_rec_truep[ipart]) {
       h_particle_eff_p[ipart] = (TH2F*)h_particle_rec_p[ipart]->Clone(Form("h_%s_eff_p",str_TRKEFF_mcparticles[ipart].Data()));
       h_particle_eff_p[ipart]->Divide(h_particle_MC_p[ipart]);

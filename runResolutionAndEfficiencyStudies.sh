@@ -124,10 +124,11 @@ elif [ $1 = "plotsPID" ]; then
 
 elif [ $1 = "CompTrackingResol" ]; then
   root -q -x -l -b 'trackingresolution/compare_trackingreso_Pythia.C("filesCompareReso_granularity.txt","Granularity-pTHard5GeV","pdf",kFALSE)'
-  root -q -x -l -b 'trackingresolution/compare_trackingreso_Pythia.C("filesCompareReso_Setups.txt","Setups-pTHard5GeV","pdf",kFALSE)'
-  root -q -x -l -b 'trackingresolution/compare_trackingreso_Pythia.C("filesCompareReso_SetupsRed.txt","SetupsRed-pTHard5GeV","pdf",kFALSE)'
-  root -q -x -l -b 'trackingresolution/compare_trackingreso_Pythia.C("filesCompareReso_granularity_LANL.txt","GranularityLANL-pTHard5GeV","pdf",kFALSE)'
-  root -q -x -l -b 'trackingresolution/compare_trackingreso_Pythia.C("filesCompareReso_Tracker.txt","Tracker-pTHard5GeV","pdf",kFALSE)'
+  root -q -x -l -b 'trackingresolution/compare_trackingreso_Pythia.C("filesCompareResoBfields.txt","LBLBfield-pTHard5GeV","pdf",kFALSE)'
+  root -q -x -l -b 'trackingresolution/compare_trackingreso_Pythia.C("filesCompareReso_Energies.txt","LBLLGAD-EnergyDep-pTHard5GeV","pdf",kFALSE)'
+#   root -q -x -l -b 'trackingresolution/compare_trackingreso_Pythia.C("filesCompareReso_SetupsRed.txt","SetupsRed-pTHard5GeV","pdf",kFALSE)'
+#   root -q -x -l -b 'trackingresolution/compare_trackingreso_Pythia.C("filesCompareReso_granularity_LANL.txt","GranularityLANL-pTHard5GeV","pdf",kFALSE)'
+#   root -q -x -l -b 'trackingresolution/compare_trackingreso_Pythia.C("filesCompareReso_Tracker.txt","Tracker-pTHard5GeV","pdf",kFALSE)'
   
 elif [ $1 = "treeOld" ]; then
   
@@ -178,7 +179,7 @@ elif [ $1 = "trackingReso" ]; then
                     
   for i in {1..3}; do
 #     root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$fileLBLMB'/output_TRKRS.root","pdf","defaultLBL-MB",kFALSE,'$i')'
-#     root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$fileLBLPTHARD'/output_TRKRS.root","pdf","defaultLBL-pTHard5GeV",kFALSE,'$i')'
+    root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$fileLBLPTHARD'/output_TRKRS.root","pdf","defaultLBL-pTHard5GeV",kFALSE,'$i')'
     root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$fileACLGADMB'/output_TRKRS.root","pdf","LBLwithACLGAD-MB",kFALSE,'$i')'
     root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$fileACLGADPTHARD'/output_TRKRS.root","pdf","LBLwithACLGAD-pTHard5GeV",kFALSE,'$i')'
     root -b -x -q -b 'trackingresolution/trackingreso_Pythia.C("'$fileLGADMB'/output_TRKRS.root","pdf","LBLwithLGAD-MB",kFALSE,'$i')'
@@ -263,7 +264,7 @@ elif [ $1 = "CompTrackingEffi" ]; then
   root -b -x -q -l 'trackingresolution/compare_trackingeffi.C("filesCompareEffiBfields.txt","LBLBfield-pTHard5GeV","pdf")'
   root -b -x -q -l 'trackingresolution/compare_trackingeffi.C("filesCompareEffiEnergies.txt","LBLLGAD-EnergyDep-pTHard5GeV","pdf")'
 elif [ $1 = "clusterEffi" ]; then  
-  baseDir=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing_Temp
+  baseDir=/home/fbock/eic/Analysis/EventTree_20210309/treeAnalysis/treeProcessing
   fileACLGADMB=$baseDir/LBLACLGAD_MB
   fileACLGADPTHARD=$baseDir/LBLACLGAD_pTHard
   fileLBLMB=$baseDir/LBL_MB
@@ -294,59 +295,59 @@ elif [ $1 = "clusterEffi" ]; then
 
 
   fileCALO=$baseDir/CaloOnly_SinglePi
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileCALO'/output_TRKEFF.root","'$fileCALO'/output_CS.root","FEMC","pdf","CaloStandalone")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileCALO'/output_TRKEFF.root","'$fileCALO'/output_CS.root","FHCAL","pdf","CaloStandalone")'
-
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileACLGADMB'/output_TRKEFF.root","'$fileACLGADMB'/output_CS.root","FHCAL","pdf","LBLwithACLGAD-MB")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileACLGADMB'/output_TRKEFF.root","'$fileACLGADMB'/output_CS.root","FEMC","pdf","LBLwithACLGAD-MB")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileACLGADPTHARD'/output_TRKEFF.root","'$fileACLGADPTHARD'/output_CS.root","FHCAL","pdf","LBLwithACLGAD-pTHard5GeV")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileACLGADPTHARD'/output_TRKEFF.root","'$fileACLGADPTHARD'/output_CS.root","FEMC","pdf","LBLwithACLGAD-pTHard5GeV")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLMB'/output_TRKEFF.root","'$fileLBLMB'/output_CS.root","FHCAL","pdf","defaultLBL-MB")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLMB'/output_TRKEFF.root","'$fileLBLMB'/output_CS.root","FEMC","pdf","defaultLBL-MB")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLPTHARD'/output_TRKEFF.root","'$fileLBLPTHARD'/output_CS.root","FHCAL","pdf","defaultLBL-pTHard5GeV")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLPTHARD'/output_TRKEFF.root","'$fileLBLPTHARD'/output_CS.root","FEMC","pdf","defaultLBL-pTHard5GeV")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLGADMB'/output_TRKEFF.root","'$fileLGADMB'/output_CS.root","FHCAL","pdf","LBLwithLGAD-MB")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLGADMB'/output_TRKEFF.root","'$fileLGADMB'/output_CS.root","FEMC","pdf","LBLwithLGAD-MB")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileCALO'/output_TRKEFF.root","'$fileCALO'/output_CS.root","FEMC","pdf","CaloStandalone")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileCALO'/output_TRKEFF.root","'$fileCALO'/output_CS.root","FHCAL","pdf","CaloStandalone")'
+# 
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileACLGADMB'/output_TRKEFF.root","'$fileACLGADMB'/output_CS.root","FHCAL","pdf","LBLwithACLGAD-MB")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileACLGADMB'/output_TRKEFF.root","'$fileACLGADMB'/output_CS.root","FEMC","pdf","LBLwithACLGAD-MB")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileACLGADPTHARD'/output_TRKEFF.root","'$fileACLGADPTHARD'/output_CS.root","FHCAL","pdf","LBLwithACLGAD-pTHard5GeV")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileACLGADPTHARD'/output_TRKEFF.root","'$fileACLGADPTHARD'/output_CS.root","FEMC","pdf","LBLwithACLGAD-pTHard5GeV")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLMB'/output_TRKEFF.root","'$fileLBLMB'/output_CS.root","FHCAL","pdf","defaultLBL-MB")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLMB'/output_TRKEFF.root","'$fileLBLMB'/output_CS.root","FEMC","pdf","defaultLBL-MB")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLPTHARD'/output_TRKEFF.root","'$fileLBLPTHARD'/output_CS.root","FHCAL","pdf","defaultLBL-pTHard5GeV")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLPTHARD'/output_TRKEFF.root","'$fileLBLPTHARD'/output_CS.root","FEMC","pdf","defaultLBL-pTHard5GeV")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLGADMB'/output_TRKEFF.root","'$fileLGADMB'/output_CS.root","FHCAL","pdf","LBLwithLGAD-MB")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLGADMB'/output_TRKEFF.root","'$fileLGADMB'/output_CS.root","FEMC","pdf","LBLwithLGAD-MB")'
   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLGADPTHARD'/output_TRKEFF.root","'$fileLGADPTHARD'/output_CS.root","FHCAL","pdf","LBLwithLGAD-pTHard5GeV")'
   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLGADPTHARD'/output_TRKEFF.root","'$fileLGADPTHARD'/output_CS.root","FEMC","pdf","LBLwithLGAD-pTHard5GeV")'
 
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLPTHARD2x'/output_TRKEFF.root","'$fileLBLPTHARD2x'/output_CS.root","FHCAL","pdf","LBLwithLGAD-2x-MB")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLPTHARD2x'/output_TRKEFF.root","'$fileLBLPTHARD2x'/output_CS.root","FEMC","pdf","LBLwithLGAD-2x-MB")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLPTHARD2x'/output_TRKEFF.root","'$file3TLBLPTHARD2x'/output_CS.root","FHCAL","pdf","LBLwithLGAD-2x-MB-3T")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLPTHARD2x'/output_TRKEFF.root","'$file3TLBLPTHARD2x'/output_CS.root","FEMC","pdf","LBLwithLGAD-2x-MB-3T")'
-  
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLLGAD18275MB'/output_TRKEFF.root","'$fileLBLLGAD18275MB'/output_CS.root","FHCAL","pdf","defaultLBL-MB-e18p275")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLLGAD18275MB'/output_TRKEFF.root","'$fileLBLLGAD18275MB'/output_CS.root","FEMC","pdf","defaultLBL-MB-e18p275")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLLGAD18275PTHARD'/output_TRKEFF.root","'$fileLBLLGAD18275PTHARD'/output_CS.root","FHCAL","pdf","defaultLBL-pTHard5GeV-e18p275")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLLGAD18275PTHARD'/output_TRKEFF.root","'$fileLBLLGAD18275PTHARD'/output_CS.root","FEMC","pdf","defaultLBL-pTHard5GeV-e18p275")'
-  
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLLGAD5100MB'/output_TRKEFF.root","'$fileLBLLGAD5100MB'/output_CS.root","FHCAL","pdf","defaultLBL-MB-e5p100")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLLGAD5100MB'/output_TRKEFF.root","'$fileLBLLGAD5100MB'/output_CS.root","FEMC","pdf","defaultLBL-MB-e5p100")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLLGAD5100PTHARD'/output_TRKEFF.root","'$fileLBLLGAD5100PTHARD'/output_CS.root","FHCAL","pdf","defaultLBL-pTHard5GeV-e5p100")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLLGAD5100PTHARD'/output_TRKEFF.root","'$fileLBLLGAD5100PTHARD'/output_CS.root","FEMC","pdf","defaultLBL-pTHard5GeV-e5p100")'
-  
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TACLGADMB'/output_TRKEFF.root","'$file3TACLGADMB'/output_CS.root","FHCAL","pdf","LBLwithACLGAD-MB-3T")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TACLGADMB'/output_TRKEFF.root","'$file3TACLGADMB'/output_CS.root","FEMC","pdf","LBLwithACLGAD-MB-3T")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TACLGADPTHARD'/output_TRKEFF.root","'$file3TACLGADPTHARD'/output_CS.root","FHCAL","pdf","LBLwithACLGAD-pTHard5GeV-3T")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TACLGADPTHARD'/output_TRKEFF.root","'$file3TACLGADPTHARD'/output_CS.root","FEMC","pdf","LBLwithACLGAD-pTHard5GeV-3T")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLMB'/output_TRKEFF.root","'$file3TLBLMB'/output_CS.root","FHCAL","pdf","defaultLBL-MB-3T")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLMB'/output_TRKEFF.root","'$file3TLBLMB'/output_CS.root","FEMC","pdf","defaultLBL-MB-3T")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLPTHARD'/output_TRKEFF.root","'$file3TLBLPTHARD'/output_CS.root","FHCAL","pdf","defaultLBL-pTHard5GeV-3T")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLPTHARD'/output_TRKEFF.root","'$file3TLBLPTHARD'/output_CS.root","FEMC","pdf","defaultLBL-pTHard5GeV-3T")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLGADMB'/output_TRKEFF.root","'$file3TLGADMB'/output_CS.root","FHCAL","pdf","LBLwithLGAD-MB-3T")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLGADMB'/output_TRKEFF.root","'$file3TLGADMB'/output_CS.root","FEMC","pdf","LBLwithLGAD-MB-3T")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLGADPTHARD'/output_TRKEFF.root","'$file3TLGADPTHARD'/output_CS.root","FHCAL","pdf","LBLwithLGAD-pTHard5GeV-3T")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLGADPTHARD'/output_TRKEFF.root","'$file3TLGADPTHARD'/output_CS.root","FEMC","pdf","LBLwithLGAD-pTHard5GeV-3T")'
-
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD18275MB'/output_TRKEFF.root","'$file3TLBLLGAD18275MB'/output_CS.root","FHCAL","pdf","defaultLBL-MB-e18p275-3T")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD18275MB'/output_TRKEFF.root","'$file3TLBLLGAD18275MB'/output_CS.root","FEMC","pdf","defaultLBL-MB-e18p275-3T")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD18275PTHARD'/output_TRKEFF.root","'$file3TLBLLGAD18275PTHARD'/output_CS.root","FHCAL","pdf","defaultLBL-pTHard5GeV-e18p275-3T")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD18275PTHARD'/output_TRKEFF.root","'$file3TLBLLGAD18275PTHARD'/output_CS.root","FEMC","pdf","defaultLBL-pTHard5GeV-e18p275-3T")'
-  
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD5100MB'/output_TRKEFF.root","'$file3TLBLLGAD5100MB'/output_CS.root","FHCAL","pdf","defaultLBL-MB-e5p100-3T")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD5100MB'/output_TRKEFF.root","'$file3TLBLLGAD5100MB'/output_CS.root","FEMC","pdf","defaultLBL-MB-e5p100-3T")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD5100PTHARD'/output_TRKEFF.root","'$file3TLBLLGAD5100PTHARD'/output_CS.root","FHCAL","pdf","defaultLBL-pTHard5GeV-e5p100-3T")'
-  root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD5100PTHARD'/output_TRKEFF.root","'$file3TLBLLGAD5100PTHARD'/output_CS.root","FEMC","pdf","defaultLBL-pTHard5GeV-e5p100-3T")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLPTHARD2x'/output_TRKEFF.root","'$fileLBLPTHARD2x'/output_CS.root","FHCAL","pdf","LBLwithLGAD-2x-MB")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLPTHARD2x'/output_TRKEFF.root","'$fileLBLPTHARD2x'/output_CS.root","FEMC","pdf","LBLwithLGAD-2x-MB")'
+# #   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLPTHARD2x'/output_TRKEFF.root","'$file3TLBLPTHARD2x'/output_CS.root","FHCAL","pdf","LBLwithLGAD-2x-MB-3T")'
+# #   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLPTHARD2x'/output_TRKEFF.root","'$file3TLBLPTHARD2x'/output_CS.root","FEMC","pdf","LBLwithLGAD-2x-MB-3T")'
+#   
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLLGAD18275MB'/output_TRKEFF.root","'$fileLBLLGAD18275MB'/output_CS.root","FHCAL","pdf","defaultLBL-MB-e18p275")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLLGAD18275MB'/output_TRKEFF.root","'$fileLBLLGAD18275MB'/output_CS.root","FEMC","pdf","defaultLBL-MB-e18p275")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLLGAD18275PTHARD'/output_TRKEFF.root","'$fileLBLLGAD18275PTHARD'/output_CS.root","FHCAL","pdf","defaultLBL-pTHard5GeV-e18p275")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLLGAD18275PTHARD'/output_TRKEFF.root","'$fileLBLLGAD18275PTHARD'/output_CS.root","FEMC","pdf","defaultLBL-pTHard5GeV-e18p275")'
+#   
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLLGAD5100MB'/output_TRKEFF.root","'$fileLBLLGAD5100MB'/output_CS.root","FHCAL","pdf","defaultLBL-MB-e5p100")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLLGAD5100MB'/output_TRKEFF.root","'$fileLBLLGAD5100MB'/output_CS.root","FEMC","pdf","defaultLBL-MB-e5p100")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLLGAD5100PTHARD'/output_TRKEFF.root","'$fileLBLLGAD5100PTHARD'/output_CS.root","FHCAL","pdf","defaultLBL-pTHard5GeV-e5p100")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$fileLBLLGAD5100PTHARD'/output_TRKEFF.root","'$fileLBLLGAD5100PTHARD'/output_CS.root","FEMC","pdf","defaultLBL-pTHard5GeV-e5p100")'
+#   
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TACLGADMB'/output_TRKEFF.root","'$file3TACLGADMB'/output_CS.root","FHCAL","pdf","LBLwithACLGAD-MB-3T")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TACLGADMB'/output_TRKEFF.root","'$file3TACLGADMB'/output_CS.root","FEMC","pdf","LBLwithACLGAD-MB-3T")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TACLGADPTHARD'/output_TRKEFF.root","'$file3TACLGADPTHARD'/output_CS.root","FHCAL","pdf","LBLwithACLGAD-pTHard5GeV-3T")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TACLGADPTHARD'/output_TRKEFF.root","'$file3TACLGADPTHARD'/output_CS.root","FEMC","pdf","LBLwithACLGAD-pTHard5GeV-3T")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLMB'/output_TRKEFF.root","'$file3TLBLMB'/output_CS.root","FHCAL","pdf","defaultLBL-MB-3T")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLMB'/output_TRKEFF.root","'$file3TLBLMB'/output_CS.root","FEMC","pdf","defaultLBL-MB-3T")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLPTHARD'/output_TRKEFF.root","'$file3TLBLPTHARD'/output_CS.root","FHCAL","pdf","defaultLBL-pTHard5GeV-3T")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLPTHARD'/output_TRKEFF.root","'$file3TLBLPTHARD'/output_CS.root","FEMC","pdf","defaultLBL-pTHard5GeV-3T")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLGADMB'/output_TRKEFF.root","'$file3TLGADMB'/output_CS.root","FHCAL","pdf","LBLwithLGAD-MB-3T")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLGADMB'/output_TRKEFF.root","'$file3TLGADMB'/output_CS.root","FEMC","pdf","LBLwithLGAD-MB-3T")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLGADPTHARD'/output_TRKEFF.root","'$file3TLGADPTHARD'/output_CS.root","FHCAL","pdf","LBLwithLGAD-pTHard5GeV-3T")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLGADPTHARD'/output_TRKEFF.root","'$file3TLGADPTHARD'/output_CS.root","FEMC","pdf","LBLwithLGAD-pTHard5GeV-3T")'
+# 
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD18275MB'/output_TRKEFF.root","'$file3TLBLLGAD18275MB'/output_CS.root","FHCAL","pdf","defaultLBL-MB-e18p275-3T")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD18275MB'/output_TRKEFF.root","'$file3TLBLLGAD18275MB'/output_CS.root","FEMC","pdf","defaultLBL-MB-e18p275-3T")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD18275PTHARD'/output_TRKEFF.root","'$file3TLBLLGAD18275PTHARD'/output_CS.root","FHCAL","pdf","defaultLBL-pTHard5GeV-e18p275-3T")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD18275PTHARD'/output_TRKEFF.root","'$file3TLBLLGAD18275PTHARD'/output_CS.root","FEMC","pdf","defaultLBL-pTHard5GeV-e18p275-3T")'
+#   
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD5100MB'/output_TRKEFF.root","'$file3TLBLLGAD5100MB'/output_CS.root","FHCAL","pdf","defaultLBL-MB-e5p100-3T")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD5100MB'/output_TRKEFF.root","'$file3TLBLLGAD5100MB'/output_CS.root","FEMC","pdf","defaultLBL-MB-e5p100-3T")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD5100PTHARD'/output_TRKEFF.root","'$file3TLBLLGAD5100PTHARD'/output_CS.root","FHCAL","pdf","defaultLBL-pTHard5GeV-e5p100-3T")'
+#   root -x -q -l -b 'clusterProperties/clustereffi.C("'$file3TLBLLGAD5100PTHARD'/output_TRKEFF.root","'$file3TLBLLGAD5100PTHARD'/output_CS.root","FEMC","pdf","defaultLBL-pTHard5GeV-e5p100-3T")'
 elif [ $1 = "CompClusterEffi" ]; then
   root -b -x -q -l 'clusterProperties/compare_clustereffi.C("filesCompareClusterEffiGranularity.txt","CaloGranularity-pTHard5GeV","FHCAL","pdf")'
   root -b -x -q -l 'clusterProperties/compare_clustereffi.C("filesCompareClusterEffiBfields.txt","LBLBfield-pTHard5GeV","FHCAL","pdf")'

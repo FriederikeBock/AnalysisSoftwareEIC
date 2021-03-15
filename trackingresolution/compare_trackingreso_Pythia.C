@@ -142,7 +142,7 @@ void compare_trackingreso_Pythia(
     histoDummyPtResMean->GetXaxis()->SetNoExponent();
     histoDummyPtResMean->GetYaxis()->SetNdivisions(510,kTRUE);
     histoDummyPtResMean->GetXaxis()->SetMoreLogLabels(kTRUE);
-    TLegend* legendPtResM  = GetAndSetLegend2(0.14, 0.94-(nSets*textSizeLabelsRel), 0.35, 0.94,textSizeLabelsPixel, 1, "", 43, 0.1);
+    TLegend* legendPtResM  = GetAndSetLegend2(0.14, 0.94-(nSets*0.85*textSizeLabelsRel), 0.35, 0.94,0.85*textSizeLabelsPixel, 1, "", 43, 0.1);
     TH2F* histoDummyPtResSigma   = new TH2F("histoDummyPtResSigma","histoDummyPtResSigma",1000,0, 20,1000,-0.0, maxPtSigma[iEta]);
     SetStyleHistoTH2ForGraphs(histoDummyPtResSigma, "#it{p}_{T}^{MC} (GeV/#it{c})","#sigma((#it{p}_{T}^{rec} - #it{p}_{T}^{MC}) / #it{p}_{T}^{MC})", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.05);
     histoDummyPtResSigma->GetXaxis()->SetNoExponent();
@@ -186,7 +186,7 @@ void compare_trackingreso_Pythia(
     histoDummyPResMean->GetXaxis()->SetNoExponent();
     histoDummyPResMean->GetYaxis()->SetNdivisions(510,kTRUE);
     histoDummyPResMean->GetXaxis()->SetMoreLogLabels(kTRUE);
-    TLegend* legendPResM  = GetAndSetLegend2(0.14, 0.94-(nSets*textSizeLabelsRel), 0.35, 0.94,textSizeLabelsPixel, 1, "", 43, 0.1);
+    TLegend* legendPResM  = GetAndSetLegend2(0.14, 0.94-(nSets*0.85*textSizeLabelsRel), 0.35, 0.94,0.85*textSizeLabelsPixel, 1, "", 43, 0.1);
     TH2F* histoDummyPResSigma   = new TH2F("histoDummyPResSigma","histoDummyPResSigma",1000,0.1, 220,1000,-0.0, maxPtSigma[iEta]);
     SetStyleHistoTH2ForGraphs(histoDummyPResSigma, "#it{p}^{MC} (GeV/#it{c})","#sigma((#it{p}^{rec} - #it{p}^{MC}) / #it{p}^{MC})", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.05);
     histoDummyPResSigma->GetXaxis()->SetNoExponent();
