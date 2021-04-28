@@ -34,6 +34,8 @@ void treeProcessing(
     Int_t verbosity             = 0,
     int granularity_factor      = 1,
     bool doCalibration          = false
+    // Defaults to tracking from all layers.
+    unsigned int primaryTrackSource = 0
 ){
     // make output directory
     TString dateForOutput                       = ReturnDateStr();
@@ -347,9 +349,15 @@ void treeProcessing(
         std::vector<float> jetf_all_py;
         std::vector<float> jetf_all_pz;
         std::vector<float> jetf_all_E;
+        double massHypothesis = 0.139;
         for(Int_t itrk=0; itrk<_nTracks; itrk++){
             _track_trueID[itrk] = GetCorrectMCArrayEntry(_track_trueID[itrk]);
             if(verbosity>1) cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk]-1 << "\tand X = " << _track_px[itrk] << " cm" << endl;
+
+            // Skip tracks that aren't selected.
+            if(_track_source[itrk] != primaryTrackSource) {
+                continue;
+            }
 
             if(_do_jetfinding){
                 TVector3 trackvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
