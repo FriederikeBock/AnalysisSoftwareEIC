@@ -380,6 +380,7 @@ void treeProcessing(
         }
         trackingefficiency();
         trackingresolution();
+        trackingcomparison();
 
         // ANCHOR Track projections loop variables:
         // float* _track_ProjTrackID[iproj]
@@ -592,6 +593,8 @@ void treeProcessing(
     trackingefficiencyhistosSave();
     cout << "running trackingresolutionhistosSave" << endl;
     trackingresolutionhistosSave();
+    cout << "running trackingcomparisonhistosSave" << endl;
+    trackingcomparisonhistosSave();
     cout << "running hitstudiesSave" << endl;
     hitstudiesSave();
     cout << "running trackmatchingstudiesSave" << endl;

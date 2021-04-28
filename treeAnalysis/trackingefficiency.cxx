@@ -46,6 +46,17 @@ TH2F* h_tracksRec_Eta_p[nTrackSources][nPart_TRKEFF+1][nCuts]          = {{{null
 Bool_t initResoHist                                     = kFALSE;
 
 // **********************************************************************************************
+// ********************************* Set up tracking comparison histos **************************
+// **********************************************************************************************
+// NOTE: We'll only fill in half of these, but it's easier to create the fully array, and then
+//       we only initialize + write what we need.
+TH2F* h_trackingComparison_eta[nTrackSources][nTrackSources] = {{nullptr}};
+TH2F* h_trackingComparison_phi[nTrackSources][nTrackSources] = {{nullptr}};
+TH2F* h_trackingComparison_pt[nTrackSources][nTrackSources] = {{nullptr}};
+bool initTrackingComparionHists = false;
+
+
+// **********************************************************************************************
 // **************************** tracking efficiency processing **********************************
 // **********************************************************************************************
 void trackingefficiency(){
@@ -55,7 +66,7 @@ void trackingefficiency(){
     if (!h_chargedpart_rec_pT[i]) {
       h_chargedpart_rec_pT[i]       = new TH2F(TString::Format("h_chargedpart_rec_pT_%u", i), "", 60, 0,30,80, -4.0,4.0);
     }
-    if (!h_chargedpart_rec_truepT) {
+    if (!h_chargedpart_rec_truepT[i]) {
       h_chargedpart_rec_truepT[i]   = new TH2F(TString::Format("h_chargedpart_rec_truepT_%u", i), "", 60, 0,30,80, -4.0,4.0);
     }
     if (!h_chargedpart_rec_p[i]) {
@@ -165,7 +176,7 @@ void trackingresolution(){
         for (Int_t k = 0; k < 12; k++){
 //           std::cout << ipart << "\t" << str_TRKEFF_mcparticles[ipart].Data() << "\t" << k << "\t" << nameCuts[k].Data()  << "\t" 
 //                     << Form("h_tracks_%s_%s_True_Eta_pT", str_TRKEFF_mcparticles[ipart].Data(), nameCuts[k].Data()) ;
-          
+
           h_tracksTrue_Eta_pT[iTrkSource][ipart][k]         = new TH2F(Form("h_tracks_%u_%s_%s_True_Eta_pT", iTrkSource, str_TRKEFF_mcparticles[ipart].Data(), nameCuts[k].Data() ), "; #it{p}_{T,MC} (GeV/c); #eta_{MC}", 200, 0, 20, 200, -4, 4.);
           h_tracksRec_Eta_pT[iTrkSource][ipart][k]          = new TH2F(Form("h_tracks_%u_%s_%s_Rec_Eta_pT", iTrkSource, str_TRKEFF_mcparticles[ipart].Data(), nameCuts[k].Data() ), "; #it{p}_{T,rec} (GeV/c); #eta_{rec}", 200, 0, 20, 200, -4, 4.);
           h_tracksTrue_Eta_p[iTrkSource][ipart][k]          = new TH2F(Form("h_tracks_%u_%s_%s_True_Eta_p", iTrkSource, str_TRKEFF_mcparticles[ipart].Data(), nameCuts[k].Data() ), "; #it{p}_{MC} (GeV/c); #eta_{MC}", nBinsP, binningP,  200, -4, 4.);
@@ -208,9 +219,9 @@ void trackingresolution(){
   }
   // Fill each track source
   for (unsigned int i = 0; i < nTracks.size(); i++) {
-    hNTracks[i].Fill(nTracks[i]);
+    hNTracks[i]->Fill(nTracks[i]);
   }
-  
+
   // =======================================================================
   // ******************* filling resolution histos *************************
   // =======================================================================
@@ -307,15 +318,15 @@ void trackingresolution(){
     // at least 3 layers
     if (nTrT >= 3){
       h_tracksTrue_Eta_pT[trackSource][parIdx][1]->Fill(truept, trueeta);
-      h_tracksRec_Eta_p[trackSource]T[parIdx][1]->Fill(pt, receta);
-      h_tracksTrue_Eta_[trackSource]p[parIdx][1]->Fill(truepmom, trueeta);
-      h_tracksRec_Eta_[trackSource]p[parIdx][1]->Fill(pmom, receta);
+      h_tracksRec_Eta_pT[trackSource][parIdx][1]->Fill(pt, receta);
+      h_tracksTrue_Eta_p[trackSource][parIdx][1]->Fill(truepmom, trueeta);
+      h_tracksRec_Eta_p[trackSource][parIdx][1]->Fill(pmom, receta);
       // at least 3 layers & inner most tracking layer fw
       if (hasFTrL){ 
-        h_tracksTrue_Eta_p[trackSource]T[parIdx][2]->Fill(truept, trueeta);
-        h_tracksRec_Eta_p[trackSource]T[parIdx][2]->Fill(pt, receta);
-        h_tracksTrue_Eta_[trackSource]p[parIdx][2]->Fill(truepmom, trueeta);
-        h_tracksRec_Eta_[trackSource]p[parIdx][2]->Fill(pmom, receta);
+        h_tracksTrue_Eta_pT[trackSource][parIdx][2]->Fill(truept, trueeta);
+        h_tracksRec_Eta_pT[trackSource][parIdx][2]->Fill(pt, receta);
+        h_tracksTrue_Eta_p[trackSource][parIdx][2]->Fill(truepmom, trueeta);
+        h_tracksRec_Eta_p[trackSource][parIdx][2]->Fill(pmom, receta);
       }
     }
     // only tracker layers
@@ -325,12 +336,12 @@ void trackingresolution(){
       h_tracksTrue_Eta_p[trackSource][parIdx][3]->Fill(truepmom, trueeta);
       h_tracksRec_Eta_p[trackSource][parIdx][3]->Fill(pmom, receta);
       // only tracker layers & inner most tracking layer fw
-      if (hasFTrL){ 
+      if (hasFTrL){
         h_tracksTrue_Eta_pT[trackSource][parIdx][4]->Fill(truept, trueeta);
         h_tracksRec_Eta_pT[trackSource][parIdx][4]->Fill(pt, receta);
         h_tracksTrue_Eta_p[trackSource][parIdx][4]->Fill(truepmom, trueeta);
         h_tracksRec_Eta_p[trackSource][parIdx][4]->Fill(pmom, receta);
-      }        
+      }
     }
     // timing layer hit before ECal but not after
     if (hasTL && !hasTLAE){
@@ -380,6 +391,51 @@ void trackingresolution(){
       h_tracksRec_Eta_p[trackSource][parIdx][11]->Fill(pmom, receta);
     }  
   }
+}
+
+// **********************************************************************************************
+// ************************ compare tracking from different sources *****************************
+// **********************************************************************************************
+void trackingcomparison() {
+    if (!initTrackingComparionHists) {
+        for (unsigned int iOuterTrkSource = 0; iOuterTrkSource < nTrackSources; ++iOuterTrkSource) {
+            for (unsigned int iInnerTrkSource = 0; iInnerTrkSource < _nTracks; ++iInnerTrkSource) {
+                if (iOuterTrkSource >= iInnerTrkSource) { continue; }
+                h_trackingComparison_eta[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_eta_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nBinsP, binningP, 500, -0.5, 0.5);
+                h_trackingComparison_phi[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_phi_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nBinsP, binningP, 500, -0.5, 0.5);
+                h_trackingComparison_pt[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_pt_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nBinsP, binningP, 500, -0.5, 0.5);
+            }
+        }
+        initTrackingComparionHists = true;
+    }
+
+    // First, iterate once over track sources and track index
+    for (unsigned int iOuterTrkSource = 0; iOuterTrkSource < nTrackSources; ++iOuterTrkSource) {
+        for (unsigned int iOuterTrk = 0; iOuterTrk < _nTracks; ++iOuterTrk) {
+            if (_track_source[iOuterTrk] == iOuterTrkSource) {
+                int outerTrueTrackID = static_cast<int>(_track_trueID[iOuterTrk]-1);
+                // Then, iterate over the track sources and track index again, this time looking for a
+                // new source to compare with.
+                for (unsigned int iInnerTrkSource = 0; iInnerTrkSource < _nTracks; ++iInnerTrkSource) {
+                    // Don't correlate with itself, and don't repeat the hists.
+                    if (iOuterTrkSource >= iInnerTrkSource) { continue; }
+                    for (unsigned int iInnerTrk = 0; iInnerTrk < _nTracks; ++iInnerTrk) {
+                        int innerTrueTrackID = static_cast<int>(_track_trueID[iInnerTrk]-1);
+                        // If they match, we can actually take a look
+                        if (outerTrueTrackID == innerTrueTrackID) {
+                            TVector3 outerVec(_track_px[iOuterTrk], _track_py[iOuterTrk], _track_pz[iOuterTrk]);
+                            TVector3 innerVec(_track_px[iInnerTrk], _track_py[iInnerTrk], _track_pz[iInnerTrk]);
+
+                            h_trackingComparison_eta[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.Pt(), outerVec.Eta() - innerVec.Eta());
+                            h_trackingComparison_phi[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.Pt(), outerVec.Phi() - innerVec.Phi());
+                            h_trackingComparison_pt[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.Pt(), outerVec.Pt() - innerVec.Pt());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 }
 
 // **********************************************************************************************
@@ -433,12 +489,12 @@ void trackingefficiencyhistosSave(){
     for (unsigned int i = 0; i < nTrackSources; i++) {
       if(h_particle_rec_pT[i][ipart]) h_particle_rec_pT[i][ipart]->Write();
       if(h_particle_rec_truepT[i][ipart]) h_particle_rec_truepT[i][ipart]->Write();
-      if(h_particle_MC_pT[i][ipart] && h_particle_rec_pT[ipart] && h_particle_rec_truepT[ipart]) {
-        std::string name = "h_" + str_TRKEFF_mcparticles[ipart].Data() + "_eff_pT" + std::to_string(i);
+      if(h_particle_MC_pT[ipart] && h_particle_rec_pT[i][ipart] && h_particle_rec_truepT[ipart]) {
+        std::string name = std::string("h_") + str_TRKEFF_mcparticles[ipart].Data() + "_eff_pT" + std::to_string(i);
         h_particle_eff_pT[i][ipart] = (TH2F*)h_particle_rec_pT[i][ipart]->Clone(name.c_str());
         h_particle_eff_pT[i][ipart]->Divide(h_particle_MC_pT[ipart]);
         h_particle_eff_pT[i][ipart]->Write(name.c_str(), TObject::kOverwrite);
-        name = "h_" + str_TRKEFF_mcparticles[ipart].Data() + "eff_truepT" + std::to_string(i);
+        name = std::string("h_") + str_TRKEFF_mcparticles[ipart].Data() + "eff_truepT" + std::to_string(i);
         h_particle_eff_truepT[i][ipart] = (TH2F*)h_particle_rec_truepT[i][ipart]->Clone(name.c_str());
         h_particle_eff_truepT[i][ipart]->Divide(h_particle_MC_pT[ipart]);
         h_particle_eff_truepT[i][ipart]->Write(name.c_str(), TObject::kOverwrite);
@@ -450,11 +506,11 @@ void trackingefficiencyhistosSave(){
       if(h_particle_rec_truep[i][ipart]) h_particle_rec_truep[i][ipart]->Write();
       if(h_particle_rec_trueE[i][ipart]) h_particle_rec_trueE[i][ipart]->Write();
       if(h_particle_MC_p[ipart] && h_particle_rec_p[i][ipart] && h_particle_rec_truep[i][ipart]) {
-        std::string name = "h_" + str_TRKEFF_mcparticles[ipart].Data() + "_eff_p" + std::to_string(i);
+        std::string name = std::string("h_") + str_TRKEFF_mcparticles[ipart].Data() + "_eff_p" + std::to_string(i);
         h_particle_eff_p[i][ipart] = (TH2F*)h_particle_rec_p[i][ipart]->Clone(name.c_str());
         h_particle_eff_p[i][ipart]->Divide(h_particle_MC_p[ipart]);
         h_particle_eff_p[i][ipart]->Write(name.c_str(), TObject::kOverwrite);
-        name = "h_" + str_TRKEFF_mcparticles[ipart].Data() + "_eff_truep" + std::to_string(i);
+        name = std::string("h_") + str_TRKEFF_mcparticles[ipart].Data() + "_eff_truep" + std::to_string(i);
         h_particle_eff_truep[i][ipart] = (TH2F*)h_particle_rec_truep[i][ipart]->Clone(name.c_str());
         h_particle_eff_truep[i][ipart]->Divide(h_particle_MC_p[ipart]);
         h_particle_eff_truep[i][ipart]->Write(name.c_str(), TObject::kOverwrite);
@@ -477,7 +533,7 @@ void trackingresolutionhistosSave(){
   // ***********************************************************************************************
   // ************************** sum up hists correctly *********************************************
   // ***********************************************************************************************
-  for (unsigned int iTrkSource; i < nTrackSources; i++) {
+  for (unsigned int iTrkSource = 0; iTrkSource < nTrackSources; iTrkSource++) {
     for (Int_t id = 0; id < nPart_TRKEFF; id++){
       for (Int_t k = 0; k < nCuts; k++){
         if (id == 1){
@@ -526,8 +582,8 @@ void trackingresolutionhistosSave(){
   // define output file
   TFile* fileOutput = new TFile(Form("%s/output_TRKRS.root",outputDir.Data()),"RECREATE");
   hNEvents->Write();
-  for (unsigned int iTrkSource; i < nTrackSources; i++) {
-    hNTracks->Write();
+  for (unsigned int iTrkSource = 0; iTrkSource < nTrackSources; iTrkSource++) {
+    hNTracks[iTrkSource]->Write();
     for (Int_t et = 0; et < nEta+1; et++){
       for (Int_t i = 0; i< nResoSt; i++){
         for (Int_t id = 0; id < nPart_TRKEFF+1 ; id++) {
@@ -546,6 +602,29 @@ void trackingresolutionhistosSave(){
         if(h_tracksTrue_Eta_p[iTrkSource][id][k]) h_tracksTrue_Eta_p[iTrkSource][id][k]->Write();
         if(h_tracksRec_Eta_p[iTrkSource][id][k]) h_tracksRec_Eta_p[iTrkSource][id][k]->Write();
       }
+    }
+  }
+
+  // write output file
+  fileOutput->Write();
+  fileOutput->Close();
+}
+
+
+// **********************************************************************************************
+// ****************** saving comparison of tracking from different sources **********************
+// **********************************************************************************************
+void trackingcomparisonhistosSave() {
+
+  // define output file
+  TFile* fileOutput = new TFile(Form("%s/output_TRKRS_Comparison.root", outputDir.Data()),"RECREATE");
+
+  for (unsigned int iOuterTrkSource = 0; iOuterTrkSource < nTrackSources; ++iOuterTrkSource) {
+    for (unsigned int iInnerTrkSource = 0; iInnerTrkSource < _nTracks; ++iInnerTrkSource) {
+      if (iOuterTrkSource >= iInnerTrkSource) { continue; }
+      h_trackingComparison_eta[iOuterTrkSource][iInnerTrkSource]->Write();
+      h_trackingComparison_phi[iOuterTrkSource][iInnerTrkSource]->Write();
+      h_trackingComparison_pt[iOuterTrkSource][iInnerTrkSource]->Write();
     }
   }
 
