@@ -361,7 +361,7 @@ void treeProcessing(
 
             if(_do_jetfinding){
                 TVector3 trackvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
-                float Etrack = TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)+TMath::Power(_track_pz[itrk],2));
+                float Etrack = TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)+TMath::Power(_track_pz[itrk],2) + TMath::Power(massHypothesis, 2));
                 // create track vector for jet finder
                 jetf_track_px.push_back(_track_px[itrk]);
                 jetf_track_py.push_back(_track_py[itrk]);
