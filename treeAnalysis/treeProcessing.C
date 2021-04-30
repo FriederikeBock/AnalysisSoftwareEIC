@@ -35,7 +35,7 @@ void treeProcessing(
     int granularity_factor      = 1,
     bool doCalibration          = false
     // Defaults to tracking from all layers.
-    unsigned int primaryTrackSource = 0
+    unsigned short primaryTrackSource = 0
 ){
     // make output directory
     TString dateForOutput                       = ReturnDateStr();
@@ -329,7 +329,7 @@ void treeProcessing(
         // for(Int_t ihit=0; ihit<_nHitsLayers; ihit++){
         //     if(verbosity>1) cout << "\tHIT: hit " << ihit << "\tin layer " << _hits_layerID[ihit] << "\twith X = " << _hits_x[ihit] << " cm" << endl;
         // }
-        hitstudies();
+        hitstudies(primaryTrackSource);
 
         // ANCHOR Track loop variables:
         // float* _track_ID[itrk]

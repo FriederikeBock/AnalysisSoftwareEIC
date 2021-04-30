@@ -19,7 +19,7 @@ TH2F*  h_fwdtracks_vs_clusters[_active_calo] 	= {NULL};
 
 
 // ANCHOR main function to be called in event loop
-void hitstudies(){
+void hitstudies(unsigned short primaryTrackSource){
   for(int il=0;il<_maxProjectionLayers;il++){
     if(!h_hits_layer_xy[il])h_hits_layer_xy[il] = new TH2F(Form("h_hits_layer_xy_%s", GetProjectionNameFromIndex(layerIndexForward[il]).Data()), "", 300, -200,200,300, -200,200);
     if(!h_hits_layer_etaphi[il])h_hits_layer_etaphi[il]  	= new TH2F(Form("h_hits_layer_etaphi_%s", GetProjectionNameFromIndex(layerIndexForward[il]).Data()), "", 300, 1 , 4,300, -TMath::Pi(),TMath::Pi());
@@ -56,6 +56,9 @@ void hitstudies(){
   }
   int itracksfwd = 0;
   for(Int_t itrk=0; itrk<_nTracks; itrk++){
+    // Select track source
+    if (_track_source[itrk] != primaryTrackSource) { continue; }
+
     TVector3 trackvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
     float trketa = trackvec.Eta();
     if(trketa>1.05)itracksfwd++;

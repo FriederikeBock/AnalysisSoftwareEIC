@@ -12,14 +12,14 @@ int int_TRKEFF_mcparticles_PDG[nPart_TRKEFF] = {11 /*e*/,211  /*pi*/,  2212/*p*/
 // ********************************** Set up histos efficiency histos ***************************
 // **********************************************************************************************
 TH2F*  h_chargedpart_MC_pT        = new TH2F("h_chargedpart_MC_pT", "", 60, 0,30,80, -4.0,4.0);
-TH2F*  h_particle_MC_pT[nPart_TRKEFF];
+TH2F*  h_particle_MC_pT[nPart_TRKEFF] = {nullptr};
 TH2F*  h_chargedpart_rec_pT[nTrackSources]       = {nullptr};
 TH2F*  h_chargedpart_rec_truepT[nTrackSources]   = {nullptr};
 TH2F*  h_particle_rec_pT[nTrackSources][nPart_TRKEFF] = {{nullptr}};
 TH2F*  h_particle_rec_truepT[nTrackSources][nPart_TRKEFF] = {{nullptr}};
 
 TH2F*  h_chargedpart_MC_p         = new TH2F("h_chargedpart_MC_p", "", nBinsP, binningP, 80, -4.0,4.0);
-TH2F*  h_particle_MC_p[nPart_TRKEFF];
+TH2F*  h_particle_MC_p[nPart_TRKEFF] = {nullptr};
 TH2F*  h_chargedpart_rec_p[nTrackSources]        = {nullptr};
 TH2F*  h_chargedpart_rec_truep[nTrackSources]    = {nullptr};
 TH2F*  h_chargedpart_rec_trueE[nTrackSources]    = {nullptr};
@@ -62,21 +62,21 @@ bool initTrackingComparionHists = false;
 void trackingefficiency(){
   // cout << "new evt" << endl;
   // Setup hists if necessary
-  for (unsigned int i = 0; i < nTrackSources; i++) {
-    if (!h_chargedpart_rec_pT[i]) {
-      h_chargedpart_rec_pT[i]       = new TH2F(TString::Format("h_chargedpart_rec_pT_%u", i), "", 60, 0,30,80, -4.0,4.0);
+  for (unsigned int iTrkSource = 0; iTrkSource < nTrackSources; iTrkSource++) {
+    if (!h_chargedpart_rec_pT[iTrkSource]) {
+      h_chargedpart_rec_pT[iTrkSource]       = new TH2F(TString::Format("h_chargedpart_rec_pT_%u", iTrkSource), "", 60, 0,30,80, -4.0,4.0);
     }
-    if (!h_chargedpart_rec_truepT[i]) {
-      h_chargedpart_rec_truepT[i]   = new TH2F(TString::Format("h_chargedpart_rec_truepT_%u", i), "", 60, 0,30,80, -4.0,4.0);
+    if (!h_chargedpart_rec_truepT[iTrkSource]) {
+      h_chargedpart_rec_truepT[iTrkSource]   = new TH2F(TString::Format("h_chargedpart_rec_truepT_%u", iTrkSource), "", 60, 0,30,80, -4.0,4.0);
     }
-    if (!h_chargedpart_rec_p[i]) {
-      h_chargedpart_rec_p[i]        = new TH2F(TString::Format("h_chargedpart_rec_p_%u", i), "", nBinsP, binningP, 80, -4.0,4.0);
+    if (!h_chargedpart_rec_p[iTrkSource]) {
+      h_chargedpart_rec_p[iTrkSource]        = new TH2F(TString::Format("h_chargedpart_rec_p_%u", iTrkSource), "", nBinsP, binningP, 80, -4.0,4.0);
     }
-    if (!h_chargedpart_rec_truep[i]) {
-      h_chargedpart_rec_truep[i]    = new TH2F(TString::Format("h_chargedpart_rec_truep_%u", i), "", nBinsP, binningP, 80, -4.0,4.0);
+    if (!h_chargedpart_rec_truep[iTrkSource]) {
+      h_chargedpart_rec_truep[iTrkSource]    = new TH2F(TString::Format("h_chargedpart_rec_truep_%u", iTrkSource), "", nBinsP, binningP, 80, -4.0,4.0);
     }
-    if (!h_chargedpart_rec_trueE[i]) {
-      h_chargedpart_rec_trueE[i]    = new TH2F(TString::Format("h_chargedpart_rec_trueE_%u", i), "", nBinsP, binningP, 80, -4.0,4.0);
+    if (!h_chargedpart_rec_trueE[iTrkSource]) {
+      h_chargedpart_rec_trueE[iTrkSource]    = new TH2F(TString::Format("h_chargedpart_rec_trueE_%u", iTrkSource), "", nBinsP, binningP, 80, -4.0,4.0);
     }
   }
 
@@ -129,7 +129,7 @@ void trackingefficiency(){
 
   // see if true reco. track was found
   for(Int_t itrk=0; itrk<_nTracks; itrk++){
-    unsigned int trackSource = _track_source[itrk];
+    unsigned short trackSource = _track_source[itrk];
     TVector3 recpartvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
     TVector3 mcpartvec(_mcpart_px[(int)_track_trueID[itrk]],_mcpart_py[(int)_track_trueID[itrk]],_mcpart_pz[(int)_track_trueID[itrk]]);
     // cout << itrk << endl;
@@ -238,7 +238,7 @@ void trackingresolution(){
     float truept    = mcpartvec.Pt();
     float pmom      = recpartvec.Mag();
     float truepmom  = mcpartvec.Mag();
-    unsigned int trackSource = _track_source[itrk];
+    unsigned short trackSource = _track_source[itrk];
     
     Int_t parIdx = 5;
     if(abs(_mcpart_PDG[(int)_track_trueID[itrk]]) == 11)   parIdx = 0;
@@ -399,7 +399,7 @@ void trackingresolution(){
 void trackingcomparison() {
     if (!initTrackingComparionHists) {
         for (unsigned int iOuterTrkSource = 0; iOuterTrkSource < nTrackSources; ++iOuterTrkSource) {
-            for (unsigned int iInnerTrkSource = 0; iInnerTrkSource < _nTracks; ++iInnerTrkSource) {
+            for (unsigned int iInnerTrkSource = 0; iInnerTrkSource < nTrackSources; ++iInnerTrkSource) {
                 if (iOuterTrkSource >= iInnerTrkSource) { continue; }
                 h_trackingComparison_eta[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_eta_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nBinsP, binningP, 500, -0.5, 0.5);
                 h_trackingComparison_phi[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_phi_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nBinsP, binningP, 500, -0.5, 0.5);
@@ -416,13 +416,16 @@ void trackingcomparison() {
                 int outerTrueTrackID = static_cast<int>(_track_trueID[iOuterTrk]-1);
                 // Then, iterate over the track sources and track index again, this time looking for a
                 // new source to compare with.
-                for (unsigned int iInnerTrkSource = 0; iInnerTrkSource < _nTracks; ++iInnerTrkSource) {
+                std::cout << "outerTrueTrackID " << outerTrueTrackID << "\n";
+                for (unsigned int iInnerTrkSource = 0; iInnerTrkSource < nTrackSources; ++iInnerTrkSource) {
                     // Don't correlate with itself, and don't repeat the hists.
                     if (iOuterTrkSource >= iInnerTrkSource) { continue; }
                     for (unsigned int iInnerTrk = 0; iInnerTrk < _nTracks; ++iInnerTrk) {
                         int innerTrueTrackID = static_cast<int>(_track_trueID[iInnerTrk]-1);
+                        std::cout << "innerTrueTrackID " << innerTrueTrackID << "\n";
                         // If they match, we can actually take a look
                         if (outerTrueTrackID == innerTrueTrackID) {
+                            std::cout << "match: outer=" << iOuterTrkSource << ", inner=" << iInnerTrkSource << "\n";
                             TVector3 outerVec(_track_px[iOuterTrk], _track_py[iOuterTrk], _track_pz[iOuterTrk]);
                             TVector3 innerVec(_track_px[iInnerTrk], _track_py[iInnerTrk], _track_pz[iInnerTrk]);
 
@@ -622,9 +625,9 @@ void trackingcomparisonhistosSave() {
   for (unsigned int iOuterTrkSource = 0; iOuterTrkSource < nTrackSources; ++iOuterTrkSource) {
     for (unsigned int iInnerTrkSource = 0; iInnerTrkSource < _nTracks; ++iInnerTrkSource) {
       if (iOuterTrkSource >= iInnerTrkSource) { continue; }
-      h_trackingComparison_eta[iOuterTrkSource][iInnerTrkSource]->Write();
-      h_trackingComparison_phi[iOuterTrkSource][iInnerTrkSource]->Write();
-      h_trackingComparison_pt[iOuterTrkSource][iInnerTrkSource]->Write();
+      if (h_trackingComparison_eta[iOuterTrkSource][iInnerTrkSource]) { h_trackingComparison_eta[iOuterTrkSource][iInnerTrkSource]->Write(); }
+      if (h_trackingComparison_phi[iOuterTrkSource][iInnerTrkSource]) { h_trackingComparison_phi[iOuterTrkSource][iInnerTrkSource]->Write(); }
+      if (h_trackingComparison_pt[iOuterTrkSource][iInnerTrkSource]) { h_trackingComparison_pt[iOuterTrkSource][iInnerTrkSource]->Write(); }
     }
   }
 

@@ -107,8 +107,7 @@ void SetBranchAddressesTree(TTree* inputTree){
     inputTree->SetBranchAddress("tracks_py",                    _track_py);
     inputTree->SetBranchAddress("tracks_pz",                    _track_pz);
     inputTree->SetBranchAddress("tracks_trueID",                _track_trueID);
-    // TODO: Update when recreated to "tracks_source"
-    inputTree->SetBranchAddress("track_source",                _track_source);
+    inputTree->SetBranchAddress("tracks_source",                _track_source);
 
     inputTree->SetBranchAddress("nProjections",        &_nProjections);
     inputTree->SetBranchAddress("track_ProjTrackID",   _track_ProjTrackID);
