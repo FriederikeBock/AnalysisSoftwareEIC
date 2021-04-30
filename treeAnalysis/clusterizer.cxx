@@ -240,6 +240,34 @@ void runclusterizer(
           }
         }
       }
+      // ANCHOR V1 clusterizer logic
+      else if(clusterizerEnum==kV1){
+//         cout << "running MA" << endl;
+        // remove seed tower from sample
+        input_towers.erase(input_towers.begin());
+        for (int tit = 0; tit < cluster_towers.size(); tit++){
+          // Now go recursively to all neighbours and add them to the cluster if they fulfill the conditions
+          int iEtaTwr = cluster_towers.at(tit).tower_iEta;
+          int iPhiTwr = cluster_towers.at(tit).tower_iPhi;
+          for (int ait = 0; ait < input_towers.size(); ait++){
+            int iEtaTwrAgg = input_towers.at(ait).tower_iEta;
+            int iPhiTwrAgg = input_towers.at(ait).tower_iPhi;
+            // first condition asks for V3-like neighbors, while second condition also checks diagonally attached towers
+            if( ((TMath::Abs(iEtaTwrAgg-iEtaTwr)+TMath::Abs(iPhiTwrAgg-iPhiTwr)) == 1) || ((TMath::Abs(iEtaTwrAgg-iEtaTwr)==1) && (TMath::Abs(iPhiTwrAgg-iPhiTwr)==1))){
+              // only aggregate towers with lower energy than current tower
+              // if(input_towers.at(ait).tower_E >= (cluster_towers.at(tit).tower_E + aggregation_margin_V3)) continue;
+              clusters_E[nclusters]+=input_towers.at(ait).tower_E;
+              clusters_NTower[nclusters]++;
+              cluster_towers.push_back(input_towers.at(ait));
+              if(!(std::find(clslabels.begin(), clslabels.end(), input_towers.at(ait).tower_trueID) != clslabels.end())){
+                clusters_NtrueID[nclusters]++;
+                clslabels.push_back(input_towers.at(ait).tower_trueID);
+              }
+              input_towers.erase(input_towers.begin()+ait);
+            }
+          }
+        }
+      }
       else {
         cout << "incorrect clusterizer selected! Enum " << clusterizerEnum << " not defined!" << endl;
         return;

@@ -78,7 +78,7 @@ void plotetaphiFCalotree(
         h_IEtaIPhiMapEvt_FEMC->Fill(_tower_FEMC_iEta[itwr],_tower_FEMC_iPhi[itwr],_tower_FEMC_E[itwr]);
         if(_tower_FEMC_E[itwr]>0.1)h_IEtaIPhiMapEvt_FEMC_Ecut->Fill(_tower_FEMC_iEta[itwr],_tower_FEMC_iPhi[itwr],_tower_FEMC_E[itwr]);
         totEnergyFEMC=totEnergyFEMC+_tower_FEMC_E[itwr];
-        cout << itwr << "\t" << _tower_FEMC_E[itwr]*2 << endl;
+        cout << itwr << "\t" << _tower_FEMC_E[itwr] << endl;
       }
       if (totEnergy < minE){
         h_IEtaIPhiMapEvt_FHCAL->Clear();

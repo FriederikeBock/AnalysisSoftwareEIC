@@ -11,6 +11,8 @@ TH2F* h_jet_E_eta[njettypes] = {NULL};
 TH2F* h_MCjet_E_eta[njettypes] = {NULL};
 TH2F* h_jetscale_E[njettypes][nEta+1] = {NULL};
 TH2F* h_jetscale_pT[njettypes][nEta+1] = {NULL};
+TH2F* h_constituents_Eta[njettypes] = {NULL};
+TH2F* h_constituents_true_Eta[njettypes] = {NULL};
 
 TH1D *h_JES_pT[njettypes][nEta+1] = {NULL};
 TH1D *h_JER_pT[njettypes][nEta+1] = {NULL};
@@ -30,6 +32,8 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
   for( int isel=0;isel<njettypes;isel++){
     if(!h_MCjet_E_eta[isel])h_MCjet_E_eta[isel] = new TH2F(Form("h_MCjet_%s_E_eta",jettype[isel].Data()),"",40,0,200,80,-4,4);
     if(!h_jet_E_eta[isel])h_jet_E_eta[isel] = new TH2F(Form("h_jet_%s_E_eta",jettype[isel].Data()),"",40,0,200,80,-4,4);
+    if(!h_constituents_Eta[isel])h_constituents_Eta[isel] = new TH2F(Form("h_constituents_Eta_%s",jettype[isel].Data()),"",80,-4,4,50,0,50);
+    if(!h_constituents_true_Eta[isel])h_constituents_true_Eta[isel] = new TH2F(Form("h_constituents_true_Eta_%s",jettype[isel].Data()),"",80,-4,4,50,0,50);
     
 
     if(!h2D_jet_EtaReso_Eta[isel])h2D_jet_EtaReso_Eta[isel]  = new TH2F(Form("h2D_jet_EtaReso_%s_Eta",jettype[isel].Data()),"",40,0,4,200,-1,1);
@@ -52,8 +56,13 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
     }
   }
 
+    for (std::size_t j = 0; j < std::get<1>(truejets).size(); j++) {
+      h_constituents_true_Eta[select]->Fill(std::get<1>(truejets)[j].eta(),(std::get<1>(truejets)[j].constituents()).size());
+    }
+
   for (std::size_t i = 0; i < std::get<1>(recjets).size(); i++) {
     // if(verbosityJRH>1)std::cout << "jet " << i << ": "<< std::get<1>(recjets)[i].pt() << " " << std::get<1>(recjets)[i].rap() << " " << std::get<1>(recjets)[i].phi() << "  Ntrue: " << std::get<1>(truejets).size() << endl;
+    h_constituents_Eta[select]->Fill(std::get<1>(recjets)[i].eta(),(std::get<1>(recjets)[i].constituents()).size());
     for (std::size_t j = 0; j < std::get<1>(truejets).size(); j++) {
       Double_t deltaRTrueRec = std::get<1>(truejets)[j].delta_R(std::get<1>(recjets)[i]);
       // cout << deltaRTrueRec << endl;
@@ -136,6 +145,8 @@ void jetresolutionhistosSave(){
 
   // write histograms
   for( int isel=0;isel<njettypes;isel++){
+    if(h_constituents_true_Eta[isel])h_constituents_true_Eta[isel]->Write();
+    if(h_constituents_Eta[isel])h_constituents_Eta[isel]->Write();
     if(h_MCjet_E_eta[isel])h_MCjet_E_eta[isel]->Write();
     if(h_jet_E_eta[isel])h_jet_E_eta[isel]->Write();
     if(h2D_jet_EtaReso_Eta[isel])h2D_jet_EtaReso_Eta[isel]->Write();

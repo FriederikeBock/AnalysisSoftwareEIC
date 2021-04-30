@@ -17,6 +17,13 @@ float* _hits_z             = new float[_maxNHits];
 float* _hits_t             = new float[_maxNHits];
 
 // towers
+int _nTowers_DRCALO;
+float* _tower_DRCALO_E            = new float[_maxNTowers];
+int* _tower_DRCALO_iEta         = new int[_maxNTowers];
+int* _tower_DRCALO_iPhi         = new int[_maxNTowers];
+int* _tower_DRCALO_trueID       = new int[_maxNTowers];
+
+// towers
 int _nTowers_FHCAL;
 float* _tower_FHCAL_E            = new float[_maxNTowers];
 int* _tower_FHCAL_iEta         = new int[_maxNTowers];
@@ -112,6 +119,13 @@ void SetBranchAddressesTree(TTree* inputTree){
     inputTree->SetBranchAddress("track_TLP_true_y",      _track_Proj_true_y);
     inputTree->SetBranchAddress("track_TLP_true_z",      _track_Proj_true_z);
     inputTree->SetBranchAddress("track_TLP_true_t",      _track_Proj_true_t);
+
+    // towers DRCALO
+    inputTree->SetBranchAddress("tower_DRCALO_N",                &_nTowers_DRCALO);
+    inputTree->SetBranchAddress("tower_DRCALO_E",                _tower_DRCALO_E);
+    inputTree->SetBranchAddress("tower_DRCALO_iEta",             _tower_DRCALO_iEta);
+    inputTree->SetBranchAddress("tower_DRCALO_iPhi",             _tower_DRCALO_iPhi);
+    inputTree->SetBranchAddress("tower_DRCALO_trueID",           _tower_DRCALO_trueID);
 
     // towers HCAL
     inputTree->SetBranchAddress("tower_FHCAL_N",                &_nTowers_FHCAL);

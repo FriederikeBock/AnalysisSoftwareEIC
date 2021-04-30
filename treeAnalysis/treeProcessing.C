@@ -286,6 +286,25 @@ void treeProcessing(
                 _clusters_C5_FEMC_Y,
                 _clusters_C5_FEMC_Z);
         }
+        if(0){ //do_V1clusterizerDRCALO
+            // _do_V1clusterizerDRCALO = true;
+            float seed_E_DRCALO = 0.2;
+            float aggregation_E_DRCALO = 0.001;
+            runclusterizer(kV1, kDRCALO,seed_E_DRCALO, aggregation_E_DRCALO,
+                _nclusters_V1_DRCALO,
+                _clusters_V1_DRCALO_E,
+                _clusters_V1_DRCALO_Eta,
+                _clusters_V1_DRCALO_Phi,
+                _clusters_V1_DRCALO_M02,
+                _clusters_V1_DRCALO_M20,
+                _clusters_V1_DRCALO_isMatched,
+                _clusters_V1_DRCALO_NTower,
+                _clusters_V1_DRCALO_trueID,
+                _clusters_V1_DRCALO_NtrueID,
+                _clusters_V1_DRCALO_X,
+                _clusters_V1_DRCALO_Y,
+                _clusters_V1_DRCALO_Z);
+        }
 
         // ANCHOR Hits loop variables:
         // float* _hits_x[ihit]

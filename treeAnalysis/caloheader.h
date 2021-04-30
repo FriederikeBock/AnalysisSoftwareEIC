@@ -339,6 +339,21 @@ float* _clusters_C5_FEMC_Y         = new float[_maxNclusters];
 float* _clusters_C5_FEMC_Z         = new float[_maxNclusters];
 
 
+// MA global cluster variables
+int _nclusters_V1_DRCALO = 0;
+float* _clusters_V1_DRCALO_E            = new float[_maxNclusters];
+float* _clusters_V1_DRCALO_Eta         = new float[_maxNclusters];
+float* _clusters_V1_DRCALO_Phi         = new float[_maxNclusters];
+float* _clusters_V1_DRCALO_M02         = new float[_maxNclusters];
+float* _clusters_V1_DRCALO_M20         = new float[_maxNclusters];
+bool* _clusters_V1_DRCALO_isMatched         = new bool[_maxNclusters];
+int* _clusters_V1_DRCALO_NTower         = new int[_maxNclusters];
+int* _clusters_V1_DRCALO_trueID       = new int[_maxNclusters];
+int* _clusters_V1_DRCALO_NtrueID       = new int[_maxNclusters];
+float* _clusters_V1_DRCALO_X         = new float[_maxNclusters];
+float* _clusters_V1_DRCALO_Y         = new float[_maxNclusters];
+float* _clusters_V1_DRCALO_Z         = new float[_maxNclusters];
+
 void loadClusterizerInput(
   int clusterizerEnum,
   int caloEnum,
@@ -540,7 +555,21 @@ void loadClusterizerInput(
   }
 // V1 global cluster variables
   else if(clusterizerEnum==kV1){
-    if(caloEnum==kFHCAL){
+    if(caloEnum==kDRCALO){
+      nclusters = _nclusters_V1_DRCALO;
+      clusters_E = _clusters_V1_DRCALO_E;
+      clusters_Eta = _clusters_V1_DRCALO_Eta;
+      clusters_Phi = _clusters_V1_DRCALO_Phi;
+      clusters_M02 = _clusters_V1_DRCALO_M02;
+      clusters_M20 = _clusters_V1_DRCALO_M20;
+      clusters_isMatched = _clusters_V1_DRCALO_isMatched;
+      clusters_NTower = _clusters_V1_DRCALO_NTower;
+      clusters_trueID = _clusters_V1_DRCALO_trueID;
+      clusters_NtrueID = _clusters_V1_DRCALO_NtrueID;
+      clusters_X = _clusters_V1_DRCALO_X;
+      clusters_Y = _clusters_V1_DRCALO_Y;
+      clusters_Z = _clusters_V1_DRCALO_Z;
+    }else if(caloEnum==kFHCAL){
       nclusters = _nclusters_FHCAL;
       clusters_E = _clusters_FHCAL_E;
       clusters_Eta = _clusters_FHCAL_Eta;

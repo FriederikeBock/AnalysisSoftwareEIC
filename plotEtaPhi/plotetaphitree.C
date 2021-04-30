@@ -6,7 +6,7 @@ void plotetaphitree(
     Int_t plotEvent = 7,
     TString suffix            = "pdf"
 ){
-  int towersx = 2100;
+  int towersx = 440/0.15;
   gROOT->Reset();
   gROOT->SetStyle("Plain");
   StyleSettingsThesis();
@@ -19,24 +19,32 @@ void plotetaphitree(
   Double_t textSizeLabelsPixel                    = 35;
   Double_t textSizeLabelsRel                    = 58./1300;
 
-  Int_t granularity = 4;
+  Int_t granularity = 1;
+  TH1F* h_IDvsScint_DRCALO 	    = NULL;
+  TH1F* h_IDvsCerenkov_DRCALO 	    = NULL;
   TH2F* h_IEtaIPhiMapEvt_DRCALO 	    = NULL;
   TH2F* h_IEtaIPhiMapEvt_DRCALO_Ecut 	    = NULL;
   TChain* t_towers_DRCALO = new TChain("event_tree", "event_tree");
-  t_towers_DRCALO->Add("/media/nschmidt/local/EIC_running/DualReadout/DualReadout_ALLSILICON-ETTL-CTTL_DREH_pion_/eventtree.root");
-  const int _maxNTowersDR = 3000 * 3000;
+  t_towers_DRCALO->Add("/media/nschmidt/local/EIC_running/DualReadout/DualReadout_DRCALOONLY_DRLARGE_SimplePion_testingHighRes/eventtree.root");
+  const int _maxNTowersDR = towersx * towersx;
   if(t_towers_DRCALO){
-    h_IEtaIPhiMapEvt_DRCALO 	= new TH2F("h_IEtaIPhiMapEvt_DRCALO", "",  towersx, -0.5, towersx-0.5, towersx/3, -0.5, towersx/3-0.5);
-    h_IEtaIPhiMapEvt_DRCALO_Ecut 	= new TH2F("h_IEtaIPhiMapEvt_DRCALO_Ecut", "",  towersx, -0.5, towersx-0.5, towersx/3, -0.5, towersx/3-0.5);
+    h_IDvsScint_DRCALO 	= new TH1F("h_IDvsScint_DRCALO", "",  500, 1250, 1750);
+    h_IDvsCerenkov_DRCALO 	= new TH1F("h_IDvsCerenkov_DRCALO", "",  500, 1250, 1750);
+    h_IEtaIPhiMapEvt_DRCALO 	= new TH2F("h_IEtaIPhiMapEvt_DRCALO", "",  towersx, -0.5, towersx-0.5, towersx, -0.5, towersx-0.5);
+    h_IEtaIPhiMapEvt_DRCALO_Ecut 	= new TH2F("h_IEtaIPhiMapEvt_DRCALO_Ecut", "",  towersx, -0.5, towersx-0.5, towersx, -0.5, towersx-0.5);
     int _nTowers_DRCALO;
    float* _tower_DRCALO_E            = new float[_maxNTowersDR];
     int* _tower_DRCALO_iEta         = new int[_maxNTowersDR];
     int* _tower_DRCALO_iPhi         = new int[_maxNTowersDR];
     int* _tower_DRCALO_trueID       = new int[_maxNTowersDR];
+    int* _tower_DRCALO_NCerenkov       = new int[_maxNTowersDR];
+    int* _tower_DRCALO_NScint       = new int[_maxNTowersDR];
     t_towers_DRCALO->SetBranchAddress("tower_DRCALO_N",                &_nTowers_DRCALO);
     t_towers_DRCALO->SetBranchAddress("tower_DRCALO_E",                _tower_DRCALO_E);
     t_towers_DRCALO->SetBranchAddress("tower_DRCALO_iEta",             _tower_DRCALO_iEta);
     t_towers_DRCALO->SetBranchAddress("tower_DRCALO_iPhi",             _tower_DRCALO_iPhi);
+    t_towers_DRCALO->SetBranchAddress("tower_DRCALO_NCerenkov",             _tower_DRCALO_NCerenkov);
+    t_towers_DRCALO->SetBranchAddress("tower_DRCALO_NScint",             _tower_DRCALO_NScint);
     Int_t nentries = Int_t(t_towers_DRCALO->GetEntries());
     for (Int_t i = 0; i < nentries; ++i) {
       if (t_towers_DRCALO->LoadTree(i) < 0)
@@ -44,11 +52,43 @@ void plotetaphitree(
       if(i!=plotEvent) continue;
       t_towers_DRCALO->GetEntry(i);
       for(int itwr=0;itwr<_nTowers_DRCALO;itwr++){
+        if(_tower_DRCALO_iPhi[itwr]==1200 && _tower_DRCALO_NCerenkov[itwr]>0){
+          cout << _tower_DRCALO_iEta[itwr] << "\t" << _tower_DRCALO_NCerenkov[itwr] << endl;
+          h_IDvsCerenkov_DRCALO->Fill(_tower_DRCALO_iEta[itwr]);
+        }
+        if(_tower_DRCALO_iPhi[itwr]==1200 && _tower_DRCALO_NScint[itwr]>0)h_IDvsScint_DRCALO->Fill(_tower_DRCALO_iEta[itwr]);
         h_IEtaIPhiMapEvt_DRCALO->Fill(_tower_DRCALO_iEta[itwr],_tower_DRCALO_iPhi[itwr],_tower_DRCALO_E[itwr]);
         if(_tower_DRCALO_E[itwr]>0.1)h_IEtaIPhiMapEvt_DRCALO_Ecut->Fill(_tower_DRCALO_iEta[itwr],_tower_DRCALO_iPhi[itwr],_tower_DRCALO_E[itwr]);
       }
     }
   }
+
+
+
+  // 2D PLOT
+  TCanvas* cResoiEta = new TCanvas("cResoiEta","",0,0,4000,1000);
+  DrawGammaCanvasSettings( cResoiEta, 0.1, 0.03, 0.01, 0.105);
+  cResoiEta->SetLogy();
+  // 1D PLOT
+  cResoiEta->SetLeftMargin(0.12);
+  cResoiEta->SetRightMargin(0.1);
+  cResoiEta->SetBottomMargin(0.1);
+  SetStyleHistoTH1ForGraphs(h_IDvsCerenkov_DRCALO,"tower #eta index", "tower #phi index", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
+  h_IDvsCerenkov_DRCALO->Draw("col");
+
+    drawLatexAdd("Dual-Readout, e-p: 10#times250 GeV^{2}",0.88,0.15,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+
+  cResoiEta->Print(Form("%s/iEtavsCherenkov%d.%s", outputDir.Data(),plotEvent, suffix.Data()));
+  cResoiEta->Print(Form("%s/iEtavsCherenkov_1D.%s", outputDir.Data(), suffix.Data()));
+
+  SetStyleHistoTH1ForGraphs(h_IDvsScint_DRCALO,"tower #eta index", "tower #phi index", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
+  h_IDvsScint_DRCALO->Draw("col");
+
+    drawLatexAdd("Dual-Readout, e-p: 10#times250 GeV^{2}",0.88,0.15,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+
+  cResoiEta->Print(Form("%s/iEtavsScint%d.%s", outputDir.Data(),plotEvent, suffix.Data()));
+  cResoiEta->Print(Form("%s/iEtavsScint_1D.%s", outputDir.Data(), suffix.Data()));
+
 
 
 
