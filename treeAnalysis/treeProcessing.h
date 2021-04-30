@@ -54,9 +54,9 @@ int* _clusters_FEMC_NTower          = new int[_maxNclusters];
 int* _clusters_FEMC_trueID        = new int[_maxNclusters];
 
 // vertex
-int _vertex_x;
-int _vertex_y;
-int _vertex_z;
+float _vertex_x;
+float _vertex_y;
+float _vertex_z;
 
 // tracks
 int _nTracks;
