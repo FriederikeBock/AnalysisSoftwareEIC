@@ -86,7 +86,7 @@ void treeProcessing(
         if(do_3x3clusterizer){
             _do_3x3clusterizer = true;
             if(verbosity>1) cout << "clusterizing 3x3 for FHCAL" << endl;
-            runclusterizer(k3x3, kFHCAL,seed_E, aggregation_E,
+            runclusterizer(k3x3, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
                 _nclusters_3x3_FHCAL,
                 _clusters_3x3_FHCAL_E,
                 _clusters_3x3_FHCAL_Eta,
@@ -104,7 +104,7 @@ void treeProcessing(
         if(do_5x5clusterizer){
             _do_5x5clusterizer = true;
             if(verbosity>1) cout << "clusterizing 5x5 for FHCAL" << endl;
-            runclusterizer(k5x5, kFHCAL,seed_E, aggregation_E,
+            runclusterizer(k5x5, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
                 _nclusters_5x5_FHCAL,
                 _clusters_5x5_FHCAL_E,
                 _clusters_5x5_FHCAL_Eta,
@@ -122,7 +122,7 @@ void treeProcessing(
         if(do_V3clusterizer){
             _do_V3clusterizer = true;
             if(verbosity>1) cout << "clusterizing V3 for FHCAL" << endl;
-            runclusterizer(kV3, kFHCAL,seed_E, aggregation_E,
+            runclusterizer(kV3, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
                 _nclusters_V3_FHCAL,
                 _clusters_V3_FHCAL_E,
                 _clusters_V3_FHCAL_Eta,
@@ -140,7 +140,7 @@ void treeProcessing(
         if(do_MAclusterizer){
             _do_MAclusterizer = true;
             if(verbosity>1) cout << "clusterizing MA for FHCAL" << endl;
-            runclusterizer(kMA, kFHCAL,seed_E, aggregation_E,
+            runclusterizer(kMA, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
                 _nclusters_MA_FHCAL,
                 _clusters_MA_FHCAL_E,
                 _clusters_MA_FHCAL_Eta,
@@ -158,7 +158,7 @@ void treeProcessing(
         if(do_C3clusterizer){
             _do_C3clusterizer = true;
             if(verbosity>1) cout << "clusterizing C3 for FHCAL" << endl;
-            runclusterizer(kC3, kFHCAL,seed_E, aggregation_E,
+            runclusterizer(kC3, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
                 _nclusters_C3_FHCAL,
                 _clusters_C3_FHCAL_E,
                 _clusters_C3_FHCAL_Eta,
@@ -176,7 +176,7 @@ void treeProcessing(
         if(do_C5clusterizer){
             _do_C5clusterizer = true;
             if(verbosity>1) cout << "clusterizing C5 for FHCAL" << endl;
-            runclusterizer(kC5, kFHCAL,seed_E, aggregation_E,
+            runclusterizer(kC5, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
                 _nclusters_C5_FHCAL,
                 _clusters_C5_FHCAL_E,
                 _clusters_C5_FHCAL_Eta,
@@ -195,7 +195,7 @@ void treeProcessing(
         if(do_3x3clusterizerFEMC){
             _do_3x3clusterizerFEMC = true;
             if(verbosity>1) cout << "clusterizing 3x3 for FEMC" << endl;
-            runclusterizer(k3x3, kFEMC,seed_E, aggregation_E,
+            runclusterizer(k3x3, kFEMC,seed_E, aggregation_E, primaryTrackSource,
                 _nclusters_3x3_FEMC,
                 _clusters_3x3_FEMC_E,
                 _clusters_3x3_FEMC_Eta,
@@ -213,7 +213,7 @@ void treeProcessing(
         if(do_5x5clusterizerFEMC){
             _do_5x5clusterizerFEMC = true;
             if(verbosity>1) cout << "clusterizing 5x5 for FEMC" << endl;
-            runclusterizer(k5x5, kFEMC,seed_E, aggregation_E,
+            runclusterizer(k5x5, kFEMC,seed_E, aggregation_E, primaryTrackSource,
                 _nclusters_5x5_FEMC,
                 _clusters_5x5_FEMC_E,
                 _clusters_5x5_FEMC_Eta,
@@ -231,7 +231,7 @@ void treeProcessing(
         if(do_V3clusterizerFEMC){
             _do_V3clusterizerFEMC = true;
             if(verbosity>1) cout << "clusterizing V3 for FEMC" << endl;
-            runclusterizer(kV3, kFEMC,seed_E, aggregation_E,
+            runclusterizer(kV3, kFEMC,seed_E, aggregation_E, primaryTrackSource,
                 _nclusters_V3_FEMC,
                 _clusters_V3_FEMC_E,
                 _clusters_V3_FEMC_Eta,
@@ -249,7 +249,7 @@ void treeProcessing(
         if(do_MAclusterizerFEMC){
             _do_MAclusterizerFEMC = true;
             if(verbosity>1) cout << "clusterizing MA for FEMC" << endl;
-            runclusterizer(kMA, kFEMC,seed_E, aggregation_E,
+            runclusterizer(kMA, kFEMC,seed_E, aggregation_E, primaryTrackSource,
                 _nclusters_MA_FEMC,
                 _clusters_MA_FEMC_E,
                 _clusters_MA_FEMC_Eta,
@@ -267,7 +267,7 @@ void treeProcessing(
         if(do_C3clusterizerFEMC){
             _do_C3clusterizerFEMC = true;
             if(verbosity>1) cout << "clusterizing C3 for FEMC" << endl;
-            runclusterizer(kC3, kFEMC,seed_E, aggregation_E,
+            runclusterizer(kC3, kFEMC,seed_E, aggregation_E, primaryTrackSource,
                 _nclusters_C3_FEMC,
                 _clusters_C3_FEMC_E,
                 _clusters_C3_FEMC_Eta,
@@ -285,7 +285,7 @@ void treeProcessing(
         if(do_C5clusterizerFEMC){
             _do_C5clusterizerFEMC = true;
             if(verbosity>1) cout << "clusterizing C5 for FEMC" << endl;
-            runclusterizer(kC5, kFEMC,seed_E, aggregation_E,
+            runclusterizer(kC5, kFEMC,seed_E, aggregation_E, primaryTrackSource,
                 _nclusters_C5_FEMC,
                 _clusters_C5_FEMC_E,
                 _clusters_C5_FEMC_Eta,
@@ -305,7 +305,7 @@ void treeProcessing(
             float seed_E_DRCALO = 0.2;
             float aggregation_E_DRCALO = 0.001;
             if(verbosity>1) cout << "clusterizing V1 for DRCALO" << endl;
-            runclusterizer(kV1, kDRCALO,seed_E_DRCALO, aggregation_E_DRCALO,
+            runclusterizer(kV1, kDRCALO,seed_E_DRCALO, aggregation_E_DRCALO, primaryTrackSource,
                 _nclusters_V1_DRCALO,
                 _clusters_V1_DRCALO_E,
                 _clusters_V1_DRCALO_Eta,

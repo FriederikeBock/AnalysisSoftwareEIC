@@ -26,7 +26,7 @@ TH2F*  h_clusterizer_matched_dx_dy[_active_calo][_active_algo]; // [calorimeter_
 TH2F*  h_clusterizer_all_dx_dy[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 bool _doClusterECalibration = true;
 
-bool isClusterMatched(int clsID, float matchingwindow, float* clusters_X, float* clusters_Y, float* clusters_E, int caloEnum, int clusterizerEnum, bool useProjection = true);
+bool isClusterMatched(int clsID, float matchingwindow, float* clusters_X, float* clusters_Y, float* clusters_E, int caloEnum, int clusterizerEnum, unsigned short primaryTrackSource, bool useProjection = true);
 
 // ANCHOR main function to be called in event loop
 void runclusterizer(
@@ -34,6 +34,7 @@ void runclusterizer(
   int caloEnum,
   float seedE,
   float aggE,
+  unsigned short primaryTrackSource,
   int &nclusters,
   float* &clusters_E,
   float* &clusters_Eta,
@@ -282,7 +283,7 @@ void runclusterizer(
       clusters_X[nclusters] = showershape_eta_phi[4];
       clusters_Y[nclusters] = showershape_eta_phi[5];
       clusters_Z[nclusters] = showershape_eta_phi[6];
-      clusters_isMatched[nclusters] = isClusterMatched(nclusters, 20,clusters_X,clusters_Y,clusters_E, caloEnum, clusterizerEnum, true);
+      clusters_isMatched[nclusters] = isClusterMatched(nclusters, 20,clusters_X,clusters_Y,clusters_E, caloEnum, clusterizerEnum, primaryTrackSource, true);
       if(verbosityCLS>1) cout << clusterizerEnum << "\t" << nclusters << "\tC3 cluster with E = " << clusters_E[nclusters] << "\tEta: " << clusters_Eta[nclusters]<< "\tPhi: " << clusters_Phi[nclusters]<< "\tntowers: " << clusters_NTower[nclusters] << "\ttrueID: " << clusters_trueID[nclusters] << endl;
       // remove clusterized towers
       if(!(clusterizerEnum==kV3) && !(clusterizerEnum==kMA)){
@@ -307,7 +308,7 @@ void runclusterizer(
 
 // ANCHOR track/projection matching function
 // TODO at some point we might want E/p
-bool isClusterMatched(int clsID, float matchingwindow, float* clusters_X, float* clusters_Y, float* clusters_E, int caloEnum, int clusterizerEnum, bool useProjection = true){
+bool isClusterMatched(int clsID, float matchingwindow, float* clusters_X, float* clusters_Y, float* clusters_E, int caloEnum, int clusterizerEnum, unsigned short primaryTrackSource, bool useProjection = true){
   for(int icalo=0;icalo<_active_calo;icalo++){
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
       if(!h_clusterizer_all_dx_dy[icalo][ialgo])h_clusterizer_all_dx_dy[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_all_dx_dy_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 100,-100,100, 100,-100,100);
@@ -344,6 +345,8 @@ bool isClusterMatched(int clsID, float matchingwindow, float* clusters_X, float*
     if(caloEnum==kFHCAL)zHC=350;
     if(caloEnum==kFEMC)zHC=291;
     for(Int_t itrk=0; itrk<_nTracks; itrk++){
+      // Select track source
+      if (_track_source[itrk] != primaryTrackSource) { continue; }
       // check eta difference
       TVector3 trackvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
       trackvec*=(zHC/trackvec.Z());
