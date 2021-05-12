@@ -623,7 +623,7 @@ void trackingcomparisonhistosSave() {
   TFile* fileOutput = new TFile(Form("%s/output_TRKRS_Comparison.root", outputDir.Data()),"RECREATE");
 
   for (unsigned int iOuterTrkSource = 0; iOuterTrkSource < nTrackSources; ++iOuterTrkSource) {
-    for (unsigned int iInnerTrkSource = 0; iInnerTrkSource < _nTracks; ++iInnerTrkSource) {
+    for (unsigned int iInnerTrkSource = 0; iInnerTrkSource < nTrackSources; ++iInnerTrkSource) {
       if (iOuterTrkSource >= iInnerTrkSource) { continue; }
       if (h_trackingComparison_eta[iOuterTrkSource][iInnerTrkSource]) { h_trackingComparison_eta[iOuterTrkSource][iInnerTrkSource]->Write(); }
       if (h_trackingComparison_phi[iOuterTrkSource][iInnerTrkSource]) { h_trackingComparison_phi[iOuterTrkSource][iInnerTrkSource]->Write(); }
