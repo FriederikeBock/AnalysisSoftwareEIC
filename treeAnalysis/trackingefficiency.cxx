@@ -416,16 +416,16 @@ void trackingcomparison() {
                 int outerTrueTrackID = static_cast<int>(_track_trueID[iOuterTrk]-1);
                 // Then, iterate over the track sources and track index again, this time looking for a
                 // new source to compare with.
-                std::cout << "outerTrueTrackID " << outerTrueTrackID << "\n";
+                //std::cout << "outerTrueTrackID " << outerTrueTrackID << "\n";
                 for (unsigned int iInnerTrkSource = 0; iInnerTrkSource < nTrackSources; ++iInnerTrkSource) {
                     // Don't correlate with itself, and don't repeat the hists.
                     if (iOuterTrkSource >= iInnerTrkSource) { continue; }
                     for (unsigned int iInnerTrk = 0; iInnerTrk < _nTracks; ++iInnerTrk) {
                         int innerTrueTrackID = static_cast<int>(_track_trueID[iInnerTrk]-1);
-                        std::cout << "innerTrueTrackID " << innerTrueTrackID << "\n";
+                        //std::cout << "innerTrueTrackID " << innerTrueTrackID << "\n";
                         // If they match, we can actually take a look
                         if (outerTrueTrackID == innerTrueTrackID) {
-                            std::cout << "match: outer=" << iOuterTrkSource << ", inner=" << iInnerTrkSource << "\n";
+                            //std::cout << "match: outer=" << iOuterTrk << ", inner=" << iInnerTrk << "\n";
                             TVector3 outerVec(_track_px[iOuterTrk], _track_py[iOuterTrk], _track_pz[iOuterTrk]);
                             TVector3 innerVec(_track_px[iInnerTrk], _track_py[iInnerTrk], _track_pz[iInnerTrk]);
 
