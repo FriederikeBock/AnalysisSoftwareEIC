@@ -429,9 +429,9 @@ void trackingcomparison() {
                             TVector3 outerVec(_track_px[iOuterTrk], _track_py[iOuterTrk], _track_pz[iOuterTrk]);
                             TVector3 innerVec(_track_px[iInnerTrk], _track_py[iInnerTrk], _track_pz[iInnerTrk]);
 
-                            h_trackingComparison_eta[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.Pt(), outerVec.Eta() - innerVec.Eta());
-                            h_trackingComparison_phi[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.Pt(), outerVec.Phi() - innerVec.Phi());
-                            h_trackingComparison_pt[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.Pt(), outerVec.Pt() - innerVec.Pt());
+                            h_trackingComparison_eta[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.P(), outerVec.Eta() - innerVec.Eta());
+                            h_trackingComparison_phi[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.P(), outerVec.Phi() - innerVec.Phi());
+                            h_trackingComparison_pt[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.P(), outerVec.Pt() - innerVec.Pt());
                         }
                     }
                 }
