@@ -76,7 +76,7 @@ void runclusterizer(
         tempstructT.tower_E = _tower_FHCAL_E[itow]*E_scaling;
         tempstructT.tower_iEta = _tower_FHCAL_iEta[itow];
         tempstructT.tower_iPhi = _tower_FHCAL_iPhi[itow];
-        tempstructT.tower_trueID = _tower_FHCAL_trueID[itow];
+        tempstructT.tower_trueID = GetCorrectMCArrayEntry(_tower_FHCAL_trueID[itow]);
         input_towers.push_back(tempstructT);
       }
     }
@@ -87,7 +87,7 @@ void runclusterizer(
         tempstructT.tower_E = _tower_FEMC_E[itow];
         tempstructT.tower_iEta = _tower_FEMC_iEta[itow];
         tempstructT.tower_iPhi = _tower_FEMC_iPhi[itow];
-        tempstructT.tower_trueID = _tower_FEMC_trueID[itow];
+        tempstructT.tower_trueID = GetCorrectMCArrayEntry(_tower_FEMC_trueID[itow]);
         input_towers.push_back(tempstructT);
       }
     }
@@ -316,20 +316,19 @@ bool isClusterMatched(int clsID, float matchingwindow, float* clusters_X, float*
   }
   if(useProjection){
     int projectionlayer = 0;
-    if(caloEnum==kFHCAL)projectionlayer = 2;
-    else if(caloEnum==kFEMC)projectionlayer = 1;
+    if(caloEnum==kFHCAL)projectionlayer = 5;
+    else if(caloEnum==kFEMC)projectionlayer = 6;
     else {
-      cout << "isClusterMatched: caloEnum noch defined, returning FALSE" << endl;
+      cout << "isClusterMatched: caloEnum not defined, returning FALSE" << endl;
       return false;
     }
     for(Int_t iproj=0; iproj<_nProjections; iproj++){
       if(_track_ProjLayer[iproj]!=projectionlayer) continue;
       if(_track_Proj_t[iproj]<-9000) continue;
       if(_track_Proj_x[iproj]==0 && _track_Proj_y[iproj]==0) continue;
-      if(clusters_X[iproj]==0 && clusters_Y[iproj]==0) continue;
+      if(clusters_X[clsID]==0 && clusters_Y[clsID]==0) continue;
       // check eta difference
       h_clusterizer_all_dx_dy[caloEnum][clusterizerEnum]->Fill(_track_Proj_x[iproj]-clusters_X[clsID],_track_Proj_y[iproj]-clusters_Y[clsID]);
-
       if(abs(_track_Proj_x[iproj]-clusters_X[clsID]) < matchingwindow){
         if(verbosityCLS>1) cout << "\tProj matched in x! prj: " << _track_Proj_x[iproj] << "\tcls: " << clusters_X[clsID] << "\tdelta: " << abs(_track_Proj_x[iproj]-clusters_X[clsID]) << endl;
         // check phi difference

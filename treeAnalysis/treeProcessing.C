@@ -33,7 +33,7 @@ void treeProcessing(
     Double_t maxNEvent          = -1,
     Int_t verbosity             = 0,
     int granularity_factor      = 1,
-    bool doCalibration          = true
+    bool doCalibration          = false
 ){
     // make output directory
     TString dateForOutput                       = ReturnDateStr();
@@ -348,6 +348,7 @@ void treeProcessing(
         std::vector<float> jetf_all_pz;
         std::vector<float> jetf_all_E;
         for(Int_t itrk=0; itrk<_nTracks; itrk++){
+            _track_trueID[itrk] = GetCorrectMCArrayEntry(_track_trueID[itrk]);
             if(verbosity>1) cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk]-1 << "\tand X = " << _track_px[itrk] << " cm" << endl;
 
             if(_do_jetfinding){
@@ -406,11 +407,13 @@ void treeProcessing(
         // }
                 // apply calibration if desired
         for(Int_t iclus=0; iclus<_nclusters_FHCAL; iclus++){
+            _clusters_FHCAL_trueID[iclus] = GetCorrectMCArrayEntry(_clusters_FHCAL_trueID[iclus]);
             if(_doClusterECalibration){
                 _clusters_FHCAL_E[iclus]/=getCalibrationValue(_clusters_FHCAL_E[iclus], kFHCAL, kV1);
             }
         }
         for(Int_t iclus=0; iclus<_nclusters_FEMC; iclus++){
+            _clusters_FEMC_trueID[iclus] = GetCorrectMCArrayEntry(_clusters_FEMC_trueID[iclus]);
             if(_doClusterECalibration){
                 _clusters_FEMC_E[iclus]/=getCalibrationValue(_clusters_FEMC_E[iclus], kFEMC, kV1);
             }
@@ -568,10 +571,7 @@ void treeProcessing(
         if(verbosity>1) cout << "running resolutionhistos" << endl;
         resolutionhistos();
         if(verbosity>1) cout << "loop done ... next event" << endl;
-        if(_do_3x3clusterizer) trackmatchingstudies(k3x3, kFHCAL,true);
-        if(_do_3x3clusterizerFEMC) trackmatchingstudies(k3x3, kFEMC,true);
-        // if(_do_V3clusterizer) trackmatchingstudies(kV3, kFHCAL,true);
-        // if(_do_V3clusterizerFEMC) trackmatchingstudies(kV3, kFEMC,true);
+        trackmatchingstudies();
 
     } // event loop end
     cout << "running jetresolutionhistosSave" << endl;

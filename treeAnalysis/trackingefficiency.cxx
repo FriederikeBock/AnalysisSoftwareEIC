@@ -84,21 +84,21 @@ void trackingefficiency(){
   // see if true reco. track was found
   for(Int_t itrk=0; itrk<_nTracks; itrk++){
     TVector3 recpartvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
-    TVector3 mcpartvec(_mcpart_px[(int)_track_trueID[itrk]-1],_mcpart_py[(int)_track_trueID[itrk]-1],_mcpart_pz[(int)_track_trueID[itrk]-1]);
+    TVector3 mcpartvec(_mcpart_px[(int)_track_trueID[itrk]],_mcpart_py[(int)_track_trueID[itrk]],_mcpart_pz[(int)_track_trueID[itrk]]);
     // cout << itrk << endl;
     float receta = recpartvec.Eta();
     float trueeta = mcpartvec.Eta();
-    // cout << "\tTRKTRUEID " << _track_trueID[itrk]-1 << "\tPDG: " << _mcpart_PDG[(int)_track_trueID[itrk]-1] << "\tpT: " <<   TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)) << "\tEta " << receta << endl;
+    // cout << "\tTRKTRUEID " << (int)_track_trueID[itrk]-1 << "\tPDG: " << _mcpart_PDG[(int)_track_trueID[itrk]] << "\tpT: " <<   TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)) << "\tEta " << receta << endl;
     float pt = recpartvec.Pt();
     float truept = mcpartvec.Pt();
     float pmom = recpartvec.Mag();
     float truepmom = mcpartvec.Mag();
-    TParticlePDG *part = TDatabasePDG::Instance()->GetParticle(abs(_mcpart_PDG[(int)_track_trueID[itrk]-1]));
+    TParticlePDG *part = TDatabasePDG::Instance()->GetParticle(abs(_mcpart_PDG[(int)_track_trueID[itrk]]));
     Double_t mass = part->Mass();
     float trueE     = TMath::Sqrt(truepmom*truepmom+mass*mass);
     
     for(int ipart=0;ipart<nPart_TRKEFF;ipart++){
-      if(abs(_mcpart_PDG[(int)_track_trueID[itrk]-1])==int_TRKEFF_mcparticles_PDG[ipart]){
+      if(abs(_mcpart_PDG[(int)_track_trueID[itrk]])==int_TRKEFF_mcparticles_PDG[ipart]){
         h_particle_rec_pT[ipart]->Fill(pt,trueeta);
         h_particle_rec_truepT[ipart]->Fill(truept,trueeta);
         h_chargedpart_rec_pT->Fill(pt,trueeta);
@@ -170,25 +170,25 @@ void trackingresolution(){
   Int_t nCurrProj = 0; 
   for(Int_t itrk=0; itrk<_nTracks; itrk++){
     TVector3 recpartvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
-    TVector3 mcpartvec(_mcpart_px[(int)_track_trueID[itrk]-1],_mcpart_py[(int)_track_trueID[itrk]-1],_mcpart_pz[(int)_track_trueID[itrk]-1]);
+    TVector3 mcpartvec(_mcpart_px[(int)_track_trueID[itrk]],_mcpart_py[(int)_track_trueID[itrk]],_mcpart_pz[(int)_track_trueID[itrk]]);
     float receta    = recpartvec.Eta();
     float trueeta   = mcpartvec.Eta();
     float recphi    = recpartvec.Phi();
     float truephi   = mcpartvec.Phi();
-//     cout << "\tTRKTRUEID " << _track_trueID[itrk]-1 << "\tPDG: " << _mcpart_PDG[(int)_track_trueID[itrk]-1] << "\tpT: " <<   TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)) << "\tEta " << receta << endl;
+//     cout << "\tTRKTRUEID " << (int)_track_trueID[itrk]-1 << "\tPDG: " << _mcpart_PDG[(int)_track_trueID[itrk]] << "\tpT: " <<   TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)) << "\tEta " << receta << endl;
     float pt        = recpartvec.Pt();
     float truept    = mcpartvec.Pt();
     float pmom      = recpartvec.Mag();
     float truepmom  = mcpartvec.Mag();
     
     Int_t parIdx = 5;
-    if(abs(_mcpart_PDG[(int)_track_trueID[itrk]-1]) == 11)   parIdx = 0;
-    if(abs(_mcpart_PDG[(int)_track_trueID[itrk]-1]) == 211)  parIdx = 1;
-    if(abs(_mcpart_PDG[(int)_track_trueID[itrk]-1]) == 2212) parIdx = 2;          
-    if(abs(_mcpart_PDG[(int)_track_trueID[itrk]-1]) == 321)  parIdx = 3;
-    if(abs(_mcpart_PDG[(int)_track_trueID[itrk]-1]) == 13)   parIdx = 4;
+    if(abs(_mcpart_PDG[(int)_track_trueID[itrk]]) == 11)   parIdx = 0;
+    if(abs(_mcpart_PDG[(int)_track_trueID[itrk]]) == 211)  parIdx = 1;
+    if(abs(_mcpart_PDG[(int)_track_trueID[itrk]]) == 2212) parIdx = 2;          
+    if(abs(_mcpart_PDG[(int)_track_trueID[itrk]]) == 321)  parIdx = 3;
+    if(abs(_mcpart_PDG[(int)_track_trueID[itrk]]) == 13)   parIdx = 4;
     
-    TParticlePDG *part = TDatabasePDG::Instance()->GetParticle(abs(_mcpart_PDG[(int)_track_trueID[itrk]-1]));
+    TParticlePDG *part = TDatabasePDG::Instance()->GetParticle(abs(_mcpart_PDG[(int)_track_trueID[itrk]]));
     Double_t mass = part->Mass();
     float trueE     = TMath::Sqrt(truepmom*truepmom+mass*mass);
     

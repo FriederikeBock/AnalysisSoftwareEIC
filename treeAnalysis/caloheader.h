@@ -101,7 +101,7 @@ TVector3 TowerPositionVectorFromIndices(int i_x,int i_y, int caloSelect = 0){
     center_y = 32*_granularityCalo;
   }
 
-  TVector3 twrPositionVec((center_x-i_x)*twrD,(center_y-i_y)*twrD,zHC);
+  TVector3 twrPositionVec((i_x-center_x)*twrD,(i_y-center_y)*twrD,zHC);
   return twrPositionVec;
 }
 
@@ -116,6 +116,7 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
     if(caloSelect==kFHCAL)zHC=350;
     if(caloSelect==kFEMC)zHC=291;
 
+    vecTwr = {0.,0.,0.};
     //calculation of weights and weighted position vector
     for(int cellI=0; cellI<cluster_towers.size(); cellI++){
         w_i.push_back(TMath::Max( (float)0, (float) (w_0 + TMath::Log(cluster_towers.at(cellI).tower_E/cluster_E_calc) )));
@@ -124,11 +125,11 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
     }
     returnVariables[2]=vecTwr.Eta();
     returnVariables[3]=(vecTwr.Phi()<0 ? vecTwr.Phi()+TMath::Pi() : vecTwr.Phi()-TMath::Pi());
+    // vecTwr*=1/w_tot;//(zHC/vecTwr.Z());
     vecTwr*=(zHC/vecTwr.Z());
     returnVariables[4]=vecTwr.X();
     returnVariables[5]=vecTwr.Y();
     returnVariables[6]=vecTwr.Z();
-
 
     //calculation of M02
     float delta_phi_phi[4] = {0};
@@ -354,7 +355,7 @@ float* _clusters_V1_DRCALO_X         = new float[_maxNclusters];
 float* _clusters_V1_DRCALO_Y         = new float[_maxNclusters];
 float* _clusters_V1_DRCALO_Z         = new float[_maxNclusters];
 
-void loadClusterizerInput(
+bool loadClusterizerInput(
   int clusterizerEnum,
   int caloEnum,
   int &nclusters,
@@ -371,6 +372,7 @@ void loadClusterizerInput(
   float* &clusters_Y,
   float* &clusters_Z
 ){
+  // cout << clusterizerEnum << "\t" << caloEnum << endl;
   if(clusterizerEnum==k3x3){
     if(caloEnum==kFHCAL){
       nclusters = _nclusters_3x3_FHCAL;
@@ -386,6 +388,7 @@ void loadClusterizerInput(
       clusters_X = _clusters_3x3_FHCAL_X;
       clusters_Y = _clusters_3x3_FHCAL_Y;
       clusters_Z = _clusters_3x3_FHCAL_Z;
+      return true;
     } else if(caloEnum==kFEMC){
       nclusters = _nclusters_3x3_FEMC;
       clusters_E = _clusters_3x3_FEMC_E;
@@ -400,20 +403,22 @@ void loadClusterizerInput(
       clusters_X = _clusters_3x3_FEMC_X;
       clusters_Y = _clusters_3x3_FEMC_Y;
       clusters_Z = _clusters_3x3_FEMC_Z;
+      return true;
     } else {
-      nclusters = 0;
-      setFLOATClusterArrayToZero(clusters_E);
-      setFLOATClusterArrayToZero(clusters_Eta);
-      setFLOATClusterArrayToZero(clusters_Phi);
-      setFLOATClusterArrayToZero(clusters_M02);
-      setFLOATClusterArrayToZero(clusters_M20);
-      setBOOLClusterArrayToZero(clusters_isMatched);
-      setINTClusterArrayToZero(clusters_NTower);
-      setINTClusterArrayToZero(clusters_trueID);
-      setINTClusterArrayToZero(clusters_NtrueID);
-      setFLOATClusterArrayToZero(clusters_X);
-      setFLOATClusterArrayToZero(clusters_Y);
-      setFLOATClusterArrayToZero(clusters_Z);
+      return false;
+      // nclusters = 0;
+      // setFLOATClusterArrayToZero(clusters_E);
+      // setFLOATClusterArrayToZero(clusters_Eta);
+      // setFLOATClusterArrayToZero(clusters_Phi);
+      // setFLOATClusterArrayToZero(clusters_M02);
+      // setFLOATClusterArrayToZero(clusters_M20);
+      // setBOOLClusterArrayToZero(clusters_isMatched);
+      // setINTClusterArrayToZero(clusters_NTower);
+      // setINTClusterArrayToZero(clusters_trueID);
+      // setINTClusterArrayToZero(clusters_NtrueID);
+      // setFLOATClusterArrayToZero(clusters_X);
+      // setFLOATClusterArrayToZero(clusters_Y);
+      // setFLOATClusterArrayToZero(clusters_Z);
     }
   }
   else if(clusterizerEnum==k5x5){
@@ -431,6 +436,7 @@ void loadClusterizerInput(
       clusters_X = _clusters_5x5_FHCAL_X;
       clusters_Y = _clusters_5x5_FHCAL_Y;
       clusters_Z = _clusters_5x5_FHCAL_Z;
+      return true;
     } else if(caloEnum==kFEMC){
       nclusters = _nclusters_5x5_FEMC;
       clusters_E = _clusters_5x5_FEMC_E;
@@ -445,20 +451,22 @@ void loadClusterizerInput(
       clusters_X = _clusters_5x5_FEMC_X;
       clusters_Y = _clusters_5x5_FEMC_Y;
       clusters_Z = _clusters_5x5_FEMC_Z;
+      return true;
     } else {
-      nclusters = 0;
-      setFLOATClusterArrayToZero(clusters_E);
-      setFLOATClusterArrayToZero(clusters_Eta);
-      setFLOATClusterArrayToZero(clusters_Phi);
-      setFLOATClusterArrayToZero(clusters_M02);
-      setFLOATClusterArrayToZero(clusters_M20);
-      setBOOLClusterArrayToZero(clusters_isMatched);
-      setINTClusterArrayToZero(clusters_NTower);
-      setINTClusterArrayToZero(clusters_trueID);
-      setINTClusterArrayToZero(clusters_NtrueID);
-      setFLOATClusterArrayToZero(clusters_X);
-      setFLOATClusterArrayToZero(clusters_Y);
-      setFLOATClusterArrayToZero(clusters_Z);
+      return false;
+      // nclusters = 0;
+      // setFLOATClusterArrayToZero(clusters_E);
+      // setFLOATClusterArrayToZero(clusters_Eta);
+      // setFLOATClusterArrayToZero(clusters_Phi);
+      // setFLOATClusterArrayToZero(clusters_M02);
+      // setFLOATClusterArrayToZero(clusters_M20);
+      // setBOOLClusterArrayToZero(clusters_isMatched);
+      // setINTClusterArrayToZero(clusters_NTower);
+      // setINTClusterArrayToZero(clusters_trueID);
+      // setINTClusterArrayToZero(clusters_NtrueID);
+      // setFLOATClusterArrayToZero(clusters_X);
+      // setFLOATClusterArrayToZero(clusters_Y);
+      // setFLOATClusterArrayToZero(clusters_Z);
     }
   }
 // V3 global cluster variables
@@ -477,6 +485,7 @@ void loadClusterizerInput(
       clusters_X = _clusters_V3_FHCAL_X;
       clusters_Y = _clusters_V3_FHCAL_Y;
       clusters_Z = _clusters_V3_FHCAL_Z;
+      return true;
     } else if(caloEnum==kFEMC){
       nclusters = _nclusters_V3_FEMC;
       clusters_E = _clusters_V3_FEMC_E;
@@ -491,20 +500,22 @@ void loadClusterizerInput(
       clusters_X = _clusters_V3_FEMC_X;
       clusters_Y = _clusters_V3_FEMC_Y;
       clusters_Z = _clusters_V3_FEMC_Z;
+      return true;
     } else {
-      nclusters = 0;
-      setFLOATClusterArrayToZero(clusters_E);
-      setFLOATClusterArrayToZero(clusters_Eta);
-      setFLOATClusterArrayToZero(clusters_Phi);
-      setFLOATClusterArrayToZero(clusters_M02);
-      setFLOATClusterArrayToZero(clusters_M20);
-      setBOOLClusterArrayToZero(clusters_isMatched);
-      setINTClusterArrayToZero(clusters_NTower);
-      setINTClusterArrayToZero(clusters_trueID);
-      setINTClusterArrayToZero(clusters_NtrueID);
-      setFLOATClusterArrayToZero(clusters_X);
-      setFLOATClusterArrayToZero(clusters_Y);
-      setFLOATClusterArrayToZero(clusters_Z);
+      return false;
+      // nclusters = 0;
+      // setFLOATClusterArrayToZero(clusters_E);
+      // setFLOATClusterArrayToZero(clusters_Eta);
+      // setFLOATClusterArrayToZero(clusters_Phi);
+      // setFLOATClusterArrayToZero(clusters_M02);
+      // setFLOATClusterArrayToZero(clusters_M20);
+      // setBOOLClusterArrayToZero(clusters_isMatched);
+      // setINTClusterArrayToZero(clusters_NTower);
+      // setINTClusterArrayToZero(clusters_trueID);
+      // setINTClusterArrayToZero(clusters_NtrueID);
+      // setFLOATClusterArrayToZero(clusters_X);
+      // setFLOATClusterArrayToZero(clusters_Y);
+      // setFLOATClusterArrayToZero(clusters_Z);
     }
   }
 // MA global cluster variables
@@ -523,6 +534,7 @@ void loadClusterizerInput(
       clusters_X = _clusters_MA_FHCAL_X;
       clusters_Y = _clusters_MA_FHCAL_Y;
       clusters_Z = _clusters_MA_FHCAL_Z;
+      return true;
     } else if(caloEnum==kFEMC){
       nclusters = _nclusters_MA_FEMC;
       clusters_E = _clusters_MA_FEMC_E;
@@ -537,20 +549,22 @@ void loadClusterizerInput(
       clusters_X = _clusters_MA_FEMC_X;
       clusters_Y = _clusters_MA_FEMC_Y;
       clusters_Z = _clusters_MA_FEMC_Z;
+      return true;
     } else {
-      nclusters = 0;
-      setFLOATClusterArrayToZero(clusters_E);
-      setFLOATClusterArrayToZero(clusters_Eta);
-      setFLOATClusterArrayToZero(clusters_Phi);
-      setFLOATClusterArrayToZero(clusters_M02);
-      setFLOATClusterArrayToZero(clusters_M20);
-      setBOOLClusterArrayToZero(clusters_isMatched);
-      setINTClusterArrayToZero(clusters_NTower);
-      setINTClusterArrayToZero(clusters_trueID);
-      setINTClusterArrayToZero(clusters_NtrueID);
-      setFLOATClusterArrayToZero(clusters_X);
-      setFLOATClusterArrayToZero(clusters_Y);
-      setFLOATClusterArrayToZero(clusters_Z);
+      return false;
+      // nclusters = 0;
+      // setFLOATClusterArrayToZero(clusters_E);
+      // setFLOATClusterArrayToZero(clusters_Eta);
+      // setFLOATClusterArrayToZero(clusters_Phi);
+      // setFLOATClusterArrayToZero(clusters_M02);
+      // setFLOATClusterArrayToZero(clusters_M20);
+      // setBOOLClusterArrayToZero(clusters_isMatched);
+      // setINTClusterArrayToZero(clusters_NTower);
+      // setINTClusterArrayToZero(clusters_trueID);
+      // setINTClusterArrayToZero(clusters_NtrueID);
+      // setFLOATClusterArrayToZero(clusters_X);
+      // setFLOATClusterArrayToZero(clusters_Y);
+      // setFLOATClusterArrayToZero(clusters_Z);
     }
   }
 // V1 global cluster variables
@@ -569,48 +583,66 @@ void loadClusterizerInput(
       clusters_X = _clusters_V1_DRCALO_X;
       clusters_Y = _clusters_V1_DRCALO_Y;
       clusters_Z = _clusters_V1_DRCALO_Z;
+      return true;
     }else if(caloEnum==kFHCAL){
       nclusters = _nclusters_FHCAL;
       clusters_E = _clusters_FHCAL_E;
       clusters_Eta = _clusters_FHCAL_Eta;
       clusters_Phi = _clusters_FHCAL_Phi;
+      clusters_M02 = new float[_maxNclusters];
+      clusters_M20 = new float[_maxNclusters];
+      clusters_isMatched = new bool[_maxNclusters];
       setFLOATClusterArrayToZero(clusters_M02);
       setFLOATClusterArrayToZero(clusters_M20);
       setBOOLClusterArrayToZero(clusters_isMatched);
       clusters_NTower = _clusters_FHCAL_NTower;
       clusters_trueID = _clusters_FHCAL_trueID;
+      clusters_NtrueID = new int[_maxNclusters];
+      clusters_X = new float[_maxNclusters];
+      clusters_Y = new float[_maxNclusters];
+      clusters_Z = new float[_maxNclusters];
       setINTClusterArrayToZero(clusters_NtrueID);
       setFLOATClusterArrayToZero(clusters_X);
       setFLOATClusterArrayToZero(clusters_Y);
       setFLOATClusterArrayToZero(clusters_Z);
+      return true;
     } else if(caloEnum==kFEMC){
       nclusters = _nclusters_FEMC;
       clusters_E = _clusters_FEMC_E;
       clusters_Eta = _clusters_FEMC_Eta;
       clusters_Phi = _clusters_FEMC_Phi;
+      clusters_M02 = new float[_maxNclusters];
+      clusters_M20 = new float[_maxNclusters];
+      clusters_isMatched = new bool[_maxNclusters];
       setFLOATClusterArrayToZero(clusters_M02);
       setFLOATClusterArrayToZero(clusters_M20);
       setBOOLClusterArrayToZero(clusters_isMatched);
       clusters_NTower = _clusters_FEMC_NTower;
       clusters_trueID = _clusters_FEMC_trueID;
+      clusters_NtrueID = new int[_maxNclusters];
+      clusters_X = new float[_maxNclusters];
+      clusters_Y = new float[_maxNclusters];
+      clusters_Z = new float[_maxNclusters];
       setINTClusterArrayToZero(clusters_NtrueID);
       setFLOATClusterArrayToZero(clusters_X);
       setFLOATClusterArrayToZero(clusters_Y);
       setFLOATClusterArrayToZero(clusters_Z);
+      return true;
     } else {
-      nclusters = 0;
-      setFLOATClusterArrayToZero(clusters_E);
-      setFLOATClusterArrayToZero(clusters_Eta);
-      setFLOATClusterArrayToZero(clusters_Phi);
-      setFLOATClusterArrayToZero(clusters_M02);
-      setFLOATClusterArrayToZero(clusters_M20);
-      setBOOLClusterArrayToZero(clusters_isMatched);
-      setINTClusterArrayToZero(clusters_NTower);
-      setINTClusterArrayToZero(clusters_trueID);
-      setINTClusterArrayToZero(clusters_NtrueID);
-      setFLOATClusterArrayToZero(clusters_X);
-      setFLOATClusterArrayToZero(clusters_Y);
-      setFLOATClusterArrayToZero(clusters_Z);
+      return false;
+      // nclusters = 0;
+      // setFLOATClusterArrayToZero(clusters_E);
+      // setFLOATClusterArrayToZero(clusters_Eta);
+      // setFLOATClusterArrayToZero(clusters_Phi);
+      // setFLOATClusterArrayToZero(clusters_M02);
+      // setFLOATClusterArrayToZero(clusters_M20);
+      // setBOOLClusterArrayToZero(clusters_isMatched);
+      // setINTClusterArrayToZero(clusters_NTower);
+      // setINTClusterArrayToZero(clusters_trueID);
+      // setINTClusterArrayToZero(clusters_NtrueID);
+      // setFLOATClusterArrayToZero(clusters_X);
+      // setFLOATClusterArrayToZero(clusters_Y);
+      // setFLOATClusterArrayToZero(clusters_Z);
     }
   }
 
@@ -630,6 +662,7 @@ void loadClusterizerInput(
       clusters_X = _clusters_C3_FHCAL_X;
       clusters_Y = _clusters_C3_FHCAL_Y;
       clusters_Z = _clusters_C3_FHCAL_Z;
+      return true;
     } else if(caloEnum==kFEMC){
       nclusters = _nclusters_C3_FEMC;
       clusters_E = _clusters_C3_FEMC_E;
@@ -644,20 +677,22 @@ void loadClusterizerInput(
       clusters_X = _clusters_C3_FEMC_X;
       clusters_Y = _clusters_C3_FEMC_Y;
       clusters_Z = _clusters_C3_FEMC_Z;
+      return true;
     } else {
-      nclusters = 0;
-      setFLOATClusterArrayToZero(clusters_E);
-      setFLOATClusterArrayToZero(clusters_Eta);
-      setFLOATClusterArrayToZero(clusters_Phi);
-      setFLOATClusterArrayToZero(clusters_M02);
-      setFLOATClusterArrayToZero(clusters_M20);
-      setBOOLClusterArrayToZero(clusters_isMatched);
-      setINTClusterArrayToZero(clusters_NTower);
-      setINTClusterArrayToZero(clusters_trueID);
-      setINTClusterArrayToZero(clusters_NtrueID);
-      setFLOATClusterArrayToZero(clusters_X);
-      setFLOATClusterArrayToZero(clusters_Y);
-      setFLOATClusterArrayToZero(clusters_Z);
+      return false;
+      // nclusters = 0;
+      // setFLOATClusterArrayToZero(clusters_E);
+      // setFLOATClusterArrayToZero(clusters_Eta);
+      // setFLOATClusterArrayToZero(clusters_Phi);
+      // setFLOATClusterArrayToZero(clusters_M02);
+      // setFLOATClusterArrayToZero(clusters_M20);
+      // setBOOLClusterArrayToZero(clusters_isMatched);
+      // setINTClusterArrayToZero(clusters_NTower);
+      // setINTClusterArrayToZero(clusters_trueID);
+      // setINTClusterArrayToZero(clusters_NtrueID);
+      // setFLOATClusterArrayToZero(clusters_X);
+      // setFLOATClusterArrayToZero(clusters_Y);
+      // setFLOATClusterArrayToZero(clusters_Z);
     }
   }
 
@@ -677,6 +712,7 @@ void loadClusterizerInput(
       clusters_X = _clusters_C5_FHCAL_X;
       clusters_Y = _clusters_C5_FHCAL_Y;
       clusters_Z = _clusters_C5_FHCAL_Z;
+      return true;
     } else if(caloEnum==kFEMC){
       nclusters = _nclusters_C5_FEMC;
       clusters_E = _clusters_C5_FEMC_E;
@@ -691,35 +727,39 @@ void loadClusterizerInput(
       clusters_X = _clusters_C5_FEMC_X;
       clusters_Y = _clusters_C5_FEMC_Y;
       clusters_Z = _clusters_C5_FEMC_Z;
+      return true;
     } else {
-      nclusters = 0;
-      setFLOATClusterArrayToZero(clusters_E);
-      setFLOATClusterArrayToZero(clusters_Eta);
-      setFLOATClusterArrayToZero(clusters_Phi);
-      setFLOATClusterArrayToZero(clusters_M02);
-      setFLOATClusterArrayToZero(clusters_M20);
-      setBOOLClusterArrayToZero(clusters_isMatched);
-      setINTClusterArrayToZero(clusters_NTower);
-      setINTClusterArrayToZero(clusters_trueID);
-      setINTClusterArrayToZero(clusters_NtrueID);
-      setFLOATClusterArrayToZero(clusters_X);
-      setFLOATClusterArrayToZero(clusters_Y);
-      setFLOATClusterArrayToZero(clusters_Z);
+      return false;
+      // nclusters = 0;
+      // setFLOATClusterArrayToZero(clusters_E);
+      // setFLOATClusterArrayToZero(clusters_Eta);
+      // setFLOATClusterArrayToZero(clusters_Phi);
+      // setFLOATClusterArrayToZero(clusters_M02);
+      // setFLOATClusterArrayToZero(clusters_M20);
+      // setBOOLClusterArrayToZero(clusters_isMatched);
+      // setINTClusterArrayToZero(clusters_NTower);
+      // setINTClusterArrayToZero(clusters_trueID);
+      // setINTClusterArrayToZero(clusters_NtrueID);
+      // setFLOATClusterArrayToZero(clusters_X);
+      // setFLOATClusterArrayToZero(clusters_Y);
+      // setFLOATClusterArrayToZero(clusters_Z);
     }
-  } else {
-    nclusters = 0;
-    setFLOATClusterArrayToZero(clusters_E);
-    setFLOATClusterArrayToZero(clusters_Eta);
-    setFLOATClusterArrayToZero(clusters_Phi);
-    setFLOATClusterArrayToZero(clusters_M02);
-    setFLOATClusterArrayToZero(clusters_M20);
-    setBOOLClusterArrayToZero(clusters_isMatched);
-    setINTClusterArrayToZero(clusters_NTower);
-    setINTClusterArrayToZero(clusters_trueID);
-    setINTClusterArrayToZero(clusters_NtrueID);
-    setFLOATClusterArrayToZero(clusters_X);
-    setFLOATClusterArrayToZero(clusters_Y);
-    setFLOATClusterArrayToZero(clusters_Z);
+  }
+  else {
+    return false;
+    // nclusters = 0;
+    // setFLOATClusterArrayToZero(clusters_E);
+    // setFLOATClusterArrayToZero(clusters_Eta);
+    // setFLOATClusterArrayToZero(clusters_Phi);
+    // setFLOATClusterArrayToZero(clusters_M02);
+    // setFLOATClusterArrayToZero(clusters_M20);
+    // setBOOLClusterArrayToZero(clusters_isMatched);
+    // setINTClusterArrayToZero(clusters_NTower);
+    // setINTClusterArrayToZero(clusters_trueID);
+    // setINTClusterArrayToZero(clusters_NtrueID);
+    // setFLOATClusterArrayToZero(clusters_X);
+    // setFLOATClusterArrayToZero(clusters_Y);
+    // setFLOATClusterArrayToZero(clusters_Z);
   }
 }
 

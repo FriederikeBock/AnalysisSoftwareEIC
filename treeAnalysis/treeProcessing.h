@@ -204,8 +204,8 @@ TString GetProjectionNameFromIndex(int projindex)
     case 2:     return "FTTL_2";
     case 3:     return "ETTL_0";
     case 4:     return "ETTL_1";
-    // case 5:    return "FHCAL_0";
-    // case 6:    return "FEMC_0";
+    case 5:    return "FHCAL";
+    case 6:    return "FEMC";
     case 7:     return "CTTL_0";
     case 8:     return "CTTL_1";
     // LBL central barrel
@@ -373,4 +373,13 @@ Bool_t HasTimingLayerAfterECal(Int_t layerID){
       return kFALSE;
   }
   return kFALSE;
+}
+
+int GetCorrectMCArrayEntry(float objectTrueID){
+  for(Int_t imc=0; imc<_nMCPart; imc++){
+    if(objectTrueID==_mcpart_ID[imc]){
+      return imc;
+    }
+  }
+  return -1;
 }
