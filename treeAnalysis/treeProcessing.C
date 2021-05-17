@@ -352,7 +352,7 @@ void treeProcessing(
         double massHypothesis = 0.139;
         for(Int_t itrk=0; itrk<_nTracks; itrk++){
             _track_trueID[itrk] = GetCorrectMCArrayEntry(_track_trueID[itrk]);
-            if(verbosity>1) cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk]-1 << "\tand X = " << _track_px[itrk] << " cm" << endl;
+            if(verbosity>1) cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk] << "\tand X = " << _track_px[itrk] << " cm" << endl;
 
             // Skip tracks that aren't selected.
             if(_track_source[itrk] != primaryTrackSource) {

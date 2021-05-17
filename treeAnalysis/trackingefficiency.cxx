@@ -413,7 +413,7 @@ void trackingcomparison() {
     for (unsigned int iOuterTrkSource = 0; iOuterTrkSource < nTrackSources; ++iOuterTrkSource) {
         for (unsigned int iOuterTrk = 0; iOuterTrk < _nTracks; ++iOuterTrk) {
             if (_track_source[iOuterTrk] == iOuterTrkSource) {
-                int outerTrueTrackID = static_cast<int>(_track_trueID[iOuterTrk]-1);
+                int outerTrueTrackID = static_cast<int>(_track_trueID[iOuterTrk]);
                 // Then, iterate over the track sources and track index again, this time looking for a
                 // new source to compare with.
                 //std::cout << "outerTrueTrackID " << outerTrueTrackID << "\n";
@@ -421,7 +421,7 @@ void trackingcomparison() {
                     // Don't correlate with itself, and don't repeat the hists.
                     if (iOuterTrkSource >= iInnerTrkSource) { continue; }
                     for (unsigned int iInnerTrk = 0; iInnerTrk < _nTracks; ++iInnerTrk) {
-                        int innerTrueTrackID = static_cast<int>(_track_trueID[iInnerTrk]-1);
+                        int innerTrueTrackID = static_cast<int>(_track_trueID[iInnerTrk]);
                         //std::cout << "innerTrueTrackID " << innerTrueTrackID << "\n";
                         // If they match, we can actually take a look
                         if (outerTrueTrackID == innerTrueTrackID) {
