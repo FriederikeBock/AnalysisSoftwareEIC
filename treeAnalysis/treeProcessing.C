@@ -33,7 +33,7 @@ void treeProcessing(
     Double_t maxNEvent          = -1,
     Int_t verbosity             = 0,
     int granularity_factor      = 1,
-    bool doCalibration          = false
+    bool doCalibration          = false,
     // Defaults to tracking from all layers.
     unsigned short primaryTrackSource = 0
 ){
