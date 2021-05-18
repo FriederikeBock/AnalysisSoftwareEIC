@@ -50,9 +50,12 @@ Bool_t initResoHist                                     = kFALSE;
 // **********************************************************************************************
 // NOTE: We'll only fill in half of these, but it's easier to create the fully array, and then
 //       we only initialize + write what we need.
-TH2F* h_trackingComparison_eta[nTrackSources][nTrackSources] = {{nullptr}};
-TH2F* h_trackingComparison_phi[nTrackSources][nTrackSources] = {{nullptr}};
-TH2F* h_trackingComparison_pt[nTrackSources][nTrackSources] = {{nullptr}};
+TH2F* h_trackingComparison_p_eta[nTrackSources][nTrackSources] = {{nullptr}};
+TH2F* h_trackingComparison_p_phi[nTrackSources][nTrackSources] = {{nullptr}};
+TH2F* h_trackingComparison_p_pt[nTrackSources][nTrackSources] = {{nullptr}};
+TH2F* h_trackingComparison_eta_p[nTrackSources][nTrackSources] = {{nullptr}};
+TH2F* h_trackingComparison_eta_phi[nTrackSources][nTrackSources] = {{nullptr}};
+TH2F* h_trackingComparison_eta_pt[nTrackSources][nTrackSources] = {{nullptr}};
 bool initTrackingComparionHists = false;
 
 
@@ -401,9 +404,12 @@ void trackingcomparison() {
         for (unsigned int iOuterTrkSource = 0; iOuterTrkSource < nTrackSources; ++iOuterTrkSource) {
             for (unsigned int iInnerTrkSource = 0; iInnerTrkSource < nTrackSources; ++iInnerTrkSource) {
                 if (iOuterTrkSource >= iInnerTrkSource) { continue; }
-                h_trackingComparison_eta[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_eta_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nBinsP, binningP, 500, -0.5, 0.5);
-                h_trackingComparison_phi[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_phi_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nBinsP, binningP, 500, -0.5, 0.5);
-                h_trackingComparison_pt[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_pt_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nBinsP, binningP, 500, -0.5, 0.5);
+                h_trackingComparison_p_eta[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_p_eta_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nBinsP, binningP, 500, -0.5, 0.5);
+                h_trackingComparison_p_phi[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_p_phi_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nBinsP, binningP, 500, -0.5, 0.5);
+                h_trackingComparison_p_pt[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_p_pt_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nBinsP, binningP, 500, -0.5, 0.5);
+                h_trackingComparison_eta_p[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_eta_p_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nEta, partEta, 500, -0.5, 0.5);
+                h_trackingComparison_eta_phi[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_eta_phi_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nEta, partEta, 500, -0.5, 0.5);
+                h_trackingComparison_eta_pt[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_eta_pt_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nEta, partEta, 500, -0.5, 0.5);
             }
         }
         initTrackingComparionHists = true;
@@ -429,9 +435,12 @@ void trackingcomparison() {
                             TVector3 outerVec(_track_px[iOuterTrk], _track_py[iOuterTrk], _track_pz[iOuterTrk]);
                             TVector3 innerVec(_track_px[iInnerTrk], _track_py[iInnerTrk], _track_pz[iInnerTrk]);
 
-                            h_trackingComparison_eta[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.P(), outerVec.Eta() - innerVec.Eta());
-                            h_trackingComparison_phi[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.P(), outerVec.Phi() - innerVec.Phi());
-                            h_trackingComparison_pt[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.P(), outerVec.Pt() - innerVec.Pt());
+                            h_trackingComparison_p_eta[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.Mag(), outerVec.Eta() - innerVec.Eta());
+                            h_trackingComparison_p_phi[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.Mag(), outerVec.Phi() - innerVec.Phi());
+                            h_trackingComparison_p_pt[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.Mag(), outerVec.Pt() - innerVec.Pt());
+                            h_trackingComparison_eta_p[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.Eta(), outerVec.Mag() - innerVec.Mag());
+                            h_trackingComparison_eta_phi[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.Eta(), outerVec.Phi() - innerVec.Phi());
+                            h_trackingComparison_eta_pt[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.Eta(), outerVec.Pt() - innerVec.Pt());
                         }
                     }
                 }
@@ -625,9 +634,12 @@ void trackingcomparisonhistosSave() {
   for (unsigned int iOuterTrkSource = 0; iOuterTrkSource < nTrackSources; ++iOuterTrkSource) {
     for (unsigned int iInnerTrkSource = 0; iInnerTrkSource < nTrackSources; ++iInnerTrkSource) {
       if (iOuterTrkSource >= iInnerTrkSource) { continue; }
-      if (h_trackingComparison_eta[iOuterTrkSource][iInnerTrkSource]) { h_trackingComparison_eta[iOuterTrkSource][iInnerTrkSource]->Write(); }
-      if (h_trackingComparison_phi[iOuterTrkSource][iInnerTrkSource]) { h_trackingComparison_phi[iOuterTrkSource][iInnerTrkSource]->Write(); }
-      if (h_trackingComparison_pt[iOuterTrkSource][iInnerTrkSource]) { h_trackingComparison_pt[iOuterTrkSource][iInnerTrkSource]->Write(); }
+      if (h_trackingComparison_p_eta[iOuterTrkSource][iInnerTrkSource]) { h_trackingComparison_p_eta[iOuterTrkSource][iInnerTrkSource]->Write(); }
+      if (h_trackingComparison_p_phi[iOuterTrkSource][iInnerTrkSource]) { h_trackingComparison_p_phi[iOuterTrkSource][iInnerTrkSource]->Write(); }
+      if (h_trackingComparison_p_pt[iOuterTrkSource][iInnerTrkSource]) { h_trackingComparison_p_pt[iOuterTrkSource][iInnerTrkSource]->Write(); }
+      if (h_trackingComparison_eta_p[iOuterTrkSource][iInnerTrkSource]) { h_trackingComparison_eta_p[iOuterTrkSource][iInnerTrkSource]->Write(); }
+      if (h_trackingComparison_eta_phi[iOuterTrkSource][iInnerTrkSource]) { h_trackingComparison_eta_phi[iOuterTrkSource][iInnerTrkSource]->Write(); }
+      if (h_trackingComparison_eta_pt[iOuterTrkSource][iInnerTrkSource]) { h_trackingComparison_eta_pt[iOuterTrkSource][iInnerTrkSource]->Write(); }
     }
   }
 
