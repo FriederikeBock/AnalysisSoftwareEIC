@@ -19,8 +19,8 @@ void clustereffi(
                             TString calo            = "FHCAL",
                             TString suffix          = "pdf",
                             TString addLabel        = "",
-                            Int_t trackCuts         = 0
-                            
+                            Int_t trackCuts         = 0,
+                            unsigned short primaryTrackSource = 0
 ){
 
   gROOT->Reset();
@@ -117,9 +117,9 @@ void clustereffi(
     h_cluster_NClMean_MCE[iCl]              = (TH1D*)inputFileCL->Get(Form("h_CS_NClMean_%s_%s_MCE", calo.Data(), nameClus[iCl].Data()));
   }
   for (Int_t pid = 1; pid < nPID; pid++){
-    h_trackMapMC_eta_E[pid]                  = (TH2F*)inputFileTR->Get(Form("h_%s_MC_E", partNameET[pid].Data()));
+    h_trackMapMC_eta_E[pid]                  = (TH2F*)inputFileTR->Get(Form("h_%s_MC_E_%u", partNameET[pid].Data(), primaryTrackSource));
     h_trackMapMC_eta_E[pid]->Sumw2();
-    h_trackMapTr_eta_E[pid]                  = (TH2F*)inputFileTR->Get(Form("h_%s_rec_trueE", partNameET[pid].Data()));
+    h_trackMapTr_eta_E[pid]                  = (TH2F*)inputFileTR->Get(Form("h_%s_rec_trueE_%u", partNameET[pid].Data(), primaryTrackSource));
     h_trackMapTr_eta_E[pid]->Sumw2();
     
     for (Int_t iCl = 0; iCl < nClus; iCl++){

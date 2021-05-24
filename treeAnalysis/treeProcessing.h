@@ -65,6 +65,7 @@ float* _track_trueID             = new float[_maxNTracks];
 float* _track_px                 = new float[_maxNTracks];
 float* _track_py                 = new float[_maxNTracks];
 float* _track_pz                 = new float[_maxNTracks];
+unsigned short* _track_source             = new unsigned short[_maxNTracks];
 
 
 int _nProjections;
@@ -106,6 +107,7 @@ void SetBranchAddressesTree(TTree* inputTree){
     inputTree->SetBranchAddress("tracks_py",                    _track_py);
     inputTree->SetBranchAddress("tracks_pz",                    _track_pz);
     inputTree->SetBranchAddress("tracks_trueID",                _track_trueID);
+    inputTree->SetBranchAddress("tracks_source",                _track_source);
 
     inputTree->SetBranchAddress("nProjections",        &_nProjections);
     inputTree->SetBranchAddress("track_ProjTrackID",   _track_ProjTrackID);
