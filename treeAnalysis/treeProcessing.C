@@ -429,9 +429,13 @@ void treeProcessing(
                 jetf_all_E.push_back(Etrack);
             }
         }
+        if(verbosity>1) cout << "running trackingefficiency" << endl;
         trackingefficiency();
+        if(verbosity>1) cout << "running trackingresolution" << endl;
         trackingresolution();
+        if(verbosity>1) cout << "running trackingcomparison" << endl;
         trackingcomparison();
+        if(verbosity>1) cout << "finished tracking studies" << endl;
 
         // ANCHOR Track projections loop variables:
         // float* _track_ProjTrackID[iproj]
