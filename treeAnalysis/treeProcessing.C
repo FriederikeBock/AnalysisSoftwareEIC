@@ -12,7 +12,10 @@
 #include "trackmatchingstudies.cxx"
 
 void treeProcessing(
-    TString fileName            = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_pTHard5.root",
+    // TString inFile            = "/home/tristan/ecce/data/output_ALLSILICON-FTTLS3LC-ETTL-CTTL-INNERTRACKING_e10p250pTHard5/G4EICDetector_1_eventtree.root",
+    // TString inFile            = "ALLSILICON-FTTLS3LC-ETTL-CTTL-INNERTRACKING_e10p250pTHard5.txt", // 10,000 events
+    // TString inFile            = "ALLSILICON-ETTL-CTTL-INNERTRACKING-ASYM-FTTLS3LC_e10p250pTHard5.txt", // 169,000 events
+    TString inFile            = "small-ALLSILICON-ETTL-CTTL-INNERTRACKING-ASYM-FTTLS3LC_e10p250pTHard5.txt", // 169,000 events
     TString addOutputName       = "",
     bool do_3x3clusterizer      = true,
     bool do_5x5clusterizer      = true,
@@ -26,7 +29,7 @@ void treeProcessing(
     bool do_MAclusterizerFEMC   = true,
     bool do_C3clusterizerFEMC   = true,
     bool do_C5clusterizerFEMC   = true,
-    bool do_jetfinding          = false,
+    bool do_jetfinding          = true,
     // Double_t maxNEvent = 1e5,
     bool hasTiming              = true,
     bool isALLSILICON           = true, 
@@ -45,7 +48,21 @@ void treeProcessing(
     if(do_jetfinding) _do_jetfinding = true;
 
     // load tree
-    TTree *const tt_event =  (TTree *) (new TFile(fileName.Data(), "READ"))->Get("event_tree");
+    TChain *const tt_event = new TChain("event_tree");
+    if (inFile.EndsWith(".root")) {                     // are we loading a single root tree?
+        std::cout << "loading a single root file" << std::endl;
+        tt_event->AddFile(inFile);
+    }
+    else {                                              // or are we loading a bunch?
+        std::cout << "loading a list of files" << std::endl;
+        std::ifstream files(inFile);
+        std::string filePath;
+
+        while (std::getline(files, filePath)) {
+            tt_event->AddFile(filePath.c_str());
+        }
+        files.close();
+    }
     if(!tt_event){ cout << "tree not found... returning!"<< endl; return;}
 
     // load all branches (see header)
