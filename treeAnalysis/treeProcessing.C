@@ -35,7 +35,9 @@ void treeProcessing(
     int granularity_factor      = 1,
     bool doCalibration          = false,
     // Defaults to tracking from all layers.
-    unsigned short primaryTrackSource = 0
+    unsigned short primaryTrackSource = 0,
+    std::string jetAlgorithm = "anti-kt",
+    double jetR                 = 0.5
 ){
     // make output directory
     TString dateForOutput                       = ReturnDateStr();
@@ -542,30 +544,30 @@ void treeProcessing(
 
             // ANCHOR JET FINDING
             // truth jets
-            auto jetsTrue = findJets(0.5, "anti-kt", jetf_truth_px, jetf_truth_py, jetf_truth_pz, jetf_truth_E);
+            auto jetsTrue = findJets(jetR, jetAlgorithm, jetf_truth_px, jetf_truth_py, jetf_truth_pz, jetf_truth_E);
             if(verbosity>1)cout << "found " << std::get<1>(jetsTrue).size() << " true jets" << endl;        // printJets(std::get<1>(jetsTrue));
 
-            auto jetsTrueCharged = findJets(0.5, "anti-kt", jetf_truthcharged_px, jetf_truthcharged_py, jetf_truthcharged_pz, jetf_truthcharged_E);
+            auto jetsTrueCharged = findJets(jetR, jetAlgorithm, jetf_truthcharged_px, jetf_truthcharged_py, jetf_truthcharged_pz, jetf_truthcharged_E);
             if(verbosity>1)cout << "found " << std::get<1>(jetsTrueCharged).size() << " true charged jets" << endl;        // printJets(std::get<1>(jetsTrue));
 
             // track-based jets (rec)
-            auto jetsTrackRec = findJets(0.5, "anti-kt", jetf_track_px, jetf_track_py, jetf_track_pz, jetf_track_E);
+            auto jetsTrackRec = findJets(jetR, jetAlgorithm, jetf_track_px, jetf_track_py, jetf_track_pz, jetf_track_E);
             if(verbosity>1)cout << "found " << std::get<1>(jetsTrackRec).size() << " rec track jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
 
             // full jets (rec)
-            auto jetsFullRec = findJets(0.5, "anti-kt", jetf_full_px, jetf_full_py, jetf_full_pz, jetf_full_E);
+            auto jetsFullRec = findJets(jetR, jetAlgorithm, jetf_full_px, jetf_full_py, jetf_full_pz, jetf_full_E);
             if(verbosity>1) cout << "found " << std::get<1>(jetsFullRec).size() << " rec full jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
 
             // hcal jets (rec)
-            // auto jetsHcalRec = findJets(0.5, "anti-kt", jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz, jetf_hcal_E);
+            // auto jetsHcalRec = findJets(jetR, jetAlgorithm, jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz, jetf_hcal_E);
             // if(verbosity>1) cout << "found " << std::get<1>(jetsHcalRec).size() << " rec hcal jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
 
             // calo jets (rec)
-            auto jetsCaloRec = findJets(0.5, "anti-kt", jetf_calo_px, jetf_calo_py, jetf_calo_pz, jetf_calo_E);
+            auto jetsCaloRec = findJets(jetR, jetAlgorithm, jetf_calo_px, jetf_calo_py, jetf_calo_pz, jetf_calo_E);
             if(verbosity>1) cout << "found " << std::get<1>(jetsCaloRec).size() << " rec calo jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
 
             // all jets (rec)
-            auto jetsAllRec = findJets(0.5, "anti-kt", jetf_all_px, jetf_all_py, jetf_all_pz, jetf_all_E);
+            auto jetsAllRec = findJets(jetR, jetAlgorithm, jetf_all_px, jetf_all_py, jetf_all_pz, jetf_all_E);
             if(verbosity>1) cout << "found " << std::get<1>(jetsAllRec).size() << " rec all jets" << endl;        // printJets(std::get<1>(jetsTrackRec));
 
             jetresolutionhistos(jetsTrackRec,jetsTrueCharged,0);
