@@ -436,10 +436,6 @@ void treeProcessing(
                     double px = pt * cos(_clusters_MA_FHCAL_Phi[iclus]);
                     double py = pt * sin(_clusters_MA_FHCAL_Phi[iclus]);
                     double pz = pt * sinh(_clusters_MA_FHCAL_Eta[iclus]);
-                    jetf_all_px.push_back(px);
-                    jetf_all_py.push_back(py);
-                    jetf_all_pz.push_back(pz);
-                    jetf_all_E.push_back(_clusters_MA_FHCAL_E[iclus]);
                     jetf_hcal_px.push_back(px);
                     jetf_hcal_py.push_back(py);
                     jetf_hcal_pz.push_back(pz);
