@@ -400,16 +400,20 @@ void trackingresolution(){
 // ************************ compare tracking from different sources *****************************
 // **********************************************************************************************
 void trackingcomparison() {
+    std::map<unsigned int, std::string> trackMap = {
+        {0, "all"},
+        {1, "inner"}
+    };
     if (!initTrackingComparionHists) {
         for (unsigned int iOuterTrkSource = 0; iOuterTrkSource < nTrackSources; ++iOuterTrkSource) {
             for (unsigned int iInnerTrkSource = 0; iInnerTrkSource < nTrackSources; ++iInnerTrkSource) {
                 if (iOuterTrkSource >= iInnerTrkSource) { continue; }
-                h_trackingComparison_p_eta[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_p_eta_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nBinsP, binningP, 500, -0.5, 0.5);
-                h_trackingComparison_p_phi[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_p_phi_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nBinsP, binningP, 500, -0.5, 0.5);
-                h_trackingComparison_p_pt[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_p_pt_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nBinsP, binningP, 500, -0.5, 0.5);
-                h_trackingComparison_eta_p[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_eta_p_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nEta, partEta, 500, -0.5, 0.5);
-                h_trackingComparison_eta_phi[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_eta_phi_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nEta, partEta, 500, -0.5, 0.5);
-                h_trackingComparison_eta_pt[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_eta_pt_%u_%u", iOuterTrkSource, iInnerTrkSource), "", nEta, partEta, 500, -0.5, 0.5);
+                h_trackingComparison_p_eta[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_p_eta_%u_%u", iOuterTrkSource, iInnerTrkSource), TString::Format(";p (GeV/c);#eta_{%s} - #eta_{%s}", trackMap[iOuterTrkSource].c_str(), trackMap[iInnerTrkSource].c_str()), nBinsP, binningP, 500, -0.5, 0.5);
+                h_trackingComparison_p_phi[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_p_phi_%u_%u", iOuterTrkSource, iInnerTrkSource), TString::Format(";p (GeV/c);#varphi_{%s} - #varphi_{%s}", trackMap[iOuterTrkSource].c_str(), trackMap[iInnerTrkSource].c_str()), nBinsP, binningP, 500, -0.5, 0.5);
+                h_trackingComparison_p_pt[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_p_pt_%u_%u", iOuterTrkSource, iInnerTrkSource), TString::Format(";p (GeV/c);p_{T,%s} - p_{T,%s} (GeV/c)", trackMap[iOuterTrkSource].c_str(), trackMap[iInnerTrkSource].c_str()), nBinsP, binningP, 500, -0.5, 0.5);
+                h_trackingComparison_eta_p[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_eta_p_%u_%u", iOuterTrkSource, iInnerTrkSource), TString::Format(";#eta;p_{%s} - p_{%s} (GeV/c)", trackMap[iOuterTrkSource].c_str(), trackMap[iInnerTrkSource].c_str()), nEta, partEta, 500, -0.5, 0.5);
+                h_trackingComparison_eta_phi[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_eta_phi_%u_%u", iOuterTrkSource, iInnerTrkSource), TString::Format(";#eta;#varphi_{%s} - #varphi_{%s}", trackMap[iOuterTrkSource].c_str(), trackMap[iInnerTrkSource].c_str()), nEta, partEta, 500, -0.5, 0.5);
+                h_trackingComparison_eta_pt[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_eta_pt_%u_%u", iOuterTrkSource, iInnerTrkSource), TString::Format(";#eta;p_{T,%s} - p_{T,%s} (GeV/c)", trackMap[iOuterTrkSource].c_str(), trackMap[iInnerTrkSource].c_str()), nEta, partEta, 500, -0.5, 0.5);
             }
         }
         initTrackingComparionHists = true;
@@ -629,7 +633,7 @@ void trackingresolutionhistosSave(){
 void trackingcomparisonhistosSave() {
 
   // define output file
-  TFile* fileOutput = new TFile(Form("%s/output_TRKRS_Comparison.root", outputDir.Data()),"RECREATE");
+  TFile* fileOutput = new TFile(Form("%s/output_TRKS_Comparison.root", outputDir.Data()),"RECREATE");
 
   for (unsigned int iOuterTrkSource = 0; iOuterTrkSource < nTrackSources; ++iOuterTrkSource) {
     for (unsigned int iInnerTrkSource = 0; iInnerTrkSource < nTrackSources; ++iInnerTrkSource) {

@@ -44,7 +44,7 @@ std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea>, std::vector<fastjet::P
         std::vector<T> py,
         std::vector<T> pz,
         std::vector<T> E,
-        fastjet::AreaDefinition areaDefinition = fastjet::AreaDefinition(fastjet::AreaType::passive_area, fastjet::GhostedAreaSpec(1, 1, 0.05))
+        fastjet::AreaDefinition areaDefinition = fastjet::AreaDefinition(fastjet::AreaType::active_area, fastjet::GhostedAreaSpec(4, 1, 0.05))
 )
 {
     // Validation

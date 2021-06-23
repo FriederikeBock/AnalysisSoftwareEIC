@@ -1,10 +1,16 @@
 TString outputDir;
+// Constants are from the EventEvaluator class in coresoftware
 const int _maxNHits = 5000;
-const int _maxNTowers = 50*50;
+const int _maxNTowers = 50 * 50;
+const int _maxNTowersCentral = 2000;
+const int _maxNTowersDR = 3000 * 3000;
+const int _maxNTowersCalo = 5000000;
 const int _maxNclusters = 100;
-const int _maxNProjections = 2000;
+const int _maxNclustersCentral = 2000;
 const int _maxNTracks = 200;
-const int _maxNMCPart = 5000;
+const int _maxNProjections = 2000;
+const int _maxNMCPart = 100000;
+const int _maxNHepmcp = 1000;
 
 float _nEventsTree;
 
@@ -18,10 +24,10 @@ float* _hits_t             = new float[_maxNHits];
 
 // towers
 int _nTowers_DRCALO;
-float* _tower_DRCALO_E            = new float[_maxNTowers];
-int* _tower_DRCALO_iEta         = new int[_maxNTowers];
-int* _tower_DRCALO_iPhi         = new int[_maxNTowers];
-int* _tower_DRCALO_trueID       = new int[_maxNTowers];
+float* _tower_DRCALO_E            = new float[_maxNTowersDR];
+int* _tower_DRCALO_iEta         = new int[_maxNTowersDR];
+int* _tower_DRCALO_iPhi         = new int[_maxNTowersDR];
+int* _tower_DRCALO_trueID       = new int[_maxNTowersDR];
 
 // towers
 int _nTowers_FHCAL;
