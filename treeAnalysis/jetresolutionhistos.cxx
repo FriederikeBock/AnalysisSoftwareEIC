@@ -90,13 +90,18 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
 
     }
   }
-
+  int jets = 0;
+  int matched = 0;
     for (std::size_t j = 0; j < std::get<1>(truejets).size(); j++) {
       h_constituents_true_Eta[select]->Fill(std::get<1>(truejets)[j].eta(),(std::get<1>(truejets)[j].constituents()).size());
-      h_truth_count[select]->Fill(std::get<1>(truejets)[j].E());
+     
+      jets++;
+      h_truth_count[select]->Fill(std::get<1>(truejets)[j].E());    // Jet Efficiency
       for (std::size_t i = 0; i < std::get<1>(recjets).size(); i++) {
-        if (0.25 > std::get<1>(truejets)[j].delta_R(std::get<1>(recjets)[i])) {
+        if (0.6 > std::get<1>(truejets)[j].delta_R(std::get<1>(recjets)[i])) {
           h_matched_count[select]->Fill(std::get<1>(truejets)[j].E());
+          matched++;
+          break;
         }
       }
     }

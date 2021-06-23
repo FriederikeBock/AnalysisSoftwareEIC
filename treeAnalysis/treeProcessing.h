@@ -4,7 +4,7 @@ const int _maxNTowers = 50*50;
 const int _maxNclusters = 100;
 const int _maxNProjections = 2000;
 const int _maxNTracks = 200;
-const int _maxNMCPart = 1000;
+const int _maxNMCPart = 5000;
 
 float _nEventsTree;
 
