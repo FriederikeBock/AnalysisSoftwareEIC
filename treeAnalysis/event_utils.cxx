@@ -19,7 +19,7 @@ struct DISKinematics {
   *
   * Implemented using https://wiki.bnl.gov/eic/index.php/DIS_Kinematics
   */
-DISKinematics JBKinematics(unsigned int primaryTrackSource, double incomingElectronEnergy, double sqrts, double hadronMassHypothesis = 0.139)
+DISKinematics JBKinematics(unsigned short primaryTrackSource, double incomingElectronEnergy, double incomingHadronEnergy, double hadronMassHypothesis = 0.139)
 {
     // NOTE: We need electron ID here. Since we're don't yet have that available as of 16 June 2021, we use the true PID info.
     // NOTE: 1e6 is a sentinel value.
@@ -31,6 +31,7 @@ DISKinematics JBKinematics(unsigned int primaryTrackSource, double incomingElect
         }
         if (_mcpart_PDG[static_cast<int>(_track_trueID[i])] == 11) {
             // If it's an electron, take the highest pt one.
+            // TODO: Update this when the electron PID is addressed.
             double pt = std::sqrt(std::pow(_track_px[i], 2) + std::pow(_track_py[i], 2));
             if (pt > electronPt) {
                 electronID = i;
@@ -39,7 +40,7 @@ DISKinematics JBKinematics(unsigned int primaryTrackSource, double incomingElect
         }
     }
     if (electronID == 1e6) {
-        throw std::runtime_error("Unable to find electron!");
+        throw std::runtime_error("Unable to find scattered electron!");
     }
 
     // Loop over the final state hadrons to determine the kinematics.
@@ -47,12 +48,12 @@ DISKinematics JBKinematics(unsigned int primaryTrackSource, double incomingElect
     double py_h = 0;
     double e_minus_pz = 0;
     for(unsigned int i = 0; i < _nTracks; ++i) {
+        // Only consider tracks from the primary track source.
         if (_track_source[i] != primaryTrackSource) {
             continue;
         }
-        // Don't include the electron
-        // TODO: Update this when the electron ID is updated.
-        if (_mcpart_PDG[static_cast<int>(_track_trueID[i])] == 11) {
+        // Skip the scattered electron.
+        if (i == electronID) {
             continue;
         }
         px_h += _track_px[i];
@@ -60,6 +61,10 @@ DISKinematics JBKinematics(unsigned int primaryTrackSource, double incomingElect
         double eTrack = std::sqrt(std::pow(_track_px[i],2) + std::pow(_track_py[i],2) + std::pow(_track_pz[i],2) + std::pow(hadronMassHypothesis, 2));
         e_minus_pz += (eTrack - _track_pz[i]);
     }
+
+    // TODO: Add calorimeter towers.
+
+    double sqrts = 4 * incomingElectronEnergy * incomingHadronEnergy;
 
     double y = e_minus_pz / (2 * incomingElectronEnergy);
     double Q2 = (std::pow(px_h, 2) + std::pow(py_h, 2)) / (1 - y);
