@@ -1,7 +1,5 @@
 #include "../common/plottingheader.h"
 #include "../common/binningheader.h"
-// #include "plottingheader.h"
-// #include "binningheader.h"
 #define NELEMS(arr) (sizeof(arr)/sizeof(arr[0]))
 
 #include <TROOT.h>
@@ -26,7 +24,8 @@ struct plottingStyleData
   TString str_jet_type_plot[njettypes] = {"Charged Jets (Track)", "Calo Jets (FHCAL+FEMC)" , "Full Jets (Track+FEMC)", "All Jets"};
 };
 
-void plotScale(TH1F *scaleData[nInputs][njettypes][16], TString collisionSystem, TString outputDir, TString format, int firstEtaBin, int numJetTypes, plottingStyleData style);
+void plotScale(TH1F *scaleData[nInputs][njettypes][16], TString collisionSystem, TString outputDir, TString format,
+               int firstEtaBin, int numJetTypes, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel);
 
 void resolutionJETStree(
     TString suffix            = "png"
@@ -41,7 +40,9 @@ void resolutionJETStree(
   TString outputDir 						                  = Form("plotsTree/%s",dateForOutput.Data());
   gSystem->Exec("mkdir -p "+outputDir+"/Slices");
   gSystem->Exec("mkdir -p "+outputDir+"/EtaResolution");
+  gSystem->Exec("mkdir -p "+outputDir+"/EtaScale");
   gSystem->Exec("mkdir -p "+outputDir+"/PhiResolution");
+  gSystem->Exec("mkdir -p "+outputDir+"/PhiScale");
   gSystem->Exec("mkdir -p "+outputDir+"/JetEnergyResolution");
   gSystem->Exec("mkdir -p "+outputDir+"/JetEnergyScale");
   gSystem->Exec("mkdir -p "+outputDir+"/JetEfficiency");
@@ -71,10 +72,14 @@ void resolutionJETStree(
   TH1F*    histo_JES_pT[nInputs][njettypes][nEta+1] = {{{NULL}}};
   TH1F*    histo_JER_E[nInputs][njettypes][nEta+1] = {{{NULL}}};
   TH1F*    histo_JER_pT[nInputs][njettypes][nEta+1] = {{{NULL}}};
+ 
   TH1F*    h_EtaReso_Width_E[nInputs][njettypes][nEta+1] = {{{NULL}}};
+  TH1F*    h_EtaReso_Mean_E[nInputs][njettypes][nEta+1] = {{{NULL}}};
   TH1F*    h_EtaReso_Mean_Eta[nInputs][njettypes] = {{NULL}};
   TH1F*    h_EtaReso_Width_Eta[nInputs][njettypes] = {{NULL}};
+
   TH1F*    h_PhiReso_Width_E[nInputs][njettypes][nEta+1] = {{{NULL}}};
+  TH1F*    h_PhiReso_Mean_E[nInputs][njettypes][nEta+1] = {{{NULL}}};
   TH1F*    h_PhiReso_Mean_Eta[nInputs][njettypes] = {{NULL}};
   TH1F*    h_PhiReso_Width_Eta[nInputs][njettypes] = {{NULL}};
 
@@ -99,7 +104,9 @@ void resolutionJETStree(
         histo2D_JES_pT[iInp][ijr][eT]	= (TH2F*) inputFiles[iInp]->Get(Form("h_jetscale_%s_pT_%d", style.str_jet_type[ijr].Data(),eT));
 
         h_EtaReso_Width_E[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_EtaReso_Width_%s_E_%d", style.str_jet_type[ijr].Data(),eT));
+        h_EtaReso_Mean_E[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_EtaReso_Mean_%s_E_%d", style.str_jet_type[ijr].Data(),eT));
         h_PhiReso_Width_E[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_PhiReso_Width_%s_E_%d", style.str_jet_type[ijr].Data(),eT));
+        h_PhiReso_Mean_E[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_PhiReso_Mean_%s_E_%d", style.str_jet_type[ijr].Data(),eT));
 
         histo_JES_E[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_JES_%s_E_%d", style.str_jet_type[ijr].Data(),eT));
         histo_JES_pT[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_JES_%s_pT_%d", style.str_jet_type[ijr].Data(),eT));
@@ -181,7 +188,9 @@ void resolutionJETStree(
   canvasJES->Print(Form("%s/JetEnergyResolution/JES_E_field_TTL.%s", outputDir.Data(), suffix.Data()));
 
 
-  plotScale(histo_JES_E, collisionSystem, TString(Form("%s/JetEnergyScale", outputDir.Data())) , suffix, firstEtaBin, njettypes, style);  // Plot jet energy scale
+  plotScale(histo_JES_E, collisionSystem, TString(Form("%s/JetEnergyScale/JES", outputDir.Data())) , suffix, firstEtaBin, njettypes, style, -1, 0.3, TString("#it{E}^{jet}"), TString("Mean((#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}))"));  // Plot jet energy scale
+  plotScale(h_EtaReso_Mean_E, collisionSystem, TString(Form("%s/EtaScale/EtaScale", outputDir.Data())) , suffix, firstEtaBin, njettypes, style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#eta^{rec} - #eta^{true}) / #eta^{true}))"));  // Plot jet eta scale
+  plotScale(h_PhiReso_Mean_E, collisionSystem, TString(Form("%s/PhiScale/PhiScale", outputDir.Data())) , suffix, firstEtaBin, njettypes, style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#phi^{rec} - #phi^{true}) / #phi^{true}))"));  // Plot jet phi scale
 
   TCanvas *canvasJER                            = new TCanvas("canvasJER","",200,10,1000,900);
   DrawGammaCanvasSettings( canvasJER, 0.1, 0.01, 0.01, 0.11);
@@ -561,22 +570,15 @@ void resolutionJETStree(
 
 }
 
-void plotScale(TH1F *scaleData[nInputs][njettypes][16], TString collisionSystem, TString outputDir, TString format, int firstEtaBin, int numJetTypes, plottingStyleData style) {
+void plotScale(TH1F *scaleData[nInputs][njettypes][16], TString collisionSystem, TString outputFormat, TString format,
+               int firstEtaBin, int numJetTypes, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel) {
   TCanvas *canvasJES = new TCanvas("canvasJES", "", 200, 10, 1000, 900);
   DrawGammaCanvasSettings( canvasJES, 0.1, 0.01, 0.01, 0.11);
   Double_t textSizeSinglePad = 0.05;
   Double_t textSizeLabelsPixel = 35;
   Double_t textSizeLabelsRel = 58.0 / 1300;
-  TH2F * scaleHist = new TH2F("scaleHist", "scaleHist", 1000, 0, 109, 1000, -0.49, 0.24);
-  SetStyleHistoTH2ForGraphs(scaleHist, "#it{E}^{jet}","(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91);
-  scaleHist->GetXaxis()->SetNoExponent();
-  scaleHist->GetYaxis()->SetNdivisions(505,true);
-  scaleHist->GetXaxis()->SetMoreLogLabels(true);
-
-
-
-  scaleHist = new TH2F("scaleHist","scaleHist",1000,0, 109,1000,-1, 0.29);
-  SetStyleHistoTH2ForGraphs(scaleHist, "#it{E}^{jet}","(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91);
+  TH2F * scaleHist = new TH2F("scaleHist", "scaleHist", 1000, 0, 109, 1000, yMin, yMax);
+  SetStyleHistoTH2ForGraphs(scaleHist, xLabel, yLabel, 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91);
   scaleHist->GetXaxis()->SetNoExponent();
   scaleHist->GetYaxis()->SetNdivisions(505,true);
   scaleHist->GetXaxis()->SetMoreLogLabels(true);
@@ -599,7 +601,7 @@ void plotScale(TH1F *scaleData[nInputs][njettypes][16], TString collisionSystem,
     drawLatexAdd(Form("#it{p}_{T}^{hard} #geq 5 GeV/#it{c}"), 0.16, 0.85, textSizeLabelsRel, false, false, false);
     drawLatexAdd(Form("anti-k_{T}, #it{R}#kern[0.2]{=}#kern[0.1]{0.5}"), 0.16, 0.80, textSizeLabelsRel, false, false, false);
     scaleHist->Draw("same,axis");
-    canvasJES->Print(Form("%s/JES_E_%s.%s", outputDir.Data(), style.str_jet_type_plot[ijr].Data(), format.Data())); 
+    canvasJES->Print(Form("%s_%s.%s", outputFormat.Data(), style.str_jet_type[ijr].Data(), format.Data())); 
   }
 
 
