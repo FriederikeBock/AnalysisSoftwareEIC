@@ -1,3 +1,18 @@
+#include <TROOT.h>
+#include <TString.h>
+#include <TDatime.h>
+#include <TF1.h>
+#include <TF2.h>
+#include <TGraph.h>
+#include <TStyle.h>
+#include <TGraphAsymmErrors.h>
+#include <TLine.h>
+#include <TLatex.h>
+#include <TArrow.h>
+#include <TGraphErrors.h>
+#include <TGaxis.h>
+#include <TLegend.h>
+
 //__________________________________________________________________________________________________________
 TString ReturnDateStringForOutput(){
   TDatime today;

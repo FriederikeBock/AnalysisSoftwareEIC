@@ -1,6 +1,18 @@
-#include "../common/plottingheader.h"
-#include "../common/binningheader.h"
+// #include "../common/plottingheader.h"
+// #include "../common/binningheader.h"
+#include "plottingheader.h"
+#include "binningheader.h"
 #define NELEMS(arr) (sizeof(arr)/sizeof(arr[0]))
+
+#include <TROOT.h>
+#include <TH1F.h>
+#include <TSystem.h>
+#include <TFile.h>
+#include <TH2F.h>
+#include <TCanvas.h>
+
+#include <iostream>
+
 
 void resolutionJETStree(
     TString suffix            = "png"
@@ -83,7 +95,7 @@ void resolutionJETStree(
         histo_JES_pT[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_JES_%s_pT_%d",str_jet_type[ijr].Data(),eT));
         histo_JER_E[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_JER_%s_E_%d",str_jet_type[ijr].Data(),eT));
         histo_JER_pT[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_JER_%s_pT_%d",str_jet_type[ijr].Data(),eT));
-        if(!histo_JER_pT[iInp][ijr][eT]) cout << Form("h_JER_%s_pT_%d",str_jet_type[ijr].Data(),eT) << endl;
+        if(!histo_JER_pT[iInp][ijr][eT]) std::cout << Form("h_JER_%s_pT_%d",str_jet_type[ijr].Data(),eT) << std::endl;
       }
     }
   }
@@ -600,6 +612,3 @@ void resolutionJETStree(
 
 }
 
-void plotScale() {
-  
-}

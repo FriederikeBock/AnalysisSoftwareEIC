@@ -1,3 +1,15 @@
 startTimeAndPID/*_C*
 startTimeAndPID/rootfiles/
 startTimeAndPID_local
+
+# File lists
+treeAnalysis/*.txt
+
+
+# Output data
+treeAnalysis/treeProcessing
+resolutionJETS/plotsTree
+
+# IDE Data
+.vscode
+.idea

@@ -17,7 +17,9 @@ void treeProcessing(
     // TString inFile            = "ALLSILICON-ETTL-CTTL-INNERTRACKING-ASYM-FTTLS3LC_e10p250pTHard5.txt", // 169,000 events
     // TString inFile            = "small-ALLSILICON-ETTL-CTTL-INNERTRACKING-ASYM-FTTLS3LC_e10p250pTHard5.txt", // 10,000 events
     // TString inFile            = "round2filelist.txt", // 250,000 events
-    TString inFile            = "shortround2filelist.txt", // 10,000 events
+    // TString inFile            = "shortround2filelist.txt", // 10,000 events
+    TString inFile            = "MinQ2_20.txt", // 248,000 events
+    // TString inFile            = "smallMinQ2_20.txt", // 10,000 events
     TString addOutputName       = "",
     bool do_3x3clusterizer      = true,
     bool do_5x5clusterizer      = true,
