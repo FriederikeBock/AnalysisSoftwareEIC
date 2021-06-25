@@ -22,10 +22,11 @@ struct plottingStyleData
   int linestyle_jets[njettypes] = {1, 2, 4};//, 8, 9};
   TString str_jet_type[njettypes] = {"track", "calo" , "full", "all"};
   TString str_jet_type_plot[njettypes] = {"Charged Jets (Track)", "Calo Jets (FHCAL+FEMC)" , "Full Jets (Track+FEMC)", "All Jets"};
+  TString collisionSystem = "Pythia 6, e+p: 10#times#kern[0.2]{250} GeV^{2}";
+  TString format;
 };
 
-void plotScale(TH1F *scaleData[nInputs][njettypes][16], TString collisionSystem, TString outputDir, TString format,
-               int firstEtaBin, int numJetTypes, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel);
+void plotting(TH1F *scaleData[nInputs][njettypes][16], TString outputDir, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel);
 
 void resolutionJETStree(
     TString suffix            = "png"
@@ -34,7 +35,6 @@ void resolutionJETStree(
   gROOT->Reset();
   gROOT->SetStyle("Plain");
   StyleSettingsThesis();
-  TString collisionSystem   	              = "Pythia 6, e+p: 10#times#kern[0.2]{250} GeV^{2}";
   TString dateForOutput                       = ReturnDateStringForOutput();
 
   TString outputDir 						                  = Form("plotsTree/%s",dateForOutput.Data());
@@ -65,6 +65,7 @@ void resolutionJETStree(
   //                                      1.5, 2.0, 2.5, 3.0, 3.5, 4.0};
 
   plottingStyleData style;
+  style.format = suffix;
 
   TH2F*    histo2D_JES_E[nInputs][njettypes][nEta+1] = {{{NULL}}};
   TH2F*    histo2D_JES_pT[nInputs][njettypes][nEta+1] = {{{NULL}}};
@@ -87,6 +88,7 @@ void resolutionJETStree(
   TH1F *h_truth_count[nInputs][njettypes] = {NULL};
   TH1F *h_matched_count[nInputs][njettypes] = {NULL};
 
+  // Load required histograms
   for(int iInp=0;iInp<nInputs;iInp++){
     for(int ijr=0;ijr<njettypes;ijr++){
         h_EtaReso_Mean_Eta[iInp][ijr]	= (TH1F*) inputFiles[iInp]->Get(Form("h_EtaReso_Mean_%s_Eta", style.str_jet_type[ijr].Data()));
@@ -118,7 +120,7 @@ void resolutionJETStree(
   }
 
 
-
+  // Create projections for slices
   TH1D *h_projectionPlot[nInputs][njettypes][nEta+1][40] = {NULL};
   for(int iInp=0;iInp<nInputs;iInp++){
     for(int ijr=0;ijr<njettypes;ijr++){
@@ -131,447 +133,73 @@ void resolutionJETStree(
     }
   }
 
+  // Plot scales
+  plotting(histo_JES_E, TString(Form("%s/JetEnergyScale/JES", outputDir.Data())), style, -1, 0.3, TString("#it{E}^{jet}"), TString("Mean((#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}))"));  // Plot jet energy scale
+  plotting(h_EtaReso_Mean_E, TString(Form("%s/EtaScale/EtaScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#eta^{rec} - #eta^{true}) / #eta^{true}))"));  // Plot jet eta scale
+  plotting(h_PhiReso_Mean_E, TString(Form("%s/PhiScale/PhiScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#phi^{rec} - #phi^{true}) / #phi^{true}))"));  // Plot jet phi scale
 
-
-  int selectedeta = 12;
-
-  TCanvas *canvasJES                            = new TCanvas("canvasJES","",200,10,1000,900);
-  DrawGammaCanvasSettings( canvasJES, 0.1, 0.01, 0.01, 0.11);
-  Double_t textSizeSinglePad                    = 0.05;
-  Double_t textSizeLabelsPixel                    = 35;
-  Double_t textSizeLabelsRel                    = 58./1300;
-  TH2F * histJESPlotDummy_E                           = new TH2F("histJESPlotDummy_E","histJESPlotDummy_E",1000,0, 109,1000,-0.49, 0.24);
-  SetStyleHistoTH2ForGraphs(histJESPlotDummy_E, "#it{E}^{jet}","(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91);
-  histJESPlotDummy_E->GetXaxis()->SetNoExponent();
-  histJESPlotDummy_E->GetYaxis()->SetNdivisions(505,true);
-  histJESPlotDummy_E->GetXaxis()->SetMoreLogLabels(true);
-
-
-
-  // {"ALLSI-TTL", "ALLSI-noTTL" , "ALLSI-3T", "ALLSI-noTTL-3T"};
-  // {"track", "calo" , "all"}
-  // eta = 15
-  TLegend* legendJES_E           = GetAndSetLegend2(0.16, 0.15, 0.7, 0.15+(5*textSizeLabelsRel),textSizeLabelsPixel, 1, "", 43, 0.15);
-
-  histJESPlotDummy_E->DrawCopy();
-
-
-  DrawGammaLines(0, 109, 0., 0., 1, kGray+2, 7);
-    // DrawGammaSetMarker(histo_JES_E[1][0][selectedeta], 24, 2, kGray+1, kGray+1);
-    // histo_JES_E[1][0][selectedeta]->Draw("same,p");
-    // legendJES_E->AddEntry(histo_JES_E[1][0][selectedeta],"ALL-SI, BABAR (#it{B}=1.5T)","pl");
-
-    // DrawGammaSetMarker(histo_JES_E[3][0][selectedeta], 25, 2, kRed-6, kRed-6);
-    // histo_JES_E[3][0][selectedeta]->Draw("same,p");
-    // legendJES_E->AddEntry(histo_JES_E[3][0][selectedeta],"ALL-SI, BEAST (#it{B}=3.0T)","pl");
-
-    DrawGammaSetMarker(histo_JES_E[0][0][selectedeta], 20, 2, kBlack, kBlack);
-    histo_JES_E[0][0][selectedeta]->Draw("same,p");
-    legendJES_E->AddEntry(histo_JES_E[0][0][selectedeta],"ALL-SI+TTL (500#mum), BABAR (#it{B}=1.5T)","pl");
-
-    // DrawGammaSetMarker(histo_JES_E[2][0][selectedeta], 21, 2, kRed+2, kRed+2);
-    // histo_JES_E[2][0][selectedeta]->Draw("same,p");
-    // legendJES_E->AddEntry(histo_JES_E[2][0][selectedeta],"ALL-SI+TTL (500#mum), BEAST (#it{B}=3.0T)","pl");
-
-
-  legendJES_E->Draw();
-  drawLatexAdd(Form("%s",collisionSystem.Data()),0.95,0.90,textSizeLabelsRel,false,false,true);
-  drawLatexAdd(Form("#it{p}_{T}^{hard} #geq 5 GeV/#it{c}"),0.95,0.85,textSizeLabelsRel,false,false,true);
-  drawLatexAdd(Form("charged-only, anti-k_{T}, #it{R}#kern[0.2]{=}#kern[0.1]{0.5}"),0.95,0.80,textSizeLabelsRel,false,false,true);
-  if(selectedeta==15)
-  drawLatexAdd(Form("1.5 < #it{#eta}_{jet} < 4.0"),0.95,0.75,textSizeLabelsRel,false,false,true);
-  else
-  drawLatexAdd(Form("%1.1f < #it{#eta}_{jet} < %1.1f",partEta[selectedeta],partEta[selectedeta+1]),0.95,0.75,textSizeLabelsRel,false,false,true);
-
-  histJESPlotDummy_E->Draw("same,axis");
-
-  canvasJES->Print(Form("%s/JetEnergyResolution/JES_E_field_TTL.%s", outputDir.Data(), suffix.Data()));
-
-
-  plotScale(histo_JES_E, collisionSystem, TString(Form("%s/JetEnergyScale/JES", outputDir.Data())) , suffix, firstEtaBin, njettypes, style, -1, 0.3, TString("#it{E}^{jet}"), TString("Mean((#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}))"));  // Plot jet energy scale
-  plotScale(h_EtaReso_Mean_E, collisionSystem, TString(Form("%s/EtaScale/EtaScale", outputDir.Data())) , suffix, firstEtaBin, njettypes, style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#eta^{rec} - #eta^{true}) / #eta^{true}))"));  // Plot jet eta scale
-  plotScale(h_PhiReso_Mean_E, collisionSystem, TString(Form("%s/PhiScale/PhiScale", outputDir.Data())) , suffix, firstEtaBin, njettypes, style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#phi^{rec} - #phi^{true}) / #phi^{true}))"));  // Plot jet phi scale
-
-  TCanvas *canvasJER                            = new TCanvas("canvasJER","",200,10,1000,900);
-  DrawGammaCanvasSettings( canvasJER, 0.1, 0.01, 0.01, 0.11);
-  textSizeSinglePad                    = 0.05;
-  textSizeLabelsPixel                    = 35;
-  textSizeLabelsRel                    = 58./1300;
-  TH2F * histEPlotDummy                           = new TH2F("histEPlotDummy","histEPlotDummy",1000,0, 109,1000,0, 0.39);
-  SetStyleHistoTH2ForGraphs(histEPlotDummy, "#it{E}^{jet}","#sigma(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91);
-  histEPlotDummy->GetXaxis()->SetNoExponent();
-  histEPlotDummy->GetYaxis()->SetNdivisions(505,true);
-  histEPlotDummy->GetXaxis()->SetMoreLogLabels(true);
-
-  histEPlotDummy->DrawCopy();
-  TLegend* legend_JER_Bfield           = GetAndSetLegend2(0.2, 0.15, 0.8, 0.15+(5*textSizeLabelsRel),textSizeLabelsPixel, 1, "", 43, 0.15);
-
-  histEPlotDummy->GetYaxis()->SetRangeUser(0,0.58);
-  histEPlotDummy->DrawCopy();
-  legend_JER_Bfield           = GetAndSetLegend2(0.2, 0.15, 0.8, 0.15+(4*textSizeLabelsRel),textSizeLabelsPixel, 1, "", 43, 0.15);
-    DrawGammaSetMarker(histo_JER_E[1][0][selectedeta],24, 2, kGray+1, kGray+1);
-    histo_JER_E[1][0][selectedeta]->Draw("same,p");
-    legend_JER_Bfield->AddEntry(histo_JER_E[1][0][selectedeta],"ALL-SI, BABAR (#it{B}=1.5T)","pl");
-
-    DrawGammaSetMarker(histo_JER_E[3][0][selectedeta], 25, 2, kRed-6, kRed-6);
-    histo_JER_E[3][0][selectedeta]->Draw("same,p");
-    legend_JER_Bfield->AddEntry(histo_JER_E[3][0][selectedeta],"ALL-SI, BEAST (#it{B}=3.0T)","pl");
-
-    DrawGammaSetMarker(histo_JER_E[0][0][selectedeta], 20, 2, kBlack, kBlack);
-    histo_JER_E[0][0][selectedeta]->Draw("same,p");
-    legend_JER_Bfield->AddEntry(histo_JER_E[0][0][selectedeta],"ALL-SI+TTL (500#mum), BABAR (#it{B}=1.5T)","pl");
-
-    DrawGammaSetMarker(histo_JER_E[2][0][selectedeta], 21, 2, kRed+2, kRed+2);
-    histo_JER_E[2][0][selectedeta]->Draw("same,p");
-    legend_JER_Bfield->AddEntry(histo_JER_E[2][0][selectedeta],"ALL-SI+TTL (500#mum), BEAST (#it{B}=3.0T)","pl");
-
-
-  legend_JER_Bfield->Draw();
-  drawLatexAdd(Form("%s",collisionSystem.Data()),0.17,0.90,textSizeLabelsRel,false,false,false);
-  drawLatexAdd(Form("#it{p}_{T}^{hard} #geq 5 GeV/#it{c}"),0.17,0.85,textSizeLabelsRel,false,false,false);
-  drawLatexAdd(Form("charged-only, anti-k_{T}, #it{R}#kern[0.2]{=}#kern[0.1]{0.5}"),0.17,0.80,textSizeLabelsRel,false,false,false);
-  if(selectedeta==15)
-  drawLatexAdd(Form("1.5 < #it{#eta}_{jet} < 4.0"),0.17,0.75,textSizeLabelsRel,false,false,false);
-  else
-  drawLatexAdd(Form("%1.1f < #it{#eta}_{jet} < %1.1f",partEta[selectedeta],partEta[selectedeta+1]),0.17,0.75,textSizeLabelsRel,false,false,false);
-
-  histEPlotDummy->Draw("same,axis");
-
-  canvasJER->Print(Form("%s/JetEnergyResolution/JER_B_field_TTL_E.%s", outputDir.Data(), suffix.Data()));
-
-
-  if(0){
-    int ijr = 1;
-    histEPlotDummy                           = new TH2F("histEPlotDummy","histEPlotDummy",1000,0, 109,1000,0, 0.55);
-    SetStyleHistoTH2ForGraphs(histEPlotDummy, "#it{E}^{jet}","#sigma(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91);
-    histEPlotDummy->GetXaxis()->SetNoExponent();
-    histEPlotDummy->GetYaxis()->SetNdivisions(505,true);
-    histEPlotDummy->GetXaxis()->SetMoreLogLabels(true);
-    if(histo_JER_E[0][1][selectedeta] && histo_JER_E[4][1][selectedeta]){
-      TLegend* legend_JER_Bfield           = GetAndSetLegend2(0.2, 0.15, 0.8, 0.15+(2*textSizeLabelsRel),textSizeLabelsPixel, 1, "", 43, 0.15);
-
-      histEPlotDummy->DrawCopy();
-
-        DrawGammaSetMarker(histo_JER_E[0][ijr][selectedeta], style.marker_jets[ijr], 2, style.color_jets[ijr], style.color_jets[ijr]);
-        histo_JER_E[0][ijr][selectedeta]->Draw("same,p");
-        legend_JER_Bfield->AddEntry(histo_JER_E[0][ijr][selectedeta],"ALL-SI+TTL","pl");
-
-        DrawGammaSetMarker(histo_JER_E[4][ijr][selectedeta], 24, 2, kBlue+2, kBlue+2);
-        histo_JER_E[4][ijr][selectedeta]->Draw("same,p");
-        legend_JER_Bfield->AddEntry(histo_JER_E[4][ijr][selectedeta],"ALL-SI+TTL, 2x CALO granularity","pl");
-
-
-      legend_JER_Bfield->Draw();
-      drawLatexAdd(Form("%s",collisionSystem.Data()),0.17,0.90,textSizeLabelsRel,false,false,false);
-      drawLatexAdd(Form("#it{p}_{T}^{hard} #geq 5 GeV/#it{c}"),0.17,0.85,textSizeLabelsRel,false,false,false);
-      drawLatexAdd(Form("anti-k_{T}, #it{R}#kern[0.2]{=}#kern[0.1]{0.5}, %s",style.str_jet_type_plot[ijr].Data()),0.17,0.80,textSizeLabelsRel,false,false,false);
-    if(selectedeta==15)
-    drawLatexAdd(Form("1.5 < #it{#eta}_{jet} < 4.0"),0.17,0.75,textSizeLabelsRel,false,false,false);
-    else
-    drawLatexAdd(Form("%1.1f < #it{#eta}_{jet} < %1.1f",partEta[selectedeta],partEta[selectedeta+1]),0.17,0.75,textSizeLabelsRel,false,false,false);
-
-      histEPlotDummy->Draw("same,axis");
-
-      canvasJER->Print(Form("%s/JetEnergyResolution/JER_Granularity_TTL_E.%s", outputDir.Data(), suffix.Data()));
-    }
-  }
-  histEPlotDummy                           = new TH2F("histEPlotDummy","histEPlotDummy",1000,0, 109,1000,0, 0.79);
-  SetStyleHistoTH2ForGraphs(histEPlotDummy, "#it{E}^{jet}","#sigma(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91);
-  histEPlotDummy->GetXaxis()->SetNoExponent();
-  histEPlotDummy->GetYaxis()->SetNdivisions(505,true);
-  histEPlotDummy->GetXaxis()->SetMoreLogLabels(true);
-  for(int iInp=0;iInp<nInputs;iInp++){
-    for(int ijr=0;ijr<njettypes;ijr++){
-      histEPlotDummy->DrawCopy();
-      TLegend* legendJER_allEta           = GetAndSetLegend2(0.7, 0.95-((nEta-10)*textSizeLabelsRel), 1.1, 0.95,textSizeLabelsPixel, 1, "", 43, 0.15);
-      for (Int_t eT = firstEtaBin; eT < nEta+1; eT++){
-        if(eT==14) continue;
-        DrawGammaSetMarker(histo_JER_E[iInp][ijr][eT], markerStyleEta[eT], markerSizeEta[eT], colorEta[eT], colorEta[eT]);
-        histo_JER_E[iInp][ijr][eT]->Draw("same,p");
-        if(eT<nEta)
-          legendJER_allEta->AddEntry(histo_JER_E[iInp][ijr][eT],Form("%1.1f < #it{#eta} < %1.1f",partEta[eT], partEta[eT+1]),"pl");
-        else
-          legendJER_allEta->AddEntry(histo_JER_E[iInp][ijr][eT],Form("%1.1f < #it{#eta} < %1.1f",1.5, 3.5),"pl");
-      }
-      legendJER_allEta->Draw();
-      drawLatexAdd(Form("%s",collisionSystem.Data()),0.17,0.90,textSizeLabelsRel,false,false,false);
-      drawLatexAdd(Form("#it{p}_{T}^{hard} #geq 5 GeV/#it{c}"),0.17,0.85,textSizeLabelsRel,false,false,false);
-      drawLatexAdd(Form("anti-k_{T}, #it{R}#kern[0.2]{=}#kern[0.1]{0.5}"),0.17,0.80,textSizeLabelsRel,false,false,false);
-      drawLatexAdd(Form("%s",style.str_jet_type_plot[ijr].Data()),0.17,0.75,textSizeLabelsRel,false,false,false);
-      drawLatexAdd(Form("%s",str_input_type_plot[iInp].Data()),0.17,0.70,textSizeLabelsRel,false,false,false);
-      histEPlotDummy->Draw("same,axis");
-      canvasJER->Print(Form("%s/JetEnergyResolution/JER_E_%s_%s.%s", outputDir.Data(), str_input_type[iInp].Data(), style.str_jet_type[ijr].Data(), suffix.Data()));
-    }
-  }
-
-  histEPlotDummy                           = new TH2F("histEPlotDummy","histEPlotDummy",1000,0, 109,1000,0, 0.59);
-  SetStyleHistoTH2ForGraphs(histEPlotDummy, "#it{E}^{jet}","#sigma((#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true})", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91);
-  histEPlotDummy->GetXaxis()->SetNoExponent();
-  histEPlotDummy->GetYaxis()->SetNdivisions(505,true);
-  histEPlotDummy->GetXaxis()->SetMoreLogLabels(true);
-
-  histEPlotDummy->DrawCopy();
-  TLegend* legendHE_pion           = GetAndSetLegend2(0.5, 0.75, 0.8, 0.75+(3*textSizeLabelsRel),textSizeLabelsPixel, 1, "", 43, 0.15);
-
-  for(int ijr=0;ijr<njettypes;ijr++){
-    DrawGammaSetMarker(histo_JER_E[0][ijr][selectedeta], style.marker_jets[ijr], 2, style.color_jets[ijr], style.color_jets[ijr]);
-
-    histo_JER_E[0][ijr][selectedeta]->Draw("same,p");
-
-    legendHE_pion->AddEntry(histo_JER_E[0][ijr][selectedeta],Form("%s jets",style.str_jet_type_plot[ijr].Data()),"pl");
-  }
-  legendHE_pion->Draw();
-  drawLatexAdd(Form("%s",collisionSystem.Data()),0.16,0.90,textSizeLabelsRel,false,false,false);
-  drawLatexAdd(Form("#it{p}_{T}^{hard} #geq 5 GeV/#it{c}"),0.16,0.85,textSizeLabelsRel,false,false,false);
-  drawLatexAdd(Form("anti-k_{T}, #it{R}#kern[0.2]{=}#kern[0.1]{0.5}"),0.16,0.80,textSizeLabelsRel,false,false,false);
-  drawLatexAdd(Form("%s",str_input_type_plot[0].Data()),0.16,0.75,textSizeLabelsRel,false,false,false);
-  drawLatexAdd(Form("%1.1f < #it{#eta}_{jet} < %1.1f",partEta[selectedeta],partEta[selectedeta+1]),0.16,0.70,textSizeLabelsRel,false,false,false);
-
-  histEPlotDummy->Draw("same,axis");
-
-  canvasJER->Print(Form("%s/JetEnergyResolution/JER_E_all.%s", outputDir.Data(), suffix.Data()));
-
-
+  // Plot resolutions
+  plotting(histo_JER_E, TString(Form("%s/JetEnergyResolution/JER_E", outputDir.Data())), style, 0, 1, TString("#it{E}^{jet}"), TString("#sigma(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}"));
+  plotting(h_EtaReso_Width_E, TString(Form("%s/EtaResolution/EtaReso", outputDir.Data())), style, 0, 1, TString("#it{E}^{jet}"), TString("#sigma(#eta^{rec} - #eta^{true}) / #eta^{true}"));
+  plotting(h_PhiReso_Width_E, TString(Form("%s/PhiResolution/PhiReso", outputDir.Data())), style, 0, 1, TString("#it{E}^{jet}"), TString("#sigma(#phi^{rec} - #phi^{true}) / #phi^{true}"));
 
 
 // 2D PLOT
-  TCanvas* cSingleSlice = new TCanvas("cSingleSlice","",0,0,1100,1000);
-  DrawGammaCanvasSettings( cSingleSlice, 0.11, 0.01, 0.002, 0.105);
-  // cSingleSlice->SetLogz();
+//   TCanvas* cSingleSlice = new TCanvas("cSingleSlice","",0,0,1100,1000);
+//   DrawGammaCanvasSettings( cSingleSlice, 0.11, 0.01, 0.002, 0.105);
+//   // cSingleSlice->SetLogz();
 
-  TH2F* histoJESSliceDummy   = new TH2F("histoJESSliceDummy","histoJESSliceDummy",1000,-0.99, 0.6,1000,0., 0.1);
-  SetStyleHistoTH2ForGraphs(histoJESSliceDummy, "(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}","norm. counts ", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
-  histoJESSliceDummy->GetYaxis()->SetNoExponent();
-  histoJESSliceDummy->GetYaxis()->SetNdivisions(505,kTRUE);
-  // histoJESSliceDummy->GetXaxis()->SetMoreLogLabels(kTRUE);
+//   TH2F* histoJESSliceDummy   = new TH2F("histoJESSliceDummy","histoJESSliceDummy",1000,-0.99, 0.6,1000,0., 0.1);
+//   SetStyleHistoTH2ForGraphs(histoJESSliceDummy, "(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}","norm. counts ", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
+//   histoJESSliceDummy->GetYaxis()->SetNoExponent();
+//   histoJESSliceDummy->GetYaxis()->SetNdivisions(505,kTRUE);
+//   // histoJESSliceDummy->GetXaxis()->SetMoreLogLabels(kTRUE);
 
-  if(1){
-    int iInp = 0;
-    int ijr = 1;
-    for (Int_t iEbin=1; iEbin < histo2D_JES_E[iInp][ijr][0]->GetNbinsX(); iEbin++){
-      histoJESSliceDummy->Draw();
-      // DrawGammaLines(0, 29, 0., 0., 2, kGray+2, 7);
-      TLegend* legendJES3  = GetAndSetLegend2(0.35, 0.80-(5*textSizeLabelsRel), 0.6, 0.80-(1*textSizeLabelsRel),1.1*textSizeLabelsPixel, 1, "", 43, 0.15);
-      for(Int_t eT=10; eT<14;eT++){
-        h_projectionPlot[iInp][ijr][eT][iEbin]->Sumw2();
-        h_projectionPlot[iInp][ijr][eT][iEbin]->Rebin(2);
-        DrawGammaSetMarker( h_projectionPlot[iInp][ijr][eT][iEbin], markerStyleEta[eT], 1.5*markerSizeEta[eT], colorEta[eT], colorEta[eT]);
-        h_projectionPlot[iInp][ijr][eT][iEbin]->SetLineWidth(4);
-        h_projectionPlot[iInp][ijr][eT][iEbin]->Draw("same,hist");
-        legendJES3->AddEntry( h_projectionPlot[iInp][ijr][eT][iEbin],Form("%1.1f < #it{#eta}_{jet} < %1.1f",partEta[eT],partEta[eT+1]),"l");
-      }
-      legendJES3->Draw();
-      drawLatexAdd(collisionSystem.Data(),0.35,0.90,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-      drawLatexAdd(Form("anti-#it{k}_{T}, #it{R} = 0.5, FHCAL+FEMC jets"),0.35,0.85,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-      drawLatexAdd(Form("%1.1f < #it{E}_{jet} < %1.1f GeV/#it{c}",(200./40)*iEbin,(200./40)*(iEbin+1)),0.35,0.80,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-      cSingleSlice->Print(Form("%s/Slices/JES_Slice_Plot_EtaBins%d.%s", outputDir.Data(), iEbin, suffix.Data()));
-    }
-  }
-
-
-
-// 2D PLOT
-  TCanvas* cEtaReso = new TCanvas("cEtaReso","",0,0,1100,1000);
-  DrawGammaCanvasSettings( cEtaReso, 0.12, 0.01, 0.002, 0.105);
-  // cEtaReso->SetLogz();
-
-  TH2F* histoEtaReso   = new TH2F("histoEtaReso","histoEtaReso",1000,0.51, 3.99,1000,0., 0.1);
-  SetStyleHistoTH2ForGraphs(histoEtaReso, "#it{#eta}^{jet}","#sigma(#it{#eta}^{rec} - #it{#eta}^{true}) / #it{#eta}^{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.2);
-  histoEtaReso->GetYaxis()->SetNoExponent();
-  histoEtaReso->GetYaxis()->SetNdivisions(505,kTRUE);
-  // histoEtaReso->GetXaxis()->SetMoreLogLabels(kTRUE);
-
-  if(0){
-    int iInp = 0;
-    int ijr = 1;
-      for(int ijr=0;ijr<njettypes;ijr++){
-        histoEtaReso->Draw();
-        // DrawGammaLines(0, 29, 0., 0., 2, kGray+2, 7);
-        TLegend* legendJES3  = GetAndSetLegend2(0.15, 0.15, 0.6, 0.15+(6*0.9*textSizeLabelsRel),1.1*textSizeLabelsPixel, 1, "", 43, 0.15);
-        for(int iInp=0;iInp<nInputs;iInp++){
-          DrawGammaSetMarker(h_EtaReso_Width_Eta[iInp][ijr], markerStylePID[iInp], markerSizePID[iInp], colorPID[iInp], colorPID[iInp]);
-          h_EtaReso_Width_Eta[iInp][ijr]->Draw("same,p");
-          legendJES3->AddEntry(h_EtaReso_Width_Eta[iInp][ijr],Form("%s",str_input_type_plot[iInp].Data()),"pl");
-        }
-        legendJES3->Draw();
-        drawLatexAdd(collisionSystem.Data(),0.15,0.90,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        drawLatexAdd(Form("anti-#it{k}_{T}, #it{R} = 0.5, %s",style.str_jet_type_plot[ijr].Data()),0.15,0.85,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        // drawLatexAdd(Form("%1.1f < #it{E}_{jet} < %1.1f GeV/#it{c}",(200./40)*iEbin,(200./40)*(iEbin+1)),0.15,0.80,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        cEtaReso->Print(Form("%s/EtaResolution/EtaResolutionComparison_%s.%s", outputDir.Data(),style.str_jet_type[ijr].Data(), suffix.Data()));
-      }
-  }
-
-  canvasJER                            = new TCanvas("canvasJER","",200,10,1000,900);
-  DrawGammaCanvasSettings( canvasJER, 0.1, 0.01, 0.01, 0.11);
-  histEPlotDummy                           = new TH2F("histEPlotDummy","histEPlotDummy",1000,0, 109,1000,0, 0.15);
-  SetStyleHistoTH2ForGraphs(histEPlotDummy, "#it{E}^{jet}","#sigma(#it{#eta}^{rec} - #it{#eta}^{true}) / #it{#eta}^{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91);
-  histEPlotDummy->GetYaxis()->SetNoExponent();
-  histEPlotDummy->GetXaxis()->SetNoExponent();
-  histEPlotDummy->GetYaxis()->SetNdivisions(505,true);
-  histEPlotDummy->GetXaxis()->SetMoreLogLabels(true);
-  for(int iInp=0;iInp<nInputs;iInp++){
-    for(int ijr=0;ijr<njettypes;ijr++){
-      histEPlotDummy->DrawCopy();
-      TLegend* legendJER_allEta           = GetAndSetLegend2(0.7, 0.95-((nEta-10)*textSizeLabelsRel), 1.1, 0.95,textSizeLabelsPixel, 1, "", 43, 0.15);
-      for (Int_t eT = firstEtaBin; eT < nEta+1; eT++){
-        if(eT==14) continue;
-        DrawGammaSetMarker(h_EtaReso_Width_E[iInp][ijr][eT], markerStyleEta[eT], markerSizeEta[eT], colorEta[eT], colorEta[eT]);
-        h_EtaReso_Width_E[iInp][ijr][eT]->Draw("same,p");
-        if(eT<nEta)
-          legendJER_allEta->AddEntry(h_EtaReso_Width_E[iInp][ijr][eT],Form("%1.1f < #it{#eta} < %1.1f",partEta[eT], partEta[eT+1]),"pl");
-        else
-          legendJER_allEta->AddEntry(h_EtaReso_Width_E[iInp][ijr][eT],Form("%1.1f < #it{#eta} < %1.1f",1.5, 3.5),"pl");
-      }
-      legendJER_allEta->Draw();
-      drawLatexAdd(Form("%s",collisionSystem.Data()),0.16,0.90-.52,textSizeLabelsRel,false,false,false);
-      drawLatexAdd(Form("#it{p}_{T}^{hard} #geq 5 GeV/#it{c}"),0.16,0.85-.52,textSizeLabelsRel,false,false,false);
-      drawLatexAdd(Form("anti-k_{T}, #it{R}#kern[0.2]{=}#kern[0.1]{0.5}"),0.16,0.80-.52,textSizeLabelsRel,false,false,false);
-      drawLatexAdd(Form("%s",style.str_jet_type_plot[ijr].Data()),0.16,0.75-.52,textSizeLabelsRel,false,false,false);
-      drawLatexAdd(Form("%s",str_input_type_plot[iInp].Data()),0.16,0.70-.52,textSizeLabelsRel,false,false,false);
-      histEPlotDummy->Draw("same,axis");
-      canvasJER->Print(Form("%s/EtaResolution/EtaReso_E_%s_%s.%s", outputDir.Data(), str_input_type[iInp].Data(), style.str_jet_type[ijr].Data(), suffix.Data()));
-    }
-  }
-  histEPlotDummy                           = new TH2F("histEPlotDummy","histEPlotDummy",1000,0, 109,1000,0, 0.0599);
-  SetStyleHistoTH2ForGraphs(histEPlotDummy, "#it{E}^{jet}","#sigma(#it{#eta}^{rec} - #it{#eta}^{true}) / #it{#eta}^{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91);
-  histEPlotDummy->GetYaxis()->SetNoExponent();
-  histEPlotDummy->GetXaxis()->SetNoExponent();
-  histEPlotDummy->GetYaxis()->SetNdivisions(505,true);
-  histEPlotDummy->GetXaxis()->SetMoreLogLabels(true);
-
-  histEPlotDummy->DrawCopy();
-  legendHE_pion           = GetAndSetLegend2(0.5, 0.15, 0.8, 0.15+(3*textSizeLabelsRel),textSizeLabelsPixel, 1, "", 43, 0.15);
-
-  for(int ijr=0;ijr<njettypes;ijr++){
-    DrawGammaSetMarker(h_EtaReso_Width_E[0][ijr][selectedeta], style.marker_jets[ijr], 2, style.color_jets[ijr], style.color_jets[ijr]);
-
-    h_EtaReso_Width_E[0][ijr][selectedeta]->Draw("same,p");
-
-    legendHE_pion->AddEntry(h_EtaReso_Width_E[0][ijr][selectedeta],Form("%s jets",style.str_jet_type_plot[ijr].Data()),"pl");
-  }
-  legendHE_pion->Draw();
-  drawLatexAdd(Form("%s",collisionSystem.Data()),0.16,0.90-.52,textSizeLabelsRel,false,false,false);
-  drawLatexAdd(Form("#it{p}_{T}^{hard} #geq 5 GeV/#it{c}"),0.16,0.85-.52,textSizeLabelsRel,false,false,false);
-  drawLatexAdd(Form("anti-k_{T}, #it{R}#kern[0.2]{=}#kern[0.1]{0.5}"),0.16,0.80-.52,textSizeLabelsRel,false,false,false);
-  drawLatexAdd(Form("%s",str_input_type_plot[0].Data()),0.16,0.75-.52,textSizeLabelsRel,false,false,false);
-  drawLatexAdd(Form("%1.1f < #it{#eta}_{jet} < %1.1f",partEta[selectedeta],partEta[selectedeta+1]),0.16,0.70-.52,textSizeLabelsRel,false,false,false);
-
-  histEPlotDummy->Draw("same,axis");
-
-  canvasJER->Print(Form("%s/EtaResolution/EtaReso_E_all.%s", outputDir.Data(), suffix.Data()));
-
-  // Phi Resolutions
-  TCanvas* cPhiReso = new TCanvas("cPhiReso","",0,0,1100,1000);
-  DrawGammaCanvasSettings( cPhiReso, 0.12, 0.01, 0.002, 0.105);
-  // cPhiReso->SetLogz();
-
-  TH2F* histoPhiReso   = new TH2F("histoPhiReso","histoPhiReso",1000,0.51, 3.99,1000,0., 0.1);
-  SetStyleHistoTH2ForGraphs(histoPhiReso, "#it{#phi}^{jet}","#sigma(#it{#phi}^{rec} - #it{#phi}^{true}) / #it{#phi}^{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.2);
-  histoPhiReso->GetYaxis()->SetNoExponent();
-  histoPhiReso->GetYaxis()->SetNdivisions(505,kTRUE);
-  // histoPhiReso->GetXaxis()->SetMoreLogLabels(kTRUE);
-
-  if(0){
-    int iInp = 0;
-    int ijr = 1;
-      for(int ijr=0;ijr<njettypes;ijr++){
-        histoPhiReso->Draw();
-        // DrawGammaLines(0, 29, 0., 0., 2, kGray+2, 7);
-        TLegend* legendJES3  = GetAndSetLegend2(0.15, 0.15, 0.6, 0.15+(6*0.9*textSizeLabelsRel),1.1*textSizeLabelsPixel, 1, "", 43, 0.15);
-        for(int iInp=0;iInp<nInputs;iInp++){
-          DrawGammaSetMarker(h_PhiReso_Width_Eta[iInp][ijr], markerStylePID[iInp], markerSizePID[iInp], colorPID[iInp], colorPID[iInp]);
-          h_PhiReso_Width_Eta[iInp][ijr]->Draw("same,p");
-          legendJES3->AddEntry(h_PhiReso_Width_Eta[iInp][ijr],Form("%s",str_input_type_plot[iInp].Data()),"pl");
-        }
-        legendJES3->Draw();
-        drawLatexAdd(collisionSystem.Data(),0.15,0.90,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        drawLatexAdd(Form("anti-#it{k}_{T}, #it{R} = 0.5, %s", style.str_jet_type_plot[ijr].Data()),0.15,0.85,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        // drawLatexAdd(Form("%1.1f < #it{E}_{jet} < %1.1f GeV/#it{c}",(200./40)*iEbin,(200./40)*(iEbin+1)),0.15,0.80,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        cPhiReso->Print(Form("%s/PhiResolution/PhiResolutionComparison_%s.%s", outputDir.Data(), style.str_jet_type[ijr].Data(), suffix.Data()));
-      }
-  }
-
-  canvasJER                            = new TCanvas("canvasJER","",200,10,1000,900);
-  DrawGammaCanvasSettings( canvasJER, 0.14, 0.01, 0.01, 0.11);
-  histEPlotDummy                           = new TH2F("histEPlotDummy","histEPlotDummy",1000,0, 109,1000,0, 0.25);
-  SetStyleHistoTH2ForGraphs(histEPlotDummy, "#it{E}^{jet}","#sigma(#it{#phi}^{rec} - #it{#phi}^{true}) / #it{#phi}^{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91);
-  histEPlotDummy->GetYaxis()->SetNoExponent();
-  histEPlotDummy->GetXaxis()->SetNoExponent();
-  histEPlotDummy->GetYaxis()->SetNdivisions(505,true);
-  histEPlotDummy->GetXaxis()->SetMoreLogLabels(true);
-  for(int iInp=0;iInp<nInputs;iInp++){
-    for(int ijr=0;ijr<njettypes;ijr++){
-      histEPlotDummy->DrawCopy();
-      TLegend* legendJER_allEta           = GetAndSetLegend2(0.7, 0.95-((nEta-10)*textSizeLabelsRel), 1.1, 0.95,textSizeLabelsPixel, 1, "", 43, 0.15);
-      for (Int_t eT = firstEtaBin; eT < nEta+1; eT++){
-        if(eT==14) continue;
-        DrawGammaSetMarker(h_PhiReso_Width_E[iInp][ijr][eT], markerStyleEta[eT], markerSizeEta[eT], colorEta[eT], colorEta[eT]);
-        h_PhiReso_Width_E[iInp][ijr][eT]->Draw("same,p");
-        if(eT<nEta)
-          legendJER_allEta->AddEntry(h_PhiReso_Width_E[iInp][ijr][eT],Form("%1.1f < #it{#eta} < %1.1f",partEta[eT], partEta[eT+1]),"pl");
-        else
-          legendJER_allEta->AddEntry(h_PhiReso_Width_E[iInp][ijr][eT],Form("%1.1f < #it{#eta} < %1.1f",1.5, 3.5),"pl");
-      }
-      legendJER_allEta->Draw();
-      drawLatexAdd(Form("%s",collisionSystem.Data()),0.16,0.90-.52,textSizeLabelsRel,false,false,false);
-      drawLatexAdd(Form("#it{p}_{T}^{hard} #geq 5 GeV/#it{c}"),0.16,0.85-.52,textSizeLabelsRel,false,false,false);
-      drawLatexAdd(Form("anti-k_{T}, #it{R}#kern[0.2]{=}#kern[0.1]{0.5}"),0.16,0.80-.52,textSizeLabelsRel,false,false,false);
-      drawLatexAdd(Form("%s",style.str_jet_type_plot[ijr].Data()),0.16,0.75-.52,textSizeLabelsRel,false,false,false);
-      drawLatexAdd(Form("%s",str_input_type_plot[iInp].Data()),0.16,0.70-.52,textSizeLabelsRel,false,false,false);
-      histEPlotDummy->Draw("same,axis");
-      canvasJER->Print(Form("%s/PhiResolution/PhiReso_E_%s_%s.%s", outputDir.Data(), str_input_type[iInp].Data(), style.str_jet_type[ijr].Data(), suffix.Data()));
-    }
-  }
-  histEPlotDummy                           = new TH2F("histEPlotDummy","histEPlotDummy",1000,0, 109,1000,0, 0.0599);
-  SetStyleHistoTH2ForGraphs(histEPlotDummy, "#it{E}^{jet}","#sigma(#it{#eta}^{rec} - #it{#eta}^{true}) / #it{#eta}^{true}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91, 1, 0.9);
-  histEPlotDummy->GetYaxis()->SetNoExponent();
-  histEPlotDummy->GetXaxis()->SetNoExponent();
-  histEPlotDummy->GetYaxis()->SetNdivisions(505,true);
-  histEPlotDummy->GetXaxis()->SetMoreLogLabels(true);
-
-  histEPlotDummy->DrawCopy();
-  legendHE_pion           = GetAndSetLegend2(0.5, 0.15, 0.8, 0.15+(3*textSizeLabelsRel),textSizeLabelsPixel, 1, "", 43, 0.15);
-
-  for(int ijr=0;ijr<njettypes;ijr++){
-    DrawGammaSetMarker(h_PhiReso_Width_E[0][ijr][selectedeta], style.marker_jets[ijr], 2, style.color_jets[ijr], style.color_jets[ijr]);
-
-    h_PhiReso_Width_E[0][ijr][selectedeta]->Draw("same,p");
-
-    legendHE_pion->AddEntry(h_PhiReso_Width_E[0][ijr][selectedeta],Form("%s jets",style.str_jet_type_plot[ijr].Data()),"pl");
-  }
-  legendHE_pion->Draw();
-  drawLatexAdd(Form("%s",collisionSystem.Data()),0.16,0.90-.52,textSizeLabelsRel,false,false,false);
-  drawLatexAdd(Form("#it{p}_{T}^{hard} #geq 5 GeV/#it{c}"),0.16,0.85-.52,textSizeLabelsRel,false,false,false);
-  drawLatexAdd(Form("anti-k_{T}, #it{R}#kern[0.2]{=}#kern[0.1]{0.5}"),0.16,0.80-.52,textSizeLabelsRel,false,false,false);
-  drawLatexAdd(Form("%s",str_input_type_plot[0].Data()),0.16,0.75-.52,textSizeLabelsRel,false,false,false);
-  drawLatexAdd(Form("%1.1f < #it{#eta}_{jet} < %1.1f",partEta[selectedeta],partEta[selectedeta+1]),0.16,0.70-.52,textSizeLabelsRel,false,false,false);
-
-  histEPlotDummy->Draw("same,axis");
-
-  canvasJER->Print(Form("%s/PhiResolution/PhiReso_E_all.%s", outputDir.Data(), suffix.Data()));
+//   if(1){
+//     int iInp = 0;
+//     int ijr = 1;
+//     for (Int_t iEbin=1; iEbin < histo2D_JES_E[iInp][ijr][0]->GetNbinsX(); iEbin++){
+//       histoJESSliceDummy->Draw();
+//       // DrawGammaLines(0, 29, 0., 0., 2, kGray+2, 7);
+//       TLegend* legendJES3  = GetAndSetLegend2(0.35, 0.80-(5*textSizeLabelsRel), 0.6, 0.80-(1*textSizeLabelsRel),1.1*textSizeLabelsPixel, 1, "", 43, 0.15);
+//       for(Int_t eT=10; eT<14;eT++){
+//         h_projectionPlot[iInp][ijr][eT][iEbin]->Sumw2();
+//         h_projectionPlot[iInp][ijr][eT][iEbin]->Rebin(2);
+//         DrawGammaSetMarker( h_projectionPlot[iInp][ijr][eT][iEbin], markerStyleEta[eT], 1.5*markerSizeEta[eT], colorEta[eT], colorEta[eT]);
+//         h_projectionPlot[iInp][ijr][eT][iEbin]->SetLineWidth(4);
+//         h_projectionPlot[iInp][ijr][eT][iEbin]->Draw("same,hist");
+//         legendJES3->AddEntry( h_projectionPlot[iInp][ijr][eT][iEbin],Form("%1.1f < #it{#eta}_{jet} < %1.1f",partEta[eT],partEta[eT+1]),"l");
+//       }
+//       legendJES3->Draw();
+//       drawLatexAdd(collisionSystem.Data(),0.35,0.90,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+//       drawLatexAdd(Form("anti-#it{k}_{T}, #it{R} = 0.5, FHCAL+FEMC jets"),0.35,0.85,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+//       drawLatexAdd(Form("%1.1f < #it{E}_{jet} < %1.1f GeV/#it{c}",(200./40)*iEbin,(200./40)*(iEbin+1)),0.35,0.80,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+//       cSingleSlice->Print(Form("%s/Slices/JES_Slice_Plot_EtaBins%d.%s", outputDir.Data(), iEbin, suffix.Data()));
+//     }
+//   }
 
 
-  TCanvas *canvasEfficiency = new TCanvas("canvasEfficiency","",200,10,1000,900);
-  DrawGammaCanvasSettings(canvasEfficiency,  0.11, 0.01, 0.002, 0.105);
-  for (int i = 0; i < njettypes; i++) {
-    TH1F *efficiency = new TH1F(Form("efficiency_%s", style.str_jet_type[i].Data()), "", 40, 0, 200);
-    SetStyleHistoTH1ForGraphs(efficiency, "#it{E}^{jet}","Jet Efficiency",  0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
-    for (int j = 0; j < efficiency->GetSize(); j++) {
-      efficiency->SetBinContent(j, h_matched_count[0][i]->GetBinContent(j) / h_truth_count[0][i]->GetBinContent(j));
-    }
-    DrawGammaSetMarker(efficiency, style.marker_jets[i], 2, style.color_jets[i], style.color_jets[i]);
-    efficiency->DrawCopy();
-    efficiency->Draw("hist");
-    drawLatexAdd(collisionSystem.Data(),0.35,0.90,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-    drawLatexAdd(Form("anti-#it{k}_{T}, #it{R} = 0.5, %s jets", style.str_jet_type_plot[i].Data()),0.35,0.85,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-    canvasEfficiency->SaveAs(Form("%s/JetEfficiency/JetEfficiency_%s.%s", outputDir.Data(), style.str_jet_type_plot[i].Data(), suffix.Data()));
-    delete efficiency;
-  }
+//   TCanvas *canvasEfficiency = new TCanvas("canvasEfficiency","",200,10,1000,900);
+//   DrawGammaCanvasSettings(canvasEfficiency,  0.11, 0.01, 0.002, 0.105);
+//   for (int i = 0; i < njettypes; i++) {
+//     TH1F *efficiency = new TH1F(Form("efficiency_%s", style.str_jet_type[i].Data()), "", 40, 0, 200);
+//     SetStyleHistoTH1ForGraphs(efficiency, "#it{E}^{jet}","Jet Efficiency",  0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
+//     for (int j = 0; j < efficiency->GetSize(); j++) {
+//       efficiency->SetBinContent(j, h_matched_count[0][i]->GetBinContent(j) / h_truth_count[0][i]->GetBinContent(j));
+//     }
+//     DrawGammaSetMarker(efficiency, style.marker_jets[i], 2, style.color_jets[i], style.color_jets[i]);
+//     efficiency->DrawCopy();
+//     efficiency->Draw("hist");
+//     drawLatexAdd(collisionSystem.Data(),0.35,0.90,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+//     drawLatexAdd(Form("anti-#it{k}_{T}, #it{R} = 0.5, %s jets", style.str_jet_type_plot[i].Data()),0.35,0.85,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+//     canvasEfficiency->SaveAs(Form("%s/JetEfficiency/JetEfficiency_%s.%s", outputDir.Data(), style.str_jet_type_plot[i].Data(), suffix.Data()));
+//     delete efficiency;
+//   }
 
 }
 
-void plotScale(TH1F *scaleData[nInputs][njettypes][16], TString collisionSystem, TString outputFormat, TString format,
-               int firstEtaBin, int numJetTypes, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel) {
+void plotting(TH1F *scaleData[nInputs][njettypes][16], TString outputFormat, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel) {
+  // SETUP
   TCanvas *canvasJES = new TCanvas("canvasJES", "", 200, 10, 1000, 900);
   DrawGammaCanvasSettings( canvasJES, 0.1, 0.01, 0.01, 0.11);
   Double_t textSizeSinglePad = 0.05;
@@ -583,9 +211,12 @@ void plotScale(TH1F *scaleData[nInputs][njettypes][16], TString collisionSystem,
   scaleHist->GetYaxis()->SetNdivisions(505,true);
   scaleHist->GetXaxis()->SetMoreLogLabels(true);
   DrawGammaLines(0, 109, 0., 0., 1, kGray+2, 7);
-  for(int ijr=0; ijr<numJetTypes; ijr++){
+  
+  // ITERATE OVER JET TYPES
+  for(int ijr=0; ijr<njettypes; ijr++){
     scaleHist->DrawCopy();
     TLegend *scaleLegend = GetAndSetLegend2(0.7, 0.95-((nEta-10)*textSizeLabelsRel), 1.1, 0.95,textSizeLabelsPixel, 1, "", 43, 0.15);
+    // ITERATE OVER ETA RANGES
     for (int eta = firstEtaBin; eta < nEta + 1; eta++) {
       DrawGammaSetMarker(scaleData[0][ijr][eta], markerStyleEta[eta], markerSizeEta[eta], colorEta[eta], colorEta[eta]);
 
@@ -596,12 +227,13 @@ void plotScale(TH1F *scaleData[nInputs][njettypes][16], TString collisionSystem,
       else
         scaleLegend->AddEntry(scaleData[0][ijr][eta],Form("%1.1f < #it{#eta} < %1.1f",1.5, 3.5),"pl");
     }
+    // DRAWING AND SAVING
     scaleLegend->Draw();
-    drawLatexAdd(Form("%s",collisionSystem.Data()), 0.16, 0.90, textSizeLabelsRel, false, false, false);
+    drawLatexAdd(Form("%s",style.collisionSystem.Data()), 0.16, 0.90, textSizeLabelsRel, false, false, false);
     drawLatexAdd(Form("#it{p}_{T}^{hard} #geq 5 GeV/#it{c}"), 0.16, 0.85, textSizeLabelsRel, false, false, false);
     drawLatexAdd(Form("anti-k_{T}, #it{R}#kern[0.2]{=}#kern[0.1]{0.5}"), 0.16, 0.80, textSizeLabelsRel, false, false, false);
     scaleHist->Draw("same,axis");
-    canvasJES->Print(Form("%s_%s.%s", outputFormat.Data(), style.str_jet_type[ijr].Data(), format.Data())); 
+    canvasJES->Print(Form("%s_%s.%s", outputFormat.Data(), style.str_jet_type[ijr].Data(), style.format.Data())); 
   }
 
 
