@@ -14,6 +14,11 @@ const int _maxNHepmcp = 1000;
 
 float _nEventsTree;
 
+// Event level info
+float _cross_section;
+float _event_weight;
+int _n_generator_accepted;
+
 // track hits
 int _nHitsLayers;
 int* _hits_layerID              = new int[_maxNHits];
@@ -100,6 +105,11 @@ TRandom3  _fRandom;                                  // random for effi generati
 
 
 void SetBranchAddressesTree(TTree* inputTree){
+
+    inputTree->SetBranchAddress("cross_section", &_cross_section);
+    inputTree->SetBranchAddress("event_weight", &_event_weight);
+    inputTree->SetBranchAddress("n_generator_accepted", &_n_generator_accepted);
+
     inputTree->SetBranchAddress("nHits",                        &_nHitsLayers);
     inputTree->SetBranchAddress("hits_layerID",                 _hits_layerID);
     inputTree->SetBranchAddress("hits_x",               _hits_x);
