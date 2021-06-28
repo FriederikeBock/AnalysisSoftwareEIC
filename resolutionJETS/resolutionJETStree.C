@@ -8,6 +8,7 @@
 #include <TFile.h>
 #include <TH2F.h>
 #include <TCanvas.h>
+#include <TH2.h>
 
 #include <iostream>
 
@@ -27,6 +28,8 @@ struct plottingStyleData
 };
 
 void plotting(TH1F *scaleData[nInputs][njettypes][16], TString outputDir, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel);
+void plot2DSpectra(TH2F *spectra[nInputs][njettypes], plottingStyleData style, TString title, TString outputFormat);
+
 
 void resolutionJETStree(
     TString suffix            = "png"
@@ -34,7 +37,14 @@ void resolutionJETStree(
 
   gROOT->Reset();
   gROOT->SetStyle("Plain");
-  StyleSettingsThesis();
+  // StyleSettingsThesis();
+  gStyle->SetOptStat(0);  //show statistic
+  gStyle->SetPadTopMargin(0.1);
+  gStyle->SetPadBottomMargin(0.1);
+  gStyle->SetPadRightMargin(0.15);
+  gStyle->SetPadLeftMargin(0.13);
+
+
   TString dateForOutput                       = ReturnDateStringForOutput();
 
   TString outputDir 						                  = Form("plotsTree/%s",dateForOutput.Data());
@@ -46,6 +56,7 @@ void resolutionJETStree(
   gSystem->Exec("mkdir -p "+outputDir+"/JetEnergyResolution");
   gSystem->Exec("mkdir -p "+outputDir+"/JetEnergyScale");
   gSystem->Exec("mkdir -p "+outputDir+"/JetEfficiency");
+  gSystem->Exec("mkdir -p "+outputDir+"/Spectra");
 
 
 
@@ -84,6 +95,12 @@ void resolutionJETStree(
   TH1F*    h_PhiReso_Mean_Eta[nInputs][njettypes] = {{NULL}};
   TH1F*    h_PhiReso_Width_Eta[nInputs][njettypes] = {{NULL}};
 
+  // Spectra
+  TH2F *h2D_truth_reco_eta[nInputs][njettypes] = {{NULL}};
+  TH2F *h2D_truth_reco_phi[nInputs][njettypes] = {{NULL}};
+  TH2F *h2D_truth_reco_E[nInputs][njettypes] = {{NULL}};
+  TH2F *h2D_truth_reco_pT[nInputs][njettypes] = {{NULL}};
+
   // Jet Efficiency
   TH1F *h_truth_count[nInputs][njettypes] = {NULL};
   TH1F *h_matched_count[nInputs][njettypes] = {NULL};
@@ -100,6 +117,11 @@ void resolutionJETStree(
 
         h_truth_count[iInp][ijr] = (TH1F*)inputFiles[iInp]->Get(Form("h_truth_count_%s",  style.str_jet_type[ijr].Data()));
         h_matched_count[iInp][ijr] = (TH1F*)inputFiles[iInp]->Get(Form("h_matched_count_%s",  style.str_jet_type[ijr].Data()));
+
+        h2D_truth_reco_eta[iInp][ijr] = (TH2F*)inputFiles[iInp]->Get(Form("h2D_truth_reco_eta_%s", style.str_jet_type[ijr].Data()));
+        h2D_truth_reco_phi[iInp][ijr] = (TH2F*)inputFiles[iInp]->Get(Form("h2D_truth_reco_phi_%s", style.str_jet_type[ijr].Data()));
+        h2D_truth_reco_E[iInp][ijr] = (TH2F*)inputFiles[iInp]->Get(Form("h2D_truth_reco_E_%s", style.str_jet_type[ijr].Data()));
+        h2D_truth_reco_pT[iInp][ijr] = (TH2F*)inputFiles[iInp]->Get(Form("h2D_truth_reco_pT_%s", style.str_jet_type[ijr].Data()));
 
       for (Int_t eT = 0; eT < nEta+1; eT++){
         histo2D_JES_E[iInp][ijr][eT]	= (TH2F*) inputFiles[iInp]->Get(Form("h_jetscale_%s_E_%d", style.str_jet_type[ijr].Data(),eT));
@@ -121,13 +143,13 @@ void resolutionJETStree(
 
 
   // Create projections for slices
-  TH1D *h_projectionPlot[nInputs][njettypes][nEta+1][40] = {NULL};
+  TH1D *jesSlices[nInputs][njettypes][nEta+1][40] = {NULL};
   for(int iInp=0;iInp<nInputs;iInp++){
     for(int ijr=0;ijr<njettypes;ijr++){
       for (Int_t eT = 0; eT < nEta+1; eT++){
         for (Int_t i=1; i < histo2D_JES_E[iInp][ijr][eT]->GetNbinsX(); i++){
-          h_projectionPlot[iInp][ijr][eT][i] = (TH1D*)histo2D_JES_E[iInp][ijr][eT]->ProjectionY(Form("projectionYdummy%d%d%d%d",iInp,ijr,eT,i), i,i+1,"e");
-          h_projectionPlot[iInp][ijr][eT][i]->Scale(1/h_projectionPlot[iInp][ijr][eT][i]->GetEntries());
+          jesSlices[iInp][ijr][eT][i] = (TH1D*)histo2D_JES_E[iInp][ijr][eT]->ProjectionY(Form("projectionYdummy%d%d%d%d",iInp,ijr,eT,i), i,i+1,"e");
+          jesSlices[iInp][ijr][eT][i]->Scale(1/jesSlices[iInp][ijr][eT][i]->GetEntries());
         }
       }
     }
@@ -143,6 +165,10 @@ void resolutionJETStree(
   plotting(h_EtaReso_Width_E, TString(Form("%s/EtaResolution/EtaReso", outputDir.Data())), style, 0, 1, TString("#it{E}^{jet}"), TString("#sigma(#eta^{rec} - #eta^{true}) / #eta^{true}"));
   plotting(h_PhiReso_Width_E, TString(Form("%s/PhiResolution/PhiReso", outputDir.Data())), style, 0, 1, TString("#it{E}^{jet}"), TString("#sigma(#phi^{rec} - #phi^{true}) / #phi^{true}"));
 
+  plot2DSpectra(h2D_truth_reco_eta, style, TString("eta"), TString(Form("%s/Spectra/eta", outputDir.Data())));
+  plot2DSpectra(h2D_truth_reco_phi, style, TString("phi"), TString(Form("%s/Spectra/phi", outputDir.Data())));
+  plot2DSpectra(h2D_truth_reco_E, style, TString("E"), TString(Form("%s/Spectra/E", outputDir.Data())));
+  plot2DSpectra(h2D_truth_reco_pT, style, TString("pT"), TString(Form("%s/Spectra/pT", outputDir.Data())));
 
 // 2D PLOT
 //   TCanvas* cSingleSlice = new TCanvas("cSingleSlice","",0,0,1100,1000);
@@ -163,12 +189,12 @@ void resolutionJETStree(
 //       // DrawGammaLines(0, 29, 0., 0., 2, kGray+2, 7);
 //       TLegend* legendJES3  = GetAndSetLegend2(0.35, 0.80-(5*textSizeLabelsRel), 0.6, 0.80-(1*textSizeLabelsRel),1.1*textSizeLabelsPixel, 1, "", 43, 0.15);
 //       for(Int_t eT=10; eT<14;eT++){
-//         h_projectionPlot[iInp][ijr][eT][iEbin]->Sumw2();
-//         h_projectionPlot[iInp][ijr][eT][iEbin]->Rebin(2);
-//         DrawGammaSetMarker( h_projectionPlot[iInp][ijr][eT][iEbin], markerStyleEta[eT], 1.5*markerSizeEta[eT], colorEta[eT], colorEta[eT]);
-//         h_projectionPlot[iInp][ijr][eT][iEbin]->SetLineWidth(4);
-//         h_projectionPlot[iInp][ijr][eT][iEbin]->Draw("same,hist");
-//         legendJES3->AddEntry( h_projectionPlot[iInp][ijr][eT][iEbin],Form("%1.1f < #it{#eta}_{jet} < %1.1f",partEta[eT],partEta[eT+1]),"l");
+//         jesSlices[iInp][ijr][eT][iEbin]->Sumw2();
+//         jesSlices[iInp][ijr][eT][iEbin]->Rebin(2);
+//         DrawGammaSetMarker( jesSlices[iInp][ijr][eT][iEbin], markerStyleEta[eT], 1.5*markerSizeEta[eT], colorEta[eT], colorEta[eT]);
+//         jesSlices[iInp][ijr][eT][iEbin]->SetLineWidth(4);
+//         jesSlices[iInp][ijr][eT][iEbin]->Draw("same,hist");
+//         legendJES3->AddEntry( jesSlices[iInp][ijr][eT][iEbin],Form("%1.1f < #it{#eta}_{jet} < %1.1f",partEta[eT],partEta[eT+1]),"l");
 //       }
 //       legendJES3->Draw();
 //       drawLatexAdd(collisionSystem.Data(),0.35,0.90,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
@@ -235,7 +261,16 @@ void plotting(TH1F *scaleData[nInputs][njettypes][16], TString outputFormat, plo
     scaleHist->Draw("same,axis");
     canvasJES->Print(Form("%s_%s.%s", outputFormat.Data(), style.str_jet_type[ijr].Data(), style.format.Data())); 
   }
+}
 
-
-
+void plot2DSpectra(TH2F *spectra[nInputs][njettypes], plottingStyleData style, TString title, TString outputFormat) {
+  TCanvas *spectraCanvas = new TCanvas(Form("%s spectra", title.Data()), "", 200, 10, 1000, 900);
+  Double_t textSizeSinglePad = 0.05;
+  for (int i = 0; i < njettypes; i++) {
+    SetStyleHistoTH2ForGraphs(spectra[0][i], "truth", "reco", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91, 2);
+    spectra[0][i]->SetTitle(Form("%s, %s jets", title.Data(), style.str_jet_type_plot[i].Data()));
+    gPad->SetLogz();
+    spectra[0][i]->Draw("colz");
+    spectraCanvas->Print(Form("%s_%s.%s", outputFormat.Data(), style.str_jet_type[i].Data(), style.format.Data()));
+  }
 }
