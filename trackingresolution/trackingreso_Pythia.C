@@ -31,8 +31,12 @@ void trackingreso_Pythia(
     writeLabel                      = "LI3";
     labelPlotCuts                   = "#geq 3 tracker hits";
   }
-  
+
   for (Int_t eR = 0; eR < 3; eR++) cout << "before: "<< labelEtaRange[eR].Data() << endl;
+
+  if (primaryTrackSource == 1) {
+    addLabel += "-innerTracks";
+  }
   
   TString collisionSystem = GetCollisionEnergy(addLabel);
   TString magnetLabel     = GetMagnetLabel(addLabel);
@@ -41,6 +45,14 @@ void trackingreso_Pythia(
   if (addLabel.Contains("pTHard5GeV")) {
     pTHard = "#it{p}_{T}^{hard} #geq 5 GeV/#it{c}";
     nLinesCol++;
+  }
+  if (addLabel.Contains("MinQ2_20")) {
+    pTHard = "#it{Q}^{2} > 20 GeV^{2}";
+    nLinesCol++;
+  }
+  if (addLabel.Contains("innerTracks")) {
+    writeLabel = "INNER";
+    labelPlotCuts = "Inner tracks only.";
   }
 
   TString outputDir                 = Form("plots/%s/%s",dateForOutput.Data(),addLabel.Data());
@@ -109,7 +121,7 @@ void trackingreso_Pythia(
 
   for (Int_t iEta = 0; iEta < nEta+1; iEta++){
     for (Int_t pid = 0; pid < nPID; pid++){
-      h_tracks_reso[pid][iEta]  = (TH2F*)inputFile->Get(Form("primaryTrackSource, h_tracks_reso_pT_%u_%s_%s_%d", primaryTrackSource, readTrackClass.Data(), partNameET2[pid].Data(), iEta));
+      h_tracks_reso[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_tracks_reso_pT_%u_%s_%s_%d", primaryTrackSource, readTrackClass.Data(), partNameET2[pid].Data(), iEta));
       h_tracks_reso[pid][iEta]->Sumw2();
       h_tracks_mean_pt_reso[pid][iEta] = new TH1D(Form("histPtResol_%s_mean_%d", partName[pid].Data(), iEta), 
                                             ";#it{p}_{T}^{MC} (GeV/#it{c}); #LT (#it{p}_{T}^{rec}-#it{p}_{T}^{MC})/#it{p}_{T}^{MC} #GT",
@@ -340,7 +352,7 @@ void trackingreso_Pythia(
         if(h_tracks_resoP_bins[pid][iEta][iP]->GetEntries() > 10 && properFit){
             fit_tracks_resoP_bins[pid][iEta][iP] = new TF1(Form("fitGaussP%s%d_%d",partName[pid].Data() ,iP, iEta),  "gaus", -ptResolFit[iEta],ptResolFit[iEta]);
             fit_tracks_resoP_bins[pid][iEta][iP]->SetParameter(0,h_tracks_resoP_bins[pid][iEta][iP]->GetMaximum() );
-            fit_tracks_resoP_bins[pid][iEta][iP]->SetParLimits(0,0.9*h_tracks_resoP_bins[pid][iEta][iP]->GetMaximum(),4*h_tracks_reso_bins[pid][iEta][iP]->GetMaximum() );
+            fit_tracks_resoP_bins[pid][iEta][iP]->SetParLimits(0,0.9*h_tracks_resoP_bins[pid][iEta][iP]->GetMaximum(),4*h_tracks_resoP_bins[pid][iEta][iP]->GetMaximum() );
             h_tracks_resoP_bins[pid][iEta][iP]->Fit(fit_tracks_resoP_bins[pid][iEta][iP],"QNRME+","",-ptResolFit[iEta],ptResolFit[iEta]);
         }
       }
