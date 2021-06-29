@@ -41,10 +41,20 @@ TH1D *h_PhiReso_Width_Eta[njettypes] = {NULL};
 
 // Plot the jet spectra in eta, phi, E, pT
 TH2F *h2D_truth_reco_eta[njettypes] = {NULL};
-TH2F *h2D_truth_reco_phi[njettypes] = {NULL};
-TH2F *h2D_truth_reco_E[njettypes] = {NULL};
-TH2F *h2D_truth_reco_pT[njettypes] = {NULL};
+TH1F *h_truth_eta[njettypes] = {NULL};
+TH1F *h_reco_eta[njettypes] = {NULL};
 
+TH2F *h2D_truth_reco_phi[njettypes] = {NULL};
+TH1F *h_truth_phi[njettypes] = {NULL};
+TH1F *h_reco_phi[njettypes] = {NULL};
+
+TH2F *h2D_truth_reco_E[njettypes] = {NULL};
+TH1F *h_truth_E[njettypes] = {NULL};
+TH1F *h_reco_E[njettypes] = {NULL};
+
+TH2F *h2D_truth_reco_pT[njettypes] = {NULL};
+TH1F *h_truth_pT[njettypes] = {NULL};
+TH1F *h_reco_pT[njettypes] = {NULL};
 // For creating jet efficiency graphs
 TH1F *h_truth_count[njettypes] = {NULL};
 TH1F *h_matched_count[njettypes] = {NULL};
@@ -69,9 +79,21 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
     if(!h_PhiReso_Width_Eta[isel])h_PhiReso_Width_Eta[isel]  = new TH1D(Form("h_PhiReso_Width_%s_Eta",jettype[isel].Data()),"",40, 0, 4);
 
     if (!h2D_truth_reco_eta[isel]) h2D_truth_reco_eta[isel] = new TH2F(Form("h2D_truth_reco_eta_%s", jettype[isel].Data()), "", 40, -7, 7, 40, -7, 7);
+    if (!h_truth_eta[isel]) h_truth_eta[isel] = new TH1F(Form("h_truth_eta_%s", jettype[isel].Data()), "", 40, -7, 7);
+    if (!h_reco_eta[isel]) h_reco_eta[isel] = new TH1F(Form("h_reco_eta_%s", jettype[isel].Data()), "", 40, -7, 7);
+    
     if (!h2D_truth_reco_phi[isel]) h2D_truth_reco_phi[isel] = new TH2F(Form("h2D_truth_reco_phi_%s", jettype[isel].Data()), "", 40, 0, 7, 40, 0, 7);
+    if (!h_truth_phi[isel]) h_truth_phi[isel] = new TH1F(Form("h_truth_phi_%s", jettype[isel].Data()), "", 40, 0, 7);
+    if (!h_reco_phi[isel]) h_reco_phi[isel] = new TH1F(Form("h_reco_phi_%s", jettype[isel].Data()), "", 40, 0, 7);
+    
     if (!h2D_truth_reco_E[isel]) h2D_truth_reco_E[isel] = new TH2F(Form("h2D_truth_reco_E_%s", jettype[isel].Data()), "", 40, 0, 300, 40, 0, 300);
+    if (!h_truth_E[isel]) h_truth_E[isel] = new TH1F(Form("h_truth_E_%s", jettype[isel].Data()), "", 40, 0, 300);
+    if (!h_reco_E[isel]) h_reco_E[isel] = new TH1F(Form("h_reco_E_%s", jettype[isel].Data()), "", 40, 0, 300);
+    
     if (!h2D_truth_reco_pT[isel]) h2D_truth_reco_pT[isel] = new TH2F(Form("h2D_truth_reco_pT_%s", jettype[isel].Data()), "", 40, 0, 120, 40, 0, 120);
+    if (!h_truth_pT[isel]) h_truth_pT[isel] = new TH1F(Form("h_truth_pT_%s", jettype[isel].Data()), "", 40, 0, 120);
+    if (!h_reco_pT[isel]) h_reco_pT[isel] = new TH1F(Form("h_reco_pT_%s", jettype[isel].Data()), "", 40, 0, 120);
+
 
     if (!h_truth_count[isel]) h_truth_count[isel] = new TH1F(Form("h_truth_count_%s", jettype[isel].Data()), "", 40, 0, 200);
     if (!h_matched_count[isel]) h_matched_count[isel] = new TH1F(Form("h_matched_count_%s", jettype[isel].Data()), "", 40, 0, 200);
@@ -98,22 +120,32 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
   int jets = 0;
   int matched = 0;
     for (std::size_t j = 0; j < std::get<1>(truejets).size(); j++) {
+      h_truth_phi[select]->Fill(std::get<1>(truejets)[j].phi());
+      h_truth_eta[select]->Fill(std::get<1>(truejets)[j].eta());
+      h_truth_E[select]->Fill(std::get<1>(truejets)[j].E());
+      h_truth_pT[select]->Fill(std::get<1>(truejets)[j].pt());
       h_constituents_true_Eta[select]->Fill(std::get<1>(truejets)[j].eta(),(std::get<1>(truejets)[j].constituents()).size());
      
       jets++;
       h_truth_count[select]->Fill(std::get<1>(truejets)[j].E());    // Jet Efficiency
       for (std::size_t i = 0; i < std::get<1>(recjets).size(); i++) {
-        if (0.6 > std::get<1>(truejets)[j].delta_R(std::get<1>(recjets)[i])) {
+        if (std::get<1>(truejets)[j].delta_R(std::get<1>(recjets)[i]) < 0.5) {
           h_matched_count[select]->Fill(std::get<1>(truejets)[j].E());
           matched++;
           break;
         }
       }
     }
+    // std::cout << "jets: " << jets << " matched: " << matched << "\n";
 
   for (std::size_t i = 0; i < std::get<1>(recjets).size(); i++) {
+    h_reco_phi[select]->Fill(std::get<1>(recjets)[i].phi());
+    h_reco_eta[select]->Fill(std::get<1>(recjets)[i].eta());
+    h_reco_E[select]->Fill(std::get<1>(recjets)[i].E());
+    h_reco_pT[select]->Fill(std::get<1>(recjets)[i].pt());
     // if(verbosityJRH>1)std::cout << "jet " << i << ": "<< std::get<1>(recjets)[i].pt() << " " << std::get<1>(recjets)[i].rap() << " " << std::get<1>(recjets)[i].phi() << "  Ntrue: " << std::get<1>(truejets).size() << endl;
     h_constituents_Eta[select]->Fill(std::get<1>(recjets)[i].eta(),(std::get<1>(recjets)[i].constituents()).size());
+
     for (std::size_t j = 0; j < std::get<1>(truejets).size(); j++) {
       Double_t deltaRTrueRec = std::get<1>(truejets)[j].delta_R(std::get<1>(recjets)[i]);
       // cout << deltaRTrueRec << endl;
@@ -247,9 +279,21 @@ void jetresolutionhistosSave(){
       if(h_PhiReso_Width_E[isel][eT])h_PhiReso_Width_E[isel][eT]->Write();
     }
     if (h2D_truth_reco_eta[isel]) h2D_truth_reco_eta[isel]->Write();
+    if (h_truth_eta[isel]) h_truth_eta[isel]->Write();
+    if (h_reco_eta[isel]) h_reco_eta[isel]->Write();
+
     if (h2D_truth_reco_phi[isel]) h2D_truth_reco_phi[isel]->Write();
+    if (h_truth_phi[isel]) h_truth_phi[isel]->Write();
+    if (h_reco_phi[isel]) h_reco_phi[isel]->Write();
+
     if (h2D_truth_reco_E[isel]) h2D_truth_reco_E[isel]->Write();
+    if (h_truth_E[isel]) h_truth_E[isel]->Write();
+    if (h_reco_E[isel]) h_reco_E[isel]->Write();
+
     if (h2D_truth_reco_pT[isel]) h2D_truth_reco_pT[isel]->Write();   
+    if (h_truth_pT[isel]) h_truth_pT[isel]->Write();
+    if (h_reco_pT[isel]) h_reco_pT[isel]->Write();
+
     if (h_truth_count[isel]) h_truth_count[isel]->Write(); 
     if (h_matched_count[isel]) h_matched_count[isel]->Write(); 
     std::cout << "writing..." << std::endl;
