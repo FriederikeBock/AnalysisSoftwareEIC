@@ -14,7 +14,7 @@
 
 #include <iostream>
 
-const int njettypes = 4;
+const int njettypes = 3;
 const int firstEtaBin = 7;
 const int nInputs = 1;
 
@@ -23,9 +23,9 @@ struct plottingStyleData
   Color_t color_jets[njettypes] = {kOrange+2, kMagenta+2, kRed+2}; //, kGreen+2, kBlue+2};
   int marker_jets[njettypes] = {21, 20, 22};//, 29, 47};
   int linestyle_jets[njettypes] = {1, 2, 4};//, 8, 9};
-  TString str_jet_type[njettypes] = {"track", "calo" , "full", "all"};
-  TString str_jet_type_plot[njettypes] = {"Charged Jets (Track)", "Calo Jets (FHCAL+FEMC)" , "Full Jets (Track+FEMC)", "All Jets"};
-  TString collisionSystem = "Pythia 6, e+p: 10#times#kern[0.2]{250} GeV^{2}";
+  TString str_jet_type[njettypes] = {"track", "calo", "all"};
+  TString str_jet_type_plot[njettypes] = {"Charged Jets (Track)", "Calo Jets (FHCAL+FEMC)", "All Jets"};
+  TString collisionSystem = "Pythia 6, e+p: 18#times#kern[0.2]{100} GeV^{2} High Q^{2}";
   TString format;
 };
 
@@ -285,6 +285,11 @@ void plotSpectra(TH2F *spectra[nInputs][njettypes], plottingStyleData style, TSt
   TCanvas *spectraCanvas = new TCanvas(Form("%s spectra", title.Data()), "", 200, 10, canvasWidth, 900);
   spectraCanvas->Divide(canvasDivisions, 1);
   Double_t textSizeSinglePad = 0.05;
+  TH1D *recoSpectra[njettypes];
+  TH1D *truthSpectra[njettypes];
+  THStack *projectionStack[njettypes];
+  TLegend *projectionLegend[njettypes];
+
   for (int i = 0; i < njettypes; i++) {
     spectraCanvas->cd(1);
     SetStyleHistoTH2ForGraphs(spectra[0][i], "truth", "reco", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91, 2);
@@ -294,28 +299,30 @@ void plotSpectra(TH2F *spectra[nInputs][njettypes], plottingStyleData style, TSt
 
     spectraCanvas->cd(2);
     gPad->SetLogy();
-    THStack *projectionStack = new THStack();
-    TLegend *projectionLegend = new TLegend(); 
-    TH1 *recoSpectra = spectra[0][i]->ProjectionY();
-    recoSpectra->SetTitle("Reco Matched");
-    recoSpectra->SetLineColor(kRed);
-    projectionStack->Add(recoSpectra);
-    projectionLegend->AddEntry(recoSpectra, "Reco Matched");
+    projectionStack[i] = new THStack();
+    projectionLegend[i] = new TLegend(.6, .8, 1, 1, "Matched Jets"); 
+    recoSpectra[i] = spectra[0][i]->ProjectionY(Form("reco_spectra_%s_%s", title.Data(), style.str_jet_type[i].Data()));
+    recoSpectra[i]->SetTitle("Reco Matched");
+    recoSpectra[i]->SetLineColor(kRed);
+    projectionStack[i]->Add(recoSpectra[i]);
+    projectionLegend[i]->AddEntry(recoSpectra[i], "Reco Matched");
 
-    TH1 *truthSpectra = spectra[0][i]->ProjectionX();
-    truthSpectra->SetTitle("Truth Projection");
-    truthSpectra->SetLineColor(kBlue);
-    truthSpectra->SetLineStyle(2);
-    projectionStack->Add(truthSpectra);
-    projectionLegend->AddEntry(truthSpectra, "Truth Matched");
+    truthSpectra[i] = spectra[0][i]->ProjectionX(Form("truth_spectra_%s_%s",title.Data(),  style.str_jet_type[i].Data()));
+    truthSpectra[i]->SetTitle("Truth Projection");
+    truthSpectra[i]->SetLineColor(kBlue);
+    truthSpectra[i]->SetLineWidth(4);
+    truthSpectra[i]->SetLineStyle(2);
+    projectionStack[i]->Add(truthSpectra[i]);
+    projectionLegend[i]->AddEntry(truthSpectra[i], "Truth Matched");
 
-    projectionStack->Draw();
-    projectionStack->GetXaxis()->SetTitle(Form("Jet %s", title.Data()));
-    projectionStack->GetYaxis()->SetTitle("Counts");
-    projectionLegend->Draw();
+    projectionStack[i]->SetMinimum(1);
+    projectionStack[i]->Draw("nostack");
+    projectionStack[i]->GetXaxis()->SetTitle(Form("Jet %s", title.Data()));
+    projectionStack[i]->GetYaxis()->SetTitle("Counts");
+    projectionLegend[i]->Draw();
 
     THStack *fullStack = new THStack();
-    TLegend *fullLegend = new TLegend(); 
+    TLegend *fullLegend = new TLegend(.6, .8, 1, 1, "All Jets"); 
     if (reco != nullptr && truth != nullptr) {
       spectraCanvas->cd(3);
       gPad->SetLogy();
@@ -326,11 +333,13 @@ void plotSpectra(TH2F *spectra[nInputs][njettypes], plottingStyleData style, TSt
 
       truth[0][i]->SetTitle("Truth full");
       truth[0][i]->SetLineColor(kBlue);
+      truth[0][i]->SetLineWidth(4);
       truth[0][i]->SetLineStyle(2);
       fullStack->Add(truth[0][i]);
       fullLegend->AddEntry(truth[0][i], "Truth full");
 
-      fullStack->Draw();
+      fullStack->SetMinimum(1);
+      fullStack->Draw("nostack");
       fullStack->GetXaxis()->SetTitle(Form("Jet %s", title.Data()));
       fullStack->GetYaxis()->SetTitle("Counts");
       fullLegend->Draw();
@@ -344,7 +353,7 @@ void plotSpectra(TH2F *spectra[nInputs][njettypes], plottingStyleData style, TSt
 void plotEfficiency(TH1F *h_matched_count[nInputs][njettypes], TH1F *h_truth_count[nInputs][njettypes], plottingStyleData style, TString outputDir) {
   Double_t textSizeSinglePad = 0.05;
   Double_t textSizeLabelsRel = 58.0 / 1300;
-  for (int i = 3; i >= 0; i--) {
+  for (int i = 0; i < njettypes; i++) {
     TCanvas *canvasEfficiency = new TCanvas(Form("canvasEfficiency_%s", style.str_jet_type[i].Data()), "", 200, 10, 1000, 900);
     DrawGammaCanvasSettings(canvasEfficiency,  0.11, 0.01, 0.002, 0.105);
     // TH1F *efficiency = new TH1F(Form("efficiency_%s", style.str_jet_type[i].Data()), "", h_truth_count[0][i]->GetNbinsX() - 1, 0, 200);
