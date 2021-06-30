@@ -1,7 +1,9 @@
 #include "../common/binningheader.h"
 #include "../common/plottingheader.h"
 #include "treeProcessing.h"
+#include "event_utils.cxx"
 #include "jet_finder.cxx"
+#include "jet_observables.cxx"
 #include "caloheader.h"
 #include "clusterizer.cxx"
 
@@ -99,6 +101,27 @@ void treeProcessing(
     if(_doClusterECalibration){
         std::cout << "clusters will be energy-corrected and subsequently smeared to meet testbeam constant term!" << std::endl;
     }
+    // Additional setup
+    auto eventObservables = EventObservables();
+    auto jetObservablesTrue = JetObservables{JetType_t::full, "true"};
+    auto jetObservablesTrueCharged = JetObservables{JetType_t::charged, "true"};
+    auto jetObservablesCharged = JetObservables{JetType_t::charged};
+    auto jetObservablesCalo = JetObservables{JetType_t::calo};
+    auto jetObservablesFull = JetObservables{JetType_t::full};
+
+    if (_do_jetfinding) {
+        // Event level
+        eventObservables.Init();
+
+        // TODO: Add fully to arguments
+        std::vector<double> jetRParameters = {0.5};
+        jetObservablesTrue.Init(jetRParameters);
+        jetObservablesTrueCharged.Init(jetRParameters);
+        jetObservablesCharged.Init(jetRParameters);
+        jetObservablesCalo.Init(jetRParameters);
+        jetObservablesFull.Init(jetRParameters);
+    }
+
     _nEventsTree=0;
     // main event loop
     for (Long64_t i=0; i<nEntriesTree;i++) {
@@ -599,6 +622,14 @@ void treeProcessing(
             auto jetsAllRec = findJets(jetR, jetAlgorithm, jetf_all_px, jetf_all_py, jetf_all_pz, jetf_all_E);
             if(verbosity>1) std::cout << "found " << std::get<1>(jetsAllRec).size() << " rec all jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
 
+            // Jet observables
+            fillEventObservables(eventObservables, primaryTrackSource);
+            fillJetSpectra(jetObservablesTrue, std::get<1>(jetsTrue), jetR);
+            fillJetSpectra(jetObservablesTrueCharged, std::get<1>(jetsTrueCharged), jetR);
+            fillJetSpectra(jetObservablesCharged, std::get<1>(jetsTrackRec), jetR);
+            fillJetSpectra(jetObservablesCalo, std::get<1>(jetsCaloRec), jetR);
+            fillJetSpectra(jetObservablesFull, std::get<1>(jetsFullRec), jetR);
+
             jetresolutionhistos(jetsTrackRec,jetsTrueCharged,0);
             jetresolutionhistos(jetsFullRec,jetsTrue,1);
             // jetresolutionhistos(jetsHcalRec,jetsTrue,2);
@@ -614,6 +645,16 @@ void treeProcessing(
         trackmatchingstudies();
 
     } // event loop end
+    if (_do_jetfinding) {
+        std::cout << "saving event level observables\n";
+        eventObservables.Write(outputDir.Data());
+        std::cout << "saving jet observables\n";
+        jetObservablesTrue.Write(outputDir.Data());
+        jetObservablesTrueCharged.Write(outputDir.Data());
+        jetObservablesCharged.Write(outputDir.Data());
+        jetObservablesCalo.Write(outputDir.Data());
+        jetObservablesFull.Write(outputDir.Data());
+    }
     std::cout << "running jetresolutionhistosSave" << std::endl;
     jetresolutionhistosSave();
     std::cout << "running resolutionhistosSave" << std::endl;
