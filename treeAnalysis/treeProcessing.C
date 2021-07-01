@@ -26,14 +26,7 @@
 
 
 void treeProcessing(
-    // TString inFile            = "/home/tristan/ecce/data/output_ALLSILICON-FTTLS3LC-ETTL-CTTL-INNERTRACKING_e10p250pTHard5/G4EICDetector_1_eventtree.root",
-    // TString inFile            = "ALLSILICON-FTTLS3LC-ETTL-CTTL-INNERTRACKING_e10p250pTHard5.txt", // 10,000 events
-    // TString inFile            = "ALLSILICON-ETTL-CTTL-INNERTRACKING-ASYM-FTTLS3LC_e10p250pTHard5.txt", // 169,000 events
-    // TString inFile            = "small-ALLSILICON-ETTL-CTTL-INNERTRACKING-ASYM-FTTLS3LC_e10p250pTHard5.txt", // 10,000 events
-    // TString inFile            = "round2filelist.txt", // 250,000 events
-    // TString inFile            = "shortround2filelist.txt", // 10,000 events
-    TString inFile            = "MinQ2_20.txt", // 248,000 events
-    // TString inFile            = "smallMinQ2_20.txt", // 10,000 events
+    TString inFile            = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_pTHard5.root",
     TString addOutputName       = "",
     bool do_3x3clusterizer      = true,
     bool do_5x5clusterizer      = true,

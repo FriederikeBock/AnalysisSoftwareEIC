@@ -15,7 +15,7 @@
 #include <iostream>
 
 const int njettypes = 3;
-const int firstEtaBin = 7;
+const int firstEtaBin = 10;
 const int nInputs = 1;
 
 struct plottingStyleData
@@ -40,7 +40,7 @@ void resolutionJETStree(
 
   gROOT->Reset();
   gROOT->SetStyle("Plain");
-  // StyleSettingsThesis();
+  StyleSettingsThesis();
   gStyle->SetOptStat(0);  //show statistic
   gStyle->SetPadTopMargin(0.1);
   gStyle->SetPadBottomMargin(0.1);
@@ -253,7 +253,7 @@ void plotting(TH1F *scaleData[nInputs][njettypes][16], TString outputFormat, plo
   // ITERATE OVER JET TYPES
   for(int ijr=0; ijr<njettypes; ijr++){
     scaleHist->DrawCopy();
-    TLegend *scaleLegend = GetAndSetLegend2(0.7, 0.95-((nEta-10)*textSizeLabelsRel), 1.1, 0.95,textSizeLabelsPixel, 1, "", 43, 0.15);
+    TLegend *scaleLegend = GetAndSetLegend2(0.7, 0.40-((nEta-10)*textSizeLabelsRel), 1.1, 0.40,textSizeLabelsPixel, 1, "", 43, 0.15);
     // ITERATE OVER ETA RANGES
     for (int eta = firstEtaBin; eta < nEta + 1; eta++) {
       DrawGammaSetMarker(scaleData[0][ijr][eta], markerStyleEta[eta], markerSizeEta[eta], colorEta[eta], colorEta[eta]);
@@ -269,7 +269,7 @@ void plotting(TH1F *scaleData[nInputs][njettypes][16], TString outputFormat, plo
     scaleLegend->Draw();
     drawLatexAdd(Form("%s",style.collisionSystem.Data()), 0.16, 0.90, textSizeLabelsRel, false, false, false);
     drawLatexAdd(Form("#it{p}_{T}^{hard} #geq 5 GeV/#it{c}"), 0.16, 0.85, textSizeLabelsRel, false, false, false);
-    drawLatexAdd(Form("anti-k_{T}, #it{R}#kern[0.2]{=}#kern[0.1]{0.5}"), 0.16, 0.80, textSizeLabelsRel, false, false, false);
+    drawLatexAdd(Form("anti-k_{T}, #it{R}#kern[0.2]{=}#kern[0.1]{0.5}, %s", style.str_jet_type_plot[ijr].Data()), 0.16, 0.80, textSizeLabelsRel, false, false, false);
     scaleHist->Draw("same,axis");
     canvasJES->Print(Form("%s_%s.%s", outputFormat.Data(), style.str_jet_type[ijr].Data(), style.format.Data())); 
   }
