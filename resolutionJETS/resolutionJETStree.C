@@ -29,7 +29,7 @@ struct plottingStyleData
   TString format;
 };
 
-void plotting(TH1F *scaleData[nInputs][njettypes][16], TString outputDir, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel);
+void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][16], TString outputDir, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel);
 void plotSpectra(TH2F *spectra[nInputs][njettypes], plottingStyleData style, TString title, TString outputFormat, TH1F *reco[nInputs][njettypes]=nullptr, TH1F *truth[nInputs][njettypes]=nullptr);
 void plotEfficiency(TH1F *h_matched_count[nInputs][njettypes], TH1F *h_truth_count[nInputs][njettypes], plottingStyleData style, TString outputDir);
 
@@ -183,14 +183,14 @@ void resolutionJETStree(
   }
 
   // Plot scales
-  plotting(histo_JES_E, TString(Form("%s/JetEnergyScale/JES", outputDir.Data())), style, -1, 0.3, TString("#it{E}^{jet}"), TString("Mean((#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}))"));  // Plot jet energy scale
-  plotting(h_EtaReso_Mean_E, TString(Form("%s/EtaScale/EtaScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#eta^{rec} - #eta^{true}) / #eta^{true}))"));  // Plot jet eta scale
-  plotting(h_PhiReso_Mean_E, TString(Form("%s/PhiScale/PhiScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#phi^{rec} - #phi^{true}) / #phi^{true}))"));  // Plot jet phi scale
+  plotResoOrScale(histo_JES_E, TString(Form("%s/JetEnergyScale/JES", outputDir.Data())), style, -1, 0.3, TString("#it{E}^{jet}"), TString("Mean((#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}))"));  // Plot jet energy scale
+  plotResoOrScale(h_EtaReso_Mean_E, TString(Form("%s/EtaScale/EtaScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#eta^{rec} - #eta^{true}) / #eta^{true}))"));  // Plot jet eta scale
+  plotResoOrScale(h_PhiReso_Mean_E, TString(Form("%s/PhiScale/PhiScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#phi^{rec} - #phi^{true}) / #phi^{true}))"));  // Plot jet phi scale
 
   // Plot resolutions
-  plotting(histo_JER_E, TString(Form("%s/JetEnergyResolution/JER_E", outputDir.Data())), style, 0, 1, TString("#it{E}^{jet}"), TString("#sigma(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}"));
-  plotting(h_EtaReso_Width_E, TString(Form("%s/EtaResolution/EtaReso", outputDir.Data())), style, 0, 1, TString("#it{E}^{jet}"), TString("#sigma(#eta^{rec} - #eta^{true}) / #eta^{true}"));
-  plotting(h_PhiReso_Width_E, TString(Form("%s/PhiResolution/PhiReso", outputDir.Data())), style, 0, 1, TString("#it{E}^{jet}"), TString("#sigma(#phi^{rec} - #phi^{true}) / #phi^{true}"));
+  plotResoOrScale(histo_JER_E, TString(Form("%s/JetEnergyResolution/JER_E", outputDir.Data())), style, 0, 1, TString("#it{E}^{jet}"), TString("#sigma(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}"));
+  plotResoOrScale(h_EtaReso_Width_E, TString(Form("%s/EtaResolution/EtaReso", outputDir.Data())), style, 0, 1, TString("#it{E}^{jet}"), TString("#sigma(#eta^{rec} - #eta^{true}) / #eta^{true}"));
+  plotResoOrScale(h_PhiReso_Width_E, TString(Form("%s/PhiResolution/PhiReso", outputDir.Data())), style, 0, 1, TString("#it{E}^{jet}"), TString("#sigma(#phi^{rec} - #phi^{true}) / #phi^{true}"));
 
   // Plot spectra
   plotSpectra(h2D_truth_reco_eta, style, TString("eta"), TString(Form("%s/Spectra/eta", outputDir.Data())), h_reco_eta, h_truth_eta);
@@ -236,7 +236,7 @@ void resolutionJETStree(
 //   }
 }
 
-void plotting(TH1F *scaleData[nInputs][njettypes][16], TString outputFormat, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel) {
+void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][16], TString outputFormat, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel) {
   // SETUP
   TCanvas *canvasJES = new TCanvas("canvasJES", "", 200, 10, 1000, 900);
   DrawGammaCanvasSettings( canvasJES, 0.1, 0.01, 0.01, 0.11);
