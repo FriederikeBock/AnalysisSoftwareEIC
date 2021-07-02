@@ -1,3 +1,7 @@
+#include <TROOT.h>
+#include <TString.h>
+#include <TRandom3.h>
+
 TString outputDir;
 // Constants are from the EventEvaluator class in coresoftware
 const int _maxNHits = 5000;
