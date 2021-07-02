@@ -35,7 +35,7 @@ void plotEfficiency(TH1F *h_matched_count[nInputs][njettypes], TH1F *h_truth_cou
 
 
 void resolutionJETStree(
-    TString suffix            = "png"
+    TString suffix            = "pdf"
 ){
 
   gROOT->Reset();
