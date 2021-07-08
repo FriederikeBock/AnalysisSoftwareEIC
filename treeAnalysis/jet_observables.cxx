@@ -87,6 +87,20 @@ struct JetObservables {
     std::map<std::string, TH1D> spectra{};
     bool initialized{false};
 
+    JetObservables(JetType_t _jetType):
+        jetType(_jetType),
+        tag(""),
+        spectra{},
+        initialized{false}
+    {}
+
+    JetObservables(JetType_t _jetType, const std::string & _tag):
+        jetType(_jetType),
+        tag(_tag),
+        spectra{},
+        initialized{false}
+    {}
+
     void Init(std::vector<double> jetRParameters)
     {
         std::string identifier = "";
