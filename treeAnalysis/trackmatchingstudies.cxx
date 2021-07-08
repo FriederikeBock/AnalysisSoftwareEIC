@@ -212,14 +212,15 @@ bool trackmatchingstudies(){
         clusters_TM_Z))continue;
 
       if(_nclusters_TM==0) continue;
-      int projectionlayer = -1;
-      if(icalo==kFHCAL) projectionlayer = 5;
-      if(icalo==kFEMC) projectionlayer = 6;
-      // if(icalo==kFHCAL) projectionlayer = 2;
-      // if(icalo==kFEMC) projectionlayer = 1;
+      int projectionlayer = ReturnProjectionIndexForCalorimeter(icalo);
+
       float zHC = 400;
       if(icalo==kFHCAL)zHC=340;
       if(icalo==kFEMC)zHC=287;
+      // TODO MUST OPTIMIZE HERE, MAYBE LOAD TOWER POSITION FROM GEOMETRY TREE????
+      // TODO MUST OPTIMIZE HERE, MAYBE LOAD TOWER POSITION FROM GEOMETRY TREE????
+      // TODO MUST OPTIMIZE HERE, MAYBE LOAD TOWER POSITION FROM GEOMETRY TREE????
+      // TODO MUST OPTIMIZE HERE, MAYBE LOAD TOWER POSITION FROM GEOMETRY TREE????
 
       float matchingwdw = 10.;
       if(icalo==kFEMC) matchingwdw = 5.5;
@@ -509,6 +510,8 @@ void trackmatchingstudiesSave(){
   TFile* fileOutput = new TFile(Form("%s/output_TMSTUD.root",outputDir.Data()),"RECREATE");
   // fileOutput->mkdir("etabins");
   for(int icalo=0;icalo<_active_calo;icalo++){
+    fileOutput->mkdir(Form("%s",str_calorimeter[icalo].Data()));
+    fileOutput->cd(Form("%s",str_calorimeter[icalo].Data()));
     for(int icase=0;icase<diffCases_TMStudies;icase++){
       // fileOutput->cd();
       if(h_TMstudies_x_y_track[icalo]&&icase==0)h_TMstudies_x_y_track[icalo]->Write();
