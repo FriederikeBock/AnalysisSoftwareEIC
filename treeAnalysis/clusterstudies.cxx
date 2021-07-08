@@ -38,6 +38,9 @@ TH2F*  h_clusterizer_clsspecSEMC_E_NCl[_active_calo][_active_algo]; // [calorime
 TH1D*  h_clusterizer_NClMean_E[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH1D*  h_clusterizer_NClMean_MCE[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 
+TH1F*  h_clusterizer_NClPerMCLabel[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH1F*  h_clusterizer_ClSameMCLabel_dR[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+
 TH2F*  h_clusterizer_clsspecSE_particle_E_eta[_active_calo][_active_algo][nParticlesPDG_CS]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_clsspecSEMC_particle_E_eta[_active_calo][_active_algo][nParticlesPDG_CS]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_clsspecSE_matched_particle_E_eta[_active_calo][_active_algo][nParticlesPDG_CS]; // [calorimeter_enum][algorithm_enum]
@@ -56,6 +59,10 @@ int* clusters_CLSTD_NtrueID     = new int[_maxNclusters];
 float* clusters_CLSTD_X         = new float[_maxNclusters];
 float* clusters_CLSTD_Y         = new float[_maxNclusters];
 float* clusters_CLSTD_Z         = new float[_maxNclusters];
+
+TH2F* h_clusterizer_IEtaIPhiMapEvt 	    = new TH2F("h_clusterizer_IEtaIPhiMapEvt", "",  57, -0.5, 56.5,  57, -0.5, 56.5);;
+// TH2F* h_clusterizer_IEtaIPhiMapEvt 	    = new TH2F("h_clusterizer_IEtaIPhiMapEvt", "",  23, 13.5, 36.5,  23, 13.5, 36.5);;
+TCanvas* cReso_clusterizer = new TCanvas("cReso_clusterizer","",0,0,1000,1000);
 
 // ANCHOR main function to be called in event loop
 void clusterstudies(){
@@ -86,7 +93,10 @@ void clusterstudies(){
 
       if(!h_clusterizer_clsspec_PDG[icalo][ialgo])h_clusterizer_clsspec_PDG[icalo][ialgo] 	= new TH1F(Form("h_clusterizer_clsspec_PDG_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 2500,0,2500);
       if(!h_clusterizer_clsspec_matched_PDG[icalo][ialgo])h_clusterizer_clsspec_matched_PDG[icalo][ialgo] 	= new TH1F(Form("h_clusterizer_clsspec_matched_PDG_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 2500,0,2500);
-      
+
+      if(!h_clusterizer_NClPerMCLabel[icalo][ialgo])h_clusterizer_NClPerMCLabel[icalo][ialgo] 	= new TH1F(Form("h_clusterizer_NClPerMCLabel_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 10,-0.5,9.5);
+      if(!h_clusterizer_ClSameMCLabel_dR[icalo][ialgo])h_clusterizer_ClSameMCLabel_dR[icalo][ialgo] 	= new TH1F(Form("h_clusterizer_ClSameMCLabel_dR_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "",600,0,600);
+
       for (int iPDG = 0; iPDG < nParticlesPDG_CS; iPDG++){
         if(!h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG])h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG]= new TH2F(Form("h_CS_clusters_M02_part_E_truth_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "" , 100, 0, 2, nBinsP, binningP);
         if(!h_CS_clusters_M20_part_E_truth[icalo][ialgo][iPDG])h_CS_clusters_M20_part_E_truth[icalo][ialgo][iPDG]= new TH2F(Form("h_CS_clusters_M20_part_E_truth_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "" , 100, 0, 2, nBinsP, binningP);
@@ -119,11 +129,13 @@ void clusterstudies(){
       )) continue;
 
       std::vector<occuranceStrct> uniqueIDs;
-      
+      std::vector<float> usedIDs;
+      int foundmultclus = 0;
+      int foundmultclusM02 = 0;
       for(Int_t iclus=0; iclus<nclusters_CLSTD; iclus++){
         Bool_t particleFilled   = kFALSE;
-        Double_t highestEnergy  = clusters_CLSTD_E[iclus];; 
-        Bool_t isHighest        = kFALSE; 
+        Double_t highestEnergy  = clusters_CLSTD_E[iclus];
+        Bool_t isHighest        = kFALSE;
         Int_t nClPerParticle    = 1;
         for (Int_t bclus = iclus+1; bclus < nclusters_CLSTD; bclus++ ){
             if (clusters_CLSTD_trueID[iclus] != clusters_CLSTD_trueID[bclus]) continue;
@@ -133,12 +145,33 @@ void clusterstudies(){
         }
         if (clusters_CLSTD_E[iclus] == highestEnergy)
           isHighest = kTRUE;
-        for (int id = 0; id < uniqueIDs.size() && !particleFilled ; id++){ 
-          if ( uniqueIDs.at(id).particle_ID == (int)(clusters_CLSTD_trueID[iclus]) ) 
-             particleFilled = kTRUE;
+        for (int id = 0; id < uniqueIDs.size() && !particleFilled ; id++){
+          if ( uniqueIDs.at(id).particle_ID == (int)(clusters_CLSTD_trueID[iclus]) )
+            particleFilled = kTRUE;
         }
-         
-        
+
+        usedIDs.push_back(iclus);
+        int icluswithsamelabel = 1;
+        int icluswithsamelabelM02 = 0;
+        if(clusters_CLSTD_NTower[iclus]>1)icluswithsamelabelM02++;
+        for(Int_t icluslbl=0; icluslbl<nclusters_CLSTD; icluslbl++){
+          if((int)(clusters_CLSTD_trueID[iclus])==(int)(clusters_CLSTD_trueID[icluslbl])){
+
+            if ( !(std::find(usedIDs.begin(), usedIDs.end(), icluslbl) != usedIDs.end()) ){
+              usedIDs.push_back(icluslbl);
+              icluswithsamelabel++;
+              h_clusterizer_ClSameMCLabel_dR[icalo][ialgo]->Fill(TMath::Sqrt(TMath::Power(clusters_CLSTD_X[iclus]-clusters_CLSTD_X[icluslbl],2)+TMath::Power(clusters_CLSTD_Y[iclus]-clusters_CLSTD_Y[icluslbl],2)));
+              if(clusters_CLSTD_NTower[icluslbl]>1)icluswithsamelabelM02++;
+            }
+          }
+        }
+        if(icalo==kFHCAL){
+          if(icluswithsamelabel>1)foundmultclus = icluswithsamelabel;
+          foundmultclusM02 = icluswithsamelabelM02;
+        }
+        h_clusterizer_NClPerMCLabel[icalo][ialgo]->Fill(icluswithsamelabel);
+
+
         h_CS_clusters_NTower_E[icalo][ialgo]->Fill(clusters_CLSTD_E[iclus],clusters_CLSTD_NTower[iclus]);
         h_CS_clusters_E[icalo][ialgo]->Fill(clusters_CLSTD_E[iclus]);
         h_CS_clusters_M02_E[icalo][ialgo]->Fill(clusters_CLSTD_M02[iclus],clusters_CLSTD_E[iclus]);
@@ -155,7 +188,7 @@ void clusterstudies(){
           h_clusterizer_1towerMC_E_eta[icalo][ialgo]->Fill(_mcpart_E[clusters_CLSTD_trueID[iclus]], _mcpart_Eta[clusters_CLSTD_trueID[iclus]]);
           if (!particleFilled && isHighest){
             h_clusterizer_clsspecSE_E_eta[icalo][ialgo]->Fill(clusters_CLSTD_E[iclus], clusters_CLSTD_Eta[iclus]);
-            h_clusterizer_clsspecSEMC_E_eta[icalo][ialgo]->Fill(_mcpart_E[clusters_CLSTD_trueID[iclus]], _mcpart_Eta[clusters_CLSTD_trueID[iclus]]);          
+            h_clusterizer_clsspecSEMC_E_eta[icalo][ialgo]->Fill(_mcpart_E[clusters_CLSTD_trueID[iclus]], _mcpart_Eta[clusters_CLSTD_trueID[iclus]]);
             h_clusterizer_clsspecSE_E_NCl[icalo][ialgo]->Fill(clusters_CLSTD_E[iclus], nClPerParticle);
             h_clusterizer_clsspecSEMC_E_NCl[icalo][ialgo]->Fill(_mcpart_E[clusters_CLSTD_trueID[iclus]], nClPerParticle);          
             if (clusters_CLSTD_isMatched[iclus]){
@@ -222,7 +255,38 @@ void clusterstudies(){
 //           if (tempstructCl.nClusters > 1) cout << "particle: " << tempstructCl.particle_ID << " has multiple clusters (" << tempstructCl.nClusters << ") for " << str_calorimeter[icalo].Data() << " " << str_clusterizer[ialgo].Data() << endl;
         }
       }
+      if(0 && foundmultclus && ialgo==kMA && icalo==kFHCAL){
+        float sumtowerE = 0;
+        h_clusterizer_IEtaIPhiMapEvt->Reset("ICESM");
+        for(int itow=0; itow<_nTowers_FHCAL; itow++){
+          if(_tower_FHCAL_E[itow]>(0.05)){
+            h_clusterizer_IEtaIPhiMapEvt->Fill(_tower_FHCAL_iEta[itow], _tower_FHCAL_iPhi[itow],_tower_FHCAL_E[itow]*2);
+            sumtowerE+=_tower_FHCAL_E[itow];
+          }
+        }
+        cReso_clusterizer->cd();
+        gStyle->SetOptStat(0);
+        gStyle->SetPaintTextFormat("1.3f");
+        cReso_clusterizer->SetLogz();
+        h_clusterizer_IEtaIPhiMapEvt->Draw("colz");
+        h_clusterizer_IEtaIPhiMapEvt->SetMarkerSize(0.25);
+        float texty = 1;
+        TLatex *latexDummy;
+        for(Int_t iclus=0; iclus<nclusters_CLSTD; iclus++){
+          latexDummy                          = new TLatex(10 ,texty,Form("Twrs: %d, E: %2.3f PDG: %3.0f",clusters_CLSTD_NTower[iclus],clusters_CLSTD_E[iclus],_mcpart_PDG[clusters_CLSTD_trueID[iclus]]));
+          latexDummy->SetTextFont(42);
+          latexDummy->SetTextSize(35./1200);
+          latexDummy->SetLineWidth(4);
+          latexDummy->SetTextAlign(11);
+          latexDummy->SetTextColor(kBlack);
+          latexDummy->Draw();
+          texty+=2;
+        }
+        h_clusterizer_IEtaIPhiMapEvt->Draw("same,text");
+        cReso_clusterizer->SaveAs(Form("%s/etaphi/%d_%d_%2.6f.pdf",outputDir.Data(),foundmultclus,foundmultclusM02,sumtowerE));
+      }
       uniqueIDs.clear();
+      usedIDs.clear();
     }
   }
 }
@@ -273,6 +337,8 @@ void clusterstudiesSave(){
 
   // write histograms
   for(int icalo=0;icalo<_active_calo;icalo++){
+    fileOutput->mkdir(Form("%s",str_calorimeter[icalo].Data()));
+    fileOutput->cd(Form("%s",str_calorimeter[icalo].Data()));
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
       if(h_CS_clusters_NTower_E[icalo][ialgo]) h_CS_clusters_NTower_E[icalo][ialgo]->Write();
       if(h_CS_clusters_NTowerMean_E[icalo][ialgo]) h_CS_clusters_NTowerMean_E[icalo][ialgo]->Write();
@@ -295,6 +361,9 @@ void clusterstudiesSave(){
       if(h_clusterizer_NClMean_MCE[icalo][ialgo]) h_clusterizer_NClMean_MCE[icalo][ialgo]->Write();
       if(h_clusterizer_clsspecSE_matched_E_eta[icalo][ialgo]) h_clusterizer_clsspecSE_matched_E_eta[icalo][ialgo]->Write();
       if(h_clusterizer_clsspecSEMC_matched_E_eta[icalo][ialgo]) h_clusterizer_clsspecSEMC_matched_E_eta[icalo][ialgo]->Write();
+
+      if(h_clusterizer_NClPerMCLabel[icalo][ialgo]) h_clusterizer_NClPerMCLabel[icalo][ialgo]->Write();
+      if(h_clusterizer_ClSameMCLabel_dR[icalo][ialgo]) h_clusterizer_ClSameMCLabel_dR[icalo][ialgo]->Write();
     
       for (int iPDG = 0; iPDG < nParticlesPDG_CS; iPDG++){
         if(h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG]) h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG]->Write();
