@@ -80,6 +80,26 @@ void SetGeometryIndices(){
   }
 }
 
+Int_t ReturnProjectionIndexForCalorimeter(Int_t caloID){
+  switch (caloID){
+    case kDRCALO: return 1;
+    case kFHCAL: return 5;
+    case kFEMC: return 6;
+    case kEHCAL: return 60;
+    case kEEMC: return 61;
+    case kHCALIN: return 62;
+    case kHCALOUT: return 63;
+    case kCEMC: return 64;
+    case kEEMCG: return 65;
+    case kLFHCAL: return 67;
+    case kBECAL: return 66;
+    default:
+      cout << "ReturnProjectionIndexForCalorimeter: caloID " << caloID << " not defined, returning -1" << endl;
+      return -1;
+  }
+  return -1;
+}
+
 // ANCHOR function to return a TVector3 for the tower position based on iEta and iPhi indices
 TVector3 TowerPositionVectorFromIndicesGeometry(int i_Eta,int i_Phi, int caloSelect = 0){
   float xpos = -10000;

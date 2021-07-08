@@ -400,22 +400,8 @@ bool isClusterMatched(int clsID, float matchingwindow, float* clusters_X, float*
     }
   }
   if(useProjection){
-    int projectionlayer = 0;
-    // forward
-    if(caloEnum==kFHCAL)projectionlayer = 6; // 2 TTL2
-    else if(caloEnum==kFEMC)projectionlayer = 7; // 1 TTL1
-    else if(caloEnum==kEEMC)projectionlayer = 61; // 1 TTL1
-    else if(caloEnum==kDRCALO)projectionlayer = 1;
-    // barrel
-    else if(caloEnum==kCEMC)projectionlayer = 64;
-    else if(caloEnum==kHCALIN)projectionlayer = 62;
-    else if(caloEnum==kHCALOUT)projectionlayer = 63;
-    // backward
-    else if(caloEnum==kEHCAL)projectionlayer = 60; // 1 TTL1
-    else {
-      cout << "isClusterMatched: caloEnum " << caloEnum << " not defined, returning FALSE" << endl;
-      return false;
-    }
+    int projectionlayer = ReturnProjectionIndexForCalorimeter(caloEnum);
+    if(projectionlayer==-1) return false;
     for(Int_t iproj=0; iproj<_nProjections; iproj++){
       if(_track_ProjLayer[iproj]!=projectionlayer) continue;
       if(_track_Proj_t[iproj]<-9000) continue;
