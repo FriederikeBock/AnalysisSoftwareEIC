@@ -1,25 +1,10 @@
 #include <algorithm>
 // ANCHOR debug output verbosity
-int verbosityCLS = 1;
+int verbosityCLS = 0;
 
 // ANCHOR define global variables
-bool _do_V1clusterizer = false;
-bool _do_V3clusterizer = false;
 float aggregation_margin_V3 = 0.03;
-bool _do_MAclusterizer = false;
 float aggregation_margin_MA = 0.03;
-bool _do_C3clusterizer = false;
-bool _do_C5clusterizer = false;
-bool _do_3x3clusterizer = false;
-bool _do_5x5clusterizer = false;
-
-bool _do_V1clusterizerFEMC = false;
-bool _do_V3clusterizerFEMC = false;
-bool _do_MAclusterizerFEMC = false;
-bool _do_C3clusterizerFEMC = false;
-bool _do_C5clusterizerFEMC = false;
-bool _do_3x3clusterizerFEMC = false;
-bool _do_5x5clusterizerFEMC = false;
 
 TH2F*  h_clusterizer_nonagg_towers[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_matched_dx_dy[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
@@ -53,7 +38,7 @@ void runclusterizer(
 
 
   nclusters = 0;
-  if(verbosityCLS>1)cout << "C3: new event" << endl;
+  if(verbosityCLS>1)cout << "runclusterizer: new event" << endl;
 
   for(int icalo=0;icalo<_active_calo;icalo++){
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
@@ -89,6 +74,83 @@ void runclusterizer(
         tempstructT.tower_iEta = _tower_FEMC_iEta[itow];
         tempstructT.tower_iPhi = _tower_FEMC_iPhi[itow];
         tempstructT.tower_trueID = GetCorrectMCArrayEntry(_tower_FEMC_trueID[itow]);
+        input_towers.push_back(tempstructT);
+      }
+    }
+  } else if(caloEnum==kCEMC){
+    for(int itow=0; itow<_nTowers_CEMC; itow++){
+      if(_tower_CEMC_E[itow]>aggE){
+        towersStrct tempstructT;
+        tempstructT.tower_E = _tower_CEMC_E[itow];
+        tempstructT.tower_iEta = _tower_CEMC_iEta[itow];
+        tempstructT.tower_iPhi = _tower_CEMC_iPhi[itow];
+        tempstructT.tower_trueID = GetCorrectMCArrayEntry(_tower_CEMC_trueID[itow]);
+        input_towers.push_back(tempstructT);
+      }
+    }
+  } else if(caloEnum==kHCALIN){
+    for(int itow=0; itow<_nTowers_HCALIN; itow++){
+      if(_tower_HCALIN_E[itow]>aggE){
+        towersStrct tempstructT;
+        tempstructT.tower_E = _tower_HCALIN_E[itow];
+        tempstructT.tower_iEta = _tower_HCALIN_iEta[itow];
+        tempstructT.tower_iPhi = _tower_HCALIN_iPhi[itow];
+        tempstructT.tower_trueID = GetCorrectMCArrayEntry(_tower_HCALIN_trueID[itow]);
+        input_towers.push_back(tempstructT);
+      }
+    }
+  } else if(caloEnum==kHCALOUT){
+    for(int itow=0; itow<_nTowers_HCALOUT; itow++){
+      if(_tower_HCALOUT_E[itow]>aggE){
+        towersStrct tempstructT;
+        tempstructT.tower_E = _tower_HCALOUT_E[itow];
+        tempstructT.tower_iEta = _tower_HCALOUT_iEta[itow];
+        tempstructT.tower_iPhi = _tower_HCALOUT_iPhi[itow];
+        tempstructT.tower_trueID = GetCorrectMCArrayEntry(_tower_HCALOUT_trueID[itow]);
+        input_towers.push_back(tempstructT);
+      }
+    }
+  } else if(caloEnum==kLFHCAL){
+    for(int itow=0; itow<_nTowers_LFHCAL; itow++){
+      if(_tower_LFHCAL_E[itow]>aggE){
+        towersStrct tempstructT;
+        tempstructT.tower_E = _tower_LFHCAL_E[itow];
+        tempstructT.tower_iEta = _tower_LFHCAL_iEta[itow];
+        tempstructT.tower_iPhi = _tower_LFHCAL_iPhi[itow];
+        tempstructT.tower_trueID = GetCorrectMCArrayEntry(_tower_LFHCAL_trueID[itow]);
+        input_towers.push_back(tempstructT);
+      }
+    }
+  } else if(caloEnum==kDRCALO){
+    for(int itow=0; itow<_nTowers_DRCALO; itow++){
+      if(_tower_DRCALO_E[itow]>aggE){
+        towersStrct tempstructT;
+        tempstructT.tower_E = _tower_DRCALO_E[itow];
+        tempstructT.tower_iEta = _tower_DRCALO_iEta[itow];
+        tempstructT.tower_iPhi = _tower_DRCALO_iPhi[itow];
+        tempstructT.tower_trueID = GetCorrectMCArrayEntry(_tower_DRCALO_trueID[itow]);
+        input_towers.push_back(tempstructT);
+      }
+    }
+  } else if(caloEnum==kEHCAL){
+    for(int itow=0; itow<_nTowers_EHCAL; itow++){
+      if(_tower_EHCAL_E[itow]>aggE){
+        towersStrct tempstructT;
+        tempstructT.tower_E = _tower_EHCAL_E[itow];
+        tempstructT.tower_iEta = _tower_EHCAL_iEta[itow];
+        tempstructT.tower_iPhi = _tower_EHCAL_iPhi[itow];
+        tempstructT.tower_trueID = GetCorrectMCArrayEntry(_tower_EHCAL_trueID[itow]);
+        input_towers.push_back(tempstructT);
+      }
+    }
+  } else if(caloEnum==kEEMC){
+    for(int itow=0; itow<_nTowers_EEMC; itow++){
+      if(_tower_EEMC_E[itow]>aggE){
+        towersStrct tempstructT;
+        tempstructT.tower_E = _tower_EEMC_E[itow];
+        tempstructT.tower_iEta = _tower_EEMC_iEta[itow];
+        tempstructT.tower_iPhi = _tower_EEMC_iPhi[itow];
+        tempstructT.tower_trueID = GetCorrectMCArrayEntry(_tower_EEMC_trueID[itow]);
         input_towers.push_back(tempstructT);
       }
     }
@@ -228,7 +290,29 @@ void runclusterizer(
             // first condition asks for V3-like neighbors, while second condition also checks diagonally attached towers
             if( ((TMath::Abs(iEtaTwrAgg-iEtaTwr)+TMath::Abs(iPhiTwrAgg-iPhiTwr)) == 1) || ((TMath::Abs(iEtaTwrAgg-iEtaTwr)==1) && (TMath::Abs(iPhiTwrAgg-iPhiTwr)==1))){
               // only aggregate towers with lower energy than current tower
-              if(input_towers.at(ait).tower_E >= (cluster_towers.at(tit).tower_E + aggregation_margin_V3)) continue;
+              if(input_towers.at(ait).tower_E >= (cluster_towers.at(tit).tower_E + aggregation_margin_MA)) continue;
+              clusters_E[nclusters]+=input_towers.at(ait).tower_E;
+              clusters_NTower[nclusters]++;
+              cluster_towers.push_back(input_towers.at(ait));
+              if(!(std::find(clslabels.begin(), clslabels.end(), input_towers.at(ait).tower_trueID) != clslabels.end())){
+                clusters_NtrueID[nclusters]++;
+                clslabels.push_back(input_towers.at(ait).tower_trueID);
+              }
+              input_towers.erase(input_towers.begin()+ait);
+            }
+          }
+        }
+        for (int tit = 0; tit < cluster_towers.size(); tit++){
+          // Now go recursively to all neighbours and add them to the cluster if they fulfill the conditions
+          int iEtaTwr = cluster_towers.at(tit).tower_iEta;
+          int iPhiTwr = cluster_towers.at(tit).tower_iPhi;
+          for (int ait = 0; ait < input_towers.size(); ait++){
+            int iEtaTwrAgg = input_towers.at(ait).tower_iEta;
+            int iPhiTwrAgg = input_towers.at(ait).tower_iPhi;
+            // first condition asks for V3-like neighbors, while second condition also checks diagonally attached towers
+            if( ((TMath::Abs(iEtaTwrAgg-iEtaTwr)+TMath::Abs(iPhiTwrAgg-iPhiTwr)) == 1) || ((TMath::Abs(iEtaTwrAgg-iEtaTwr)==1) && (TMath::Abs(iPhiTwrAgg-iPhiTwr)==1))){
+              // only aggregate towers with lower energy than current tower
+              if(input_towers.at(ait).tower_E >= (cluster_towers.at(tit).tower_E + aggregation_margin_MA)) continue;
               clusters_E[nclusters]+=input_towers.at(ait).tower_E;
               clusters_NTower[nclusters]++;
               cluster_towers.push_back(input_towers.at(ait));
@@ -284,9 +368,9 @@ void runclusterizer(
       clusters_Y[nclusters] = showershape_eta_phi[5];
       clusters_Z[nclusters] = showershape_eta_phi[6];
       clusters_isMatched[nclusters] = isClusterMatched(nclusters, 20,clusters_X,clusters_Y,clusters_E, caloEnum, clusterizerEnum, primaryTrackSource, true);
-      if(verbosityCLS>1) cout << clusterizerEnum << "\t" << nclusters << "\tC3 cluster with E = " << clusters_E[nclusters] << "\tEta: " << clusters_Eta[nclusters]<< "\tPhi: " << clusters_Phi[nclusters]<< "\tntowers: " << clusters_NTower[nclusters] << "\ttrueID: " << clusters_trueID[nclusters] << endl;
+      if(verbosityCLS>1) cout << clusterizerEnum << "\t" << nclusters << "\tcluster with E = " << clusters_E[nclusters] << "\tEta: " << clusters_Eta[nclusters]<< "\tPhi: " << clusters_Phi[nclusters]<< "\tntowers: " << clusters_NTower[nclusters] << "\ttrueID: " << clusters_trueID[nclusters] << endl;
       // remove clusterized towers
-      if(!(clusterizerEnum==kV3) && !(clusterizerEnum==kMA)){
+      if(!(clusterizerEnum==kV3) && !(clusterizerEnum==kMA) && !(clusterizerEnum==kV1)){
         input_towers.erase(input_towers.begin());
       }
 
@@ -317,10 +401,19 @@ bool isClusterMatched(int clsID, float matchingwindow, float* clusters_X, float*
   }
   if(useProjection){
     int projectionlayer = 0;
-    if(caloEnum==kFHCAL)projectionlayer = 5;
-    else if(caloEnum==kFEMC)projectionlayer = 6;
+    // forward
+    if(caloEnum==kFHCAL)projectionlayer = 6; // 2 TTL2
+    else if(caloEnum==kFEMC)projectionlayer = 7; // 1 TTL1
+    else if(caloEnum==kEEMC)projectionlayer = 61; // 1 TTL1
+    else if(caloEnum==kDRCALO)projectionlayer = 1;
+    // barrel
+    else if(caloEnum==kCEMC)projectionlayer = 64;
+    else if(caloEnum==kHCALIN)projectionlayer = 62;
+    else if(caloEnum==kHCALOUT)projectionlayer = 63;
+    // backward
+    else if(caloEnum==kEHCAL)projectionlayer = 60; // 1 TTL1
     else {
-      cout << "isClusterMatched: caloEnum not defined, returning FALSE" << endl;
+      cout << "isClusterMatched: caloEnum " << caloEnum << " not defined, returning FALSE" << endl;
       return false;
     }
     for(Int_t iproj=0; iproj<_nProjections; iproj++){
