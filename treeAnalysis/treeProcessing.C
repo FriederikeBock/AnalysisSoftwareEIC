@@ -458,6 +458,10 @@ void treeProcessing(
         std::vector<float> jetf_hcal_px;
         std::vector<float> jetf_hcal_py;
         std::vector<float> jetf_hcal_pz;
+        std::vector<float> jetf_emcal_E;
+        std::vector<float> jetf_emcal_px;
+        std::vector<float> jetf_emcal_py;
+        std::vector<float> jetf_emcal_pz;
         std::vector<float> jetf_calo_E;
         std::vector<float> jetf_calo_px;
         std::vector<float> jetf_calo_py;
@@ -525,6 +529,10 @@ void treeProcessing(
                     jetf_calo_py.push_back(py);
                     jetf_calo_pz.push_back(pz);
                     jetf_calo_E.push_back(_clusters_MA_FEMC_E[iclus]);
+                    jetf_emcal_px.push_back(px);
+                    jetf_emcal_py.push_back(py);
+                    jetf_emcal_pz.push_back(pz);
+                    jetf_emcal_E.push_back(_clusters_MA_FEMC_E[iclus]);
                     jetf_all_px.push_back(px);
                     jetf_all_py.push_back(py);
                     jetf_all_pz.push_back(pz);
@@ -587,6 +595,26 @@ void treeProcessing(
                 }
             }
 
+
+            std::vector<double> nocluster_px;
+            std::vector<double> nocluster_py;
+            std::vector<double> nocluster_pz;
+            std::vector<double> nocluster_E;
+            if (true) {
+                for (uint32_t i = 0; i < _nTowers_FEMC; i++) {
+                    if (_tower_FEMC_E[i] < seed_E) {
+                        continue;
+                    }
+                    TVector3 twrPos = TowerPositionVectorFromIndices(_tower_FEMC_iEta[i], _tower_FEMC_iPhi[i], kFEMC);
+                    double pt = _tower_FEMC_E[i] / cosh(twrPos.Eta());
+                    nocluster_px.push_back(pt * cos(twrPos.Phi()));
+                    nocluster_py.push_back(pt * sin(twrPos.Phi()));
+                    nocluster_pz.push_back(pt * sinh(twrPos.Eta()));
+                    nocluster_E.push_back(_tower_FEMC_E[i]);
+                }
+            }
+            
+
             // ANCHOR JET FINDING
             // truth jets
             auto jetsTrue = findJets(jetR, jetAlgorithm, jetf_truth_px, jetf_truth_py, jetf_truth_pz, jetf_truth_E);
@@ -604,13 +632,21 @@ void treeProcessing(
             if(verbosity>1) std::cout << "found " << std::get<1>(jetsFullRec).size() << " rec full jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
 
             // hcal jets (rec)
-            // auto jetsHcalRec = findJets(jetR, jetAlgorithm, jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz, jetf_hcal_E);
-            // if(verbosity>1) std::cout << "found " << std::get<1>(jetsHcalRec).size() << " rec hcal jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
+            auto jetsHcalRec = findJets(jetR, jetAlgorithm, jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz, jetf_hcal_E);
+            if(verbosity>1) std::cout << "found " << std::get<1>(jetsHcalRec).size() << " rec hcal jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
+
+            // emcal jets (rec)
+            auto jetsEmcalRec = findJets(jetR, jetAlgorithm, jetf_emcal_px, jetf_emcal_py, jetf_emcal_pz, jetf_emcal_E);
+            if(verbosity>1) std::cout << "found " << std::get<1>(jetsEmcalRec).size() << " rec emcal jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
 
             // calo jets (rec)
             auto jetsCaloRec = findJets(jetR, jetAlgorithm, jetf_calo_px, jetf_calo_py, jetf_calo_pz, jetf_calo_E);
             if(verbosity>1) std::cout << "found " << std::get<1>(jetsCaloRec).size() << " rec calo jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
-
+            
+            // calo jets, no clustering
+            auto jetsNoCluster = findJets(jetR, jetAlgorithm, nocluster_px, nocluster_py, nocluster_pz, nocluster_E);
+            if(verbosity>1) std::cout << "found " << std::get<1>(jetsNoCluster).size() << " rec calo jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
+            
             // all jets (rec)
             auto jetsAllRec = findJets(jetR, jetAlgorithm, jetf_all_px, jetf_all_py, jetf_all_pz, jetf_all_E);
             if(verbosity>1) std::cout << "found " << std::get<1>(jetsAllRec).size() << " rec all jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
@@ -625,9 +661,12 @@ void treeProcessing(
 
             jetresolutionhistos(jetsTrackRec,jetsTrueCharged,0);
             jetresolutionhistos(jetsFullRec,jetsTrue,1);
-            // jetresolutionhistos(jetsHcalRec,jetsTrue,2);
+            jetresolutionhistos(jetsHcalRec,jetsTrue,2);
             jetresolutionhistos(jetsCaloRec,jetsTrue,3);
             jetresolutionhistos(jetsAllRec,jetsTrue,4);
+            jetresolutionhistos(jetsNoCluster, jetsTrue, 5);
+            jetresolutionhistos(jetsEmcalRec, jetsTrue, 6);
+            
 // TString jettype[njettypes] = {"track", "full","hcal","calo","all"};
         }
         if(verbosity>1) std::cout << "running clusterstudies" << std::endl;

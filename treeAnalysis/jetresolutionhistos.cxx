@@ -4,16 +4,18 @@
 #include <TString.h>
 #include <TFile.h>
 
+#include <iostream>
+
 // ANCHOR debug output verbosity
 Int_t verbosityJRH = 1;
 
 // ANCHOR create histograms globally
 // Double_t xbinsDiff[16] = {0.,0.5, 1.2.,4.,6.,8.,10.,12.,14.,16.,18.,  20.,25.,30.,35.,40.,45.};
-const int njettypes = 5;
-TString jettype[njettypes] = {"track", "full","hcal","calo","all"};
+const int njettypes = 7;
+TString jettype[njettypes] = {"track", "full","hcal", "calo","all", "nocluster", "emcal"};
 
-const float min_eta[njettypes] = {-3.5, 0, 0, 1.5, 0};  // TODO Save this info as metadata...
-const float max_eta[njettypes] = {3.5, 0, 0, 3.5, 0};
+const float min_eta[njettypes] = {-3.5, 0, 1.5, 1.5, 0, 1.5, 1.5};  // TODO Save this info as metadata...
+const float max_eta[njettypes] = {3.5, 0, 3.5, 3.5, 0, 3.5, 3.5};
 
 TH2F* h_jet_E_eta[njettypes] = {NULL};
 TH2F* h_MCjet_E_eta[njettypes] = {NULL};
@@ -58,9 +60,14 @@ TH1F *h_reco_E[njettypes] = {NULL};
 TH2F *h2D_truth_reco_pT[njettypes] = {NULL};
 TH1F *h_truth_pT[njettypes] = {NULL};
 TH1F *h_reco_pT[njettypes] = {NULL};
+
 // For creating jet efficiency graphs
 TH1F *h_truth_count[njettypes] = {NULL};
 TH1F *h_matched_count[njettypes] = {NULL};
+
+// Comparing eta-phi of truth jets and clusters
+TH2F *h2D_truth_eta_phi[njettypes] = {NULL};
+TH2F *h2D_cluster_eta_phi[njettypes] = {NULL};
 
 
 // ANCHOR main function to be called in event loop
@@ -101,6 +108,9 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
     if (!h_truth_count[isel]) h_truth_count[isel] = new TH1F(Form("h_truth_count_%s", jettype[isel].Data()), "", 40, 0, 200);
     if (!h_matched_count[isel]) h_matched_count[isel] = new TH1F(Form("h_matched_count_%s", jettype[isel].Data()), "", 40, 0, 200);
 
+    if (!h2D_truth_eta_phi[isel]) h2D_truth_eta_phi[isel] = new TH2F(Form("h2D_truth_eta_phi_%s", jettype[isel].Data()), "", 40, -4, 4, 40, 0, 7);
+    if (!h2D_cluster_eta_phi[isel]) h2D_cluster_eta_phi[isel] = new TH2F(Form("h2D_cluster_eta_phi_%s", jettype[isel].Data()), "", 40, -4, 4, 40, 0, 7);
+
     for (Int_t eT = 0; eT < nEta+1; eT++){
       if(!h_jetscale_pT[isel][eT])h_jetscale_pT[isel][eT] = new TH2F(Form("h_jetscale_%s_pT_%d",jettype[isel].Data(), eT),"",150,0,30,200,-1,1);
       if(!h_jetscale_E[isel][eT])h_jetscale_E[isel][eT]  = new TH2F(Form("h_jetscale_%s_E_%d",jettype[isel].Data(), eT),"",40,0,200,200,-1,1);
@@ -123,6 +133,7 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
   int jets = 0;
   int matched = 0;
     for (std::size_t j = 0; j < std::get<1>(truejets).size(); j++) {
+      h2D_truth_eta_phi[select]->Fill(std::get<1>(truejets)[j].eta(), std::get<1>(truejets)[j].phi());
       float eta = std::get<1>(truejets)[j].eta();
       if (eta < min_eta[select] || eta > max_eta[select]) {
         continue;
@@ -150,6 +161,7 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
     // std::cout << "jets: " << jets << " matched: " << matched << "\n";
 
   for (std::size_t i = 0; i < std::get<1>(recjets).size(); i++) {
+    h2D_cluster_eta_phi[select]->Fill(std::get<1>(recjets)[i].eta(), std::get<1>(recjets)[i].phi());
     float eta = std::get<1>(recjets)[i].eta();
     if (eta < min_eta[select] || eta > max_eta[select]) {
       continue;
@@ -180,7 +192,7 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
 
         h2D_jet_EtaReso_Eta[select]->Fill(std::get<1>(truejets)[j].eta(),(std::get<1>(recjets)[i].eta()-std::get<1>(truejets)[j].eta())/std::get<1>(truejets)[j].eta());
 
-        if(verbosityJRH>1) cout << "rec jet " << i << " (" << std::get<1>(recjets)[i].E() << "E)  matched with true jet " << j << " (" << std::get<1>(truejets)[j].E() << "E) with dR = " << deltaRTrueRec << endl;
+        if(verbosityJRH>1) std::cout << "rec jet " << i << " (" << std::get<1>(recjets)[i].E() << "E)  matched with true jet " << j << " (" << std::get<1>(truejets)[j].E() << "E) with dR = " << deltaRTrueRec << endl;
         h_jetscale_E[select][et]->Fill(std::get<1>(truejets)[j].E(),(std::get<1>(recjets)[i].E()-std::get<1>(truejets)[j].E())/std::get<1>(truejets)[j].E());
         h_jetscale_pT[select][et]->Fill(std::get<1>(truejets)[j].pt(),(std::get<1>(recjets)[i].pt()-std::get<1>(truejets)[j].pt())/std::get<1>(truejets)[j].pt());
 
@@ -315,6 +327,10 @@ void jetresolutionhistosSave(){
 
     if (h_truth_count[isel]) h_truth_count[isel]->Write(); 
     if (h_matched_count[isel]) h_matched_count[isel]->Write(); 
+
+    if (h2D_truth_eta_phi[isel]) h2D_truth_eta_phi[isel]->Write();
+    if (h2D_cluster_eta_phi[isel]) h2D_cluster_eta_phi[isel]->Write();
+
     std::cout << "writing..." << std::endl;
   }
   // write output file

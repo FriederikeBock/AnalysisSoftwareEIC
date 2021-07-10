@@ -14,20 +14,20 @@
 
 #include <iostream>
 
-const int njettypes = 3;
+const int njettypes = 5;
 const int firstEtaBin = 10;
 const int nInputs = 1;
 
-const float min_eta[njettypes] = {-3.5, 1.5, 0};  // TODO Save this info as metadata...
-const float max_eta[njettypes] = {3.5, 3.5, 0};
+const float min_eta[njettypes] = {-3.5, 1.5, 1.5, 1.5, 1.5};  // TODO Save this info as metadata...
+const float max_eta[njettypes] = {3.5, 3.5, 3.5, 3.5, 3.5};
 
 struct plottingStyleData
 {
-  Color_t color_jets[njettypes] = {kOrange+2, kMagenta+2, kRed+2}; //, kGreen+2, kBlue+2};
-  int marker_jets[njettypes] = {21, 20, 22};//, 29, 47};
-  int linestyle_jets[njettypes] = {1, 2, 4};//, 8, 9};
-  TString str_jet_type[njettypes] = {"track", "calo", "all"};
-  TString str_jet_type_plot[njettypes] = {"Charged Jets (Track)", "Calo Jets (FHCAL+FEMC)", "All Jets"};
+  Color_t color_jets[njettypes] = {kOrange+2, kMagenta+2, kBlue+2, kRed+2}; //, kGreen+2, kBlue+2};
+  int marker_jets[njettypes] = {21, 20, 20, 22, 29};//, 29, 47};
+  int linestyle_jets[njettypes] = {1, 2, 2, 4, 8};//, 8, 9};
+  TString str_jet_type[njettypes] = {"track", "calo", "hcal", "nocluster", "emcal"};
+  TString str_jet_type_plot[njettypes] = {"Charged Jets (Track)", "Calo Jets", "HCal Jets", "EMC No Cluster", "EMCal Jets"};
   TString collisionSystem = "Pythia 6, e+p: 18#times#kern[0.2]{100} GeV^{2} High Q^{2}";
   TString jetMatching = "anti-#it{k}_{T}, #it{R} = 0.5";
   TString format;
