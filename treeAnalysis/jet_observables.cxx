@@ -24,9 +24,10 @@ const std::map<EtaRegion_t, RegionSpec> regions = {
 };
 
 RegionSpec findRegion(double eta) {
-    for (auto && [region, r] : regions) {
-        if (eta > r.etaMin && eta < r.etaMax) {
-            return r;
+    //for (auto && [region, r] : regions) {
+    for (auto & v : regions) {
+        if (eta > v.second.etaMin && eta < v.second.etaMax) {
+            return v.second;
         }
     }
     throw std::runtime_error("Could not find eta region");
@@ -83,26 +84,41 @@ std::string GetIdentifier(const double jetR, const JetType_t jetType, const Regi
 struct JetObservables {
     JetType_t jetType;
     std::string tag = "";
-    std::map<std::string, TH1D> spectra;
-    bool initialized = false;
+    std::map<std::string, TH1D> spectra{};
+    bool initialized{false};
+
+    JetObservables(JetType_t _jetType):
+        jetType(_jetType),
+        tag(""),
+        spectra{},
+        initialized{false}
+    {}
+
+    JetObservables(JetType_t _jetType, const std::string & _tag):
+        jetType(_jetType),
+        tag(_tag),
+        spectra{},
+        initialized{false}
+    {}
 
     void Init(std::vector<double> jetRParameters)
     {
         std::string identifier = "";
         // Add types of jets, jet R. Make a string
         for (auto R : jetRParameters) {
-            for (auto && [region, info] : regions) {
+            //for (auto && [region, info] : regions) {
+            for (auto & v : regions) {
                 // E spectra
-                identifier = GetIdentifier(R, jetType, info, "spectra_E", tag);
+                identifier = GetIdentifier(R, jetType, v.second, "spectra_E", tag);
                 spectra[identifier] = TH1D(identifier.c_str(), identifier.c_str(), 150, 0, 150);
                 spectra[identifier].Sumw2();
                 // p spectra
-                identifier = GetIdentifier(R, jetType, info, "spectra_p", tag);
+                identifier = GetIdentifier(R, jetType, v.second, "spectra_p", tag);
                 spectra[identifier] = TH1D(identifier.c_str(), identifier.c_str(), 150, 0, 150);
                 spectra[identifier].Sumw2();
 
                 // pt spectra
-                identifier = GetIdentifier(R, jetType, info, "spectra_pt", tag);
+                identifier = GetIdentifier(R, jetType, v.second, "spectra_pt", tag);
                 spectra[identifier] = TH1D(identifier.c_str(), identifier.c_str(), 150, 0, 150);
                 spectra[identifier].Sumw2();
             }
@@ -114,8 +130,9 @@ struct JetObservables {
     {
         // define output file
         std::shared_ptr<TFile> fileOutput = std::make_shared<TFile>(TString::Format("%s/output_JetObservables.root", outputDir.c_str()), "RECREATE");
-        for (auto && [_, h] : spectra) {
-            h.Write();
+        //for (auto && [_, h] : spectra) {
+        for (auto & h : spectra) {
+            h.second.Write();
         }
     }
 };
