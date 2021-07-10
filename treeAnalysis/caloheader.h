@@ -123,7 +123,7 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
         vecTwr += w_i.at(cellI)*TowerPositionVectorFromIndices(cluster_towers.at(cellI).tower_iEta,cluster_towers.at(cellI).tower_iPhi, caloSelect);
     }
     returnVariables[2]=vecTwr.Eta();
-    returnVariables[3]=(vecTwr.Phi()<0 ? vecTwr.Phi()+TMath::Pi() : vecTwr.Phi()-TMath::Pi());
+    returnVariables[3]=vecTwr.Phi();
     // vecTwr*=1/w_tot;//(zHC/vecTwr.Z());
     vecTwr*=(zHC/vecTwr.Z());
     returnVariables[4]=vecTwr.X();
