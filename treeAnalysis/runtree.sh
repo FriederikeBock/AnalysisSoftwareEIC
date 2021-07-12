@@ -62,9 +62,11 @@ if [ $1 = "newinput_inlay" ]; then
 fi
 
 if [ $1 = "newinput_pythia" ]; then
-    input=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-ETTL-CTTL-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-ASYM-FTTLS3LC-GEOMETRYTREE-TEST/G4EICDetector_eventtree.root
-    geometry=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-ETTL-CTTL-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-ASYM-FTTLS3LC-GEOMETRYTREE-TEST/geometry.root
-    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","NEWINPUT_TMSTUD_SINGLEP",true,false  ,true,true,1000,0,false,0)'
+    #input=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-ETTL-CTTL-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-ASYM-FTTLS3LC-GEOMETRYTREE-TEST/G4EICDetector_eventtree.root
+    #geometry=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-ETTL-CTTL-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-ASYM-FTTLS3LC-GEOMETRYTREE-TEST/geometry.root
+    input=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-TTLF-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-ASYM-GEOMETRYTREE-PYTHIA-1x/G4EICDetector_eventtree.root
+    geometry=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-TTLF-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-ASYM-GEOMETRYTREE-PYTHIA-1x/geometry.root
+    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","NEWINPUT_TMSTUD_PYTHIA",true,false  ,true,true,3000,0,false,0)'
 fi
 
 

@@ -273,7 +273,7 @@ void clusterstudies(){
         float texty = 1;
         TLatex *latexDummy;
         for(Int_t iclus=0; iclus<nclusters_CLSTD; iclus++){
-          latexDummy                          = new TLatex(10 ,texty,Form("Twrs: %d, E: %2.3f PDG: %3.0f",clusters_CLSTD_NTower[iclus],clusters_CLSTD_E[iclus],_mcpart_PDG[clusters_CLSTD_trueID[iclus]]));
+          latexDummy                          = new TLatex(10 ,texty,Form("Twrs: %d, E: %2.3f PDG: %d",clusters_CLSTD_NTower[iclus],clusters_CLSTD_E[iclus],_mcpart_PDG[clusters_CLSTD_trueID[iclus]]));
           latexDummy->SetTextFont(42);
           latexDummy->SetTextSize(35./1200);
           latexDummy->SetLineWidth(4);
