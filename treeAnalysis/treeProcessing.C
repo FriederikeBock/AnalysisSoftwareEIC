@@ -350,7 +350,7 @@ void treeProcessing(
             float aggregation_E_CEMC = 0.1;
             if(kMA<_active_algo){
                 if(verbosity>1) cout << "clusterizing MA for CEMC" << endl;
-                runclusterizer(kMA, kCEMC,seed_E, aggregation_E, primaryTrackSource,
+                runclusterizer(kMA, kCEMC,seed_E_CEMC, aggregation_E_CEMC, primaryTrackSource,
                     _nclusters_MA_CEMC,
                     _clusters_MA_CEMC_E,
                     _clusters_MA_CEMC_Eta,
@@ -372,7 +372,7 @@ void treeProcessing(
             float aggregation_E_HCALIN = 0.05;
             if(kMA<_active_algo){
                 if(verbosity>1) cout << "clusterizing MA for HCALIN" << endl;
-                runclusterizer(kMA, kHCALIN,seed_E, aggregation_E, primaryTrackSource,
+                runclusterizer(kMA, kHCALIN,seed_E_HCALIN, aggregation_E_HCALIN, primaryTrackSource,
                     _nclusters_MA_HCALIN,
                     _clusters_MA_HCALIN_E,
                     _clusters_MA_HCALIN_Eta,
@@ -394,7 +394,7 @@ void treeProcessing(
             float aggregation_E_HCALOUT = 0.1;
             if(kMA<_active_algo){
                 if(verbosity>1) cout << "clusterizing MA for HCALOUT" << endl;
-                runclusterizer(kMA, kHCALOUT,seed_E, aggregation_E, primaryTrackSource,
+                runclusterizer(kMA, kHCALOUT,seed_E_HCALOUT, aggregation_E_HCALOUT, primaryTrackSource,
                     _nclusters_MA_HCALOUT,
                     _clusters_MA_HCALOUT_E,
                     _clusters_MA_HCALOUT_Eta,
@@ -416,7 +416,7 @@ void treeProcessing(
             float aggregation_E_EEMCG = 0.1;
             if(kMA<_active_algo){
                 if(verbosity>1) cout << "clusterizing MA for EEMCG" << endl;
-                runclusterizer(kMA, kEEMCG,seed_E, aggregation_E, primaryTrackSource,
+                runclusterizer(kMA, kEEMCG,seed_E_EEMCG, aggregation_E_EEMCG, primaryTrackSource,
                     _nclusters_MA_EEMCG,
                     _clusters_MA_EEMCG_E,
                     _clusters_MA_EEMCG_Eta,
@@ -438,7 +438,7 @@ void treeProcessing(
             float aggregation_E_BECAL = 0.1;
             if(kMA<_active_algo){
                 if(verbosity>1) cout << "clusterizing MA for BECAL" << endl;
-                runclusterizer(kMA, kBECAL,seed_E, aggregation_E, primaryTrackSource,
+                runclusterizer(kMA, kBECAL,seed_E_BECAL, aggregation_E_BECAL, primaryTrackSource,
                     _nclusters_MA_BECAL,
                     _clusters_MA_BECAL_E,
                     _clusters_MA_BECAL_Eta,
@@ -460,7 +460,7 @@ void treeProcessing(
             float aggregation_E_EEMC = 0.05;
             if(kMA<_active_algo){
                 if(verbosity>1) cout << "clusterizing MA for EEMC" << endl;
-                runclusterizer(kMA, kEEMC,seed_E, aggregation_E, primaryTrackSource,
+                runclusterizer(kMA, kEEMC,seed_E_EEMC, aggregation_E_EEMC, primaryTrackSource,
                     _nclusters_MA_EEMC,
                     _clusters_MA_EEMC_E,
                     _clusters_MA_EEMC_Eta,
@@ -482,7 +482,7 @@ void treeProcessing(
         float aggregation_E_EHCAL = 0.05;
             if(kMA<_active_algo){
                 if(verbosity>1) cout << "clusterizing MA for EHCAL" << endl;
-                runclusterizer(kMA, kEHCAL,seed_E, aggregation_E, primaryTrackSource,
+                runclusterizer(kMA, kEHCAL,seed_E_EHCAL, aggregation_E_EHCAL, primaryTrackSource,
                     _nclusters_MA_EHCAL,
                     _clusters_MA_EHCAL_E,
                     _clusters_MA_EHCAL_Eta,

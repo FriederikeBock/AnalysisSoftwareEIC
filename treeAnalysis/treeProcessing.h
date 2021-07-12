@@ -152,9 +152,9 @@ float* _track_Proj_true_z             = new float[_maxNProjections];
 float* _track_Proj_true_t             = new float[_maxNProjections];
 // MC particles
 int _nMCPart;
-float* _mcpart_ID                = new float[_maxNMCPart];
-float* _mcpart_ID_parent         = new float[_maxNMCPart];
-float* _mcpart_PDG               = new float[_maxNMCPart];
+int* _mcpart_ID                = new int[_maxNMCPart];
+int* _mcpart_ID_parent         = new int[_maxNMCPart];
+int* _mcpart_PDG               = new int[_maxNMCPart];
 float* _mcpart_E                 = new float[_maxNMCPart];
 float* _mcpart_px                = new float[_maxNMCPart];
 float* _mcpart_py                = new float[_maxNMCPart];

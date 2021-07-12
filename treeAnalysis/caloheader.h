@@ -44,6 +44,15 @@ enum clusterizertype {
 // TString str_clusterizer[7] = {"V1", "V3", "3x3", "5x5", "C3", "C5", "MA"};
 TString str_clusterizer[7] = {"MA", "V3", "V1", "5x5", "C5", "C3", "3x3"};
 const int _active_algo = 1;
+
+float _ch_DRCALO_pos_z = 1;
+float _ch_FHCAL_pos_z = 1;
+float _ch_FEMC_pos_z = 1;
+float _ch_EHCAL_pos_z = 1;
+float _ch_EEMC_pos_z = 1;
+float _ch_EEMCG_pos_z = 1;
+float _ch_LFHCAL_pos_z = 1;
+
 // sorting function for towers
 bool acompare(towersStrct lhs, towersStrct rhs) { return lhs.tower_E > rhs.tower_E; }
 
@@ -80,7 +89,81 @@ void SetGeometryIndices(){
   }
 }
 
-Int_t ReturnProjectionIndexForCalorimeter(Int_t caloID){
+bool IsForwardCalorimeter(int caloID){
+  switch (caloID){
+    case kDRCALO: return true;
+    case kFHCAL: return true;
+    case kFEMC: return true;
+    case kEHCAL: return true;
+    case kEEMC: return true;
+    case kHCALIN: return false;
+    case kHCALOUT: return false;
+    case kCEMC: return false;
+    case kEEMCG: return true;
+    case kLFHCAL: return true;
+    case kBECAL: return false;
+    default:
+      cout << "IsForwardCalorimeter: caloID " << caloID << " not defined, returning false" << endl;
+      return false;
+  }
+  return false;
+}
+
+float ReturnFwdCalorimeterPosition(int caloID){
+  if(IsForwardCalorimeter(caloID)){
+    switch (caloID){
+      case kDRCALO: return _ch_DRCALO_pos_z;
+      case kFHCAL: return _ch_FHCAL_pos_z;
+      case kFEMC: return _ch_FEMC_pos_z;
+      case kEHCAL: return _ch_EHCAL_pos_z;
+      case kEEMC: return _ch_EEMC_pos_z;
+      case kEEMCG: return _ch_EEMCG_pos_z;
+      case kLFHCAL: return _ch_LFHCAL_pos_z;
+      default:
+        cout << "ReturnFwdCalorimeterPosition: caloID " << caloID << " forward position not defined, returning 1" << endl;
+        return 1;
+    }
+  }
+  return 1;
+}
+
+int ReturnCaloFwdBarrelBckw(int caloID){
+  // 0 for forward calos
+  // 1 for barrel calos
+  // 2 for backwards calos
+  switch (caloID){
+    case kDRCALO: return 0;
+    case kFHCAL: return 0;
+    case kFEMC: return 0;
+    case kEHCAL: return 2;
+    case kEEMC: return 2;
+    case kHCALIN: return 1;
+    case kHCALOUT: return 1;
+    case kCEMC: return 1;
+    case kEEMCG: return 2;
+    case kLFHCAL: return 0;
+    case kBECAL: return 1;
+    default:
+      return 1;
+  }
+  return 1;
+}
+
+void SetFwdCalorimeterPosition(int caloID, float zposin){
+  float zpos = abs(zposin);
+  switch (caloID){
+    case kDRCALO: _ch_DRCALO_pos_z = zpos; break;
+    case kFHCAL: _ch_FHCAL_pos_z = zpos; break;
+    case kFEMC:_ch_FEMC_pos_z = zpos; break;
+    case kEHCAL:_ch_EHCAL_pos_z = zpos; break;
+    case kEEMC:_ch_EEMC_pos_z = zpos; break;
+    case kEEMCG:_ch_EEMCG_pos_z = zpos; break;
+    case kLFHCAL:_ch_LFHCAL_pos_z = zpos; break;
+    default: break;
+  }
+}
+
+int ReturnProjectionIndexForCalorimeter(int caloID){
   switch (caloID){
     case kDRCALO: return 1;
     case kFHCAL: return 5;
@@ -99,6 +182,47 @@ Int_t ReturnProjectionIndexForCalorimeter(Int_t caloID){
   }
   return -1;
 }
+
+int ReturnCalorimeterFromProjectionIndex(int projID){
+  switch (projID){
+    case 1: return kDRCALO;
+    case 5: return kFHCAL;
+    case 6: return kFEMC;
+    case 60: return kEHCAL;
+    case 61: return kEEMC;
+    case 62: return kHCALIN;
+    case 63: return kHCALOUT;
+    case 64: return kCEMC;
+    case 65: return kEEMCG;
+    case 67: return kLFHCAL;
+    case 66: return kBECAL;
+    default:
+      // cout << "ReturnCalorimeterFromProjectionIndex: projID " << projID << " not defined, returning -1" << endl;
+      return -1;
+  }
+  return -1;
+}
+
+float ReturnTrackMatchingWindowForCalo(int caloID){
+  switch (caloID){
+    case kDRCALO: return 5;
+    case kFHCAL: return 10;
+    case kFEMC: return 5.5;
+    case kEHCAL: return 10;
+    case kEEMC: return 4.0;
+    case kHCALIN: return 0.1;
+    case kHCALOUT: return 0.1;
+    case kCEMC: return 0.05;
+    case kEEMCG: return 5;
+    case kLFHCAL: return 10;
+    case kBECAL: return 0.05;
+    default:
+      cout << "ReturnTrackMatchingWindowForCalo: caloID " << caloID << " not defined, returning -1" << endl;
+      return -1;
+  }
+  return -1;
+}
+
 
 // ANCHOR function to return a TVector3 for the tower position based on iEta and iPhi indices
 TVector3 TowerPositionVectorFromIndicesGeometry(int i_Eta,int i_Phi, int caloSelect = 0){
@@ -120,6 +244,11 @@ TVector3 TowerPositionVectorFromIndicesGeometry(int i_Eta,int i_Phi, int caloSel
   if(xpos==-10000 || ypos==-10000 || zpos==-10000){
     cout << "something is terribly wrong in your geometry: x="<<xpos<<"\ty="<<ypos<<"\tz="<<zpos<<endl;
   }
+  if(IsForwardCalorimeter(caloSelect) && zpos!=-10000){
+    if(ReturnFwdCalorimeterPosition(caloSelect)==1){
+      SetFwdCalorimeterPosition(caloSelect, zpos);
+    }
+  }
   TVector3 twrPositionVec(xpos,ypos,zpos);
   return twrPositionVec;
 }
@@ -132,7 +261,7 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
     std::vector<float> w_i;
     TVector3 vecTwr;
     TVector3 vecTwrTmp;
-    float zHC = 400;
+    float zHC = 1;
 
     vecTwr = {0.,0.,0.};
     //calculation of weights and weighted position vector
@@ -142,12 +271,13 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
         vecTwrTmp = TowerPositionVectorFromIndicesGeometry(cluster_towers.at(cellI).tower_iEta,cluster_towers.at(cellI).tower_iPhi, caloSelect);
         // cout << caloSelect << "\t" << vecTwrTmp.X() << "\t" << vecTwrTmp.Y() << "\t" << vecTwrTmp.Z() << endl;
         vecTwr += w_i.at(cellI)*vecTwrTmp;
-        if(cellI==0)zHC=vecTwrTmp.Z();
+        if(cellI==0 && ReturnFwdCalorimeterPosition(caloSelect))zHC=vecTwrTmp.Z();
     }
     returnVariables[2]=vecTwr.Eta();
-    returnVariables[3]=vecTwr.Phi();
-    // vecTwr*=1/w_tot;//(zHC/vecTwr.Z());
-    vecTwr*=(zHC/vecTwr.Z());
+    returnVariables[3]=vecTwr.Phi(); //(vecTwr.Phi()<0 ? vecTwr.Phi()+TMath::Pi() : vecTwr.Phi()-TMath::Pi());
+    if(IsForwardCalorimeter(caloSelect)){
+      vecTwr*=abs(zHC/vecTwr.Z());
+    }
     returnVariables[4]=vecTwr.X();
     returnVariables[5]=vecTwr.Y();
     returnVariables[6]=vecTwr.Z();
