@@ -3,6 +3,7 @@
 #include <TDatime.h>
 #include <TF1.h>
 #include <TF2.h>
+#include <THStack.h>
 #include <TGraph.h>
 #include <TStyle.h>
 #include <TGraphAsymmErrors.h>
@@ -262,6 +263,41 @@ void SetStyleHistoTH1ForGraphs( TH1* histo,
                               ){
   histo->SetXTitle(XTitle);
   histo->SetYTitle(YTitle);
+  histo->SetTitle("");
+
+  histo->GetXaxis()->SetLabelFont(textFontLabel);
+  histo->GetYaxis()->SetLabelFont(textFontLabel);
+  histo->GetXaxis()->SetTitleFont(textFontTitle);
+  histo->GetYaxis()->SetTitleFont(textFontTitle);
+
+  histo->GetXaxis()->SetLabelSize(xLableSize);
+  histo->GetXaxis()->SetTitleSize(xTitleSize);
+  histo->GetXaxis()->SetTitleOffset(xTitleOffset);
+  histo->GetXaxis()->SetNdivisions(xNDivisions,kTRUE);
+
+  histo->GetYaxis()->SetDecimals();
+  histo->GetYaxis()->SetLabelSize(yLableSize);
+  histo->GetYaxis()->SetTitleSize(yTitleSize);
+  histo->GetYaxis()->SetTitleOffset(yTitleOffset);
+  histo->GetYaxis()->SetNdivisions(yNDivisions,kTRUE);
+}
+
+void SetStyleHistoTHStackForGraphs( THStack* histo,
+                                TString XTitle,
+                                TString YTitle,
+                                Size_t xLableSize,
+                                Size_t xTitleSize,
+                                Size_t yLableSize,
+                                Size_t yTitleSize,
+                                Float_t xTitleOffset    = 1,
+                                Float_t yTitleOffset    = 1,
+                                Int_t xNDivisions       = 510,
+                                Int_t yNDivisions       = 510,
+                                Font_t textFontLabel    = 42,
+                                Font_t textFontTitle    = 62
+                              ){
+  histo->GetXaxis()->SetTitle(XTitle);
+  histo->GetYaxis()->SetTitle(YTitle);
   histo->SetTitle("");
 
   histo->GetXaxis()->SetLabelFont(textFontLabel);
