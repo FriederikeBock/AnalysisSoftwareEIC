@@ -27,8 +27,8 @@ struct plottingStyleData
   int marker_jets[njettypes] = {21, 20, 20, 22, 29};//, 29, 47};
   int linestyle_jets[njettypes] = {1, 2, 2, 4, 8};//, 8, 9};
   TString str_jet_type[njettypes] = {"track", "calo", "hcal", "nocluster", "emcal"};
-  TString str_jet_type_plot[njettypes] = {"Charged Jets (Track)", "Calo Jets", "HCal Jets", "EMC No Cluster", "EMCal Jets"};
-  TString collisionSystem = "Pythia 6, e+p: 18#times#kern[0.2]{100} GeV^{2} High Q^{2}";
+  TString str_jet_type_plot[njettypes] = {"Track Jets", "Calo Jets", "HCal Jets", "EMC No Cluster", "EMCal Jets"};
+  TString collisionSystem = "Pythia 6, ep 18x100, Q^{2}>100";
   TString jetMatching = "anti-#it{k}_{T}, #it{R} = 0.5";
   TString format;
 };
@@ -36,7 +36,7 @@ struct plottingStyleData
 TString *cutString(int jettype) {return new TString(Form("%.1f < #eta < %.1f", min_eta[jettype], max_eta[jettype]));}
 void drawInfo(plottingStyleData style, float x, float y, int jettype);
 void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][16], TString outputDir, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel);
-void plotSpectra(TH2F *spectra[nInputs][njettypes], plottingStyleData style, TString title, TString outputFormat, TH1F *reco[nInputs][njettypes]=nullptr, TH1F *truth[nInputs][njettypes]=nullptr);
+void plotSpectra(TH2F *spectra[nInputs][njettypes], plottingStyleData style, TString title, TString outputFormat, TH1F *reco[nInputs][njettypes]=nullptr, TH1F *truth[nInputs][njettypes]=nullptr, float textX=0.22, float textY=0.83);
 void plotEfficiency(TH1F *h_matched_count[nInputs][njettypes], TH1F *h_truth_count[nInputs][njettypes], plottingStyleData style, TString outputDir);
 
 
@@ -195,8 +195,8 @@ void resolutionJETStree(
 
   // Plot spectra
   plotSpectra(h2D_truth_reco_eta, style, TString("eta"), TString(Form("%s/Spectra/eta", outputDir.Data())), h_reco_eta, h_truth_eta);
-  plotSpectra(h2D_truth_reco_phi, style, TString("phi"), TString(Form("%s/Spectra/phi", outputDir.Data())), h_reco_phi, h_truth_phi);
-  plotSpectra(h2D_truth_reco_E, style, TString("E"), TString(Form("%s/Spectra/E", outputDir.Data())), h_reco_E, h_truth_E);
+  plotSpectra(h2D_truth_reco_phi, style, TString("phi"), TString(Form("%s/Spectra/phi", outputDir.Data())), h_reco_phi, h_truth_phi, 0.18);
+  plotSpectra(h2D_truth_reco_E, style, TString("E"), TString(Form("%s/Spectra/E", outputDir.Data())), h_reco_E, h_truth_E, 0.3);
   plotSpectra(h2D_truth_reco_pT, style, TString("pT"), TString(Form("%s/Spectra/pT", outputDir.Data())), h_reco_pT, h_truth_pT);
 
   // Plot efficiency
@@ -274,7 +274,7 @@ void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][16], TString outputForm
   }
 }
 
-void plotSpectra(TH2F *spectra[nInputs][njettypes], plottingStyleData style, TString title, TString outputFormat, TH1F *reco[nInputs][njettypes]=nullptr, TH1F *truth[nInputs][njettypes]=nullptr) {
+void plotSpectra(TH2F *spectra[nInputs][njettypes], plottingStyleData style, TString title, TString outputFormat, TH1F *reco[nInputs][njettypes]=nullptr, TH1F *truth[nInputs][njettypes]=nullptr, float textX=0.22, float textY=0.83) {
   Double_t textSizeLabelsRel = 58.0 / 1300;
   int canvasWidth = 2000;
   int canvasDivisions = 2;
@@ -292,22 +292,24 @@ void plotSpectra(TH2F *spectra[nInputs][njettypes], plottingStyleData style, TSt
 
   for (int i = 0; i < njettypes; i++) {
     spectraCanvas->cd(1);
-    SetStyleHistoTH2ForGraphs(spectra[0][i], "truth", "reco", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91, 2);
-    spectra[0][i]->SetTitle(Form("%s, Matched %s, R=0.5", title.Data(), style.str_jet_type_plot[i].Data()));
+    SetStyleHistoTH2ForGraphs(spectra[0][i], Form("truth %s", title.Data()), Form("reco %s", title.Data()), 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91, 2);
+    // spectra[0][i]->SetTitle(Form("%s, Matched %s, R=0.5", title.Data(), style.str_jet_type_plot[i].Data()));
     gPad->SetLogz();
     spectra[0][i]->Draw("colz");
-    spectra[0][i]->GetXaxis()->SetRangeUser(0, 75);
-    drawInfo(style, 0.16, 0.83, i);
+    spectra[0][i]->GetXaxis()->SetRangeUser(0, 80);
+    spectra[0][i]->GetXaxis()->SetNdivisions();
+    spectra[0][i]->GetYaxis()->SetRangeUser(0, 80);
+    drawInfo(style, textX, textY, i);
 
     spectraCanvas->cd(2);
     gPad->SetLogy();
     projectionStack[i] = new THStack();
-    projectionLegend[i] = new TLegend(.6, .8, 1, 1, "Matched Jets"); 
+    projectionLegend[i] = new TLegend(.62, .75, 0.85, 0.9); 
     recoSpectra[i] = spectra[0][i]->ProjectionY(Form("reco_spectra_%s_%s", title.Data(), style.str_jet_type[i].Data()));
     recoSpectra[i]->SetTitle("Reco Matched");
     recoSpectra[i]->SetLineColor(kRed);
     projectionStack[i]->Add(recoSpectra[i]);
-    projectionLegend[i]->AddEntry(recoSpectra[i], "Reco Matched");
+    projectionLegend[i]->AddEntry(recoSpectra[i], "Reco");
 
     truthSpectra[i] = spectra[0][i]->ProjectionX(Form("truth_spectra_%s_%s",title.Data(),  style.str_jet_type[i].Data()));
     truthSpectra[i]->SetTitle("Truth Projection");
@@ -315,35 +317,43 @@ void plotSpectra(TH2F *spectra[nInputs][njettypes], plottingStyleData style, TSt
     truthSpectra[i]->SetLineWidth(4);
     truthSpectra[i]->SetLineStyle(2);
     projectionStack[i]->Add(truthSpectra[i]);
-    projectionLegend[i]->AddEntry(truthSpectra[i], "Truth Matched");
+    projectionLegend[i]->AddEntry(truthSpectra[i], "Truth");
 
     projectionStack[i]->SetMinimum(0.7);
+    projectionStack[i]->SetMaximum(projectionStack[i]->GetMaximum() * 5);
     projectionStack[i]->Draw("nostack");
-    projectionStack[i]->GetXaxis()->SetTitle(Form("Jet %s", title.Data()));
-    projectionStack[i]->GetYaxis()->SetTitle("Counts");
+    SetStyleHistoTHStackForGraphs(projectionStack[i], Form("Jet %s", title.Data()), "Counts",  0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
+
+
+    drawLatexAdd(Form("Matched %s", style.str_jet_type_plot[i].Data()), 0.165, 0.82, 0.056, kFALSE, kFALSE, kFALSE); 
+    // projectionStack[i]->SetTitle(Form("Matched %s", style.str_jet_type_plot[i].Data()));
+    projectionLegend[i]->SetTextFont(42);
     projectionLegend[i]->Draw();
 
     THStack *fullStack = new THStack();
-    TLegend *fullLegend = new TLegend(.6, .8, 1, 1, "All Jets"); 
+    TLegend *fullLegend = new TLegend(.62, .75, 0.85, 0.9); 
     if (reco != nullptr && truth != nullptr) {
       spectraCanvas->cd(3);
       gPad->SetLogy();
       reco[0][i]->SetTitle("Reco full");
       reco[0][i]->SetLineColor(kRed);
       fullStack->Add(reco[0][i]);
-      fullLegend->AddEntry(reco[0][i], "Reco full");
+      fullLegend->AddEntry(reco[0][i], "Reco");
 
       truth[0][i]->SetTitle("Truth full");
       truth[0][i]->SetLineColor(kBlue);
       truth[0][i]->SetLineWidth(4);
       truth[0][i]->SetLineStyle(2);
       fullStack->Add(truth[0][i]);
-      fullLegend->AddEntry(truth[0][i], "Truth full");
+      fullLegend->AddEntry(truth[0][i], "Truth");
 
       fullStack->SetMinimum(0.7);
+      fullStack->SetMaximum(fullStack->GetMaximum() * 5);
       fullStack->Draw("hist nostack");
-      fullStack->GetXaxis()->SetTitle(Form("Jet %s", title.Data()));
-      fullStack->GetYaxis()->SetTitle("Counts");
+      SetStyleHistoTHStackForGraphs(fullStack, Form("Jet %s", title.Data()), "Counts",  0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
+      drawLatexAdd(Form("All %s", style.str_jet_type_plot[i].Data()), 0.17, 0.82, 0.056, kFALSE, kFALSE, kFALSE); 
+      // fullStack->SetTitle(Form("All %s", style.str_jet_type_plot[i].Data()));
+      fullLegend->SetTextFont(42);
       fullLegend->Draw();
     }
 
