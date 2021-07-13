@@ -56,7 +56,6 @@ void setBOOLClusterArrayToZero(bool* &arrayinput){
 }
 // conversion functions for processing
 float* EtaPhiFromIndices(int ieta,int iphi,float energy = 0, int caloSelect = 0);
-TVector3 TowerPositionVectorFromIndices(int ieta,int iphi, int caloSelect = 0);
 
 float weightM02 = 4.5;
 float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers, float w_0, float cluster_E_calc, int caloSelect, Bool_t debugOutput);
@@ -124,7 +123,7 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
         vecTwr += w_i.at(cellI)*TowerPositionVectorFromIndices(cluster_towers.at(cellI).tower_iEta,cluster_towers.at(cellI).tower_iPhi, caloSelect);
     }
     returnVariables[2]=vecTwr.Eta();
-    returnVariables[3]=(vecTwr.Phi()<0 ? vecTwr.Phi()+TMath::Pi() : vecTwr.Phi()-TMath::Pi());
+    returnVariables[3]=vecTwr.Phi();
     // vecTwr*=1/w_tot;//(zHC/vecTwr.Z());
     vecTwr*=(zHC/vecTwr.Z());
     returnVariables[4]=vecTwr.X();
