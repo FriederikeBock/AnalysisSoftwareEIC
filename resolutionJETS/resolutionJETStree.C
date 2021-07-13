@@ -15,11 +15,11 @@
 #include <iostream>
 
 const int njettypes = 5;
-const int firstEtaBin = 10;
 const int nInputs = 1;
 
-const float min_eta[njettypes] = {-3.5, 1.5, 1.5, 1.5, 1.5};  // TODO Save this info as metadata...
-const float max_eta[njettypes] = {3.5, 3.5, 3.5, 3.5, 3.5};
+const int firstEtaBin[njettypes] = {1, 10, 10, 10, 10};
+const float min_eta[njettypes]   = {-3.5, 1.5, 1.5, 1.5, 1.5};  // TODO Save this info as metadata...
+const float max_eta[njettypes]   = {3.5, 3.5, 3.5, 3.5, 3.5};
 
 struct plottingStyleData
 {
@@ -35,7 +35,7 @@ struct plottingStyleData
 
 TString *cutString(int jettype) {return new TString(Form("%.1f < #eta < %.1f", min_eta[jettype], max_eta[jettype]));}
 void drawInfo(plottingStyleData style, float x, float y, int jettype);
-void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][16], TString outputDir, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel);
+void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][16], TString title, TString outputDir, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel);
 void plotSpectra(TH2F *spectra[nInputs][njettypes], plottingStyleData style, TString title, TString outputFormat, TH1F *reco[nInputs][njettypes]=nullptr, TH1F *truth[nInputs][njettypes]=nullptr, float textX=0.22, float textY=0.83);
 void plotEfficiency(TH1F *h_matched_count[nInputs][njettypes], TH1F *h_truth_count[nInputs][njettypes], plottingStyleData style, TString outputDir);
 
@@ -184,14 +184,14 @@ void resolutionJETStree(
   }
 
   // Plot scales
-  plotResoOrScale(histo_JES_E, TString(Form("%s/JetEnergyScale/JES", outputDir.Data())), style, -1, 0.3, TString("#it{E}^{jet}"), TString("Mean((#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}))"));  // Plot jet energy scale
-  plotResoOrScale(h_EtaReso_Mean_E, TString(Form("%s/EtaScale/EtaScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#eta^{rec} - #eta^{true}) / #eta^{true}))"));  // Plot jet eta scale
-  plotResoOrScale(h_PhiReso_Mean_E, TString(Form("%s/PhiScale/PhiScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#phi^{rec} - #phi^{true}) / #phi^{true}))"));  // Plot jet phi scale
+  plotResoOrScale(histo_JES_E, TString("E Scale"), TString(Form("%s/JetEnergyScale/JES", outputDir.Data())), style, -0.6, 0.4, TString("#it{E}^{jet}"), TString("Mean((#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}))"));  // Plot jet energy scale
+  plotResoOrScale(h_EtaReso_Mean_E, TString("#eta Scale"), TString(Form("%s/EtaScale/EtaScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{#eta}^{jet}"), TString("Mean((#eta^{rec} - #eta^{true}) / #eta^{true}))"));  // Plot jet eta scale
+  plotResoOrScale(h_PhiReso_Mean_E, TString("#Phi Scale"), TString(Form("%s/PhiScale/PhiScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{#Phi}^{jet}"), TString("Mean((#Phi^{rec} - #Phi^{true}) / #Phi^{true}))"));  // Plot jet phi scale
 
   // Plot resolutions
-  plotResoOrScale(histo_JER_E, TString(Form("%s/JetEnergyResolution/JER_E", outputDir.Data())), style, 0, 0.6, TString("#it{E}^{jet}"), TString("#sigma(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}"));
-  plotResoOrScale(h_EtaReso_Width_E, TString(Form("%s/EtaResolution/EtaReso", outputDir.Data())), style, 0, 0.4, TString("#it{E}^{jet}"), TString("#sigma(#eta^{rec} - #eta^{true}) / #eta^{true}"));
-  plotResoOrScale(h_PhiReso_Width_E, TString(Form("%s/PhiResolution/PhiReso", outputDir.Data())), style, 0, 0.6, TString("#it{E}^{jet}"), TString("#sigma(#phi^{rec} - #phi^{true}) / #phi^{true}"));
+  plotResoOrScale(histo_JER_E, TString("E Resolution"), TString(Form("%s/JetEnergyResolution/JER_E", outputDir.Data())), style, 0, 0.6, TString("#it{E}^{jet}"), TString("#sigma(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}"));
+  plotResoOrScale(h_EtaReso_Width_E, TString("#eta Resolution"), TString(Form("%s/EtaResolution/EtaReso", outputDir.Data())), style, 0, 0.4, TString("#it{#eta}^{jet}"), TString("#sigma(#eta^{rec} - #eta^{true}) / #eta^{true}"));
+  plotResoOrScale(h_PhiReso_Width_E, TString("#Phi Resolution"), TString(Form("%s/PhiResolution/PhiReso", outputDir.Data())), style, 0, 0.4, TString("#it{#Phi}^{jet}"), TString("#sigma(#Phi^{rec} - #Phi^{true}) / #Phi^{true}"));
 
   // Plot spectra
   plotSpectra(h2D_truth_reco_eta, style, TString("eta"), TString(Form("%s/Spectra/eta", outputDir.Data())), h_reco_eta, h_truth_eta);
@@ -237,7 +237,7 @@ void resolutionJETStree(
 //   }
 }
 
-void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][16], TString outputFormat, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel) {
+void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][16], TString title, TString outputFormat, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel) {
   // SETUP
   TCanvas *canvasJES = new TCanvas("canvasJES", "", 200, 10, 1000, 900);
   DrawGammaCanvasSettings( canvasJES, 0.1, 0.01, 0.01, 0.11);
@@ -253,10 +253,19 @@ void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][16], TString outputForm
   
   // ITERATE OVER JET TYPES
   for(int ijr=0; ijr<njettypes; ijr++){
+    if (ijr == 0) {
+      scaleHist->GetXaxis()->SetRangeUser(0, 59);
+    }
+    else {
+      scaleHist->GetXaxis()->SetRangeUser(0, 109);
+    }
     scaleHist->DrawCopy();
-    TLegend *scaleLegend = GetAndSetLegend2(0.7, 0.40-((nEta-10)*textSizeLabelsRel), 1.1, 0.40,textSizeLabelsPixel, 1, "", 43, 0.15);
+    TLegend *scaleLegend = GetAndSetLegend2(0.7, 0.95-((nEta-firstEtaBin[ijr])*textSizeLabelsRel), 1.05, 0.95,textSizeLabelsPixel, 1, "", 43, 0.15);
     // ITERATE OVER ETA RANGES
-    for (int eta = firstEtaBin; eta < nEta + 1; eta++) {
+    for (int eta = firstEtaBin[ijr]; eta < nEta + 1; eta++) {
+      if (eta == nEta - 1) {
+        continue; // Skip 3.5-4 range
+      }
       DrawGammaSetMarker(scaleData[0][ijr][eta], markerStyleEta[eta], markerSizeEta[eta], colorEta[eta], colorEta[eta]);
 
       scaleData[0][ijr][eta]->Draw("same,p");
@@ -268,7 +277,8 @@ void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][16], TString outputForm
     }
     // DRAWING AND SAVING
     scaleLegend->Draw();
-    drawInfo(style, 0.16, 0.9, ijr);
+    drawLatexAdd(title.Data(), 0.16, 0.94, textSizeLabelsRel, kFALSE, kFALSE, kFALSE);
+    drawInfo(style, 0.16, 0.895, ijr);
     scaleHist->Draw("same,axis");
     canvasJES->Print(Form("%s_%s.%s", outputFormat.Data(), style.str_jet_type[ijr].Data(), style.format.Data())); 
   }
