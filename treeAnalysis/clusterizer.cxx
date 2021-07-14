@@ -143,6 +143,17 @@ void runclusterizer(
         input_towers.push_back(tempstructT);
       }
     }
+  } else if(caloEnum==kBECAL){
+    for(int itow=0; itow<_nTowers_BECAL; itow++){
+      if(_tower_BECAL_E[itow]>aggE){
+        towersStrct tempstructT;
+        tempstructT.tower_E = _tower_BECAL_E[itow];
+        tempstructT.tower_iEta = _tower_BECAL_iEta[itow];
+        tempstructT.tower_iPhi = _tower_BECAL_iPhi[itow];
+        tempstructT.tower_trueID = GetCorrectMCArrayEntry(_tower_BECAL_trueID[itow]);
+        input_towers.push_back(tempstructT);
+      }
+    }
   } else if(caloEnum==kEEMC){
     for(int itow=0; itow<_nTowers_EEMC; itow++){
       if(_tower_EEMC_E[itow]>aggE){
@@ -151,6 +162,17 @@ void runclusterizer(
         tempstructT.tower_iEta = _tower_EEMC_iEta[itow];
         tempstructT.tower_iPhi = _tower_EEMC_iPhi[itow];
         tempstructT.tower_trueID = GetCorrectMCArrayEntry(_tower_EEMC_trueID[itow]);
+        input_towers.push_back(tempstructT);
+      }
+    }
+  } else if(caloEnum==kEEMCG){
+    for(int itow=0; itow<_nTowers_EEMCG; itow++){
+      if(_tower_EEMCG_E[itow]>aggE){
+        towersStrct tempstructT;
+        tempstructT.tower_E = _tower_EEMCG_E[itow];
+        tempstructT.tower_iEta = _tower_EEMCG_iEta[itow];
+        tempstructT.tower_iPhi = _tower_EEMCG_iPhi[itow];
+        tempstructT.tower_trueID = GetCorrectMCArrayEntry(_tower_EEMCG_trueID[itow]);
         input_towers.push_back(tempstructT);
       }
     }
@@ -427,7 +449,7 @@ bool isClusterMatched(int clsID, float* clusters_X, float* clusters_Y, float* cl
         TVector3 projvec(_track_Proj_x[iproj],_track_Proj_y[iproj],_track_Proj_z[iproj]);
         projeta = projvec.Eta();
         projphi = projvec.Phi();
-        // if((projphi==0 && projeta==0) || (projphi==-20 && projeta==-20)) continue;
+        if((projphi==0 && projeta==0) || (projphi==-20 && projeta==-20)) continue;
       }
 
       // calculate delta x/y or delta eta/phi between projection and cluster

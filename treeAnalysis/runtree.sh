@@ -66,7 +66,21 @@ if [ $1 = "newinput_pythia" ]; then
     #geometry=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-ETTL-CTTL-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-ASYM-FTTLS3LC-GEOMETRYTREE-TEST/geometry.root
     input=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-TTLF-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-ASYM-GEOMETRYTREE-PYTHIA-1x/G4EICDetector_eventtree.root
     geometry=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-TTLF-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-ASYM-GEOMETRYTREE-PYTHIA-1x/geometry.root
-    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","NEWINPUT_TMSTUD_PYTHIA",true,false  ,true,true,3000,0,false,0)'
+    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","NEWINPUT_TMSTUD_PYTHIA",true,false  ,true,true,-1,0,false,0)'
+fi
+
+
+if [ $1 = "newdet_pythia" ]; then
+    input=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-TTLF-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-LFHCAL-GEOMETRYTREE-EEMCH-BECAL-PYTHIA-1/G4EICDetector_eventtree.root
+    geometry=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-TTLF-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-LFHCAL-GEOMETRYTREE-EEMCH-BECAL-PYTHIA-1/geometry.root
+    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","NEWDETS_PYTHIA",true,false  ,true,true,-1,0,false,0)'
+fi
+
+
+if [ $1 = "newdet_pythia_fix" ]; then
+    input=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-TTLF-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-LFHCAL-GEOMETRYTREE-EEMCH-BECAL-PYTHIA-EVALEIC-lll-tst2/G4EICDetector_eventtree.root
+    geometry=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-TTLF-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-LFHCAL-GEOMETRYTREE-EEMCH-BECAL-PYTHIA-EVALEIC-lll-tst2/geometry.root
+    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","PYTHIA_EVALPROJFIX",true,false  ,true,true,-1,0,false,0)'
 fi
 
 

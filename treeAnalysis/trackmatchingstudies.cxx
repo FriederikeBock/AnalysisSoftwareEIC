@@ -5,6 +5,8 @@ int verbosityTM = 1;
 
 TH2F*  h_TMstudies_2D_clus[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_TMstudies_2D_true[_active_calo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_TMstudies_2D_true_electron[_active_calo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_TMstudies_2D_true_hadron[_active_calo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_TMstudies_2D_track[_active_calo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_TMstudies_2D_projection[_active_calo]; // [calorimeter_enum][algorithm_enum]
 
@@ -23,6 +25,7 @@ TString strCases_TMStudies[diffCases_TMStudies] = {"all"};//, "leading"};
 
 TH2F*  h_TMstudies_2D_delta_track[diffCases_TMStudies][_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_TMstudies_2D_delta_projection[diffCases_TMStudies][_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_TMstudies_2D_delta_projection_special[diffCases_TMStudies][_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_TMstudies_2D_delta_TTLhits[diffCases_TMStudies][_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_TMstudies_2D_delta_calomatch[diffCases_TMStudies][_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_TMstudies_E1_E2_calomatch[diffCases_TMStudies][_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
@@ -79,6 +82,8 @@ bool trackmatchingstudies(){
     if(!h_TMstudies_2D_projection[icalo])h_TMstudies_2D_projection[icalo] 	= new TH2F(Form("h_TMstudies_%s_projection_%s",str2DhistoName.Data(),str_calorimeter[icalo].Data()), "", nbins2D, min2Dhist, max2Dhist, nbins2D, min2Dhist2, max2Dhist2);
     if(!h_TMstudies_2D_track[icalo])h_TMstudies_2D_track[icalo] 	= new TH2F(Form("h_TMstudies_%s_track_%s",str2DhistoName.Data(),str_calorimeter[icalo].Data()), "", nbins2D, min2Dhist, max2Dhist, nbins2D, min2Dhist2, max2Dhist2);
     if(!h_TMstudies_2D_true[icalo])h_TMstudies_2D_true[icalo] 	= new TH2F(Form("h_TMstudies_%s_true_%s",str2DhistoName.Data(),str_calorimeter[icalo].Data()), "", nbins2D, min2Dhist, max2Dhist, nbins2D, min2Dhist2, max2Dhist2);
+    if(!h_TMstudies_2D_true_electron[icalo])h_TMstudies_2D_true_electron[icalo] 	= new TH2F(Form("h_TMstudies_%s_true_electron_%s",str2DhistoName.Data(),str_calorimeter[icalo].Data()), "", nbins2D, min2Dhist, max2Dhist, nbins2D, min2Dhist2, max2Dhist2);
+    if(!h_TMstudies_2D_true_hadron[icalo])h_TMstudies_2D_true_hadron[icalo] 	= new TH2F(Form("h_TMstudies_%s_true_hadron_%s",str2DhistoName.Data(),str_calorimeter[icalo].Data()), "", nbins2D, min2Dhist, max2Dhist, nbins2D, min2Dhist2, max2Dhist2);
     if(!h_TMstudies_clusSpec[icalo])h_TMstudies_clusSpec[icalo] 	= new TH1F(Form("h_TMstudies_clusSpec_%s",str_calorimeter[icalo].Data()), "", 120,0,60);
     if(!h_TMstudies_clusSpec_Matched[icalo])h_TMstudies_clusSpec_Matched[icalo] 	= new TH1F(Form("h_TMstudies_clusSpec_Matched_%s",str_calorimeter[icalo].Data()), "", 120,0,60);
     if(!h_TMstudies_clusSpec_MatchedCalo[icalo])h_TMstudies_clusSpec_MatchedCalo[icalo] 	= new TH1F(Form("h_TMstudies_clusSpec_MatchedCalo_%s",str_calorimeter[icalo].Data()), "", 120,0,60);
@@ -100,7 +105,7 @@ bool trackmatchingstudies(){
   }
   for(int icalo=0;icalo<_active_calo;icalo++){
     bool isFwd = IsForwardCalorimeter(icalo);
-    float nbins2D = isFwd ? 299 : 300;
+    float nbins2D = isFwd ? 299 : 200;
     float min2Dhist = isFwd ? -299 : -2.0;
     float max2Dhist = isFwd ? 299 : 2.0;
     float min2Dhist2 = isFwd ? -299 : -TMath::Pi();
@@ -171,11 +176,12 @@ bool trackmatchingstudies(){
       //   if(!h_TMstudies_isMatchedCell_projection[iPDG][icalo])h_TMstudies_isMatchedCell_projection[iPDG][icalo] 	= new TH2F(Form("h_TMstudies_isMatchedCell_projection_%s_%s",strTMstudies_partPDG[iPDG].Data(),strCases_TMStudies[icase].Data(),str_calorimeter[icalo].Data()), "", nbins2Ddelta, min2Ddeltahist, max2Ddeltahist, nbins2Ddelta, min2Ddeltahist, max2Ddeltahist);
       // }
       for(int icase=0;icase<diffCases_TMStudies;icase++){
-        float nbins2Ddelta = isFwd ? 78 : 80;
-        float min2Ddeltahist = isFwd ? -39 : -0.2;
-        float max2Ddeltahist = isFwd ? 39 : 0.2;
+        float nbins2Ddelta = isFwd ? 78 : 200;
+        float min2Ddeltahist = isFwd ? -39 : -0.5;
+        float max2Ddeltahist = isFwd ? 39 : 0.5;
         if(!h_TMstudies_2D_delta_track[icase][icalo][ialgo])h_TMstudies_2D_delta_track[icase][icalo][ialgo] 	= new TH2F(Form("h_TMstudies_%s_2D_delta_track_%s_%s",strCases_TMStudies[icase].Data(),str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nbins2Ddelta, min2Ddeltahist, max2Ddeltahist, nbins2Ddelta, min2Ddeltahist, max2Ddeltahist);
         if(!h_TMstudies_2D_delta_projection[icase][icalo][ialgo])h_TMstudies_2D_delta_projection[icase][icalo][ialgo] 	= new TH2F(Form("h_TMstudies_%s_2D_delta_projection_%s_%s",strCases_TMStudies[icase].Data(),str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nbins2Ddelta, min2Ddeltahist, max2Ddeltahist, nbins2Ddelta, min2Ddeltahist, max2Ddeltahist);
+        if(!h_TMstudies_2D_delta_projection_special[icase][icalo][ialgo])h_TMstudies_2D_delta_projection_special[icase][icalo][ialgo] 	= new TH2F(Form("h_TMstudies_%s_2D_delta_projection_special_%s_%s",strCases_TMStudies[icase].Data(),str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nbins2Ddelta, min2Ddeltahist, max2Ddeltahist, nbins2Ddelta, min2Ddeltahist, max2Ddeltahist);
         if(!h_TMstudies_2D_delta_TTLhits[icase][icalo][ialgo])h_TMstudies_2D_delta_TTLhits[icase][icalo][ialgo] 	= new TH2F(Form("h_TMstudies_%s_2D_delta_TTLhits_%s_%s",strCases_TMStudies[icase].Data(),str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nbins2Ddelta, min2Ddeltahist, max2Ddeltahist, nbins2Ddelta, min2Ddeltahist, max2Ddeltahist);
         if(!h_TMstudies_2D_delta_calomatch[icase][icalo][ialgo])h_TMstudies_2D_delta_calomatch[icase][icalo][ialgo] 	= new TH2F(Form("h_TMstudies_%s_2D_delta_calomatch_%s_%s",strCases_TMStudies[icase].Data(),str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nbins2Ddelta, min2Ddeltahist, max2Ddeltahist, nbins2Ddelta, min2Ddeltahist, max2Ddeltahist);
         if(!h_TMstudies_E1_E2_calomatch[icase][icalo][ialgo])h_TMstudies_E1_E2_calomatch[icase][icalo][ialgo] 	= new TH2F(Form("h_TMstudies_%s_E1_E2_calomatch_%s_%s",strCases_TMStudies[icase].Data(),str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 100,0, 50.,100,0, 50.);
@@ -312,6 +318,9 @@ bool trackmatchingstudies(){
           float delta_1 = isFwd ? _track_Proj_x[iproj]-clusters_TM_X[iclus] : projeta-clusters_TM_Eta[iclus];
           float delta_2 = isFwd ? _track_Proj_y[iproj]-clusters_TM_Y[iclus] : projphi-clusters_TM_Phi[iclus];
           h_TMstudies_2D_delta_projection[0][icalo][ialgo]->Fill(delta_1,delta_2);
+          if((clusters_TM_Eta[iclus])<0.5){
+            h_TMstudies_2D_delta_projection_special[0][icalo][ialgo]->Fill(delta_1,delta_2);
+          }
           h_TMstudies_dx_vsClsEta_projection[0][icalo][ialgo]->Fill(delta_1,clusters_TM_Eta[iclus]);
           h_TMstudies_dx_vsTrkEta_projection[0][icalo][ialgo]->Fill(delta_1,projeta);
           float delta_1_lgst = 1000;
@@ -529,10 +538,16 @@ bool trackmatchingstudies(){
       // } else
       if(ReturnCaloFwdBarrelBckw(icalo)==0 && _mcpart_pz[imc]>0){
         h_TMstudies_2D_true[icalo]->Fill(mcpartvec.X(),mcpartvec.Y());
+        if(abs(_mcpart_PDG[imc])==11 && _mcpart_E[imc]>0.3)h_TMstudies_2D_true_electron[icalo]->Fill(mcpartvec.X(),mcpartvec.Y());
+        if((abs(_mcpart_PDG[imc])==211 || abs(_mcpart_PDG[imc])==321 || abs(_mcpart_PDG[imc])==2212) && _mcpart_E[imc]>0.3)h_TMstudies_2D_true_hadron[icalo]->Fill(mcpartvec.X(),mcpartvec.Y());
       } else if(ReturnCaloFwdBarrelBckw(icalo)==1){
         h_TMstudies_2D_true[icalo]->Fill(trueeta,truephi);
+        if(abs(_mcpart_PDG[imc])==11 && _mcpart_E[imc]>0.3)h_TMstudies_2D_true_electron[icalo]->Fill(trueeta,truephi);
+        if((abs(_mcpart_PDG[imc])==211 || abs(_mcpart_PDG[imc])==321 || abs(_mcpart_PDG[imc])==2212) && _mcpart_E[imc]>0.3)h_TMstudies_2D_true_hadron[icalo]->Fill(trueeta,truephi);
       } else if(ReturnCaloFwdBarrelBckw(icalo)==2 && _mcpart_pz[imc]<0){
         h_TMstudies_2D_true[icalo]->Fill(mcpartvec.X(),mcpartvec.Y());
+        if(abs(_mcpart_PDG[imc])==11 && _mcpart_E[imc]>0.3)h_TMstudies_2D_true_electron[icalo]->Fill(mcpartvec.X(),mcpartvec.Y());
+        if((abs(_mcpart_PDG[imc])==211 || abs(_mcpart_PDG[imc])==321 || abs(_mcpart_PDG[imc])==2212) && _mcpart_E[imc]>0.3)h_TMstudies_2D_true_hadron[icalo]->Fill(mcpartvec.X(),mcpartvec.Y());
       }
     }
   }
@@ -554,6 +569,8 @@ void trackmatchingstudiesSave(){
       if(h_TMstudies_2D_track[icalo]&&icase==0)h_TMstudies_2D_track[icalo]->Write();
       if(h_TMstudies_2D_projection[icalo]&&icase==0)h_TMstudies_2D_projection[icalo]->Write();
       if(h_TMstudies_2D_true[icalo]&&icase==0)h_TMstudies_2D_true[icalo]->Write();
+      if(h_TMstudies_2D_true_electron[icalo]&&icase==0)h_TMstudies_2D_true_electron[icalo]->Write();
+      if(h_TMstudies_2D_true_hadron[icalo]&&icase==0)h_TMstudies_2D_true_hadron[icalo]->Write();
       if(h_TMstudies_clusSpec[icalo]&&icase==0)h_TMstudies_clusSpec[icalo]->Write();
       if(h_TMstudies_clusSpec_Matched[icalo]&&icase==0)h_TMstudies_clusSpec_Matched[icalo]->Write();
       if(h_TMstudies_clusSpec_MatchedCalo[icalo]&&icase==0)h_TMstudies_clusSpec_MatchedCalo[icalo]->Write();
@@ -571,6 +588,7 @@ void trackmatchingstudiesSave(){
         if(h_TMstudies_2D_clus[icalo][ialgo]&&icase==0) h_TMstudies_2D_clus[icalo][ialgo]->Write();
         if(h_TMstudies_2D_delta_track[icase][icalo][ialgo]) h_TMstudies_2D_delta_track[icase][icalo][ialgo]->Write();
         if(h_TMstudies_2D_delta_projection[icase][icalo][ialgo]) h_TMstudies_2D_delta_projection[icase][icalo][ialgo]->Write();
+        if(h_TMstudies_2D_delta_projection_special[icase][icalo][ialgo]) h_TMstudies_2D_delta_projection_special[icase][icalo][ialgo]->Write();
         if(h_TMstudies_2D_delta_TTLhits[icase][icalo][ialgo]) h_TMstudies_2D_delta_TTLhits[icase][icalo][ialgo]->Write();
         if(h_TMstudies_2D_delta_calomatch[icase][icalo][ialgo]) h_TMstudies_2D_delta_calomatch[icase][icalo][ialgo]->Write();
         if(h_TMstudies_E1_E2_calomatch[icase][icalo][ialgo]) h_TMstudies_E1_E2_calomatch[icase][icalo][ialgo]->Write();

@@ -887,6 +887,21 @@ bool loadClusterizerInput(
       clusters_Y = _clusters_MA_CEMC_Y;
       clusters_Z = _clusters_MA_CEMC_Z;
       return true;
+    } else if(caloEnum==kBECAL){
+      nclusters = _nclusters_MA_BECAL;
+      clusters_E = _clusters_MA_BECAL_E;
+      clusters_Eta = _clusters_MA_BECAL_Eta;
+      clusters_Phi = _clusters_MA_BECAL_Phi;
+      clusters_M02 = _clusters_MA_BECAL_M02;
+      clusters_M20 = _clusters_MA_BECAL_M20;
+      clusters_isMatched = _clusters_MA_BECAL_isMatched;
+      clusters_NTower = _clusters_MA_BECAL_NTower;
+      clusters_trueID = _clusters_MA_BECAL_trueID;
+      clusters_NtrueID = _clusters_MA_BECAL_NtrueID;
+      clusters_X = _clusters_MA_BECAL_X;
+      clusters_Y = _clusters_MA_BECAL_Y;
+      clusters_Z = _clusters_MA_BECAL_Z;
+      return true;
     } else if(caloEnum==kHCALIN){
       nclusters = _nclusters_MA_HCALIN;
       clusters_E = _clusters_MA_HCALIN_E;
