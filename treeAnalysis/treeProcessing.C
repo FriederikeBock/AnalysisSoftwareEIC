@@ -126,9 +126,9 @@ void treeProcessing(
             _mcpart_Eta[imc]=truevec.Eta();
             int motherid = 0;
             for(Int_t imc2=0; imc2<_nMCPart; imc2++){
-              if(_mcpart_ID[imc2]==_mcpart_ID_parent[imc]){
-                  motherid=imc2;
-              }
+                if(_mcpart_ID[imc2]==_mcpart_ID_parent[imc]){
+                    motherid=imc2;
+                }
             }
             // if(_mcpart_PDG[imc]==111) cout << "pi0 found (" << _mcpart_ID[imc] << ") with mother: " << _mcpart_PDG[motherid] << " (" <<  _mcpart_ID_parent[imc] << ")" << endl;
         }
@@ -238,6 +238,13 @@ void treeProcessing(
                     _clusters_C5_FHCAL_Y,
                     _clusters_C5_FHCAL_Z);
             }
+        } else {
+            _nclusters_3x3_FHCAL = 0;
+            _nclusters_5x5_FHCAL = 0;
+            _nclusters_V3_FHCAL = 0;
+            _nclusters_MA_FHCAL = 0;
+            _nclusters_C3_FHCAL = 0;
+            _nclusters_C5_FHCAL = 0;
         }
         // run clusterizers FEMC
         if(do_reclus && _nTowers_FEMC){
@@ -343,6 +350,13 @@ void treeProcessing(
                     _clusters_C5_FEMC_Y,
                     _clusters_C5_FEMC_Z);
             }
+        } else {
+            _nclusters_3x3_FEMC = 0;
+            _nclusters_5x5_FEMC = 0;
+            _nclusters_V3_FEMC = 0;
+            _nclusters_MA_FEMC = 0;
+            _nclusters_C3_FEMC = 0;
+            _nclusters_C5_FEMC = 0;
         }
 
         if(do_reclus && _nTowers_CEMC){
@@ -365,7 +379,7 @@ void treeProcessing(
                     _clusters_MA_CEMC_Y,
                     _clusters_MA_CEMC_Z);
             }
-        }
+        } else _nclusters_MA_CEMC = 0;
 
         if(do_reclus && _nTowers_HCALIN){
             float seed_E_HCALIN = 0.2;
@@ -387,7 +401,7 @@ void treeProcessing(
                     _clusters_MA_HCALIN_Y,
                     _clusters_MA_HCALIN_Z);
             }
-        }
+        } else _nclusters_MA_HCALIN = 0;
 
         if(do_reclus && _nTowers_HCALOUT){
             float seed_E_HCALOUT = 0.5;
@@ -409,11 +423,11 @@ void treeProcessing(
                     _clusters_MA_HCALOUT_Y,
                     _clusters_MA_HCALOUT_Z);
             }
-        }
+        } else _nclusters_MA_HCALOUT = 0;
 
         if(do_reclus && _nTowers_EEMCG){
-            float seed_E_EEMCG = 0.5;
-            float aggregation_E_EEMCG = 0.1;
+            float seed_E_EEMCG = 0.1;
+            float aggregation_E_EEMCG = 0.01;
             if(kMA<_active_algo){
                 if(verbosity>1) cout << "clusterizing MA for EEMCG" << endl;
                 runclusterizer(kMA, kEEMCG,seed_E_EEMCG, aggregation_E_EEMCG, primaryTrackSource,
@@ -431,11 +445,11 @@ void treeProcessing(
                     _clusters_MA_EEMCG_Y,
                     _clusters_MA_EEMCG_Z);
             }
-        }
+        } else _nclusters_MA_EEMCG = 0;
 
         if(do_reclus && _nTowers_BECAL){
-            float seed_E_BECAL = 0.5;
-            float aggregation_E_BECAL = 0.1;
+            float seed_E_BECAL = 0.1;
+            float aggregation_E_BECAL = 0.01;
             if(kMA<_active_algo){
                 if(verbosity>1) cout << "clusterizing MA for BECAL" << endl;
                 runclusterizer(kMA, kBECAL,seed_E_BECAL, aggregation_E_BECAL, primaryTrackSource,
@@ -453,7 +467,7 @@ void treeProcessing(
                     _clusters_MA_BECAL_Y,
                     _clusters_MA_BECAL_Z);
             }
-        }
+        } else _nclusters_MA_BECAL = 0;
 
         if(do_reclus && _nTowers_EEMC){
             float seed_E_EEMC = 0.1;
@@ -475,11 +489,33 @@ void treeProcessing(
                     _clusters_MA_EEMC_Y,
                     _clusters_MA_EEMC_Z);
             }
-        }
+        } else _nclusters_MA_EEMC = 0;
+
+        if(do_reclus && _nTowers_LFHCAL){
+            float seed_E_LFHCAL = 0.1;
+            float aggregation_E_LFHCAL = 0.05;
+            if(kMA<_active_algo){
+                if(verbosity>1) cout << "clusterizing MA for LFHCAL" << endl;
+                runclusterizer(kMA, kLFHCAL,seed_E_LFHCAL, aggregation_E_LFHCAL, primaryTrackSource,
+                    _nclusters_MA_LFHCAL,
+                    _clusters_MA_LFHCAL_E,
+                    _clusters_MA_LFHCAL_Eta,
+                    _clusters_MA_LFHCAL_Phi,
+                    _clusters_MA_LFHCAL_M02,
+                    _clusters_MA_LFHCAL_M20,
+                    _clusters_MA_LFHCAL_isMatched,
+                    _clusters_MA_LFHCAL_NTower,
+                    _clusters_MA_LFHCAL_trueID,
+                    _clusters_MA_LFHCAL_NtrueID,
+                    _clusters_MA_LFHCAL_X,
+                    _clusters_MA_LFHCAL_Y,
+                    _clusters_MA_LFHCAL_Z);
+            }
+        } else _nclusters_MA_LFHCAL = 0;
 
         if(do_reclus && _nTowers_EHCAL){
-        float seed_E_EHCAL = 0.1;
-        float aggregation_E_EHCAL = 0.05;
+            float seed_E_EHCAL = 0.01;
+            float aggregation_E_EHCAL = 0.005;
             if(kMA<_active_algo){
                 if(verbosity>1) cout << "clusterizing MA for EHCAL" << endl;
                 runclusterizer(kMA, kEHCAL,seed_E_EHCAL, aggregation_E_EHCAL, primaryTrackSource,
@@ -497,7 +533,7 @@ void treeProcessing(
                     _clusters_MA_EHCAL_Y,
                     _clusters_MA_EHCAL_Z);
             }
-        }
+        } else _nclusters_MA_EHCAL = 0;
 
         if(do_reclus && _nTowers_DRCALO){ //do_V1clusterizerDRCALO
             float seed_E_DRCALO = 0.3;
@@ -517,7 +553,7 @@ void treeProcessing(
                 _clusters_V1_DRCALO_X,
                 _clusters_V1_DRCALO_Y,
                 _clusters_V1_DRCALO_Z);
-        }
+        } else _nclusters_V1_DRCALO = 0;
         if((do_reclus) && verbosity>1) cout << "done with clusterization!" << endl;
 
         // ANCHOR Hits loop variables:

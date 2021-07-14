@@ -264,6 +264,8 @@ void resolutionhistosSave(){
 
   // write histograms
   for(int icalo=0;icalo<_active_calo;icalo++){
+    fileOutput->mkdir(Form("%s",str_calorimeter[icalo].Data()));
+    fileOutput->cd(Form("%s",str_calorimeter[icalo].Data()));
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
       if(h_RH_Reso_E[icalo][ialgo])h_RH_Reso_E[icalo][ialgo]->Write();
       if(h_RH_Reso_gamma_E[icalo][ialgo])h_RH_Reso_gamma_E[icalo][ialgo]->Write();
