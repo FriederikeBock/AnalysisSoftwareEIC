@@ -26,10 +26,10 @@
 
 
 void treeProcessing(
-    TString inFile            = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_pTHard5.root",
-    TString inFileGeometry    = "/media/nschmidt/local/AnalysisSoftwareEIC/treeAnalysis/geometry.root",
+    TString inFile              = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_pTHard5.root",
+    TString inFileGeometry      = "/media/nschmidt/local/AnalysisSoftwareEIC/treeAnalysis/geometry.root",
     TString addOutputName       = "",
-    bool do_reclus        = true,
+    bool do_reclus              = true,
     bool do_jetfinding          = false,
     // Double_t maxNEvent = 1e5,
     bool hasTiming              = true,
@@ -39,7 +39,7 @@ void treeProcessing(
     bool doCalibration          = false,
     // Defaults to tracking from all layers.
     unsigned short primaryTrackSource = 0,
-    std::string jetAlgorithm = "anti-kt",
+    std::string jetAlgorithm    = "anti-kt",
     double jetR                 = 0.5
 ){
     // make output directory
