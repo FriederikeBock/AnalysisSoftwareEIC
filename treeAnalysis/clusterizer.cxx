@@ -202,14 +202,15 @@ void runclusterizer(
         for (int tit = 1; tit < input_towers.size(); tit++){
           // towers must be within cross of delta Eta and delta Phi <= 1
           if( ( std::abs(input_towers.at(tit).tower_iEta-input_towers.at(0).tower_iEta) + std::abs(input_towers.at(tit).tower_iPhi-input_towers.at(0).tower_iPhi) ) <= 1 ){
-              clusters_E[nclusters]+=input_towers.at(tit).tower_E;
-              clusters_NTower[nclusters]++;
-              cluster_towers.push_back(input_towers.at(tit));
-              if(!(std::find(clslabels.begin(), clslabels.end(), input_towers.at(tit).tower_trueID) != clslabels.end())){
-                clusters_NtrueID[nclusters]++;
-                clslabels.push_back(input_towers.at(tit).tower_trueID);
-              }
-              input_towers.erase(input_towers.begin()+tit);
+            clusters_E[nclusters]+=input_towers.at(tit).tower_E;
+            clusters_NTower[nclusters]++;
+            cluster_towers.push_back(input_towers.at(tit));
+            if(!(std::find(clslabels.begin(), clslabels.end(), input_towers.at(tit).tower_trueID) != clslabels.end())){
+              clusters_NtrueID[nclusters]++;
+              clslabels.push_back(input_towers.at(tit).tower_trueID);
+            }
+            input_towers.erase(input_towers.begin()+tit);
+            tit--;
           }
         }
       }
@@ -219,14 +220,15 @@ void runclusterizer(
         for (int tit = 1; tit < input_towers.size(); tit++){
           // towers must be within cross of delta Eta and delta Phi <= 2 (-> 3x3 plus 4 additional towers)
           if( ( std::abs(input_towers.at(tit).tower_iEta-input_towers.at(0).tower_iEta) + std::abs(input_towers.at(tit).tower_iPhi-input_towers.at(0).tower_iPhi) ) <= 2 ){
-              clusters_E[nclusters]+=input_towers.at(tit).tower_E;
-              clusters_NTower[nclusters]++;
-              cluster_towers.push_back(input_towers.at(tit));
-              if(!(std::find(clslabels.begin(), clslabels.end(), input_towers.at(tit).tower_trueID) != clslabels.end())){
-                clusters_NtrueID[nclusters]++;
-                clslabels.push_back(input_towers.at(tit).tower_trueID);
-              }
-              input_towers.erase(input_towers.begin()+tit);
+            clusters_E[nclusters]+=input_towers.at(tit).tower_E;
+            clusters_NTower[nclusters]++;
+            cluster_towers.push_back(input_towers.at(tit));
+            if(!(std::find(clslabels.begin(), clslabels.end(), input_towers.at(tit).tower_trueID) != clslabels.end())){
+              clusters_NtrueID[nclusters]++;
+              clslabels.push_back(input_towers.at(tit).tower_trueID);
+            }
+            input_towers.erase(input_towers.begin()+tit);
+            tit--;
           }
         }
       }
@@ -245,6 +247,7 @@ void runclusterizer(
                 clslabels.push_back(input_towers.at(tit).tower_trueID);
               }
               input_towers.erase(input_towers.begin()+tit);
+              tit--;
             }
           }
         }
@@ -264,6 +267,7 @@ void runclusterizer(
                 clslabels.push_back(input_towers.at(tit).tower_trueID);
               }
               input_towers.erase(input_towers.begin()+tit);
+              tit--;
             }
           }
         }
@@ -292,6 +296,7 @@ void runclusterizer(
                 clslabels.push_back(input_towers.at(ait).tower_trueID);
               }
               input_towers.erase(input_towers.begin()+ait);
+              ait--;
             }
           }
         }
@@ -321,28 +326,7 @@ void runclusterizer(
                 clslabels.push_back(input_towers.at(ait).tower_trueID);
               }
               input_towers.erase(input_towers.begin()+ait);
-            }
-          }
-        }
-        for (int tit = 0; tit < cluster_towers.size(); tit++){
-          // Now go recursively to all neighbours and add them to the cluster if they fulfill the conditions
-          int iEtaTwr = cluster_towers.at(tit).tower_iEta;
-          int iPhiTwr = cluster_towers.at(tit).tower_iPhi;
-          for (int ait = 0; ait < input_towers.size(); ait++){
-            int iEtaTwrAgg = input_towers.at(ait).tower_iEta;
-            int iPhiTwrAgg = input_towers.at(ait).tower_iPhi;
-            // first condition asks for V3-like neighbors, while second condition also checks diagonally attached towers
-            if( ((TMath::Abs(iEtaTwrAgg-iEtaTwr)+TMath::Abs(iPhiTwrAgg-iPhiTwr)) == 1) || ((TMath::Abs(iEtaTwrAgg-iEtaTwr)==1) && (TMath::Abs(iPhiTwrAgg-iPhiTwr)==1))){
-              // only aggregate towers with lower energy than current tower
-              if(input_towers.at(ait).tower_E >= (cluster_towers.at(tit).tower_E + aggregation_margin_MA)) continue;
-              clusters_E[nclusters]+=input_towers.at(ait).tower_E;
-              clusters_NTower[nclusters]++;
-              cluster_towers.push_back(input_towers.at(ait));
-              if(!(std::find(clslabels.begin(), clslabels.end(), input_towers.at(ait).tower_trueID) != clslabels.end())){
-                clusters_NtrueID[nclusters]++;
-                clslabels.push_back(input_towers.at(ait).tower_trueID);
-              }
-              input_towers.erase(input_towers.begin()+ait);
+              ait--;
             }
           }
         }
@@ -371,6 +355,7 @@ void runclusterizer(
                 clslabels.push_back(input_towers.at(ait).tower_trueID);
               }
               input_towers.erase(input_towers.begin()+ait);
+              ait--;
             }
           }
         }
