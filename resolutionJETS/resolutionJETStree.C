@@ -33,11 +33,12 @@ struct plottingStyleData
   TString format;
 };
 
-TString *cutString(int jettype) {return new TString(Form("%.1f < #eta < %.1f", min_eta[jettype], max_eta[jettype]));}
-void drawInfo(plottingStyleData style, float x, float y, int jettype);
+TString *cutString(int jettype) {return new TString(Form("%.1f < #eta < %.1f%s", min_eta[jettype], max_eta[jettype], jettype==0 ? ", pT < 30" : ""));}
 void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][16], TString title, TString outputDir, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel);
 void plotSpectra(TH2F *spectra[nInputs][njettypes], plottingStyleData style, TString title, TString outputFormat, TH1F *reco[nInputs][njettypes]=nullptr, TH1F *truth[nInputs][njettypes]=nullptr, float textX=0.22, float textY=0.83);
 void plotEfficiency(TH1F *h_matched_count[nInputs][njettypes], TH1F *h_truth_count[nInputs][njettypes], plottingStyleData style, TString outputDir);
+void plotSlices (TH2F *spectra[nInputs][njettypes][nEta+1], plottingStyleData style, TString title, TString outputFormat);
+void drawInfo(plottingStyleData style, float x, float y, int jettype, int numExtraLines=0, TString *extraLines=nullptr);
 
 
 void resolutionJETStree(
@@ -169,20 +170,6 @@ void resolutionJETStree(
     }
   }
 
-
-  // Create projections for slices
-  TH1D *jesSlices[nInputs][njettypes][nEta+1][40] = {NULL};
-  for(int iInp=0;iInp<nInputs;iInp++){
-    for(int ijr=0;ijr<njettypes;ijr++){
-      for (Int_t eT = 0; eT < nEta+1; eT++){
-        for (Int_t i=1; i < histo2D_JES_E[iInp][ijr][eT]->GetNbinsX(); i++){
-          jesSlices[iInp][ijr][eT][i] = (TH1D*)histo2D_JES_E[iInp][ijr][eT]->ProjectionY(Form("projectionYdummy%d%d%d%d",iInp,ijr,eT,i), i,i+1,"e");
-          jesSlices[iInp][ijr][eT][i]->Scale(1/jesSlices[iInp][ijr][eT][i]->GetEntries());
-        }
-      }
-    }
-  }
-
   // Plot scales
   plotResoOrScale(histo_JES_E, TString("E Scale"), TString(Form("%s/JetEnergyScale/JES", outputDir.Data())), style, -0.6, 0.4, TString("#it{E}^{jet}"), TString("Mean((#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}))"));  // Plot jet energy scale
   plotResoOrScale(h_EtaReso_Mean_E, TString("#eta Scale"), TString(Form("%s/EtaScale/EtaScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#eta^{rec} - #eta^{true}) / #eta^{true}))"));  // Plot jet eta scale
@@ -199,42 +186,11 @@ void resolutionJETStree(
   plotSpectra(h2D_truth_reco_E, style, TString("E"), TString(Form("%s/Spectra/E", outputDir.Data())), h_reco_E, h_truth_E, 0.3);
   plotSpectra(h2D_truth_reco_pT, style, TString("pT"), TString(Form("%s/Spectra/pT", outputDir.Data())), h_reco_pT, h_truth_pT);
 
+  // Plot slices
+  plotSlices(histo2D_JES_E, style, TString("E"), TString(Form("%s/Slices", outputDir.Data())));
+
   // Plot efficiency
   plotEfficiency(h_matched_count, h_truth_count, style, outputDir);
-
-// 2D PLOT
-//   TCanvas* cSingleSlice = new TCanvas("cSingleSlice","",0,0,1100,1000);
-//   DrawGammaCanvasSettings( cSingleSlice, 0.11, 0.01, 0.002, 0.105);
-//   // cSingleSlice->SetLogz();
-
-//   TH2F* histoJESSliceDummy   = new TH2F("histoJESSliceDummy","histoJESSliceDummy",1000,-0.99, 0.6,1000,0., 0.1);
-//   SetStyleHistoTH2ForGraphs(histoJESSliceDummy, "(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}","norm. counts ", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
-//   histoJESSliceDummy->GetYaxis()->SetNoExponent();
-//   histoJESSliceDummy->GetYaxis()->SetNdivisions(505,kTRUE);
-//   // histoJESSliceDummy->GetXaxis()->SetMoreLogLabels(kTRUE);
-
-//   if(1){
-//     int iInp = 0;
-//     int ijr = 1;
-//     for (Int_t iEbin=1; iEbin < histo2D_JES_E[iInp][ijr][0]->GetNbinsX(); iEbin++){
-//       histoJESSliceDummy->Draw();
-//       // DrawGammaLines(0, 29, 0., 0., 2, kGray+2, 7);
-//       TLegend* legendJES3  = GetAndSetLegend2(0.35, 0.80-(5*textSizeLabelsRel), 0.6, 0.80-(1*textSizeLabelsRel),1.1*textSizeLabelsPixel, 1, "", 43, 0.15);
-//       for(Int_t eT=10; eT<14;eT++){
-//         jesSlices[iInp][ijr][eT][iEbin]->Sumw2();
-//         jesSlices[iInp][ijr][eT][iEbin]->Rebin(2);
-//         DrawGammaSetMarker( jesSlices[iInp][ijr][eT][iEbin], markerStyleEta[eT], 1.5*markerSizeEta[eT], colorEta[eT], colorEta[eT]);
-//         jesSlices[iInp][ijr][eT][iEbin]->SetLineWidth(4);
-//         jesSlices[iInp][ijr][eT][iEbin]->Draw("same,hist");
-//         legendJES3->AddEntry( jesSlices[iInp][ijr][eT][iEbin],Form("%1.1f < #it{#eta}_{jet} < %1.1f",partEta[eT],partEta[eT+1]),"l");
-//       }
-//       legendJES3->Draw();
-//       drawLatexAdd(collisionSystem.Data(),0.35,0.90,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-//       drawLatexAdd(Form("anti-#it{k}_{T}, #it{R} = 0.5, FHCAL+FEMC jets"),0.35,0.85,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-//       drawLatexAdd(Form("%1.1f < #it{E}_{jet} < %1.1f GeV/#it{c}",(200./40)*iEbin,(200./40)*(iEbin+1)),0.35,0.80,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-//       cSingleSlice->Print(Form("%s/Slices/JES_Slice_Plot_EtaBins%d.%s", outputDir.Data(), iEbin, suffix.Data()));
-//     }
-//   }
 }
 
 void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][16], TString title, TString outputFormat, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel) {
@@ -397,10 +353,67 @@ void plotEfficiency(TH1F *h_matched_count[nInputs][njettypes], TH1F *h_truth_cou
   }
 }
 
-void drawInfo(plottingStyleData style, float x, float y, int jettype) {
+void plotSlices (TH2F *spectra[nInputs][njettypes][nEta+1], plottingStyleData style, TString title, TString outputFormat) {
+  // 2D PLOT
+  Double_t textSizeSinglePad = 0.05;
+  Double_t textSizeLabelsRel = 58.0 / 1300;
+  Double_t textSizeLabelsPixel = 35;
+
+  // Create projections for slices
+  TH1D *jesSlices[nInputs][njettypes][nEta+1][40] = {NULL};
+  for(int iInp=0;iInp<nInputs;iInp++){
+    for(int ijr=0;ijr<njettypes;ijr++){
+      for (Int_t eT = 0; eT < nEta+1; eT++){
+        for (Int_t i=1; i < spectra[iInp][ijr][0]->GetNbinsX(); i++){
+          jesSlices[iInp][ijr][eT][i] = (TH1D*)spectra[iInp][ijr][eT]->ProjectionY(Form("projectionYdummy%d%d%d%d",iInp,ijr,eT,i), i,i+1,"e");
+          jesSlices[iInp][ijr][eT][i]->Scale(1/jesSlices[iInp][ijr][eT][i]->GetEntries());
+        }
+      }
+    }
+  }
+
+  TCanvas* cSingleSlice = new TCanvas("cSingleSlice","",0,0,1100,1000);
+  DrawGammaCanvasSettings( cSingleSlice, 0.11, 0.01, 0.002, 0.105);
+  // cSingleSlice->SetLogz();
+
+  TH2F* histoJESSliceDummy   = new TH2F("histoJESSliceDummy","histoJESSliceDummy",1000,-0.99, 0.6,1000,0., 0.1);
+  SetStyleHistoTH2ForGraphs(histoJESSliceDummy, "(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}","norm. counts ", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
+  histoJESSliceDummy->GetYaxis()->SetNoExponent();
+  histoJESSliceDummy->GetYaxis()->SetNdivisions(505,kTRUE);
+  // histoJESSliceDummy->GetXaxis()->SetMoreLogLabels(kTRUE);
+
+  if(1){
+    for (std::size_t ijr = 0; ijr < njettypes; ijr++) {
+      int iInp = 0;
+      gSystem->Exec(Form("mkdir -p %s/%s", outputFormat.Data(), style.str_jet_type[ijr].Data()));
+      for (Int_t iEbin=1; iEbin < spectra[iInp][ijr][0]->GetNbinsX(); iEbin++){
+        histoJESSliceDummy->Draw();
+        // DrawGammaLines(0, 29, 0., 0., 2, kGray+2, 7);
+        TLegend* legendJES3  = GetAndSetLegend2(0.70, 1.0-(5*textSizeLabelsRel), 0.90, 1.0-(1*textSizeLabelsRel),1.1*textSizeLabelsPixel, 1, "", 43, 0.15);
+        for(Int_t eT=10; eT<14;eT++){
+          jesSlices[iInp][ijr][eT][iEbin]->Sumw2();
+          jesSlices[iInp][ijr][eT][iEbin]->Rebin(2);
+          DrawGammaSetMarker( jesSlices[iInp][ijr][eT][iEbin], markerStyleEta[eT], 1.5*markerSizeEta[eT], colorEta[eT], colorEta[eT]);
+          jesSlices[iInp][ijr][eT][iEbin]->SetLineWidth(4);
+          jesSlices[iInp][ijr][eT][iEbin]->Draw("same,hist");
+          legendJES3->AddEntry( jesSlices[iInp][ijr][eT][iEbin],Form("%1.1f < #it{#eta}_{jet} < %1.1f",partEta[eT],partEta[eT+1]),"l");
+        }
+        legendJES3->Draw();
+        TString info[1] = {Form("%1.1f < #it{E}_{jet} < %1.1f GeV/#it{c}",(200./40)*iEbin,(200./40)*(iEbin+1))};
+        drawInfo(style, 0.16, 0.92, ijr, 1, info);
+        cSingleSlice->Print(Form("%s/%s/JES_Slice_Plot_EtaBins%d.%s", outputFormat.Data(), style.str_jet_type[ijr].Data(), iEbin, style.format.Data()));
+      }
+    }
+  }
+}
+
+void drawInfo(plottingStyleData style, float x, float y, int jettype, int numExtraLines=0, TString *extraLines=nullptr) {
   Double_t textSizeSinglePad = 0.05;
   Double_t textSizeLabelsRel = 58.0 / 1300;
   drawLatexAdd(style.collisionSystem.Data(), x, y, textSizeLabelsRel, kFALSE, kFALSE, kFALSE);
   drawLatexAdd(Form("%s, %s", style.jetMatching.Data(), style.str_jet_type_plot[jettype].Data()), x, y - 0.05, textSizeLabelsRel, kFALSE, kFALSE, kFALSE);
   drawLatexAdd(cutString(jettype)->Data(), x, y - 0.10, textSizeLabelsRel, false, false, false);
+  for (std::size_t i = 0; i < numExtraLines; i++) {
+    drawLatexAdd(extraLines[i].Data(), x, y - (0.15 + i * 0.05), textSizeLabelsRel, false, false, false);
+  }
 }
