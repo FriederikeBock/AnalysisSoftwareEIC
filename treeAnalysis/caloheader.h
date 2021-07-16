@@ -73,7 +73,6 @@ void setBOOLClusterArrayToZero(bool* &arrayinput){
 }
 // conversion functions for processing
 float* EtaPhiFromIndices(int ieta,int iphi,float energy = 0, int caloSelect = 0);
-TVector3 TowerPositionVectorFromIndicesGeometry(int ieta,int iphi, int caloSelect = 0);
 
 float weightM02 = 4.5;
 float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers, float w_0, float cluster_E_calc, int caloSelect, Bool_t debugOutput);

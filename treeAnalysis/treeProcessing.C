@@ -788,7 +788,7 @@ void treeProcessing(
                     if (_tower_FEMC_E[i] < seed_E) {
                         continue;
                     }
-                    TVector3 twrPos = TowerPositionVectorFromIndices(_tower_FEMC_iEta[i], _tower_FEMC_iPhi[i], kFEMC);
+                    TVector3 twrPos = TowerPositionVectorFromIndicesGeometry(_tower_FEMC_iEta[i], _tower_FEMC_iPhi[i], kFEMC);
                     double pt = _tower_FEMC_E[i] / cosh(twrPos.Eta());
                     nocluster_px.push_back(pt * cos(twrPos.Phi()));
                     nocluster_py.push_back(pt * sin(twrPos.Phi()));
