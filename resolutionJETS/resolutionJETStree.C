@@ -373,36 +373,35 @@ void plotSlices (TH2F *spectra[nInputs][njettypes][nEta+1], plottingStyleData st
   }
 
   TCanvas* cSingleSlice = new TCanvas("cSingleSlice","",0,0,1100,1000);
-  DrawGammaCanvasSettings( cSingleSlice, 0.11, 0.01, 0.002, 0.105);
-  // cSingleSlice->SetLogz();
-
   TH2F* histoJESSliceDummy   = new TH2F("histoJESSliceDummy","histoJESSliceDummy",1000,-0.99, 0.6,1000,0., 0.1);
-  SetStyleHistoTH2ForGraphs(histoJESSliceDummy, "(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}","norm. counts ", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
-  histoJESSliceDummy->GetYaxis()->SetNoExponent();
-  histoJESSliceDummy->GetYaxis()->SetNdivisions(505,kTRUE);
-  // histoJESSliceDummy->GetXaxis()->SetMoreLogLabels(kTRUE);
+  DrawGammaCanvasSettings( cSingleSlice, 0.1, 0.01, 0.01, 0.11);
 
-  if(1){
-    for (std::size_t ijr = 0; ijr < njettypes; ijr++) {
-      int iInp = 0;
-      gSystem->Exec(Form("mkdir -p %s/%s", outputFormat.Data(), style.str_jet_type[ijr].Data()));
-      for (Int_t iEbin=1; iEbin < spectra[iInp][ijr][0]->GetNbinsX(); iEbin++){
-        histoJESSliceDummy->Draw();
-        // DrawGammaLines(0, 29, 0., 0., 2, kGray+2, 7);
-        TLegend* legendJES3  = GetAndSetLegend2(0.70, 1.0-(5*textSizeLabelsRel), 0.90, 1.0-(1*textSizeLabelsRel),1.1*textSizeLabelsPixel, 1, "", 43, 0.15);
-        for(Int_t eT=10; eT<14;eT++){
-          jesSlices[iInp][ijr][eT][iEbin]->Sumw2();
-          jesSlices[iInp][ijr][eT][iEbin]->Rebin(2);
-          DrawGammaSetMarker( jesSlices[iInp][ijr][eT][iEbin], markerStyleEta[eT], 1.5*markerSizeEta[eT], colorEta[eT], colorEta[eT]);
-          jesSlices[iInp][ijr][eT][iEbin]->SetLineWidth(4);
-          jesSlices[iInp][ijr][eT][iEbin]->Draw("same,hist");
-          legendJES3->AddEntry( jesSlices[iInp][ijr][eT][iEbin],Form("%1.1f < #it{#eta}_{jet} < %1.1f",partEta[eT],partEta[eT+1]),"l");
+  for (std::size_t ijr = 0; ijr < njettypes; ijr++) {
+    gSystem->Exec(Form("mkdir -p %s/%s", outputFormat.Data(), style.str_jet_type[ijr].Data())); // create output dir
+    for (Int_t iEbin=1; iEbin < spectra[0][ijr][0]->GetNbinsX(); iEbin++){
+      float max = 0;
+      histoJESSliceDummy->Draw();
+      // DrawGammaLines(0, 29, 0., 0., 2, kGray+2, 7);
+      THStack *sliceStack = new THStack();  // stack slices
+      TLegend *legendJES3  = GetAndSetLegend2(0.70, 1.0-((ijr==0?13:4)*textSizeLabelsRel), 0.90, 1.0-(1*textSizeLabelsRel),1.1*textSizeLabelsPixel, 1, "", 43, 0.15);
+      for(Int_t eT = firstEtaBin[ijr]; eT < 14; eT++){  // loop over eta ranges
+        jesSlices[0][ijr][eT][iEbin]->Sumw2();
+        jesSlices[0][ijr][eT][iEbin]->Rebin(8);
+        DrawGammaSetMarker( jesSlices[0][ijr][eT][iEbin], markerStyleEta[eT], 1.5*markerSizeEta[eT], colorEta[eT], colorEta[eT]);
+        jesSlices[0][ijr][eT][iEbin]->SetLineWidth(4);
+        sliceStack->Add(jesSlices[0][ijr][eT][iEbin]);
+        if (jesSlices[0][ijr][eT][iEbin]->GetMaximum() > max) {
+          max = jesSlices[0][ijr][eT][iEbin]->GetMaximum();
         }
-        legendJES3->Draw();
-        TString info[1] = {Form("%1.1f < #it{E}_{jet} < %1.1f GeV/#it{c}",(200./40)*iEbin,(200./40)*(iEbin+1))};
-        drawInfo(style, 0.16, 0.92, ijr, 1, info);
-        cSingleSlice->Print(Form("%s/%s/JES_Slice_Plot_EtaBins%d.%s", outputFormat.Data(), style.str_jet_type[ijr].Data(), iEbin, style.format.Data()));
+        legendJES3->AddEntry( jesSlices[0][ijr][eT][iEbin],Form("%1.1f < #it{#eta}_{jet} < %1.1f",partEta[eT],partEta[eT+1]),"l");
       }
+      sliceStack->Draw("nostack hist");
+      legendJES3->Draw();
+      sliceStack->SetMaximum(max * 1.4);
+      SetStyleHistoTHStackForGraphs(sliceStack, "(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}","norm. counts ", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1); 
+      TString info[1] = {Form("%1.1f < #it{E}_{jet} < %1.1f GeV/#it{c}",(200./40)*iEbin,(200./40)*(iEbin+1))};  // Add eta info to plot
+      drawInfo(style, 0.16, 0.92, ijr, 1, info);
+      cSingleSlice->Print(Form("%s/%s/JES_Slice_Plot_EtaBins%d.%s", outputFormat.Data(), style.str_jet_type[ijr].Data(), iEbin, style.format.Data()));
     }
   }
 }
