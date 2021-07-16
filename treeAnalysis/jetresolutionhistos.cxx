@@ -190,9 +190,9 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
         h2D_truth_reco_E[select]->Fill(std::get<1>(truejets)[j].E(), std::get<1>(recjets)[i].E());
         h2D_truth_reco_pT[select]->Fill(std::get<1>(truejets)[j].pt(), std::get<1>(recjets)[i].pt());
 
-        h2D_jet_EtaReso_Eta[select]->Fill(std::get<1>(truejets)[j].eta(),(std::get<1>(recjets)[i].eta()-std::get<1>(truejets)[j].eta())/std::get<1>(truejets)[j].eta());
+        h2D_jet_EtaReso_Eta[select]->Fill(std::get<1>(truejets)[j].eta(),(std::get<1>(recjets)[i].eta()-std::get<1>(truejets)[j].eta()));
 
-        if(verbosityJRH>1) std::cout << "rec jet " << i << " (" << std::get<1>(recjets)[i].E() << "E)  matched with true jet " << j << " (" << std::get<1>(truejets)[j].E() << "E) with dR = " << deltaRTrueRec << endl;
+        if(verbosityJRH>1) std::cout << "rec jet " << i << " (" << std::get<1>(recjets)[i].E() << "E)  matched with true jet " << j << " (" << std::get<1>(truejets)[j].E() << "E) with dR = " << deltaRTrueRec << std::endl;
         h_jetscale_E[select][et]->Fill(std::get<1>(truejets)[j].E(),(std::get<1>(recjets)[i].E()-std::get<1>(truejets)[j].E())/std::get<1>(truejets)[j].E());
         h_jetscale_pT[select][et]->Fill(std::get<1>(truejets)[j].pt(),(std::get<1>(recjets)[i].pt()-std::get<1>(truejets)[j].pt())/std::get<1>(truejets)[j].pt());
 
@@ -203,8 +203,8 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
           h_jetscale_E[select][nEta]->Fill(std::get<1>(truejets)[j].E(),(std::get<1>(recjets)[i].E()-std::get<1>(truejets)[j].E())/std::get<1>(truejets)[j].E());
           h_jetscale_pT[select][nEta]->Fill(std::get<1>(truejets)[j].pt(),(std::get<1>(recjets)[i].pt()-std::get<1>(truejets)[j].pt())/std::get<1>(truejets)[j].pt());
 
-          h2D_jet_EtaReso_E[select][nEta]->Fill(std::get<1>(truejets)[j].E(),(std::get<1>(recjets)[i].eta()-std::get<1>(truejets)[j].eta())/std::get<1>(truejets)[j].eta());
-          h2D_jet_PhiReso_E[select][nEta]->Fill(std::get<1>(truejets)[j].E(),(std::get<1>(truejets)[j].delta_phi_to(std::get<1>(recjets)[i]))/std::get<1>(truejets)[j].phi());
+          h2D_jet_EtaReso_E[select][nEta]->Fill(std::get<1>(truejets)[j].E(),(std::get<1>(recjets)[i].eta()-std::get<1>(truejets)[j].eta()));
+          h2D_jet_PhiReso_E[select][nEta]->Fill(std::get<1>(truejets)[j].E(),(std::get<1>(truejets)[j].delta_phi_to(std::get<1>(recjets)[i])));
         }
         h_MCjet_E_eta[select]->Fill(std::get<1>(truejets)[j].E(),std::get<1>(truejets)[j].eta());
         h_jet_E_eta[select]->Fill(std::get<1>(recjets)[i].E(),std::get<1>(recjets)[i].eta());
