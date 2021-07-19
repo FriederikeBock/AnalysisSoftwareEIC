@@ -176,7 +176,7 @@ void trackingresolution(){
   if (!initResoHist){
     for (unsigned int iTrkSource = 0; iTrkSource < nTrackSources; iTrkSource++) {
       for (Int_t ipart = 0; ipart < nPart_TRKEFF+1; ipart++){
-        for (Int_t k = 0; k < 12; k++){
+        for (Int_t k = 0; k < nCuts; k++){
 //           std::cout << ipart << "\t" << str_TRKEFF_mcparticles[ipart].Data() << "\t" << k << "\t" << nameCuts[k].Data()  << "\t" 
 //                     << Form("h_tracks_%s_%s_True_Eta_pT", str_TRKEFF_mcparticles[ipart].Data(), nameCuts[k].Data()) ;
 
@@ -195,8 +195,8 @@ void trackingresolution(){
           etaMax = partEta[et+1];
         }
 
-        for (Int_t i = 0; i< 5; i++){
-          for (Int_t ipart = 0; ipart < 6; ipart++){
+        for (Int_t i = 0; i< nResoSt; i++){
+          for (Int_t ipart = 0; ipart < nPart_TRKEFF+1; ipart++){
             h_tracks_reso_pT[iTrkSource][i][et][ipart]     = new TH2F(Form("h_tracks_reso_pT_%u_%s_%s_%d", iTrkSource, nameResoAdd[i].Data(), str_TRKEFF_mcparticles[ipart].Data(),et), 
                                                   Form("%1.1f < #eta < %1.1f; #it{p}_{T,MC} (GeV/c); (#it{p}_{T,rec}-#it{p}_{T,MC})/#it{p}_{T,MC}",etaMin, etaMax), 
                                                   200, 0, 20, 250, -0.5, 0.5);
@@ -553,44 +553,48 @@ void trackingresolutionhistosSave(){
     for (Int_t id = 0; id < nPart_TRKEFF; id++){
       for (Int_t k = 0; k < nCuts; k++){
         if (id == 1){
-          h_tracksTrue_Eta_pT[iTrkSource][nPart_TRKEFF][k]->Sumw2();
-          h_tracksRec_Eta_pT[iTrkSource][nPart_TRKEFF][k]->Sumw2();
-          h_tracksTrue_Eta_p[iTrkSource][nPart_TRKEFF][k]->Sumw2();
-          h_tracksRec_Eta_p[iTrkSource][nPart_TRKEFF][k]->Sumw2();
+          if(h_tracksTrue_Eta_pT[iTrkSource][nPart_TRKEFF][k]) h_tracksTrue_Eta_pT[iTrkSource][nPart_TRKEFF][k]->Sumw2();
+          if(h_tracksRec_Eta_pT[iTrkSource][nPart_TRKEFF][k]) h_tracksRec_Eta_pT[iTrkSource][nPart_TRKEFF][k]->Sumw2();
+          if(h_tracksTrue_Eta_p[iTrkSource][nPart_TRKEFF][k]) h_tracksTrue_Eta_p[iTrkSource][nPart_TRKEFF][k]->Sumw2();
+          if(h_tracksRec_Eta_p[iTrkSource][nPart_TRKEFF][k]) h_tracksRec_Eta_p[iTrkSource][nPart_TRKEFF][k]->Sumw2();
         }
 //         if (k == 0) cout << id << "\t" << h_tracksTrue_Eta_pT[nPart_TRKEFF][k]->GetEntries() << "\t" << h_tracksTrue_Eta_pT[id][k]->GetEntries() << endl;
-        h_tracksTrue_Eta_pT[iTrkSource][nPart_TRKEFF][k]->Add(h_tracksTrue_Eta_pT[iTrkSource][id][k]);
-        h_tracksRec_Eta_pT[iTrkSource][nPart_TRKEFF][k]->Add(h_tracksRec_Eta_pT[iTrkSource][id][k]);
-        h_tracksTrue_Eta_p[iTrkSource][nPart_TRKEFF][k]->Add(h_tracksTrue_Eta_p[iTrkSource][id][k]);
-        h_tracksRec_Eta_p[iTrkSource][nPart_TRKEFF][k]->Add(h_tracksRec_Eta_p[iTrkSource][id][k]);
+        if(h_tracksTrue_Eta_pT[iTrkSource][nPart_TRKEFF][k]) h_tracksTrue_Eta_pT[iTrkSource][nPart_TRKEFF][k]->Add(h_tracksTrue_Eta_pT[iTrkSource][id][k]);
+        if(h_tracksRec_Eta_pT[iTrkSource][nPart_TRKEFF][k]) h_tracksRec_Eta_pT[iTrkSource][nPart_TRKEFF][k]->Add(h_tracksRec_Eta_pT[iTrkSource][id][k]);
+        if(h_tracksTrue_Eta_p[iTrkSource][nPart_TRKEFF][k]) h_tracksTrue_Eta_p[iTrkSource][nPart_TRKEFF][k]->Add(h_tracksTrue_Eta_p[iTrkSource][id][k]);
+        if(h_tracksRec_Eta_p[iTrkSource][nPart_TRKEFF][k]) h_tracksRec_Eta_p[iTrkSource][nPart_TRKEFF][k]->Add(h_tracksRec_Eta_p[iTrkSource][id][k]);
       }
       for (Int_t i = 0; i < nResoSt; i++){
         for (Int_t et = 0; et < nEta; et++){
           if (id == 0 && et == 0){
-            h_tracks_reso_pT[iTrkSource][i][et][nPart_TRKEFF]->Sumw2();
-            h_tracks_reso_pT[iTrkSource][i][nEta][nPart_TRKEFF]->Sumw2();
-            h_tracks_reso_pT[iTrkSource][i][nEta][id]->Sumw2();
-            h_tracks_reso_p[iTrkSource][i][et][nPart_TRKEFF]->Sumw2();
-            h_tracks_reso_p[iTrkSource][i][nEta][nPart_TRKEFF]->Sumw2();
-            h_tracks_reso_p[iTrkSource][i][nEta][id]->Sumw2();
+            if(h_tracks_reso_pT[iTrkSource][i][et][nPart_TRKEFF]) h_tracks_reso_pT[iTrkSource][i][et][nPart_TRKEFF]->Sumw2();
+            if(h_tracks_reso_pT[iTrkSource][i][nEta][nPart_TRKEFF]) h_tracks_reso_pT[iTrkSource][i][nEta][nPart_TRKEFF]->Sumw2();
+            if(h_tracks_reso_pT[iTrkSource][i][nEta][id]) h_tracks_reso_pT[iTrkSource][i][nEta][id]->Sumw2();
+            if(h_tracks_reso_p[iTrkSource][i][et][nPart_TRKEFF]) h_tracks_reso_p[iTrkSource][i][et][nPart_TRKEFF]->Sumw2();
+            if(h_tracks_reso_p[iTrkSource][i][nEta][nPart_TRKEFF]) h_tracks_reso_p[iTrkSource][i][nEta][nPart_TRKEFF]->Sumw2();
+            if(h_tracks_reso_p[iTrkSource][i][nEta][id]) h_tracks_reso_p[iTrkSource][i][nEta][id]->Sumw2();
           }
-          h_tracks_reso_pT[iTrkSource][i][et][nPart_TRKEFF]->Add(h_tracks_reso_pT[iTrkSource][i][et][id]);
-          h_tracks_reso_pT[iTrkSource][i][nEta][nPart_TRKEFF]->Add(h_tracks_reso_pT[iTrkSource][i][et][id]);
-          h_tracks_reso_pT[iTrkSource][i][nEta][id]->Add(h_tracks_reso_pT[iTrkSource][i][et][id]);
-          h_tracks_reso_p[iTrkSource][i][et][nPart_TRKEFF]->Add(h_tracks_reso_p[iTrkSource][i][et][id]);
-          h_tracks_reso_p[iTrkSource][i][nEta][nPart_TRKEFF]->Add(h_tracks_reso_p[iTrkSource][i][et][id]);
-          h_tracks_reso_p[iTrkSource][i][nEta][id]->Add(h_tracks_reso_p[iTrkSource][i][et][id]);
+          if(h_tracks_reso_pT[iTrkSource][i][et][id]){
+            if(h_tracks_reso_pT[iTrkSource][i][et][nPart_TRKEFF]) h_tracks_reso_pT[iTrkSource][i][et][nPart_TRKEFF]->Add(h_tracks_reso_pT[iTrkSource][i][et][id]);
+            if(h_tracks_reso_pT[iTrkSource][i][nEta][nPart_TRKEFF]) h_tracks_reso_pT[iTrkSource][i][nEta][nPart_TRKEFF]->Add(h_tracks_reso_pT[iTrkSource][i][et][id]);
+            if(h_tracks_reso_pT[iTrkSource][i][nEta][id]) h_tracks_reso_pT[iTrkSource][i][nEta][id]->Add(h_tracks_reso_pT[iTrkSource][i][et][id]);
+          }
+          if(h_tracks_reso_p[iTrkSource][i][et][id]){
+            if(h_tracks_reso_p[iTrkSource][i][et][nPart_TRKEFF]) h_tracks_reso_p[iTrkSource][i][et][nPart_TRKEFF]->Add(h_tracks_reso_p[iTrkSource][i][et][id]);
+            if(h_tracks_reso_p[iTrkSource][i][nEta][nPart_TRKEFF]) h_tracks_reso_p[iTrkSource][i][nEta][nPart_TRKEFF]->Add(h_tracks_reso_p[iTrkSource][i][et][id]);
+            if(h_tracks_reso_p[iTrkSource][i][nEta][id]) h_tracks_reso_p[iTrkSource][i][nEta][id]->Add(h_tracks_reso_p[iTrkSource][i][et][id]);
+          }
         }
       }
     }
     for (Int_t i = 0; i < nResoSt; i++){
       for (Int_t et = 0; et < nEta; et++){
         if (et == 0){
-          h_tracks_resoEta_pT[iTrkSource][i][nEta]->Sumw2();
-          h_tracks_resoPhi_pT[iTrkSource][i][nEta]->Sumw2();
+          if(h_tracks_resoEta_pT[iTrkSource][i][nEta]) h_tracks_resoEta_pT[iTrkSource][i][nEta]->Sumw2();
+          if(h_tracks_resoPhi_pT[iTrkSource][i][nEta]) h_tracks_resoPhi_pT[iTrkSource][i][nEta]->Sumw2();
         }
-        h_tracks_resoEta_pT[iTrkSource][i][nEta]->Add(h_tracks_resoEta_pT[iTrkSource][i][et]);
-        h_tracks_resoPhi_pT[iTrkSource][i][nEta]->Add(h_tracks_resoPhi_pT[iTrkSource][i][et]);
+        if(h_tracks_resoEta_pT[iTrkSource][i][nEta]) h_tracks_resoEta_pT[iTrkSource][i][nEta]->Add(h_tracks_resoEta_pT[iTrkSource][i][et]);
+        if(h_tracks_resoPhi_pT[iTrkSource][i][nEta]) h_tracks_resoPhi_pT[iTrkSource][i][nEta]->Add(h_tracks_resoPhi_pT[iTrkSource][i][et]);
       }
     }
   }
@@ -599,7 +603,7 @@ void trackingresolutionhistosSave(){
   TFile* fileOutput = new TFile(Form("%s/output_TRKRS.root",outputDir.Data()),"RECREATE");
   hNEvents->Write();
   for (unsigned int iTrkSource = 0; iTrkSource < nTrackSources; iTrkSource++) {
-    hNTracks[iTrkSource]->Write();
+    if(hNTracks[iTrkSource])hNTracks[iTrkSource]->Write();
     for (Int_t et = 0; et < nEta+1; et++){
       for (Int_t i = 0; i< nResoSt; i++){
         for (Int_t id = 0; id < nPart_TRKEFF+1 ; id++) {
