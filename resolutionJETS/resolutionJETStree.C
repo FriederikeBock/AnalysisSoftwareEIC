@@ -85,6 +85,8 @@ void resolutionJETStree(
 
   TH2F*    histo2D_JES_E[nInputs][njettypes][nEta+1] = {{{NULL}}};
   TH2F*    histo2D_JES_pT[nInputs][njettypes][nEta+1] = {{{NULL}}};
+  TH2F*    histo2D_JES_eta[nInputs][njettypes][nEta+1] = {{{NULL}}};
+  TH2F*    histo2D_JES_phi[nInputs][njettypes][nEta+1] = {{{NULL}}};
   TH1F*    histo_JES_E[nInputs][njettypes][nEta+1] = {{{NULL}}};
   TH1F*    histo_JES_pT[nInputs][njettypes][nEta+1] = {{{NULL}}};
   TH1F*    histo_JER_E[nInputs][njettypes][nEta+1] = {{{NULL}}};
@@ -155,6 +157,8 @@ void resolutionJETStree(
       for (Int_t eT = 0; eT < nEta+1; eT++){
         histo2D_JES_E[iInp][ijr][eT]	= (TH2F*) inputFiles[iInp]->Get(Form("h_jetscale_%s_E_%d", style.str_jet_type[ijr].Data(),eT));
         histo2D_JES_pT[iInp][ijr][eT]	= (TH2F*) inputFiles[iInp]->Get(Form("h_jetscale_%s_pT_%d", style.str_jet_type[ijr].Data(),eT));
+        histo2D_JES_eta[iInp][ijr][eT]	= (TH2F*) inputFiles[iInp]->Get(Form("h_jetscale_%s_eta_%d", style.str_jet_type[ijr].Data(),eT));
+        histo2D_JES_phi[iInp][ijr][eT]	= (TH2F*) inputFiles[iInp]->Get(Form("h_jetscale_%s_phi_%d", style.str_jet_type[ijr].Data(),eT));
 
         h_EtaReso_Width_E[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_EtaReso_Width_%s_E_%d", style.str_jet_type[ijr].Data(),eT));
         h_EtaReso_Mean_E[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_EtaReso_Mean_%s_E_%d", style.str_jet_type[ijr].Data(),eT));
@@ -188,6 +192,9 @@ void resolutionJETStree(
 
   // Plot slices
   plotSlices(histo2D_JES_E, style, TString("E"), TString(Form("%s/Slices", outputDir.Data())));
+  // plotSlices(histo2D_JES_pT, style, TString("pT"), TString(Form("%s/Slices", outputDir.Data())));
+  plotSlices(histo2D_JES_eta, style, TString("eta"), TString(Form("%s/Slices", outputDir.Data())));
+  plotSlices(histo2D_JES_phi, style, TString("phi"), TString(Form("%s/Slices", outputDir.Data())));
 
   // Plot efficiency
   plotEfficiency(h_matched_count, h_truth_count, style, outputDir);
@@ -377,7 +384,7 @@ void plotSlices (TH2F *spectra[nInputs][njettypes][nEta+1], plottingStyleData st
   DrawGammaCanvasSettings( cSingleSlice, 0.1, 0.01, 0.01, 0.11);
 
   for (std::size_t ijr = 0; ijr < njettypes; ijr++) {
-    gSystem->Exec(Form("mkdir -p %s/%s", outputFormat.Data(), style.str_jet_type[ijr].Data())); // create output dir
+    gSystem->Exec(Form("mkdir -p %s/%s/%s", outputFormat.Data(), title.Data(), style.str_jet_type[ijr].Data())); // create output dir
     for (Int_t iEbin=1; iEbin < spectra[0][ijr][0]->GetNbinsX(); iEbin++){
       float max = 0;
       histoJESSliceDummy->Draw();
@@ -401,7 +408,7 @@ void plotSlices (TH2F *spectra[nInputs][njettypes][nEta+1], plottingStyleData st
       SetStyleHistoTHStackForGraphs(sliceStack, "(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}","norm. counts ", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1); 
       TString info[1] = {Form("%1.1f < #it{E}_{jet} < %1.1f GeV/#it{c}",(200./40)*iEbin,(200./40)*(iEbin+1))};  // Add eta info to plot
       drawInfo(style, 0.16, 0.92, ijr, 1, info);
-      cSingleSlice->Print(Form("%s/%s/JES_Slice_Plot_EtaBins%d.%s", outputFormat.Data(), style.str_jet_type[ijr].Data(), iEbin, style.format.Data()));
+      cSingleSlice->Print(Form("%s/%s/%s/JES_Slice_Plot_EtaBins%d.%s", outputFormat.Data(), title.Data(), style.str_jet_type[ijr].Data(), iEbin, style.format.Data()));
     }
   }
 }
