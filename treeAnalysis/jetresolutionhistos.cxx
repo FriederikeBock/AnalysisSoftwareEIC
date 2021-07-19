@@ -304,8 +304,8 @@ void jetresolutionhistosSave(){
     for (Int_t eT = 0; eT < nEta+1; eT++){
       if(h_jetscale_E[isel][eT])h_jetscale_E[isel][eT]->Write();
       if(h_jetscale_pT[isel][eT])h_jetscale_pT[isel][eT]->Write();
-      if(h_jetscale_eta[isel][eT])h_jetscale_eta[isel][eT]->Write(); else {std::cerr << "wtf" << std::endl;}
-      if(h_jetscale_phi[isel][eT])h_jetscale_phi[isel][eT]->Write(); else {std::cerr << "wtf2.0 " << std::endl;}
+      if(h_jetscale_eta[isel][eT])h_jetscale_eta[isel][eT]->Write();
+      if(h_jetscale_phi[isel][eT])h_jetscale_phi[isel][eT]->Write();
       if(h_JES_pT[isel][eT])h_JES_pT[isel][eT]->Write();
       if(h_JES_E[isel][eT])h_JES_E[isel][eT]->Write();
       if(h_JER_pT[isel][eT])h_JER_pT[isel][eT]->Write();
