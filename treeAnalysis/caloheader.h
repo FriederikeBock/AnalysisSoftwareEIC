@@ -1,6 +1,4 @@
 // ANCHOR basic struct for towers in clusterizer
-int _granularityCalo = 1;
-
 typedef struct {
   float tower_E;
   int tower_iEta;
@@ -15,27 +13,46 @@ typedef struct {
 } occuranceStrct;
 
 enum calotype {
-    kFHCAL         = 0,
-    kFEMC         = 1,
-    kDRCALO        = 2,
-    kEEMC         = 3,
-    kCEMC         = 4
+  kFHCAL         = 0,
+  kFEMC         = 1,
+  kDRCALO        = 2,
+  kEEMC         = 3,
+  kCEMC         = 4,
+  kEHCAL         = 5,
+  kHCALIN       = 6,
+  kHCALOUT       = 7,
+  kLFHCAL        = 8,
+  kEEMCG         = 9,
+  kBECAL         = 10
 };
-TString str_calorimeter[5] = {"FHCAL", "FEMC", "DRCALO", "EEMC", "CEMC"};
-const int _active_calo = 2;
+const int maxcalo = 11;
+int calogeomindex[maxcalo] = {0};
+
+TString str_calorimeter[maxcalo] = {"FHCAL", "FEMC", "DRCALO", "EEMC", "CEMC", "EHCAL", "HCALIN", "HCALOUT", "LFHCAL", "EEMCG", "BECAL"};
+const int _active_calo = 11;
 
 enum clusterizertype {
-    kV1         = 0,
+    kMA         = 0,
     kV3         = 1,
-    k3x3        = 2,
+    kV1         = 2,
     k5x5        = 3,
-    kC3         = 4,
-    kC5         = 5,
-    kMA         = 6,
+    kC5         = 4,
+    kC3         = 5,
+    k3x3        = 6,
     kDummy      = 7
 };
-TString str_clusterizer[7] = {"V1", "V3", "3x3", "5x5", "C3", "C5", "MA"};
-const int _active_algo = 7;
+// TString str_clusterizer[7] = {"V1", "V3", "3x3", "5x5", "C3", "C5", "MA"};
+TString str_clusterizer[7] = {"MA", "V3", "V1", "5x5", "C5", "C3", "3x3"};
+const int _active_algo = 1;
+
+float _ch_DRCALO_pos_z = 1;
+float _ch_FHCAL_pos_z = 1;
+float _ch_FEMC_pos_z = 1;
+float _ch_EHCAL_pos_z = 1;
+float _ch_EEMC_pos_z = 1;
+float _ch_EEMCG_pos_z = 1;
+float _ch_LFHCAL_pos_z = 1;
+
 // sorting function for towers
 bool acompare(towersStrct lhs, towersStrct rhs) { return lhs.tower_E > rhs.tower_E; }
 
@@ -60,47 +77,178 @@ float* EtaPhiFromIndices(int ieta,int iphi,float energy = 0, int caloSelect = 0)
 float weightM02 = 4.5;
 float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers, float w_0, float cluster_E_calc, int caloSelect, Bool_t debugOutput);
 
-
-// ANCHOR function to return eta and phi from cell iEta and iPhi indices
-float * EtaPhiFromIndices(int i_x,int i_y, float energy, int caloSelect = 0){
-  static float eta_phi[2];
-  float zHC = 400;
-  float twrD = 10./_granularityCalo;
-  // center (x=0,y=0) at 27,27 with 10x10 granularity, and 53,53 with 5x5 granularity
-  int center_x = _granularityCalo==1 ? 27 : 53;
-  int center_y = _granularityCalo==1 ? 27 : 53;
-  // center (x=0,y=0) at 27,27 with 5.5x5.5 granularity, and 65,65 with 2.75x2.75 granularity
-  if(caloSelect==kFEMC){
-    zHC = 310;
-    twrD = 5.535/_granularityCalo;
-    center_x = _granularityCalo==1 ? 32 : 65;
-    center_y = _granularityCalo==1 ? 32 : 65;
+void SetGeometryIndices(){
+  Long64_t nEntriesTree                 = tt_geometry->GetEntries();
+  for (int ireset=0; ireset<maxcalo;ireset++) {
+    calogeomindex[ireset] = -1;
   }
-
-  TVector3 vecTwr((center_x-i_x)*twrD,(center_y-i_y)*twrD,zHC);
-  eta_phi[0] = vecTwr.Eta();
-  eta_phi[1] = (vecTwr.Phi()<0 ? vecTwr.Phi()+TMath::Pi() : vecTwr.Phi()-TMath::Pi());
-  if(eta_phi[0]>10)cout << "\t" << center_x-i_x << ":" << center_y-i_y << "\tEta " << eta_phi[0] << "\tPhi "<< eta_phi[1]/**180/TMath::Pi()*/ << "\t" << energy << endl;
-
-  return eta_phi;
+  for (Long64_t i=0; i<nEntriesTree;i++) {
+    tt_geometry->GetEntry(i);
+    calogeomindex[_calogeom_ID] = i;
+  }
 }
 
-// ANCHOR function to return a TVector3 for the tower position based on iEta and iPhi indices
-TVector3 TowerPositionVectorFromIndices(int i_x,int i_y, int caloSelect = 0){
-  float zHC = 350;
-  float twrD = 10./_granularityCalo;
-  // center (x=0,y=0) at 27,27 with 10x10 granularity
-  int center_x = 27*_granularityCalo;
-  int center_y = 27*_granularityCalo;
-
-  if(caloSelect==kFEMC){
-    zHC = 291;
-    twrD = 5.535/_granularityCalo;
-    center_x = 32*_granularityCalo;
-    center_y = 32*_granularityCalo;
+bool IsForwardCalorimeter(int caloID){
+  switch (caloID){
+    case kDRCALO: return true;
+    case kFHCAL: return true;
+    case kFEMC: return true;
+    case kEHCAL: return true;
+    case kEEMC: return true;
+    case kHCALIN: return false;
+    case kHCALOUT: return false;
+    case kCEMC: return false;
+    case kEEMCG: return true;
+    case kLFHCAL: return true;
+    case kBECAL: return false;
+    default:
+      cout << "IsForwardCalorimeter: caloID " << caloID << " not defined, returning false" << endl;
+      return false;
   }
+  return false;
+}
 
-  TVector3 twrPositionVec((i_x-center_x)*twrD,(i_y-center_y)*twrD,zHC);
+float ReturnFwdCalorimeterPosition(int caloID){
+  if(IsForwardCalorimeter(caloID)){
+    switch (caloID){
+      case kDRCALO: return _ch_DRCALO_pos_z;
+      case kFHCAL: return _ch_FHCAL_pos_z;
+      case kFEMC: return _ch_FEMC_pos_z;
+      case kEHCAL: return _ch_EHCAL_pos_z;
+      case kEEMC: return _ch_EEMC_pos_z;
+      case kEEMCG: return _ch_EEMCG_pos_z;
+      case kLFHCAL: return _ch_LFHCAL_pos_z;
+      default:
+        cout << "ReturnFwdCalorimeterPosition: caloID " << caloID << " forward position not defined, returning 1" << endl;
+        return 1;
+    }
+  }
+  return 1;
+}
+
+int ReturnCaloFwdBarrelBckw(int caloID){
+  // 0 for forward calos
+  // 1 for barrel calos
+  // 2 for backwards calos
+  switch (caloID){
+    case kDRCALO: return 0;
+    case kFHCAL: return 0;
+    case kFEMC: return 0;
+    case kEHCAL: return 2;
+    case kEEMC: return 2;
+    case kHCALIN: return 1;
+    case kHCALOUT: return 1;
+    case kCEMC: return 1;
+    case kEEMCG: return 2;
+    case kLFHCAL: return 0;
+    case kBECAL: return 1;
+    default:
+      return 1;
+  }
+  return 1;
+}
+
+void SetFwdCalorimeterPosition(int caloID, float zposin){
+  float zpos = abs(zposin);
+  switch (caloID){
+    case kDRCALO: _ch_DRCALO_pos_z = zpos; break;
+    case kFHCAL: _ch_FHCAL_pos_z = zpos; break;
+    case kFEMC:_ch_FEMC_pos_z = zpos; break;
+    case kEHCAL:_ch_EHCAL_pos_z = zpos; break;
+    case kEEMC:_ch_EEMC_pos_z = zpos; break;
+    case kEEMCG:_ch_EEMCG_pos_z = zpos; break;
+    case kLFHCAL:_ch_LFHCAL_pos_z = zpos; break;
+    default: break;
+  }
+}
+
+int ReturnProjectionIndexForCalorimeter(int caloID){
+  switch (caloID){
+    case kDRCALO: return 1;
+    case kFHCAL: return 5;
+    case kFEMC: return 6;
+    case kEHCAL: return 60;
+    case kEEMC: return 61;
+    case kHCALIN: return 62;
+    case kHCALOUT: return 63;
+    case kCEMC: return 64;
+    case kEEMCG: return 65;
+    case kLFHCAL: return 67;
+    case kBECAL: return 66;
+    default:
+      cout << "ReturnProjectionIndexForCalorimeter: caloID " << caloID << " not defined, returning -1" << endl;
+      return -1;
+  }
+  return -1;
+}
+
+int ReturnCalorimeterFromProjectionIndex(int projID){
+  switch (projID){
+    case 1: return kDRCALO;
+    case 5: return kFHCAL;
+    case 6: return kFEMC;
+    case 60: return kEHCAL;
+    case 61: return kEEMC;
+    case 62: return kHCALIN;
+    case 63: return kHCALOUT;
+    case 64: return kCEMC;
+    case 65: return kEEMCG;
+    case 67: return kLFHCAL;
+    case 66: return kBECAL;
+    default:
+      // cout << "ReturnCalorimeterFromProjectionIndex: projID " << projID << " not defined, returning -1" << endl;
+      return -1;
+  }
+  return -1;
+}
+
+float ReturnTrackMatchingWindowForCalo(int caloID){
+  switch (caloID){
+    case kDRCALO: return 5;
+    case kFHCAL: return 10;
+    case kFEMC: return 5.5;
+    case kEHCAL: return 10;
+    case kEEMC: return 4.0;
+    case kHCALIN: return 0.1;
+    case kHCALOUT: return 0.1;
+    case kCEMC: return 0.05;
+    case kEEMCG: return 5;
+    case kLFHCAL: return 10;
+    case kBECAL: return 0.05;
+    default:
+      cout << "ReturnTrackMatchingWindowForCalo: caloID " << caloID << " not defined, returning -1" << endl;
+      return -1;
+  }
+  return -1;
+}
+
+
+// ANCHOR function to return a TVector3 for the tower position based on iEta and iPhi indices
+TVector3 TowerPositionVectorFromIndicesGeometry(int i_Eta,int i_Phi, int caloSelect = 0){
+  float xpos = -10000;
+  float ypos = -10000;
+  float zpos = -10000;
+
+  if(calogeomindex[caloSelect]==-1) cout << "calorimeter not found in geometry!" << endl;
+  tt_geometry->GetEntry(calogeomindex[caloSelect]);
+  for (Long64_t itow=0; itow<_calogeom_towers_N;itow++) {
+    if(_calogeom_towers_iEta[itow]==i_Eta){
+      if(_calogeom_towers_iPhi[itow]==i_Phi){
+        xpos = _calogeom_towers_x[itow];
+        ypos = _calogeom_towers_y[itow];
+        zpos = _calogeom_towers_z[itow];
+      }
+    }
+  }
+  if(xpos==-10000 || ypos==-10000 || zpos==-10000){
+    cout << "something is terribly wrong in your geometry: x="<<xpos<<"\ty="<<ypos<<"\tz="<<zpos<<endl;
+  }
+  if(IsForwardCalorimeter(caloSelect) && zpos!=-10000){
+    if(ReturnFwdCalorimeterPosition(caloSelect)==1){
+      SetFwdCalorimeterPosition(caloSelect, zpos);
+    }
+  }
+  TVector3 twrPositionVec(xpos,ypos,zpos);
   return twrPositionVec;
 }
 
@@ -111,21 +259,24 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
     float w_tot = 0;
     std::vector<float> w_i;
     TVector3 vecTwr;
-    float zHC = 400;
-    if(caloSelect==kFHCAL)zHC=350;
-    if(caloSelect==kFEMC)zHC=291;
+    TVector3 vecTwrTmp;
+    float zHC = 1;
 
     vecTwr = {0.,0.,0.};
     //calculation of weights and weighted position vector
     for(int cellI=0; cellI<cluster_towers.size(); cellI++){
         w_i.push_back(TMath::Max( (float)0, (float) (w_0 + TMath::Log(cluster_towers.at(cellI).tower_E/cluster_E_calc) )));
         w_tot += w_i.at(cellI);
-        vecTwr += w_i.at(cellI)*TowerPositionVectorFromIndices(cluster_towers.at(cellI).tower_iEta,cluster_towers.at(cellI).tower_iPhi, caloSelect);
+        vecTwrTmp = TowerPositionVectorFromIndicesGeometry(cluster_towers.at(cellI).tower_iEta,cluster_towers.at(cellI).tower_iPhi, caloSelect);
+        // cout << caloSelect << "\t" << vecTwrTmp.X() << "\t" << vecTwrTmp.Y() << "\t" << vecTwrTmp.Z() << endl;
+        vecTwr += w_i.at(cellI)*vecTwrTmp;
+        if(cellI==0 && ReturnFwdCalorimeterPosition(caloSelect))zHC=vecTwrTmp.Z();
     }
     returnVariables[2]=vecTwr.Eta();
-    returnVariables[3]=vecTwr.Phi();
-    // vecTwr*=1/w_tot;//(zHC/vecTwr.Z());
-    vecTwr*=(zHC/vecTwr.Z());
+    returnVariables[3]=vecTwr.Phi(); //(vecTwr.Phi()<0 ? vecTwr.Phi()+TMath::Pi() : vecTwr.Phi()-TMath::Pi());
+    if(IsForwardCalorimeter(caloSelect)){
+      vecTwr*=abs(zHC/vecTwr.Z());
+    }
     returnVariables[4]=vecTwr.X();
     returnVariables[5]=vecTwr.Y();
     returnVariables[6]=vecTwr.Z();
@@ -252,6 +403,118 @@ float* _clusters_V3_FEMC_Y         = new float[_maxNclusters];
 float* _clusters_V3_FEMC_Z         = new float[_maxNclusters];
 
 // MA global cluster variables
+int _nclusters_MA_EEMC = 0;
+float* _clusters_MA_EEMC_E            = new float[_maxNclusters];
+float* _clusters_MA_EEMC_Eta         = new float[_maxNclusters];
+float* _clusters_MA_EEMC_Phi         = new float[_maxNclusters];
+float* _clusters_MA_EEMC_M02         = new float[_maxNclusters];
+float* _clusters_MA_EEMC_M20         = new float[_maxNclusters];
+bool* _clusters_MA_EEMC_isMatched         = new bool[_maxNclusters];
+int* _clusters_MA_EEMC_NTower         = new int[_maxNclusters];
+int* _clusters_MA_EEMC_trueID       = new int[_maxNclusters];
+int* _clusters_MA_EEMC_NtrueID       = new int[_maxNclusters];
+float* _clusters_MA_EEMC_X         = new float[_maxNclusters];
+float* _clusters_MA_EEMC_Y         = new float[_maxNclusters];
+float* _clusters_MA_EEMC_Z         = new float[_maxNclusters];
+
+int _nclusters_MA_EEMCG = 0;
+float* _clusters_MA_EEMCG_E            = new float[_maxNclusters];
+float* _clusters_MA_EEMCG_Eta         = new float[_maxNclusters];
+float* _clusters_MA_EEMCG_Phi         = new float[_maxNclusters];
+float* _clusters_MA_EEMCG_M02         = new float[_maxNclusters];
+float* _clusters_MA_EEMCG_M20         = new float[_maxNclusters];
+bool* _clusters_MA_EEMCG_isMatched         = new bool[_maxNclusters];
+int* _clusters_MA_EEMCG_NTower         = new int[_maxNclusters];
+int* _clusters_MA_EEMCG_trueID       = new int[_maxNclusters];
+int* _clusters_MA_EEMCG_NtrueID       = new int[_maxNclusters];
+float* _clusters_MA_EEMCG_X         = new float[_maxNclusters];
+float* _clusters_MA_EEMCG_Y         = new float[_maxNclusters];
+float* _clusters_MA_EEMCG_Z         = new float[_maxNclusters];
+
+int _nclusters_MA_EHCAL = 0;
+float* _clusters_MA_EHCAL_E            = new float[_maxNclusters];
+float* _clusters_MA_EHCAL_Eta         = new float[_maxNclusters];
+float* _clusters_MA_EHCAL_Phi         = new float[_maxNclusters];
+float* _clusters_MA_EHCAL_M02         = new float[_maxNclusters];
+float* _clusters_MA_EHCAL_M20         = new float[_maxNclusters];
+bool* _clusters_MA_EHCAL_isMatched         = new bool[_maxNclusters];
+int* _clusters_MA_EHCAL_NTower         = new int[_maxNclusters];
+int* _clusters_MA_EHCAL_trueID       = new int[_maxNclusters];
+int* _clusters_MA_EHCAL_NtrueID       = new int[_maxNclusters];
+float* _clusters_MA_EHCAL_X         = new float[_maxNclusters];
+float* _clusters_MA_EHCAL_Y         = new float[_maxNclusters];
+float* _clusters_MA_EHCAL_Z         = new float[_maxNclusters];
+
+int _nclusters_MA_CEMC = 0;
+float* _clusters_MA_CEMC_E            = new float[_maxNclusters];
+float* _clusters_MA_CEMC_Eta         = new float[_maxNclusters];
+float* _clusters_MA_CEMC_Phi         = new float[_maxNclusters];
+float* _clusters_MA_CEMC_M02         = new float[_maxNclusters];
+float* _clusters_MA_CEMC_M20         = new float[_maxNclusters];
+bool* _clusters_MA_CEMC_isMatched         = new bool[_maxNclusters];
+int* _clusters_MA_CEMC_NTower         = new int[_maxNclusters];
+int* _clusters_MA_CEMC_trueID       = new int[_maxNclusters];
+int* _clusters_MA_CEMC_NtrueID       = new int[_maxNclusters];
+float* _clusters_MA_CEMC_X         = new float[_maxNclusters];
+float* _clusters_MA_CEMC_Y         = new float[_maxNclusters];
+float* _clusters_MA_CEMC_Z         = new float[_maxNclusters];
+
+int _nclusters_MA_BECAL = 0;
+float* _clusters_MA_BECAL_E            = new float[_maxNclusters];
+float* _clusters_MA_BECAL_Eta         = new float[_maxNclusters];
+float* _clusters_MA_BECAL_Phi         = new float[_maxNclusters];
+float* _clusters_MA_BECAL_M02         = new float[_maxNclusters];
+float* _clusters_MA_BECAL_M20         = new float[_maxNclusters];
+bool* _clusters_MA_BECAL_isMatched         = new bool[_maxNclusters];
+int* _clusters_MA_BECAL_NTower         = new int[_maxNclusters];
+int* _clusters_MA_BECAL_trueID       = new int[_maxNclusters];
+int* _clusters_MA_BECAL_NtrueID       = new int[_maxNclusters];
+float* _clusters_MA_BECAL_X         = new float[_maxNclusters];
+float* _clusters_MA_BECAL_Y         = new float[_maxNclusters];
+float* _clusters_MA_BECAL_Z         = new float[_maxNclusters];
+
+int _nclusters_MA_HCALIN = 0;
+float* _clusters_MA_HCALIN_E            = new float[_maxNclusters];
+float* _clusters_MA_HCALIN_Eta         = new float[_maxNclusters];
+float* _clusters_MA_HCALIN_Phi         = new float[_maxNclusters];
+float* _clusters_MA_HCALIN_M02         = new float[_maxNclusters];
+float* _clusters_MA_HCALIN_M20         = new float[_maxNclusters];
+bool* _clusters_MA_HCALIN_isMatched         = new bool[_maxNclusters];
+int* _clusters_MA_HCALIN_NTower         = new int[_maxNclusters];
+int* _clusters_MA_HCALIN_trueID       = new int[_maxNclusters];
+int* _clusters_MA_HCALIN_NtrueID       = new int[_maxNclusters];
+float* _clusters_MA_HCALIN_X         = new float[_maxNclusters];
+float* _clusters_MA_HCALIN_Y         = new float[_maxNclusters];
+float* _clusters_MA_HCALIN_Z         = new float[_maxNclusters];
+
+int _nclusters_MA_HCALOUT = 0;
+float* _clusters_MA_HCALOUT_E            = new float[_maxNclusters];
+float* _clusters_MA_HCALOUT_Eta         = new float[_maxNclusters];
+float* _clusters_MA_HCALOUT_Phi         = new float[_maxNclusters];
+float* _clusters_MA_HCALOUT_M02         = new float[_maxNclusters];
+float* _clusters_MA_HCALOUT_M20         = new float[_maxNclusters];
+bool* _clusters_MA_HCALOUT_isMatched         = new bool[_maxNclusters];
+int* _clusters_MA_HCALOUT_NTower         = new int[_maxNclusters];
+int* _clusters_MA_HCALOUT_trueID       = new int[_maxNclusters];
+int* _clusters_MA_HCALOUT_NtrueID       = new int[_maxNclusters];
+float* _clusters_MA_HCALOUT_X         = new float[_maxNclusters];
+float* _clusters_MA_HCALOUT_Y         = new float[_maxNclusters];
+float* _clusters_MA_HCALOUT_Z         = new float[_maxNclusters];
+
+int _nclusters_MA_LFHCAL = 0;
+float* _clusters_MA_LFHCAL_E            = new float[_maxNclusters];
+float* _clusters_MA_LFHCAL_Eta         = new float[_maxNclusters];
+float* _clusters_MA_LFHCAL_Phi         = new float[_maxNclusters];
+float* _clusters_MA_LFHCAL_M02         = new float[_maxNclusters];
+float* _clusters_MA_LFHCAL_M20         = new float[_maxNclusters];
+bool* _clusters_MA_LFHCAL_isMatched         = new bool[_maxNclusters];
+int* _clusters_MA_LFHCAL_NTower         = new int[_maxNclusters];
+int* _clusters_MA_LFHCAL_trueID       = new int[_maxNclusters];
+int* _clusters_MA_LFHCAL_NtrueID       = new int[_maxNclusters];
+float* _clusters_MA_LFHCAL_X         = new float[_maxNclusters];
+float* _clusters_MA_LFHCAL_Y         = new float[_maxNclusters];
+float* _clusters_MA_LFHCAL_Z         = new float[_maxNclusters];
+
 int _nclusters_MA_FHCAL = 0;
 float* _clusters_MA_FHCAL_E            = new float[_maxNclusters];
 float* _clusters_MA_FHCAL_Eta         = new float[_maxNclusters];
@@ -548,6 +811,126 @@ bool loadClusterizerInput(
       clusters_X = _clusters_MA_FEMC_X;
       clusters_Y = _clusters_MA_FEMC_Y;
       clusters_Z = _clusters_MA_FEMC_Z;
+      return true;
+    } else if(caloEnum==kLFHCAL){
+      nclusters = _nclusters_MA_LFHCAL;
+      clusters_E = _clusters_MA_LFHCAL_E;
+      clusters_Eta = _clusters_MA_LFHCAL_Eta;
+      clusters_Phi = _clusters_MA_LFHCAL_Phi;
+      clusters_M02 = _clusters_MA_LFHCAL_M02;
+      clusters_M20 = _clusters_MA_LFHCAL_M20;
+      clusters_isMatched = _clusters_MA_LFHCAL_isMatched;
+      clusters_NTower = _clusters_MA_LFHCAL_NTower;
+      clusters_trueID = _clusters_MA_LFHCAL_trueID;
+      clusters_NtrueID = _clusters_MA_LFHCAL_NtrueID;
+      clusters_X = _clusters_MA_LFHCAL_X;
+      clusters_Y = _clusters_MA_LFHCAL_Y;
+      clusters_Z = _clusters_MA_LFHCAL_Z;
+      return true;
+    } else if(caloEnum==kEEMC){
+      nclusters = _nclusters_MA_EEMC;
+      clusters_E = _clusters_MA_EEMC_E;
+      clusters_Eta = _clusters_MA_EEMC_Eta;
+      clusters_Phi = _clusters_MA_EEMC_Phi;
+      clusters_M02 = _clusters_MA_EEMC_M02;
+      clusters_M20 = _clusters_MA_EEMC_M20;
+      clusters_isMatched = _clusters_MA_EEMC_isMatched;
+      clusters_NTower = _clusters_MA_EEMC_NTower;
+      clusters_trueID = _clusters_MA_EEMC_trueID;
+      clusters_NtrueID = _clusters_MA_EEMC_NtrueID;
+      clusters_X = _clusters_MA_EEMC_X;
+      clusters_Y = _clusters_MA_EEMC_Y;
+      clusters_Z = _clusters_MA_EEMC_Z;
+      return true;
+    } else if(caloEnum==kEEMCG){
+      nclusters = _nclusters_MA_EEMCG;
+      clusters_E = _clusters_MA_EEMCG_E;
+      clusters_Eta = _clusters_MA_EEMCG_Eta;
+      clusters_Phi = _clusters_MA_EEMCG_Phi;
+      clusters_M02 = _clusters_MA_EEMCG_M02;
+      clusters_M20 = _clusters_MA_EEMCG_M20;
+      clusters_isMatched = _clusters_MA_EEMCG_isMatched;
+      clusters_NTower = _clusters_MA_EEMCG_NTower;
+      clusters_trueID = _clusters_MA_EEMCG_trueID;
+      clusters_NtrueID = _clusters_MA_EEMCG_NtrueID;
+      clusters_X = _clusters_MA_EEMCG_X;
+      clusters_Y = _clusters_MA_EEMCG_Y;
+      clusters_Z = _clusters_MA_EEMCG_Z;
+      return true;
+    } else if(caloEnum==kEHCAL){
+      nclusters = _nclusters_MA_EHCAL;
+      clusters_E = _clusters_MA_EHCAL_E;
+      clusters_Eta = _clusters_MA_EHCAL_Eta;
+      clusters_Phi = _clusters_MA_EHCAL_Phi;
+      clusters_M02 = _clusters_MA_EHCAL_M02;
+      clusters_M20 = _clusters_MA_EHCAL_M20;
+      clusters_isMatched = _clusters_MA_EHCAL_isMatched;
+      clusters_NTower = _clusters_MA_EHCAL_NTower;
+      clusters_trueID = _clusters_MA_EHCAL_trueID;
+      clusters_NtrueID = _clusters_MA_EHCAL_NtrueID;
+      clusters_X = _clusters_MA_EHCAL_X;
+      clusters_Y = _clusters_MA_EHCAL_Y;
+      clusters_Z = _clusters_MA_EHCAL_Z;
+      return true;
+    } else if(caloEnum==kCEMC){
+      nclusters = _nclusters_MA_CEMC;
+      clusters_E = _clusters_MA_CEMC_E;
+      clusters_Eta = _clusters_MA_CEMC_Eta;
+      clusters_Phi = _clusters_MA_CEMC_Phi;
+      clusters_M02 = _clusters_MA_CEMC_M02;
+      clusters_M20 = _clusters_MA_CEMC_M20;
+      clusters_isMatched = _clusters_MA_CEMC_isMatched;
+      clusters_NTower = _clusters_MA_CEMC_NTower;
+      clusters_trueID = _clusters_MA_CEMC_trueID;
+      clusters_NtrueID = _clusters_MA_CEMC_NtrueID;
+      clusters_X = _clusters_MA_CEMC_X;
+      clusters_Y = _clusters_MA_CEMC_Y;
+      clusters_Z = _clusters_MA_CEMC_Z;
+      return true;
+    } else if(caloEnum==kBECAL){
+      nclusters = _nclusters_MA_BECAL;
+      clusters_E = _clusters_MA_BECAL_E;
+      clusters_Eta = _clusters_MA_BECAL_Eta;
+      clusters_Phi = _clusters_MA_BECAL_Phi;
+      clusters_M02 = _clusters_MA_BECAL_M02;
+      clusters_M20 = _clusters_MA_BECAL_M20;
+      clusters_isMatched = _clusters_MA_BECAL_isMatched;
+      clusters_NTower = _clusters_MA_BECAL_NTower;
+      clusters_trueID = _clusters_MA_BECAL_trueID;
+      clusters_NtrueID = _clusters_MA_BECAL_NtrueID;
+      clusters_X = _clusters_MA_BECAL_X;
+      clusters_Y = _clusters_MA_BECAL_Y;
+      clusters_Z = _clusters_MA_BECAL_Z;
+      return true;
+    } else if(caloEnum==kHCALIN){
+      nclusters = _nclusters_MA_HCALIN;
+      clusters_E = _clusters_MA_HCALIN_E;
+      clusters_Eta = _clusters_MA_HCALIN_Eta;
+      clusters_Phi = _clusters_MA_HCALIN_Phi;
+      clusters_M02 = _clusters_MA_HCALIN_M02;
+      clusters_M20 = _clusters_MA_HCALIN_M20;
+      clusters_isMatched = _clusters_MA_HCALIN_isMatched;
+      clusters_NTower = _clusters_MA_HCALIN_NTower;
+      clusters_trueID = _clusters_MA_HCALIN_trueID;
+      clusters_NtrueID = _clusters_MA_HCALIN_NtrueID;
+      clusters_X = _clusters_MA_HCALIN_X;
+      clusters_Y = _clusters_MA_HCALIN_Y;
+      clusters_Z = _clusters_MA_HCALIN_Z;
+      return true;
+    } else if(caloEnum==kHCALOUT){
+      nclusters = _nclusters_MA_HCALOUT;
+      clusters_E = _clusters_MA_HCALOUT_E;
+      clusters_Eta = _clusters_MA_HCALOUT_Eta;
+      clusters_Phi = _clusters_MA_HCALOUT_Phi;
+      clusters_M02 = _clusters_MA_HCALOUT_M02;
+      clusters_M20 = _clusters_MA_HCALOUT_M20;
+      clusters_isMatched = _clusters_MA_HCALOUT_isMatched;
+      clusters_NTower = _clusters_MA_HCALOUT_NTower;
+      clusters_trueID = _clusters_MA_HCALOUT_trueID;
+      clusters_NtrueID = _clusters_MA_HCALOUT_NtrueID;
+      clusters_X = _clusters_MA_HCALOUT_X;
+      clusters_Y = _clusters_MA_HCALOUT_Y;
+      clusters_Z = _clusters_MA_HCALOUT_Z;
       return true;
     } else {
       return false;
