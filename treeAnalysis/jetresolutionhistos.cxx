@@ -114,7 +114,7 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
     if (!h2D_cluster_eta_phi[isel]) h2D_cluster_eta_phi[isel] = new TH2F(Form("h2D_cluster_eta_phi_%s", jettype[isel].Data()), "", 40, -4, 4, 40, 0, 7);
 
     for (Int_t eT = 0; eT < nEta+1; eT++){
-      if(!h_jetscale_pT[isel][eT])h_jetscale_pT[isel][eT] = new TH2F(Form("h_jetscale_%s_pT_%d",jettype[isel].Data(), eT),"",150,0,30,200,-1,1);
+      if(!h_jetscale_pT[isel][eT])h_jetscale_pT[isel][eT] = new TH2F(Form("h_jetscale_%s_pT_%d",jettype[isel].Data(), eT),"",40,0,30,200,-1,1);
       if(!h_jetscale_E[isel][eT])h_jetscale_E[isel][eT]  = new TH2F(Form("h_jetscale_%s_E_%d",jettype[isel].Data(), eT),"",40,0,200,200,-1,1);
       if(!h_jetscale_eta[isel][eT])h_jetscale_eta[isel][eT]  = new TH2F(Form("h_jetscale_%s_eta_%d",jettype[isel].Data(), eT),"",40,-7,7,200,-1,1);
       if(!h_jetscale_phi[isel][eT])h_jetscale_phi[isel][eT]  = new TH2F(Form("h_jetscale_%s_phi_%d",jettype[isel].Data(), eT),"",40,0,7,200,-1,1);

@@ -192,7 +192,7 @@ void resolutionJETStree(
 
   // Plot slices
   plotSlices(histo2D_JES_E, style, TString("E"), TString(Form("%s/Slices", outputDir.Data())));
-  // plotSlices(histo2D_JES_pT, style, TString("pT"), TString(Form("%s/Slices", outputDir.Data())));
+  plotSlices(histo2D_JES_pT, style, TString("pT"), TString(Form("%s/Slices", outputDir.Data())));
   plotSlices(histo2D_JES_eta, style, TString("eta"), TString(Form("%s/Slices", outputDir.Data())));
   plotSlices(histo2D_JES_phi, style, TString("phi"), TString(Form("%s/Slices", outputDir.Data())));
 
