@@ -204,9 +204,9 @@ void resolutionJETStree(
   // Plot slices
   if (make_slice_plots) {
     plotSlices(histo2D_JES_E, style, TString("E"), TString(Form("%s/Slices", outputDir.Data())), TString("(#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}"), TString("E"), TString("GeV"));
-    plotSlices(histo2D_JES_pT, style, TString("pT"), TString(Form("%s/Slices", outputDir.Data())), TString("(#it{p_T}^{rec} - #it{p_T}^{true}) / #it{p_T}^{true}"), TString("p_T"), TString("GeV/c"));
-    plotSlices(histo2D_JES_eta, style, TString("eta"), TString(Form("%s/Slices", outputDir.Data())), TString("#eta^{rec} - #eta^{true}"), TString("#eta"), TString(""));
-    plotSlices(histo2D_JES_phi, style, TString("phi"), TString(Form("%s/Slices", outputDir.Data())), TString("#Phi^{rec} - #Phi^{true}"), TString("#Phi"), TString(""));
+    plotSlices(histo2D_JES_pT, style, TString("pT"), TString(Form("%s/Slices", outputDir.Data())), TString("(#it{p_{T}}^{rec} - #it{p_{T}}^{true}) / #it{p_{T}}^{true}"), TString("E"), TString("GeV/c"));
+    plotSlices(histo2D_JES_eta, style, TString("eta"), TString(Form("%s/Slices", outputDir.Data())), TString("#eta^{rec} - #eta^{true}"), TString("E"), TString(""));
+    plotSlices(histo2D_JES_phi, style, TString("phi"), TString(Form("%s/Slices", outputDir.Data())), TString("#Phi^{rec} - #Phi^{true}"), TString("E"), TString(""));
   }
 
   // Plot efficiency
