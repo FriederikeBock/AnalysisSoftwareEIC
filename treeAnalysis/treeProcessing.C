@@ -27,26 +27,15 @@
 
 void treeProcessing(
     TString inFile            = "/media/nschmidt/external2/EICsimulationOutputs/forFredi/EVTTREE-ALLSILICON-FTTLS3LC-ETTL-CTTL-ACLGAD-TREXTOUT_pTHard5.root",
+    TString inFileGeometry    = "/media/nschmidt/local/AnalysisSoftwareEIC/treeAnalysis/geometry.root",
     TString addOutputName       = "",
-    bool do_3x3clusterizer      = true,
-    bool do_5x5clusterizer      = true,
-    bool do_V3clusterizer       = true,
-    bool do_MAclusterizer       = true,
-    bool do_C3clusterizer       = true,
-    bool do_C5clusterizer       = true,
-    bool do_3x3clusterizerFEMC  = true,
-    bool do_5x5clusterizerFEMC  = true,
-    bool do_V3clusterizerFEMC   = true,
-    bool do_MAclusterizerFEMC   = true,
-    bool do_C3clusterizerFEMC   = true,
-    bool do_C5clusterizerFEMC   = true,
-    bool do_jetfinding          = true,
+    bool do_reclus        = true,
+    bool do_jetfinding          = false,
     // Double_t maxNEvent = 1e5,
     bool hasTiming              = true,
-    bool isALLSILICON           = true, 
+    bool isALLSILICON           = true,
     Double_t maxNEvent          = -1,
     Int_t verbosity             = 0,
-    int granularity_factor      = 1,
     bool doCalibration          = false,
     // Defaults to tracking from all layers.
     unsigned short primaryTrackSource = 0,
@@ -58,6 +47,7 @@ void treeProcessing(
     TString dateForOutput = ReturnDateStr();
     outputDir = Form("treeProcessing/%s",addOutputName.Data());
     gSystem->Exec("mkdir -p "+outputDir);
+    gSystem->Exec("mkdir -p "+outputDir + "/etaphi");
 
     if(do_jetfinding) _do_jetfinding = true;
 
@@ -79,8 +69,13 @@ void treeProcessing(
     }
     if(!tt_event){ std::cout << "tree not found... returning!"<< std::endl; return;}
 
+    // // load geometry tree
+    tt_geometry =  (TTree *) (new TFile(inFileGeometry.Data(), "READ"))->Get("geometry_tree");
+    if(!tt_geometry){ cout << "geometry tree not found... returning!"<< endl; return;}
     // load all branches (see header)
     SetBranchAddressesTree(tt_event);
+    SetBranchAddressesGeometryTree(tt_geometry);
+    SetGeometryIndices();
 
     Long64_t nEntriesTree                 = tt_event->GetEntries();
     std::cout << "Number of events in tree: " << nEntriesTree << std::endl;
@@ -90,7 +85,6 @@ void treeProcessing(
     }
     _do_TimingStudies         = hasTiming;
     _is_ALLSILICON            = isALLSILICON;
-    _granularityCalo          = granularity_factor;
     _doClusterECalibration    = doCalibration;
     if(_doClusterECalibration){
         std::cout << "clusters will be energy-corrected and subsequently smeared to meet testbeam constant term!" << std::endl;
@@ -131,232 +125,421 @@ void treeProcessing(
         for(Int_t imc=0; imc<_nMCPart; imc++){
             TVector3 truevec(_mcpart_px[imc],_mcpart_py[imc],_mcpart_pz[imc]);
             _mcpart_Eta[imc]=truevec.Eta();
+            int motherid = 0;
+            for(Int_t imc2=0; imc2<_nMCPart; imc2++){
+                if(_mcpart_ID[imc2]==_mcpart_ID_parent[imc]){
+                    motherid=imc2;
+                }
+            }
+            // if(_mcpart_PDG[imc]==111) cout << "pi0 found (" << _mcpart_ID[imc] << ") with mother: " << _mcpart_PDG[motherid] << " (" <<  _mcpart_ID_parent[imc] << ")" << endl;
         }
         float seed_E = 0.5;
         float aggregation_E = 0.1;
         // run clusterizers FHCAL
-        if(do_3x3clusterizer){
-            _do_3x3clusterizer = true;
-            if(verbosity>1) std::cout << "clusterizing 3x3 for FHCAL" << std::endl;
-            runclusterizer(k3x3, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
-                _nclusters_3x3_FHCAL,
-                _clusters_3x3_FHCAL_E,
-                _clusters_3x3_FHCAL_Eta,
-                _clusters_3x3_FHCAL_Phi,
-                _clusters_3x3_FHCAL_M02,
-                _clusters_3x3_FHCAL_M20,
-                _clusters_3x3_FHCAL_isMatched,
-                _clusters_3x3_FHCAL_NTower,
-                _clusters_3x3_FHCAL_trueID,
-                _clusters_3x3_FHCAL_NtrueID,
-                _clusters_3x3_FHCAL_X,
-                _clusters_3x3_FHCAL_Y,
-                _clusters_3x3_FHCAL_Z);
-        }
-        if(do_5x5clusterizer){
-            _do_5x5clusterizer = true;
-            if(verbosity>1) std::cout << "clusterizing 5x5 for FHCAL" << std::endl;
-            runclusterizer(k5x5, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
-                _nclusters_5x5_FHCAL,
-                _clusters_5x5_FHCAL_E,
-                _clusters_5x5_FHCAL_Eta,
-                _clusters_5x5_FHCAL_Phi,
-                _clusters_5x5_FHCAL_M02,
-                _clusters_5x5_FHCAL_M20,
-                _clusters_5x5_FHCAL_isMatched,
-                _clusters_5x5_FHCAL_NTower,
-                _clusters_5x5_FHCAL_trueID,
-                _clusters_5x5_FHCAL_NtrueID,
-                _clusters_5x5_FHCAL_X,
-                _clusters_5x5_FHCAL_Y,
-                _clusters_5x5_FHCAL_Z);
-        }
-        if(do_V3clusterizer){
-            _do_V3clusterizer = true;
-            if(verbosity>1) std::cout << "clusterizing V3 for FHCAL" << std::endl;
-            runclusterizer(kV3, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
-                _nclusters_V3_FHCAL,
-                _clusters_V3_FHCAL_E,
-                _clusters_V3_FHCAL_Eta,
-                _clusters_V3_FHCAL_Phi,
-                _clusters_V3_FHCAL_M02,
-                _clusters_V3_FHCAL_M20,
-                _clusters_V3_FHCAL_isMatched,
-                _clusters_V3_FHCAL_NTower,
-                _clusters_V3_FHCAL_trueID,
-                _clusters_V3_FHCAL_NtrueID,
-                _clusters_V3_FHCAL_X,
-                _clusters_V3_FHCAL_Y,
-                _clusters_V3_FHCAL_Z);
-        }
-        if(do_MAclusterizer){
-            _do_MAclusterizer = true;
-            if(verbosity>1) std::cout << "clusterizing MA for FHCAL" << std::endl;
-            runclusterizer(kMA, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
-                _nclusters_MA_FHCAL,
-                _clusters_MA_FHCAL_E,
-                _clusters_MA_FHCAL_Eta,
-                _clusters_MA_FHCAL_Phi,
-                _clusters_MA_FHCAL_M02,
-                _clusters_MA_FHCAL_M20,
-                _clusters_MA_FHCAL_isMatched,
-                _clusters_MA_FHCAL_NTower,
-                _clusters_MA_FHCAL_trueID,
-                _clusters_MA_FHCAL_NtrueID,
-                _clusters_MA_FHCAL_X,
-                _clusters_MA_FHCAL_Y,
-                _clusters_MA_FHCAL_Z);
-        }
-        if(do_C3clusterizer){
-            _do_C3clusterizer = true;
-            if(verbosity>1) std::cout << "clusterizing C3 for FHCAL" << std::endl;
-            runclusterizer(kC3, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
-                _nclusters_C3_FHCAL,
-                _clusters_C3_FHCAL_E,
-                _clusters_C3_FHCAL_Eta,
-                _clusters_C3_FHCAL_Phi,
-                _clusters_C3_FHCAL_M02,
-                _clusters_C3_FHCAL_M20,
-                _clusters_C3_FHCAL_isMatched,
-                _clusters_C3_FHCAL_NTower,
-                _clusters_C3_FHCAL_trueID,
-                _clusters_C3_FHCAL_NtrueID,
-                _clusters_C3_FHCAL_X,
-                _clusters_C3_FHCAL_Y,
-                _clusters_C3_FHCAL_Z);
-        }
-        if(do_C5clusterizer){
-            _do_C5clusterizer = true;
-            if(verbosity>1) std::cout << "clusterizing C5 for FHCAL" << std::endl;
-            runclusterizer(kC5, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
-                _nclusters_C5_FHCAL,
-                _clusters_C5_FHCAL_E,
-                _clusters_C5_FHCAL_Eta,
-                _clusters_C5_FHCAL_Phi,
-                _clusters_C5_FHCAL_M02,
-                _clusters_C5_FHCAL_M20,
-                _clusters_C5_FHCAL_isMatched,
-                _clusters_C5_FHCAL_NTower,
-                _clusters_C5_FHCAL_trueID,
-                _clusters_C5_FHCAL_NtrueID,
-                _clusters_C5_FHCAL_X,
-                _clusters_C5_FHCAL_Y,
-                _clusters_C5_FHCAL_Z);
+        if(do_reclus && _nTowers_FHCAL){
+            if(k3x3<_active_algo){
+                if(verbosity>1) cout << "clusterizing 3x3 for FHCAL" << endl;
+                runclusterizer(k3x3, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
+                    _nclusters_3x3_FHCAL,
+                    _clusters_3x3_FHCAL_E,
+                    _clusters_3x3_FHCAL_Eta,
+                    _clusters_3x3_FHCAL_Phi,
+                    _clusters_3x3_FHCAL_M02,
+                    _clusters_3x3_FHCAL_M20,
+                    _clusters_3x3_FHCAL_isMatched,
+                    _clusters_3x3_FHCAL_NTower,
+                    _clusters_3x3_FHCAL_trueID,
+                    _clusters_3x3_FHCAL_NtrueID,
+                    _clusters_3x3_FHCAL_X,
+                    _clusters_3x3_FHCAL_Y,
+                    _clusters_3x3_FHCAL_Z);
+            }
+            if(k5x5<_active_algo){
+                if(verbosity>1) cout << "clusterizing 5x5 for FHCAL" << endl;
+                runclusterizer(k5x5, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
+                    _nclusters_5x5_FHCAL,
+                    _clusters_5x5_FHCAL_E,
+                    _clusters_5x5_FHCAL_Eta,
+                    _clusters_5x5_FHCAL_Phi,
+                    _clusters_5x5_FHCAL_M02,
+                    _clusters_5x5_FHCAL_M20,
+                    _clusters_5x5_FHCAL_isMatched,
+                    _clusters_5x5_FHCAL_NTower,
+                    _clusters_5x5_FHCAL_trueID,
+                    _clusters_5x5_FHCAL_NtrueID,
+                    _clusters_5x5_FHCAL_X,
+                    _clusters_5x5_FHCAL_Y,
+                    _clusters_5x5_FHCAL_Z);
+            }
+            if(kV3<_active_algo){
+                if(verbosity>1) cout << "clusterizing V3 for FHCAL" << endl;
+                runclusterizer(kV3, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
+                    _nclusters_V3_FHCAL,
+                    _clusters_V3_FHCAL_E,
+                    _clusters_V3_FHCAL_Eta,
+                    _clusters_V3_FHCAL_Phi,
+                    _clusters_V3_FHCAL_M02,
+                    _clusters_V3_FHCAL_M20,
+                    _clusters_V3_FHCAL_isMatched,
+                    _clusters_V3_FHCAL_NTower,
+                    _clusters_V3_FHCAL_trueID,
+                    _clusters_V3_FHCAL_NtrueID,
+                    _clusters_V3_FHCAL_X,
+                    _clusters_V3_FHCAL_Y,
+                    _clusters_V3_FHCAL_Z);
+            }
+            if(kMA<_active_algo){
+                if(verbosity>1) cout << "clusterizing MA for FHCAL" << endl;
+                runclusterizer(kMA, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
+                    _nclusters_MA_FHCAL,
+                    _clusters_MA_FHCAL_E,
+                    _clusters_MA_FHCAL_Eta,
+                    _clusters_MA_FHCAL_Phi,
+                    _clusters_MA_FHCAL_M02,
+                    _clusters_MA_FHCAL_M20,
+                    _clusters_MA_FHCAL_isMatched,
+                    _clusters_MA_FHCAL_NTower,
+                    _clusters_MA_FHCAL_trueID,
+                    _clusters_MA_FHCAL_NtrueID,
+                    _clusters_MA_FHCAL_X,
+                    _clusters_MA_FHCAL_Y,
+                    _clusters_MA_FHCAL_Z);
+            }
+            if(kC3<_active_algo){
+                if(verbosity>1) cout << "clusterizing C3 for FHCAL" << endl;
+                runclusterizer(kC3, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
+                    _nclusters_C3_FHCAL,
+                    _clusters_C3_FHCAL_E,
+                    _clusters_C3_FHCAL_Eta,
+                    _clusters_C3_FHCAL_Phi,
+                    _clusters_C3_FHCAL_M02,
+                    _clusters_C3_FHCAL_M20,
+                    _clusters_C3_FHCAL_isMatched,
+                    _clusters_C3_FHCAL_NTower,
+                    _clusters_C3_FHCAL_trueID,
+                    _clusters_C3_FHCAL_NtrueID,
+                    _clusters_C3_FHCAL_X,
+                    _clusters_C3_FHCAL_Y,
+                    _clusters_C3_FHCAL_Z);
+            }
+            if(kC5<_active_algo){
+                if(verbosity>1) cout << "clusterizing C5 for FHCAL" << endl;
+                runclusterizer(kC5, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
+                    _nclusters_C5_FHCAL,
+                    _clusters_C5_FHCAL_E,
+                    _clusters_C5_FHCAL_Eta,
+                    _clusters_C5_FHCAL_Phi,
+                    _clusters_C5_FHCAL_M02,
+                    _clusters_C5_FHCAL_M20,
+                    _clusters_C5_FHCAL_isMatched,
+                    _clusters_C5_FHCAL_NTower,
+                    _clusters_C5_FHCAL_trueID,
+                    _clusters_C5_FHCAL_NtrueID,
+                    _clusters_C5_FHCAL_X,
+                    _clusters_C5_FHCAL_Y,
+                    _clusters_C5_FHCAL_Z);
+            }
+        } else {
+            _nclusters_3x3_FHCAL = 0;
+            _nclusters_5x5_FHCAL = 0;
+            _nclusters_V3_FHCAL = 0;
+            _nclusters_MA_FHCAL = 0;
+            _nclusters_C3_FHCAL = 0;
+            _nclusters_C5_FHCAL = 0;
         }
         // run clusterizers FEMC
-        if(do_3x3clusterizerFEMC){
-            _do_3x3clusterizerFEMC = true;
-            if(verbosity>1) std::cout << "clusterizing 3x3 for FEMC" << std::endl;
-            runclusterizer(k3x3, kFEMC,seed_E, aggregation_E, primaryTrackSource,
-                _nclusters_3x3_FEMC,
-                _clusters_3x3_FEMC_E,
-                _clusters_3x3_FEMC_Eta,
-                _clusters_3x3_FEMC_Phi,
-                _clusters_3x3_FEMC_M02,
-                _clusters_3x3_FEMC_M20,
-                _clusters_3x3_FEMC_isMatched,
-                _clusters_3x3_FEMC_NTower,
-                _clusters_3x3_FEMC_trueID,
-                _clusters_3x3_FEMC_NtrueID,
-                _clusters_3x3_FEMC_X,
-                _clusters_3x3_FEMC_Y,
-                _clusters_3x3_FEMC_Z);
+        if(do_reclus && _nTowers_FEMC){
+            if(k3x3<_active_algo){
+                if(verbosity>1) cout << "clusterizing 3x3 for FEMC" << endl;
+                runclusterizer(k3x3, kFEMC,seed_E, aggregation_E, primaryTrackSource,
+                    _nclusters_3x3_FEMC,
+                    _clusters_3x3_FEMC_E,
+                    _clusters_3x3_FEMC_Eta,
+                    _clusters_3x3_FEMC_Phi,
+                    _clusters_3x3_FEMC_M02,
+                    _clusters_3x3_FEMC_M20,
+                    _clusters_3x3_FEMC_isMatched,
+                    _clusters_3x3_FEMC_NTower,
+                    _clusters_3x3_FEMC_trueID,
+                    _clusters_3x3_FEMC_NtrueID,
+                    _clusters_3x3_FEMC_X,
+                    _clusters_3x3_FEMC_Y,
+                    _clusters_3x3_FEMC_Z);
+            }
+            if(k5x5<_active_algo){
+                if(verbosity>1) cout << "clusterizing 5x5 for FEMC" << endl;
+                runclusterizer(k5x5, kFEMC,seed_E, aggregation_E, primaryTrackSource,
+                    _nclusters_5x5_FEMC,
+                    _clusters_5x5_FEMC_E,
+                    _clusters_5x5_FEMC_Eta,
+                    _clusters_5x5_FEMC_Phi,
+                    _clusters_5x5_FEMC_M02,
+                    _clusters_5x5_FEMC_M20,
+                    _clusters_5x5_FEMC_isMatched,
+                    _clusters_5x5_FEMC_NTower,
+                    _clusters_5x5_FEMC_trueID,
+                    _clusters_5x5_FEMC_NtrueID,
+                    _clusters_5x5_FEMC_X,
+                    _clusters_5x5_FEMC_Y,
+                    _clusters_5x5_FEMC_Z);
+            }
+            if(kV3<_active_algo){
+                if(verbosity>1) cout << "clusterizing V3 for FEMC" << endl;
+                runclusterizer(kV3, kFEMC,seed_E, aggregation_E, primaryTrackSource,
+                    _nclusters_V3_FEMC,
+                    _clusters_V3_FEMC_E,
+                    _clusters_V3_FEMC_Eta,
+                    _clusters_V3_FEMC_Phi,
+                    _clusters_V3_FEMC_M02,
+                    _clusters_V3_FEMC_M20,
+                    _clusters_V3_FEMC_isMatched,
+                    _clusters_V3_FEMC_NTower,
+                    _clusters_V3_FEMC_trueID,
+                    _clusters_V3_FEMC_NtrueID,
+                    _clusters_V3_FEMC_X,
+                    _clusters_V3_FEMC_Y,
+                    _clusters_V3_FEMC_Z);
+            }
+            if(kMA<_active_algo){
+                if(verbosity>1) cout << "clusterizing MA for FEMC" << endl;
+                runclusterizer(kMA, kFEMC,seed_E, aggregation_E, primaryTrackSource,
+                    _nclusters_MA_FEMC,
+                    _clusters_MA_FEMC_E,
+                    _clusters_MA_FEMC_Eta,
+                    _clusters_MA_FEMC_Phi,
+                    _clusters_MA_FEMC_M02,
+                    _clusters_MA_FEMC_M20,
+                    _clusters_MA_FEMC_isMatched,
+                    _clusters_MA_FEMC_NTower,
+                    _clusters_MA_FEMC_trueID,
+                    _clusters_MA_FEMC_NtrueID,
+                    _clusters_MA_FEMC_X,
+                    _clusters_MA_FEMC_Y,
+                    _clusters_MA_FEMC_Z);
+            }
+            if(kC3<_active_algo){
+                if(verbosity>1) cout << "clusterizing C3 for FEMC" << endl;
+                runclusterizer(kC3, kFEMC,seed_E, aggregation_E, primaryTrackSource,
+                    _nclusters_C3_FEMC,
+                    _clusters_C3_FEMC_E,
+                    _clusters_C3_FEMC_Eta,
+                    _clusters_C3_FEMC_Phi,
+                    _clusters_C3_FEMC_M02,
+                    _clusters_C3_FEMC_M20,
+                    _clusters_C3_FEMC_isMatched,
+                    _clusters_C3_FEMC_NTower,
+                    _clusters_C3_FEMC_trueID,
+                    _clusters_C3_FEMC_NtrueID,
+                    _clusters_C3_FEMC_X,
+                    _clusters_C3_FEMC_Y,
+                    _clusters_C3_FEMC_Z);
+            }
+            if(kC5<_active_algo){
+                if(verbosity>1) cout << "clusterizing C5 for FEMC" << endl;
+                runclusterizer(kC5, kFEMC,seed_E, aggregation_E, primaryTrackSource,
+                    _nclusters_C5_FEMC,
+                    _clusters_C5_FEMC_E,
+                    _clusters_C5_FEMC_Eta,
+                    _clusters_C5_FEMC_Phi,
+                    _clusters_C5_FEMC_M02,
+                    _clusters_C5_FEMC_M20,
+                    _clusters_C5_FEMC_isMatched,
+                    _clusters_C5_FEMC_NTower,
+                    _clusters_C5_FEMC_trueID,
+                    _clusters_C5_FEMC_NtrueID,
+                    _clusters_C5_FEMC_X,
+                    _clusters_C5_FEMC_Y,
+                    _clusters_C5_FEMC_Z);
+            }
+        } else {
+            _nclusters_3x3_FEMC = 0;
+            _nclusters_5x5_FEMC = 0;
+            _nclusters_V3_FEMC = 0;
+            _nclusters_MA_FEMC = 0;
+            _nclusters_C3_FEMC = 0;
+            _nclusters_C5_FEMC = 0;
         }
-        if(do_5x5clusterizerFEMC){
-            _do_5x5clusterizerFEMC = true;
-            if(verbosity>1) std::cout << "clusterizing 5x5 for FEMC" << std::endl;
-            runclusterizer(k5x5, kFEMC,seed_E, aggregation_E, primaryTrackSource,
-                _nclusters_5x5_FEMC,
-                _clusters_5x5_FEMC_E,
-                _clusters_5x5_FEMC_Eta,
-                _clusters_5x5_FEMC_Phi,
-                _clusters_5x5_FEMC_M02,
-                _clusters_5x5_FEMC_M20,
-                _clusters_5x5_FEMC_isMatched,
-                _clusters_5x5_FEMC_NTower,
-                _clusters_5x5_FEMC_trueID,
-                _clusters_5x5_FEMC_NtrueID,
-                _clusters_5x5_FEMC_X,
-                _clusters_5x5_FEMC_Y,
-                _clusters_5x5_FEMC_Z);
-        }
-        if(do_V3clusterizerFEMC){
-            _do_V3clusterizerFEMC = true;
-            if(verbosity>1) std::cout << "clusterizing V3 for FEMC" << std::endl;
-            runclusterizer(kV3, kFEMC,seed_E, aggregation_E, primaryTrackSource,
-                _nclusters_V3_FEMC,
-                _clusters_V3_FEMC_E,
-                _clusters_V3_FEMC_Eta,
-                _clusters_V3_FEMC_Phi,
-                _clusters_V3_FEMC_M02,
-                _clusters_V3_FEMC_M20,
-                _clusters_V3_FEMC_isMatched,
-                _clusters_V3_FEMC_NTower,
-                _clusters_V3_FEMC_trueID,
-                _clusters_V3_FEMC_NtrueID,
-                _clusters_V3_FEMC_X,
-                _clusters_V3_FEMC_Y,
-                _clusters_V3_FEMC_Z);
-        }
-        if(do_MAclusterizerFEMC){
-            _do_MAclusterizerFEMC = true;
-            if(verbosity>1) std::cout << "clusterizing MA for FEMC" << std::endl;
-            runclusterizer(kMA, kFEMC,seed_E, aggregation_E, primaryTrackSource,
-                _nclusters_MA_FEMC,
-                _clusters_MA_FEMC_E,
-                _clusters_MA_FEMC_Eta,
-                _clusters_MA_FEMC_Phi,
-                _clusters_MA_FEMC_M02,
-                _clusters_MA_FEMC_M20,
-                _clusters_MA_FEMC_isMatched,
-                _clusters_MA_FEMC_NTower,
-                _clusters_MA_FEMC_trueID,
-                _clusters_MA_FEMC_NtrueID,
-                _clusters_MA_FEMC_X,
-                _clusters_MA_FEMC_Y,
-                _clusters_MA_FEMC_Z);
-        }
-        if(do_C3clusterizerFEMC){
-            _do_C3clusterizerFEMC = true;
-            if(verbosity>1) std::cout << "clusterizing C3 for FEMC" << std::endl;
-            runclusterizer(kC3, kFEMC,seed_E, aggregation_E, primaryTrackSource,
-                _nclusters_C3_FEMC,
-                _clusters_C3_FEMC_E,
-                _clusters_C3_FEMC_Eta,
-                _clusters_C3_FEMC_Phi,
-                _clusters_C3_FEMC_M02,
-                _clusters_C3_FEMC_M20,
-                _clusters_C3_FEMC_isMatched,
-                _clusters_C3_FEMC_NTower,
-                _clusters_C3_FEMC_trueID,
-                _clusters_C3_FEMC_NtrueID,
-                _clusters_C3_FEMC_X,
-                _clusters_C3_FEMC_Y,
-                _clusters_C3_FEMC_Z);
-        }
-        if(do_C5clusterizerFEMC){
-            _do_C5clusterizerFEMC = true;
-            if(verbosity>1) std::cout << "clusterizing C5 for FEMC" << std::endl;
-            runclusterizer(kC5, kFEMC,seed_E, aggregation_E, primaryTrackSource,
-                _nclusters_C5_FEMC,
-                _clusters_C5_FEMC_E,
-                _clusters_C5_FEMC_Eta,
-                _clusters_C5_FEMC_Phi,
-                _clusters_C5_FEMC_M02,
-                _clusters_C5_FEMC_M20,
-                _clusters_C5_FEMC_isMatched,
-                _clusters_C5_FEMC_NTower,
-                _clusters_C5_FEMC_trueID,
-                _clusters_C5_FEMC_NtrueID,
-                _clusters_C5_FEMC_X,
-                _clusters_C5_FEMC_Y,
-                _clusters_C5_FEMC_Z);
-        }
-        if(0){ //do_V1clusterizerDRCALO
-            // _do_V1clusterizerDRCALO = true;
-            float seed_E_DRCALO = 0.2;
-            float aggregation_E_DRCALO = 0.001;
-            if(verbosity>1) std::cout << "clusterizing V1 for DRCALO" << std::endl;
+
+        if(do_reclus && _nTowers_CEMC){
+            float seed_E_CEMC = 0.5;
+            float aggregation_E_CEMC = 0.1;
+            if(kMA<_active_algo){
+                if(verbosity>1) cout << "clusterizing MA for CEMC" << endl;
+                runclusterizer(kMA, kCEMC,seed_E_CEMC, aggregation_E_CEMC, primaryTrackSource,
+                    _nclusters_MA_CEMC,
+                    _clusters_MA_CEMC_E,
+                    _clusters_MA_CEMC_Eta,
+                    _clusters_MA_CEMC_Phi,
+                    _clusters_MA_CEMC_M02,
+                    _clusters_MA_CEMC_M20,
+                    _clusters_MA_CEMC_isMatched,
+                    _clusters_MA_CEMC_NTower,
+                    _clusters_MA_CEMC_trueID,
+                    _clusters_MA_CEMC_NtrueID,
+                    _clusters_MA_CEMC_X,
+                    _clusters_MA_CEMC_Y,
+                    _clusters_MA_CEMC_Z);
+            }
+        } else _nclusters_MA_CEMC = 0;
+
+        if(do_reclus && _nTowers_HCALIN){
+            float seed_E_HCALIN = 0.2;
+            float aggregation_E_HCALIN = 0.05;
+            if(kMA<_active_algo){
+                if(verbosity>1) cout << "clusterizing MA for HCALIN" << endl;
+                runclusterizer(kMA, kHCALIN,seed_E_HCALIN, aggregation_E_HCALIN, primaryTrackSource,
+                    _nclusters_MA_HCALIN,
+                    _clusters_MA_HCALIN_E,
+                    _clusters_MA_HCALIN_Eta,
+                    _clusters_MA_HCALIN_Phi,
+                    _clusters_MA_HCALIN_M02,
+                    _clusters_MA_HCALIN_M20,
+                    _clusters_MA_HCALIN_isMatched,
+                    _clusters_MA_HCALIN_NTower,
+                    _clusters_MA_HCALIN_trueID,
+                    _clusters_MA_HCALIN_NtrueID,
+                    _clusters_MA_HCALIN_X,
+                    _clusters_MA_HCALIN_Y,
+                    _clusters_MA_HCALIN_Z);
+            }
+        } else _nclusters_MA_HCALIN = 0;
+
+        if(do_reclus && _nTowers_HCALOUT){
+            float seed_E_HCALOUT = 0.5;
+            float aggregation_E_HCALOUT = 0.1;
+            if(kMA<_active_algo){
+                if(verbosity>1) cout << "clusterizing MA for HCALOUT" << endl;
+                runclusterizer(kMA, kHCALOUT,seed_E_HCALOUT, aggregation_E_HCALOUT, primaryTrackSource,
+                    _nclusters_MA_HCALOUT,
+                    _clusters_MA_HCALOUT_E,
+                    _clusters_MA_HCALOUT_Eta,
+                    _clusters_MA_HCALOUT_Phi,
+                    _clusters_MA_HCALOUT_M02,
+                    _clusters_MA_HCALOUT_M20,
+                    _clusters_MA_HCALOUT_isMatched,
+                    _clusters_MA_HCALOUT_NTower,
+                    _clusters_MA_HCALOUT_trueID,
+                    _clusters_MA_HCALOUT_NtrueID,
+                    _clusters_MA_HCALOUT_X,
+                    _clusters_MA_HCALOUT_Y,
+                    _clusters_MA_HCALOUT_Z);
+            }
+        } else _nclusters_MA_HCALOUT = 0;
+
+        if(do_reclus && _nTowers_EEMCG){
+            float seed_E_EEMCG = 0.1;
+            float aggregation_E_EEMCG = 0.01;
+            if(kMA<_active_algo){
+                if(verbosity>1) cout << "clusterizing MA for EEMCG" << endl;
+                runclusterizer(kMA, kEEMCG,seed_E_EEMCG, aggregation_E_EEMCG, primaryTrackSource,
+                    _nclusters_MA_EEMCG,
+                    _clusters_MA_EEMCG_E,
+                    _clusters_MA_EEMCG_Eta,
+                    _clusters_MA_EEMCG_Phi,
+                    _clusters_MA_EEMCG_M02,
+                    _clusters_MA_EEMCG_M20,
+                    _clusters_MA_EEMCG_isMatched,
+                    _clusters_MA_EEMCG_NTower,
+                    _clusters_MA_EEMCG_trueID,
+                    _clusters_MA_EEMCG_NtrueID,
+                    _clusters_MA_EEMCG_X,
+                    _clusters_MA_EEMCG_Y,
+                    _clusters_MA_EEMCG_Z);
+            }
+        } else _nclusters_MA_EEMCG = 0;
+
+        if(do_reclus && _nTowers_BECAL){
+            float seed_E_BECAL = 0.1;
+            float aggregation_E_BECAL = 0.01;
+            if(kMA<_active_algo){
+                if(verbosity>1) cout << "clusterizing MA for BECAL" << endl;
+                runclusterizer(kMA, kBECAL,seed_E_BECAL, aggregation_E_BECAL, primaryTrackSource,
+                    _nclusters_MA_BECAL,
+                    _clusters_MA_BECAL_E,
+                    _clusters_MA_BECAL_Eta,
+                    _clusters_MA_BECAL_Phi,
+                    _clusters_MA_BECAL_M02,
+                    _clusters_MA_BECAL_M20,
+                    _clusters_MA_BECAL_isMatched,
+                    _clusters_MA_BECAL_NTower,
+                    _clusters_MA_BECAL_trueID,
+                    _clusters_MA_BECAL_NtrueID,
+                    _clusters_MA_BECAL_X,
+                    _clusters_MA_BECAL_Y,
+                    _clusters_MA_BECAL_Z);
+            }
+        } else _nclusters_MA_BECAL = 0;
+
+        if(do_reclus && _nTowers_EEMC){
+            float seed_E_EEMC = 0.1;
+            float aggregation_E_EEMC = 0.05;
+            if(kMA<_active_algo){
+                if(verbosity>1) cout << "clusterizing MA for EEMC" << endl;
+                runclusterizer(kMA, kEEMC,seed_E_EEMC, aggregation_E_EEMC, primaryTrackSource,
+                    _nclusters_MA_EEMC,
+                    _clusters_MA_EEMC_E,
+                    _clusters_MA_EEMC_Eta,
+                    _clusters_MA_EEMC_Phi,
+                    _clusters_MA_EEMC_M02,
+                    _clusters_MA_EEMC_M20,
+                    _clusters_MA_EEMC_isMatched,
+                    _clusters_MA_EEMC_NTower,
+                    _clusters_MA_EEMC_trueID,
+                    _clusters_MA_EEMC_NtrueID,
+                    _clusters_MA_EEMC_X,
+                    _clusters_MA_EEMC_Y,
+                    _clusters_MA_EEMC_Z);
+            }
+        } else _nclusters_MA_EEMC = 0;
+
+        if(do_reclus && _nTowers_LFHCAL){
+            float seed_E_LFHCAL = 0.1;
+            float aggregation_E_LFHCAL = 0.05;
+            if(kMA<_active_algo){
+                if(verbosity>1) cout << "clusterizing MA for LFHCAL" << endl;
+                runclusterizer(kMA, kLFHCAL,seed_E_LFHCAL, aggregation_E_LFHCAL, primaryTrackSource,
+                    _nclusters_MA_LFHCAL,
+                    _clusters_MA_LFHCAL_E,
+                    _clusters_MA_LFHCAL_Eta,
+                    _clusters_MA_LFHCAL_Phi,
+                    _clusters_MA_LFHCAL_M02,
+                    _clusters_MA_LFHCAL_M20,
+                    _clusters_MA_LFHCAL_isMatched,
+                    _clusters_MA_LFHCAL_NTower,
+                    _clusters_MA_LFHCAL_trueID,
+                    _clusters_MA_LFHCAL_NtrueID,
+                    _clusters_MA_LFHCAL_X,
+                    _clusters_MA_LFHCAL_Y,
+                    _clusters_MA_LFHCAL_Z);
+            }
+        } else _nclusters_MA_LFHCAL = 0;
+
+        if(do_reclus && _nTowers_EHCAL){
+            float seed_E_EHCAL = 0.01;
+            float aggregation_E_EHCAL = 0.005;
+            if(kMA<_active_algo){
+                if(verbosity>1) cout << "clusterizing MA for EHCAL" << endl;
+                runclusterizer(kMA, kEHCAL,seed_E_EHCAL, aggregation_E_EHCAL, primaryTrackSource,
+                    _nclusters_MA_EHCAL,
+                    _clusters_MA_EHCAL_E,
+                    _clusters_MA_EHCAL_Eta,
+                    _clusters_MA_EHCAL_Phi,
+                    _clusters_MA_EHCAL_M02,
+                    _clusters_MA_EHCAL_M20,
+                    _clusters_MA_EHCAL_isMatched,
+                    _clusters_MA_EHCAL_NTower,
+                    _clusters_MA_EHCAL_trueID,
+                    _clusters_MA_EHCAL_NtrueID,
+                    _clusters_MA_EHCAL_X,
+                    _clusters_MA_EHCAL_Y,
+                    _clusters_MA_EHCAL_Z);
+            }
+        } else _nclusters_MA_EHCAL = 0;
+
+        if(do_reclus && _nTowers_DRCALO){ //do_V1clusterizerDRCALO
+            float seed_E_DRCALO = 0.3;
+            float aggregation_E_DRCALO = 0.05;
+            if(verbosity>1) cout << "clusterizing V1 for DRCALO" << endl;
             runclusterizer(kV1, kDRCALO,seed_E_DRCALO, aggregation_E_DRCALO, primaryTrackSource,
                 _nclusters_V1_DRCALO,
                 _clusters_V1_DRCALO_E,
@@ -371,7 +554,8 @@ void treeProcessing(
                 _clusters_V1_DRCALO_X,
                 _clusters_V1_DRCALO_Y,
                 _clusters_V1_DRCALO_Z);
-        }
+        } else _nclusters_V1_DRCALO = 0;
+        if((do_reclus) && verbosity>1) cout << "done with clusterization!" << endl;
 
         // ANCHOR Hits loop variables:
         // float* _hits_x[ihit]
@@ -404,7 +588,7 @@ void treeProcessing(
         double massHypothesis = 0.139;
         for(Int_t itrk=0; itrk<_nTracks; itrk++){
             _track_trueID[itrk] = GetCorrectMCArrayEntry(_track_trueID[itrk]);
-            if(verbosity>1) std::cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk] << "\tand X = " << _track_px[itrk] << " cm" << std::endl;
+            // if(verbosity>1) std::cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk] << "\tand X = " << _track_px[itrk] << " cm" << std::endl;
 
             // Skip tracks that aren't selected.
             if(_track_source[itrk] != primaryTrackSource) {
@@ -433,9 +617,6 @@ void treeProcessing(
                 jetf_all_E.push_back(Etrack);
             }
         }
-        trackingefficiency();
-        trackingresolution();
-        trackingcomparison();
 
         // ANCHOR Track projections loop variables:
         // float* _track_ProjTrackID[iproj]
@@ -474,19 +655,21 @@ void treeProcessing(
         //     if(verbosity>1) std::cout << "\tcls " << iclus << "\tE " << _clusters_FHCAL_E[iclus] << "\tEta " << _clusters_FHCAL_Eta[iclus] << "\tPhi " << _clusters_FHCAL_Phi[iclus] << "\tntowers: " << _clusters_FHCAL_NTower[iclus] << "\ttrueID: " << _clusters_FHCAL_trueID[iclus] << std::endl;
         // }
                 // apply calibration if desired
-        for(Int_t iclus=0; iclus<_nclusters_FHCAL; iclus++){
-            _clusters_FHCAL_trueID[iclus] = GetCorrectMCArrayEntry(_clusters_FHCAL_trueID[iclus]);
-            if(_doClusterECalibration){
-                _clusters_FHCAL_E[iclus]/=getCalibrationValue(_clusters_FHCAL_E[iclus], kFHCAL, kV1);
+        if(kV1<_active_algo){
+            for(Int_t iclus=0; iclus<_nclusters_FHCAL; iclus++){
+                _clusters_FHCAL_trueID[iclus] = GetCorrectMCArrayEntry(_clusters_FHCAL_trueID[iclus]);
+                if(_doClusterECalibration){
+                    _clusters_FHCAL_E[iclus]/=getCalibrationValue(_clusters_FHCAL_E[iclus], kFHCAL, kV1);
+                }
+            }
+            for(Int_t iclus=0; iclus<_nclusters_FEMC; iclus++){
+                _clusters_FEMC_trueID[iclus] = GetCorrectMCArrayEntry(_clusters_FEMC_trueID[iclus]);
+                if(_doClusterECalibration){
+                    _clusters_FEMC_E[iclus]/=getCalibrationValue(_clusters_FEMC_E[iclus], kFEMC, kV1);
+                }
             }
         }
-        for(Int_t iclus=0; iclus<_nclusters_FEMC; iclus++){
-            _clusters_FEMC_trueID[iclus] = GetCorrectMCArrayEntry(_clusters_FEMC_trueID[iclus]);
-            if(_doClusterECalibration){
-                _clusters_FEMC_E[iclus]/=getCalibrationValue(_clusters_FEMC_E[iclus], kFEMC, kV1);
-            }
-        }
-        if(do_MAclusterizer){
+        if(do_reclus && kMA<_active_algo && _do_jetfinding){
             for(Int_t iclus=0; iclus<_nclusters_MA_FHCAL; iclus++){
                 if(!_clusters_MA_FHCAL_isMatched[iclus]){
                     double pt = _clusters_MA_FHCAL_E[iclus] / cosh(_clusters_MA_FHCAL_Eta[iclus]);
@@ -518,7 +701,7 @@ void treeProcessing(
         // for(Int_t iclus=0; iclus<_nclusters_FEMC; iclus++){
         //     if(verbosity>1) std::cout << "\tFEMC:  cluster " << iclus << "\twith E = " << _clusters_FEMC_E[iclus] << " GeV" << std::endl;
         // }
-        if(do_MAclusterizerFEMC){
+        if(do_reclus && kMA<_active_algo && _do_jetfinding){
             for(Int_t iclus=0; iclus<_nclusters_MA_FEMC; iclus++){
                 if(!_clusters_MA_FEMC_isMatched[iclus]){
                     double pt = _clusters_MA_FEMC_E[iclus] / cosh(_clusters_MA_FEMC_Eta[iclus]);
@@ -609,7 +792,7 @@ void treeProcessing(
                     if (_tower_FEMC_E[i] < seed_E) {
                         continue;
                     }
-                    TVector3 twrPos = TowerPositionVectorFromIndices(_tower_FEMC_iEta[i], _tower_FEMC_iPhi[i], kFEMC);
+                    TVector3 twrPos = TowerPositionVectorFromIndicesGeometry(_tower_FEMC_iEta[i], _tower_FEMC_iPhi[i], kFEMC);
                     double pt = _tower_FEMC_E[i] / cosh(twrPos.Eta());
                     nocluster_px.push_back(pt * cos(twrPos.Phi()));
                     nocluster_py.push_back(pt * sin(twrPos.Phi()));
@@ -673,7 +856,15 @@ void treeProcessing(
             
 // TString jettype[njettypes] = {"track", "full","hcal","calo","all"};
         }
-        if(verbosity>1) std::cout << "running clusterstudies" << std::endl;
+        
+        if(verbosity>1) cout << "running trackingefficiency" << endl;
+        trackingefficiency();
+        if(verbosity>1) cout << "running trackingresolution" << endl;
+        trackingresolution();
+        if(verbosity>1) cout << "running trackingcomparison" << endl;
+        // trackingcomparison();
+        if(verbosity>1) cout << "finished tracking studies" << endl;
+        if(verbosity>1) cout << "running clusterstudies" << endl;
         clusterstudies();
         if(verbosity>1) std::cout << "running resolutionhistos" << std::endl;
         resolutionhistos();

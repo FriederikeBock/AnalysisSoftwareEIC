@@ -21,6 +21,8 @@ TH2F* h_jet_E_eta[njettypes] = {NULL};
 TH2F* h_MCjet_E_eta[njettypes] = {NULL};
 TH2F* h_jetscale_E[njettypes][nEta+1] = {NULL};
 TH2F* h_jetscale_pT[njettypes][nEta+1] = {NULL};
+TH2F* h_jetscale_eta[njettypes][nEta+1] = {NULL};
+TH2F* h_jetscale_phi[njettypes][nEta+1] = {NULL};
 TH2F* h_constituents_Eta[njettypes] = {NULL};
 TH2F* h_constituents_true_Eta[njettypes] = {NULL};
 
@@ -112,8 +114,10 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
     if (!h2D_cluster_eta_phi[isel]) h2D_cluster_eta_phi[isel] = new TH2F(Form("h2D_cluster_eta_phi_%s", jettype[isel].Data()), "", 40, -4, 4, 40, 0, 7);
 
     for (Int_t eT = 0; eT < nEta+1; eT++){
-      if(!h_jetscale_pT[isel][eT])h_jetscale_pT[isel][eT] = new TH2F(Form("h_jetscale_%s_pT_%d",jettype[isel].Data(), eT),"",150,0,30,200,-1,1);
+      if(!h_jetscale_pT[isel][eT])h_jetscale_pT[isel][eT] = new TH2F(Form("h_jetscale_%s_pT_%d",jettype[isel].Data(), eT),"",40,0,200,200,-1,1);
       if(!h_jetscale_E[isel][eT])h_jetscale_E[isel][eT]  = new TH2F(Form("h_jetscale_%s_E_%d",jettype[isel].Data(), eT),"",40,0,200,200,-1,1);
+      if(!h_jetscale_eta[isel][eT])h_jetscale_eta[isel][eT]  = new TH2F(Form("h_jetscale_%s_eta_%d",jettype[isel].Data(), eT),"",40,0,200,200,-1,1);
+      if(!h_jetscale_phi[isel][eT])h_jetscale_phi[isel][eT]  = new TH2F(Form("h_jetscale_%s_phi_%d",jettype[isel].Data(), eT),"",40,0,200,200,-1,1);
 
       if(!h_JES_pT[isel][eT])h_JES_pT[isel][eT]         = new TH1D(Form("h_JES_%s_pT_%d",jettype[isel].Data(), eT),"",150,0,30);
       if(!h_JER_pT[isel][eT])h_JER_pT[isel][eT]         = new TH1D(Form("h_JER_%s_pT_%d",jettype[isel].Data(), eT),"",150,0,30);
@@ -194,7 +198,9 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
 
         if(verbosityJRH>1) std::cout << "rec jet " << i << " (" << std::get<1>(recjets)[i].E() << "E)  matched with true jet " << j << " (" << std::get<1>(truejets)[j].E() << "E) with dR = " << deltaRTrueRec << std::endl;
         h_jetscale_E[select][et]->Fill(std::get<1>(truejets)[j].E(),(std::get<1>(recjets)[i].E()-std::get<1>(truejets)[j].E())/std::get<1>(truejets)[j].E());
-        h_jetscale_pT[select][et]->Fill(std::get<1>(truejets)[j].pt(),(std::get<1>(recjets)[i].pt()-std::get<1>(truejets)[j].pt())/std::get<1>(truejets)[j].pt());
+        h_jetscale_pT[select][et]->Fill(std::get<1>(truejets)[j].E(),(std::get<1>(recjets)[i].pt()-std::get<1>(truejets)[j].pt())/std::get<1>(truejets)[j].pt());
+        h_jetscale_eta[select][et]->Fill(std::get<1>(truejets)[j].E(),(std::get<1>(recjets)[i].eta()-std::get<1>(truejets)[j].eta()));
+        h_jetscale_phi[select][et]->Fill(std::get<1>(truejets)[j].E(),(std::get<1>(truejets)[j].delta_phi_to(std::get<1>(recjets)[i])));
 
         h2D_jet_EtaReso_E[select][et]->Fill(std::get<1>(truejets)[j].E(),(std::get<1>(recjets)[i].eta()-std::get<1>(truejets)[j].eta())/std::get<1>(truejets)[j].eta());
         h2D_jet_PhiReso_E[select][et]->Fill(std::get<1>(truejets)[j].E(),(std::get<1>(truejets)[j].delta_phi_to(std::get<1>(recjets)[i]))/std::get<1>(truejets)[j].phi());
@@ -298,6 +304,8 @@ void jetresolutionhistosSave(){
     for (Int_t eT = 0; eT < nEta+1; eT++){
       if(h_jetscale_E[isel][eT])h_jetscale_E[isel][eT]->Write();
       if(h_jetscale_pT[isel][eT])h_jetscale_pT[isel][eT]->Write();
+      if(h_jetscale_eta[isel][eT])h_jetscale_eta[isel][eT]->Write();
+      if(h_jetscale_phi[isel][eT])h_jetscale_phi[isel][eT]->Write();
       if(h_JES_pT[isel][eT])h_JES_pT[isel][eT]->Write();
       if(h_JES_E[isel][eT])h_JES_E[isel][eT]->Write();
       if(h_JER_pT[isel][eT])h_JER_pT[isel][eT]->Write();
