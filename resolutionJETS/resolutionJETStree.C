@@ -97,13 +97,19 @@ void resolutionJETStree(
   TH1F*    histo_JER_E[nInputs][njettypes][nEta+1] = {{{NULL}}};
   TH1F*    histo_JER_pT[nInputs][njettypes][nEta+1] = {{{NULL}}};
  
+
+  TH2F*    h2D_jet_EtaReso_E[nInputs][njettypes][nEta+1] = {{{NULL}}};
   TH1F*    h_EtaReso_Width_E[nInputs][njettypes][nEta+1] = {{{NULL}}};
   TH1F*    h_EtaReso_Mean_E[nInputs][njettypes][nEta+1] = {{{NULL}}};
+  TH2F*    h2D_jet_EtaReso_Eta[nInputs][njettypes] = {{NULL}};
   TH1F*    h_EtaReso_Mean_Eta[nInputs][njettypes] = {{NULL}};
   TH1F*    h_EtaReso_Width_Eta[nInputs][njettypes] = {{NULL}};
 
+
+  TH2F*    h2D_jet_PhiReso_E[nInputs][njettypes][nEta+1] = {{{NULL}}};
   TH1F*    h_PhiReso_Width_E[nInputs][njettypes][nEta+1] = {{{NULL}}};
   TH1F*    h_PhiReso_Mean_E[nInputs][njettypes][nEta+1] = {{{NULL}}};
+  TH2F*    h2D_jet_PhiReso_Eta[nInputs][njettypes] = {{NULL}};
   TH1F*    h_PhiReso_Mean_Eta[nInputs][njettypes] = {{NULL}};
   TH1F*    h_PhiReso_Width_Eta[nInputs][njettypes] = {{NULL}};
 
@@ -133,11 +139,14 @@ void resolutionJETStree(
   // Load required histograms
   for(int iInp=0;iInp<nInputs;iInp++){
     for(int ijr=0;ijr<njettypes;ijr++){
-        h_EtaReso_Mean_Eta[iInp][ijr]	= (TH1F*) inputFiles[iInp]->Get(Form("h_EtaReso_Mean_%s_Eta", style.str_jet_type[ijr].Data()));
-        h_EtaReso_Width_Eta[iInp][ijr]	= (TH1F*) inputFiles[iInp]->Get(Form("h_EtaReso_Width_%s_Eta", style.str_jet_type[ijr].Data()));
+      
+        h2D_jet_EtaReso_Eta[iInp][ijr] = (TH2F*)inputFiles[iInp]->Get(Form("h2D_jet_EtaReso_%s_Eta", style.str_jet_type[ijr].Data()));
+        h_EtaReso_Mean_Eta[iInp][ijr]	= new TH1F(Form("h_EtaReso_Mean_%s_Eta", style.str_jet_type[ijr].Data()),"",40,0,4);
+        h_EtaReso_Width_Eta[iInp][ijr]	= new TH1F(Form("h_EtaReso_Width_%s_Eta", style.str_jet_type[ijr].Data()),"",40,0,4);
 
-        h_PhiReso_Mean_Eta[iInp][ijr]	= (TH1F*) inputFiles[iInp]->Get(Form("h_PhiReso_Mean_%s_Eta", style.str_jet_type[ijr].Data()));
-        h_PhiReso_Width_Eta[iInp][ijr]	= (TH1F*) inputFiles[iInp]->Get(Form("h_PhiReso_Width_%s_Eta", style.str_jet_type[ijr].Data()));
+        h2D_jet_PhiReso_Eta[iInp][ijr] = (TH2F*)inputFiles[iInp]->Get(Form("h2D_jet_PhiReso_%s_Eta", style.str_jet_type[ijr].Data()));
+        h_PhiReso_Mean_Eta[iInp][ijr]	= new TH1F(Form("h_PhiReso_Mean_%s_Eta", style.str_jet_type[ijr].Data()),"",40, 0, 4);
+        h_PhiReso_Width_Eta[iInp][ijr]	= new TH1F(Form("h_PhiReso_Width_%s_Eta", style.str_jet_type[ijr].Data()),"",40, 0, 4);
 
 
         h_truth_count[iInp][ijr] = (TH1F*)inputFiles[iInp]->Get(Form("h_truth_count_%s",  style.str_jet_type[ijr].Data()));
@@ -165,23 +174,91 @@ void resolutionJETStree(
         histo2D_JES_eta[iInp][ijr][eT]	= (TH2F*) inputFiles[iInp]->Get(Form("h_jetscale_%s_eta_%d", style.str_jet_type[ijr].Data(),eT));
         histo2D_JES_phi[iInp][ijr][eT]	= (TH2F*) inputFiles[iInp]->Get(Form("h_jetscale_%s_phi_%d", style.str_jet_type[ijr].Data(),eT));
 
-        h_EtaReso_Width_E[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_EtaReso_Width_%s_E_%d", style.str_jet_type[ijr].Data(),eT));
-        h_EtaReso_Mean_E[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_EtaReso_Mean_%s_E_%d", style.str_jet_type[ijr].Data(),eT));
-        h_PhiReso_Width_E[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_PhiReso_Width_%s_E_%d", style.str_jet_type[ijr].Data(),eT));
-        h_PhiReso_Mean_E[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_PhiReso_Mean_%s_E_%d", style.str_jet_type[ijr].Data(),eT));
+        h2D_jet_PhiReso_E[iInp][ijr][eT]  = (TH2F*) inputFiles[iInp]->Get(Form("h2D_jet_PhiReso_%s_E_%d", style.str_jet_type[ijr].Data(), eT));
+        h_EtaReso_Width_E[iInp][ijr][eT]	= new TH1F(Form("h_EtaReso_Width_%s_E_%d", style.str_jet_type[ijr].Data(), eT),"",40, 0, 200);
+        h_EtaReso_Mean_E[iInp][ijr][eT]	= new TH1F(Form("h_EtaReso_Mean_%s_E_%d", style.str_jet_type[ijr].Data(), eT),"",40, 0, 200);
+        h2D_jet_EtaReso_E[iInp][ijr][eT]  = (TH2F*) inputFiles[iInp]->Get(Form("h2D_jet_EtaReso_%s_E_%d", style.str_jet_type[ijr].Data(), eT));
+        h_PhiReso_Width_E[iInp][ijr][eT]	= new TH1F(Form("h_PhiReso_Width_%s_E_%d", style.str_jet_type[ijr].Data(), eT),"",40, 0, 200);
+        h_PhiReso_Mean_E[iInp][ijr][eT]	= new TH1F(Form("h_PhiReso_Mean_%s_E_%d", style.str_jet_type[ijr].Data(), eT),"",40, 0, 200);
 
-        histo_JES_E[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_JES_%s_E_%d", style.str_jet_type[ijr].Data(),eT));
-        histo_JES_pT[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_JES_%s_pT_%d", style.str_jet_type[ijr].Data(),eT));
-        histo_JER_E[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_JER_%s_E_%d", style.str_jet_type[ijr].Data(),eT));
-        histo_JER_pT[iInp][ijr][eT]	= (TH1F*) inputFiles[iInp]->Get(Form("h_JER_%s_pT_%d", style.str_jet_type[ijr].Data(),eT));
+        histo_JES_E[iInp][ijr][eT]	= new TH1F(Form("h_JES_%s_E_%d", style.str_jet_type[ijr].Data(), eT),"",40,0,200);
+        histo_JES_pT[iInp][ijr][eT]	= new TH1F(Form("h_JES_%s_pT_%d", style.str_jet_type[ijr].Data(), eT),"",40,0,30);
+        histo_JER_E[iInp][ijr][eT]	= new TH1F(Form("h_JER_%s_E_%d", style.str_jet_type[ijr].Data(), eT),"",40,0,200);
+        histo_JER_pT[iInp][ijr][eT]	= new TH1F(Form("h_JER_%s_pT_%d", style.str_jet_type[ijr].Data(), eT),"",40,0,30);
         if(!histo_JER_pT[iInp][ijr][eT]) std::cout << Form("h_JER_%s_pT_%d", style.str_jet_type[ijr].Data(),eT) << std::endl;
+      }
+    }
+  }
+
+  // Generate reso and scale
+  for (Int_t eT = 0; eT < nEta+1; eT++){
+    for( int isel=0;isel<njettypes;isel++){
+      if(histo2D_JES_pT[0][isel][eT]){
+        // make projections for JES and JER
+        for (Int_t i=1; i < histo2D_JES_pT[0][isel][eT]->GetNbinsX()+1; i++){
+          TH1D* projectionYdummy = (TH1D*)histo2D_JES_pT[0][isel][eT]->ProjectionY(Form("projectionYdummy%d%d%d",isel,i,eT), i,i+1,"e");
+          // projectionYdummy->GetXaxis()->SetRangeUser(-0.6,0);
+          histo_JES_pT[0][isel][eT]->SetBinContent(i,projectionYdummy->GetMean());
+          histo_JES_pT[0][isel][eT]->SetBinError(i,projectionYdummy->GetMeanError());
+          histo_JER_pT[0][isel][eT]->SetBinContent(i,projectionYdummy->GetStdDev()); //GetMeanError()
+          histo_JER_pT[0][isel][eT]->SetBinError(i,projectionYdummy->GetStdDevError()); //GetMeanError()
+        }
+      }
+      if(histo2D_JES_E[0][isel][eT]){
+        for (Int_t i=1; i < histo2D_JES_E[0][isel][eT]->GetNbinsX()+1; i++){
+          // TH1D* projectionYdummy = (TH1D*)h_jetscale_E[isel][eT]->ProjectionY(Form("projectionYdummy%d%d",isel,i), h_jetscale_E[isel][eT]->GetXaxis()->FindBin(partP[i-1]+0.001), h_jetscale_E[isel][eT]->GetXaxis()->FindBin(partP[i]+0.001),"e");
+          TH1D* projectionYdummy = (TH1D*)histo2D_JES_E[0][isel][eT]->ProjectionY(Form("projectionYdummy2%d%d%d",isel,i,eT), i,i+1,"e");
+          // projectionYdummy->GetXaxis()->SetRangeUser(-0.6,0);
+          histo_JES_E[0][isel][eT]->SetBinContent(i,projectionYdummy->GetMean());
+          histo_JES_E[0][isel][eT]->SetBinError(i,projectionYdummy->GetMeanError());
+          histo_JER_E[0][isel][eT]->SetBinContent(i,projectionYdummy->GetStdDev()); //GetMeanError()
+          histo_JER_E[0][isel][eT]->SetBinError(i,projectionYdummy->GetStdDevError()); //GetMeanError()
+        }
+      }
+      if(histo2D_JES_eta[0][isel][eT]){
+        for (Int_t i=1; i < histo2D_JES_eta[0][isel][eT]->GetNbinsX()+1; i++){
+          TH1D* projectionYdummy = (TH1D*)histo2D_JES_eta[0][isel][eT]->ProjectionY(Form("projectionYdummy3%d%d%d",isel,i,eT), i,i+1,"e");
+          h_EtaReso_Mean_E[0][isel][eT]->SetBinContent(i,projectionYdummy->GetMean());
+          h_EtaReso_Mean_E[0][isel][eT]->SetBinError(i,projectionYdummy->GetMeanError());
+          h_EtaReso_Width_E[0][isel][eT]->SetBinContent(i,projectionYdummy->GetStdDev()); //GetMeanError()
+          h_EtaReso_Width_E[0][isel][eT]->SetBinError(i,projectionYdummy->GetStdDevError()); //GetMeanError()
+        }
+      }
+      if (histo2D_JES_phi[0][isel][eT]) {
+        for (Int_t i = 1; i < histo2D_JES_phi[0][isel][eT]->GetNbinsX() + 1; i++) {
+          TH1D *projectionYdummy = (TH1D*)histo2D_JES_phi[0][isel][eT]->ProjectionY(Form("projectionYdummy3%d%d%d",isel,i,eT), i,i+1,"e");
+          h_PhiReso_Mean_E[0][isel][eT]->SetBinContent(i,projectionYdummy->GetMean());
+          h_PhiReso_Mean_E[0][isel][eT]->SetBinError(i,projectionYdummy->GetMeanError());
+          h_PhiReso_Width_E[0][isel][eT]->SetBinContent(i,projectionYdummy->GetStdDev()); //GetMeanError()
+          h_PhiReso_Width_E[0][isel][eT]->SetBinError(i,projectionYdummy->GetStdDevError()); //GetMeanError()
+        }
+      }
+    }
+  }
+  for( int isel=0;isel<njettypes;isel++){
+    if(h2D_jet_EtaReso_Eta[0][isel]){
+      for (Int_t i=1; i < h2D_jet_EtaReso_Eta[0][isel]->GetNbinsX()+1; i++){
+        TH1D* projectionYdummy = (TH1D*)h2D_jet_EtaReso_Eta[0][isel]->ProjectionY(Form("projectionYdummy4%d%d",isel,i), i,i+1,"e");
+        h_EtaReso_Mean_Eta[0][isel]->SetBinContent(i,projectionYdummy->GetMean());
+        h_EtaReso_Mean_Eta[0][isel]->SetBinError(i,projectionYdummy->GetMeanError());
+        h_EtaReso_Width_Eta[0][isel]->SetBinContent(i,projectionYdummy->GetStdDev()); //GetMeanError()
+        h_EtaReso_Width_Eta[0][isel]->SetBinError(i,projectionYdummy->GetStdDevError()); //GetMeanError()
+      }
+    }
+    if (h2D_jet_PhiReso_Eta[0][isel]) {
+      for (Int_t i = 1; i < h2D_jet_PhiReso_Eta[0][isel]->GetNbinsX() + 1; i++) {
+        TH1D* projectionYdummy = (TH1D*)h2D_jet_PhiReso_Eta[0][isel]->ProjectionY(Form("projectionYdummy4%d%d",isel,i), i,i+1,"e");
+        h_PhiReso_Mean_Eta[0][isel]->SetBinContent(i,projectionYdummy->GetMean());
+        h_PhiReso_Mean_Eta[0][isel]->SetBinError(i,projectionYdummy->GetMeanError());
+        h_PhiReso_Width_Eta[0][isel]->SetBinContent(i,projectionYdummy->GetStdDev()); //GetMeanError()
+        h_PhiReso_Width_Eta[0][isel]->SetBinError(i,projectionYdummy->GetStdDevError()); //GetMeanError()
       }
     }
   }
 
   // Plot scales
   if (do_plot_scale) {
-    plotResoOrScale(histo_JES_E, TString("E Scale"), TString(Form("%s/JetEnergyScale/JES", outputDir.Data())), style, -0.6, 0.4, TString("#it{E}^{jet}"), TString("Mean((#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}))"));  // Plot jet energy scale
+    plotResoOrScale(histo_JES_E, TString("E Scale"), TString(Form("%s/JetEnergyScale/JES", outputDir.Data())), style, -1, 0.4, TString("#it{E}^{jet}"), TString("Mean((#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}))"));  // Plot jet energy scale
     plotResoOrScale(h_EtaReso_Mean_E, TString("#eta Scale"), TString(Form("%s/EtaScale/EtaScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#eta^{rec} - #eta^{true}) / #eta^{true}))"));  // Plot jet eta scale
     plotResoOrScale(h_PhiReso_Mean_E, TString("#Phi Scale"), TString(Form("%s/PhiScale/PhiScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#Phi^{rec} - #Phi^{true}) / #Phi^{true}))"));  // Plot jet phi scale
   }

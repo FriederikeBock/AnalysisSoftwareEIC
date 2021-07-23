@@ -1,14 +1,17 @@
 #! /bin/bash
-NUMTHREADS=8
+NUMTHREADS=16
 INPUT="/home/tristan/ecce/Singularity/analysis/AnalysisSoftwareEIC/treeAnalysis/test_prod.txt"
+
+echo "IMPORTANT NOTE: Only tested for jet resolution studies, other studies may not combined histograms in a sensible way."
+echo "If verified for other studies, please leave a note here."
 
 # Stop all child processes when an appropriate signal is received
 function stop {
     for PID in "${PIDS[@]}"; do
         echo Killing $PID
         kill $PID
-        exit
     done
+    exit
 }
 trap stop SIGHUP SIGINT SIGTERM
 
@@ -30,7 +33,7 @@ for (( i = 0; i < $NUMTHREADS; i++ )); do
   PIDS+=( $! )
 done;
 
-wait    # Wait for all root processes to return
+# wait    # Wait for all root processes to return
 echo "Done processing, merging histograms..."
 
 # Merge histograms with hadd
@@ -46,10 +49,10 @@ done
 
 echo "Done"
 
-
+# Ryzen 3700X, 4,000,000 events from SIDIS high Q^2
 # Cores | Time mm:ss
-#     1 | 42:01
+#     1 |
 #     2 |
 #     4 |
-#     7 | 16:46
 #     8 |
+#    16 | 100:12
