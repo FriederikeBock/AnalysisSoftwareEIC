@@ -15,7 +15,7 @@ function stop {
 }
 trap stop SIGHUP SIGINT SIGTERM
 
-while getopts j:f: option; do
+while getopts j:f: option; do   # Get core count and file list
     case "${option}" in
         j) NUMTHREADS=${OPTARG};;
         f) INPUT=${OPTARG};;
@@ -33,6 +33,9 @@ cd ../..
 
 PIDS=()
 
+echo ""
+echo "Starting ${NUMTHREADS} processes..."
+echo "Progress can be monitored with 'tail -f treeProcessing/logs/*.log'"
 # Start NUMTHREADS instances of the analyzer 
 for (( i=0; i<$NUMTHREADS; i++ )); do
   printf -v J "%02d" $i
@@ -40,7 +43,7 @@ for (( i=0; i<$NUMTHREADS; i++ )); do
   PIDS+=( $! )
 done;
 
-# wait    # Wait for all root processes to return
+wait    # Wait for all root processes to return
 echo "Done processing, merging histograms..."
 
 # Merge histograms with hadd
@@ -54,6 +57,7 @@ for FILE in  output_CS.root output_HITS.root output_JRH.root output_TMSTUD.root 
     hadd -j $NUMTHREADS -f treeProcessing/$FILE ${FILEPATHS[@]}
 done
 
+echo ""
 echo "Done"
 
 # Ryzen 3700X, 4,000,000 events from SIDIS high Q^2
