@@ -18,7 +18,7 @@ trap stop SIGHUP SIGINT SIGTERM
 while getopts j:f: option; do   # Get core count and file list
     case "${option}" in
         j) NUMTHREADS=${OPTARG};;
-        f) INPUT=${OPTARG};;
+        f) INPUT=$(readlink -f ${OPTARG});;     # Exapand to absolute path so changing directories later doesn't break things
     esac
 done
 
