@@ -184,9 +184,9 @@ void resolutionJETStree(
         h_PhiReso_Mean_E[iInp][ijr][eT]	= new TH1F(Form("h_PhiReso_Mean_%s_E_%d", style.str_jet_type[ijr].Data(), eT),"",40, 0, 200);
 
         histo_JES_E[iInp][ijr][eT]	= new TH1F(Form("h_JES_%s_E_%d", style.str_jet_type[ijr].Data(), eT),"",40,0,200);
-        histo_JES_pT[iInp][ijr][eT]	= new TH1F(Form("h_JES_%s_pT_%d", style.str_jet_type[ijr].Data(), eT),"",40,0,30);
+        histo_JES_pT[iInp][ijr][eT]	= new TH1F(Form("h_JES_%s_pT_%d", style.str_jet_type[ijr].Data(), eT),"",40,0,200);
         histo_JER_E[iInp][ijr][eT]	= new TH1F(Form("h_JER_%s_E_%d", style.str_jet_type[ijr].Data(), eT),"",40,0,200);
-        histo_JER_pT[iInp][ijr][eT]	= new TH1F(Form("h_JER_%s_pT_%d", style.str_jet_type[ijr].Data(), eT),"",40,0,30);
+        histo_JER_pT[iInp][ijr][eT]	= new TH1F(Form("h_JER_%s_pT_%d", style.str_jet_type[ijr].Data(), eT),"",40,0,200);
         if(!histo_JER_pT[iInp][ijr][eT]) std::cout << Form("h_JER_%s_pT_%d", style.str_jet_type[ijr].Data(),eT) << std::endl;
       }
     }
