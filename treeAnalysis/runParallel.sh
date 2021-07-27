@@ -2,6 +2,8 @@
 # NUMTHREADS=16
 # INPUT="/home/tristan/ecce/Singularity/analysis/AnalysisSoftwareEIC/treeAnalysis/test_prod.txt"
 
+# invoke with ./runParalle.sh -j NUMBER_OF_THREADS -f LIST_OF_FILES
+
 echo "IMPORTANT NOTE: Only tested for jet resolution studies, other studies may not combined histograms in a sensible way."
 echo "If verified for other studies, please leave a note here."
 
@@ -21,6 +23,11 @@ while getopts j:f: option; do   # Get core count and file list
         f) INPUT=$(readlink -f ${OPTARG});;     # Exapand to absolute path so changing directories later doesn't break things
     esac
 done
+
+if [ -z ${NUMTHREADS+x} ] || [ -z ${INPUT+x} ]; then
+    echo "Invoke with $0 -j NUMBER_OF_THREADS -f LIST_OF_FILES"
+    exit
+fi
 
 # Staging areas
 mkdir -p treeProcessing/input_files
