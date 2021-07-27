@@ -40,7 +40,8 @@ void treeProcessing(
     // Defaults to tracking from all layers.
     unsigned short primaryTrackSource = 0,
     std::string jetAlgorithm = "anti-kt",
-    double jetR                 = 0.5
+    double jetR                 = 0.5,
+    double tracked_jet_max_pT   = 30
 ){
     // make output directory
     TString dateForOutput = ReturnDateStr();
@@ -598,10 +599,13 @@ void treeProcessing(
                 TVector3 trackvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
                 float Etrack = TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)+TMath::Power(_track_pz[itrk],2) + TMath::Power(massHypothesis, 2));
                 // create track vector for jet finder
-                jetf_track_px.push_back(_track_px[itrk]);
-                jetf_track_py.push_back(_track_py[itrk]);
-                jetf_track_pz.push_back(_track_pz[itrk]);
-                jetf_track_E.push_back(Etrack);
+                float track_pT = Etrack / cosh(trackvec.Eta());
+                if (track_pT < tracked_jet_max_pT) {
+                    jetf_track_px.push_back(_track_px[itrk]);
+                    jetf_track_py.push_back(_track_py[itrk]);
+                    jetf_track_pz.push_back(_track_pz[itrk]);
+                    jetf_track_E.push_back(Etrack);
+                }
                 if(trackvec.Eta()<0) continue;
                 jetf_full_px.push_back(_track_px[itrk]);
                 jetf_full_py.push_back(_track_py[itrk]);
