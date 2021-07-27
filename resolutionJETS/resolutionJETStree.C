@@ -33,7 +33,7 @@ struct plottingStyleData
   TString format;
 };
 
-TString *cutString(int jettype) {return new TString(Form("%.1f < #eta < %.1f", min_eta[jettype], max_eta[jettype]));}
+TString *cutString(int jettype) {return new TString(Form("%.1f < #eta < %.1f%s", min_eta[jettype], max_eta[jettype], jettype==0 ? ", pT < 30" : ""));}
 void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][16], TString title, TString outputDir, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel);
 void plotSpectra(TH2F *spectra[nInputs][njettypes], plottingStyleData style, TString title, TString outputFormat, TH1F *reco[nInputs][njettypes]=nullptr, TH1F *truth[nInputs][njettypes]=nullptr, float textX=0.22, float textY=0.83);
 void plotEfficiency(TH1F *h_matched_count[nInputs][njettypes], TH1F *h_truth_count[nInputs][njettypes], plottingStyleData style, TString outputDir);
@@ -70,6 +70,8 @@ void resolutionJETStree(
   gSystem->Exec("mkdir -p "+outputDir+"/PhiScale");
   gSystem->Exec("mkdir -p "+outputDir+"/JetEnergyResolution");
   gSystem->Exec("mkdir -p "+outputDir+"/JetEnergyScale");
+  gSystem->Exec("mkdir -p "+outputDir+"/JetMomentumResolution");
+  gSystem->Exec("mkdir -p "+outputDir+"/JetMomentumScale");
   gSystem->Exec("mkdir -p "+outputDir+"/JetEfficiency");
   gSystem->Exec("mkdir -p "+outputDir+"/Spectra");
 
@@ -180,17 +182,20 @@ void resolutionJETStree(
   }
 
   // Plot scales
+
   if (do_plot_scale) {
     plotResoOrScale(histo_JES_E, TString("E Scale"), TString(Form("%s/JetEnergyScale/JES", outputDir.Data())), style, -0.6, 0.4, TString("#it{E}^{jet}"), TString("Mean((#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}))"));  // Plot jet energy scale
-    plotResoOrScale(h_EtaReso_Mean_E, TString("#eta Scale"), TString(Form("%s/EtaScale/EtaScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#eta^{rec} - #eta^{true}) / #eta^{true}))"));  // Plot jet eta scale
-    plotResoOrScale(h_PhiReso_Mean_E, TString("#Phi Scale"), TString(Form("%s/PhiScale/PhiScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#Phi^{rec} - #Phi^{true}) / #Phi^{true}))"));  // Plot jet phi scale
-  }
+    plotResoOrScale(histo_JES_pT, TString("pT Scale"), TString(Form("%s/JetMomentumScale/pTScale", outputDir.Data())), style, -0.6, 0.4, TString("pT^{jet}"), TString("Mean((pT^{rec} - pT^{true}) / pT^{true}))"));  // Plot jet energy scale
+    plotResoOrScale(h_EtaReso_Mean_E, TString("#eta Scale"), TString(Form("%s/EtaScale/EtaScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#eta^{rec} - #eta^{true}))"));  // Plot jet eta scale
+    plotResoOrScale(h_PhiReso_Mean_E, TString("#Phi Scale"), TString(Form("%s/PhiScale/PhiScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#Phi^{rec} - #Phi^{true}))"));  // Plot jet phi scale
+}
 
   // Plot resolutions
   if (make_resolution_plots) {
     plotResoOrScale(histo_JER_E, TString("E Resolution"), TString(Form("%s/JetEnergyResolution/JER_E", outputDir.Data())), style, 0, 0.6, TString("#it{E}^{jet}"), TString("#sigma((#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true})"));
-    plotResoOrScale(h_EtaReso_Width_E, TString("#eta Resolution"), TString(Form("%s/EtaResolution/EtaReso", outputDir.Data())), style, 0, 0.4, TString("#it{E}^{jet}"), TString("#sigma((#eta^{rec} - #eta^{true}) / #eta^{true})"));
-    plotResoOrScale(h_PhiReso_Width_E, TString("#Phi Resolution"), TString(Form("%s/PhiResolution/PhiReso", outputDir.Data())), style, 0, 0.4, TString("#it{E}^{jet}"), TString("#sigma((#Phi^{rec} - #Phi^{true}) / #Phi^{true})"));
+    plotResoOrScale(histo_JER_pT, TString("pT Resolution"), TString(Form("%s/JetMomentumResolution/pTReso", outputDir.Data())), style, 0, 0.6, TString("pT^{jet}"), TString("#sigma((pT^{rec} - pT^{true}) / pT^{true})"));
+    plotResoOrScale(h_EtaReso_Width_E, TString("#eta Resolution"), TString(Form("%s/EtaResolution/EtaReso", outputDir.Data())), style, 0, 0.4, TString("#it{E}^{jet}"), TString("#sigma((#eta^{rec} - #eta^{true}))"));
+    plotResoOrScale(h_PhiReso_Width_E, TString("#Phi Resolution"), TString(Form("%s/PhiResolution/PhiReso", outputDir.Data())), style, 0, 0.4, TString("#it{E}^{jet}"), TString("#sigma((#Phi^{rec} - #Phi^{true}))"));
   }
 
   // Plot spectra
