@@ -359,7 +359,7 @@ void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][nEta+eta_regions], TStr
       scaleHist->DrawCopy();
       TLegend *scaleLegend;
       if (grouped) {
-        scaleLegend = GetAndSetLegend2(0.7, 0.95-(3*textSizeLabelsRel), 1.05, 0.95,textSizeLabelsPixel, 1, "", 43, 0.15);
+        scaleLegend = GetAndSetLegend2(0.7, 0.95-(eta_regions*textSizeLabelsRel), 1.05, 0.95,textSizeLabelsPixel, 1, "", 43, 0.15);
       } 
       else {
         scaleLegend = GetAndSetLegend2(0.7, 0.95-((nEta-firstEtaBin[ijr])*textSizeLabelsRel), 1.05, 0.95,textSizeLabelsPixel, 1, "", 43, 0.15);
@@ -531,59 +531,90 @@ void plotSlices (TH2F *spectra[nInputs][njettypes][nEta+eta_regions], plottingSt
 
 
   // Create projections for slices
-  TH1D *jesSlices[nInputs][njettypes][nEta+1][40] = {NULL};
-  for(int iInp=0;iInp<nInputs;iInp++){
-    for(int ijr=0;ijr<njettypes;ijr++){
-      for (Int_t eT = 0; eT < nEta+1; eT++){
-        for (Int_t i=0; i < spectra[iInp][ijr][0]->GetNbinsX(); i++){
-          jesSlices[iInp][ijr][eT][i] = (TH1D*)spectra[iInp][ijr][eT]->ProjectionY(Form("projectionYdummy%d%d%d%d",iInp,ijr,eT,i), i,i+1,"e");
-          jesSlices[iInp][ijr][eT][i]->Scale(1/jesSlices[iInp][ijr][eT][i]->GetEntries());
+  for (int grouped = 0; grouped <= 1; grouped++) {
+    TH1D *jesSlices[nInputs][njettypes][nEta+eta_regions][40] = {NULL};
+    for(int iInp=0;iInp<nInputs;iInp++){
+      for(int ijr=0;ijr<njettypes;ijr++){
+        for (Int_t eT = 0; eT < nEta + eta_regions; eT++){
+          for (Int_t i=0; i < spectra[iInp][ijr][0]->GetNbinsX(); i++){
+            jesSlices[iInp][ijr][eT][i] = (TH1D*)spectra[iInp][ijr][eT]->ProjectionY(Form("projectionYdummy%d%d%d%d",iInp,ijr,eT,i), i,i+1,"e");
+            jesSlices[iInp][ijr][eT][i]->Scale(1/jesSlices[iInp][ijr][eT][i]->GetEntries());
+          }
         }
       }
     }
-  }
 
   TCanvas* cSingleSlice = new TCanvas("cSingleSlice","",0,0,1100,1000);
   TH2F* histoJESSliceDummy   = new TH2F("histoJESSliceDummy","histoJESSliceDummy",1000,-0.99, 0.6,1000,0., 0.1);
   DrawGammaCanvasSettings( cSingleSlice, 0.1, 0.01, 0.01, 0.11);
-
-  for (std::size_t ijr = 0; ijr < njettypes; ijr++) {
-    gSystem->Exec(Form("mkdir -p %s/%s/%s", outputFormat.Data(), title.Data(), style.str_jet_type[ijr].Data())); // create output dir
-    float spacing = (spectra[0][ijr][0]->GetXaxis()->GetXmax() - spectra[0][ijr][0]->GetXaxis()->GetXmin()) / 40; // Width of each plot
-    float offset = spectra[0][ijr][0]->GetXaxis()->GetXmin(); // What to subtract such that range = spacing * i + offset
-    for (Int_t iEbin=0; iEbin < spectra[0][ijr][0]->GetNbinsX(); iEbin++){
-      int filled = 0;
-      float max = 0;
-      histoJESSliceDummy->Draw();
-      // DrawGammaLines(0, 29, 0., 0., 2, kGray+2, 7);
-      THStack *sliceStack = new THStack();  // stack slices
-      TLegend *legendJES3  = GetAndSetLegend2(0.70, 1.0-((ijr==0?13:4)*textSizeLabelsRel), 0.90, 1.0-(1*textSizeLabelsRel),1.1*textSizeLabelsPixel, 1, "", 43, 0.15);
-      for(Int_t eT = firstEtaBin[ijr]; eT < 14; eT++){  // loop over eta ranges
-        jesSlices[0][ijr][eT][iEbin]->Sumw2();
-        jesSlices[0][ijr][eT][iEbin]->Rebin(8);
-        if (jesSlices[0][ijr][eT][iEbin]->GetEntries()) { // Only draw histograms with entries
-          filled++;
-        }
-        else {
-          continue;
-        }
-        DrawGammaSetMarker( jesSlices[0][ijr][eT][iEbin], markerStyleEta[eT], 1.5*markerSizeEta[eT], colorEta[eT], colorEta[eT]);
-        jesSlices[0][ijr][eT][iEbin]->SetLineWidth(4);
-        sliceStack->Add(jesSlices[0][ijr][eT][iEbin]);
-        if (jesSlices[0][ijr][eT][iEbin]->GetMaximum() > max) {
-          max = jesSlices[0][ijr][eT][iEbin]->GetMaximum();
-        }
-        legendJES3->AddEntry( jesSlices[0][ijr][eT][iEbin],Form("%1.1f < #it{#eta}_{jet} < %1.1f",partEta[eT],partEta[eT+1]),"l");
+    for (std::size_t ijr = 0; ijr < njettypes; ijr++) {
+      int eta_start, eta_end;
+      if (grouped) {
+        eta_start = nEta;
+        eta_end = nEta + eta_regions;
       }
-      if (filled) {
-        sliceStack->Draw("nostack e");
-        legendJES3->SetY1(1.0-(filled*textSizeLabelsRel));
-        legendJES3->Draw();
-        sliceStack->SetMaximum(max * 1.4);
-        SetStyleHistoTHStackForGraphs(sliceStack, xLabel.Data(), "Normalized Distribution", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1); 
-        TString info[1] = {Form("%1.1f < %s_{jet} < %1.1f %s", spacing * iEbin + offset, symbol.Data(), spacing * (iEbin + 1) + offset, units.Data())};  // Add eta info to plot
-        drawInfo(style, 0.16, 0.92, ijr, 1, info);
-        cSingleSlice->Print(Form("%s/%s/%s/JES_Slice_Plot_EtaBins%d.%s", outputFormat.Data(), title.Data(), style.str_jet_type[ijr].Data(), iEbin, style.format.Data()));
+      else {
+        eta_start = firstEtaBin[ijr];
+        eta_end = nEta;
+      }
+      gSystem->Exec(Form("mkdir -p %s/%s/%s", outputFormat.Data(), title.Data(), style.str_jet_type[ijr].Data())); // create output dir
+      float spacing = (spectra[0][ijr][0]->GetXaxis()->GetXmax() - spectra[0][ijr][0]->GetXaxis()->GetXmin()) / 40; // Width of each plot
+      float offset = spectra[0][ijr][0]->GetXaxis()->GetXmin(); // What to subtract such that range = spacing * i + offset
+      for (Int_t iEbin=0; iEbin < spectra[0][ijr][0]->GetNbinsX(); iEbin++){
+        int filled = 0;
+        float max = 0;
+        histoJESSliceDummy->Draw();
+        // DrawGammaLines(0, 29, 0., 0., 2, kGray+2, 7);
+        THStack *sliceStack = new THStack();  // stack slices
+        TLegend *legendJES3;
+        if (grouped) {
+          legendJES3 = GetAndSetLegend2(0.70, 1.0-(eta_regions*textSizeLabelsRel), 0.90, 1.0-(1*textSizeLabelsRel),1.1*textSizeLabelsPixel, 1, "", 43, 0.15);  
+        } 
+        else {
+          legendJES3 = GetAndSetLegend2(0.70, 1.0-((ijr==0?13:4)*textSizeLabelsRel), 0.90, 1.0-(1*textSizeLabelsRel),1.1*textSizeLabelsPixel, 1, "", 43, 0.15);  
+        }
+        for(Int_t eT = eta_start; eT < eta_end; eT++){  // loop over eta ranges
+          jesSlices[0][ijr][eT][iEbin]->Sumw2();
+          jesSlices[0][ijr][eT][iEbin]->Rebin(8);
+          if (jesSlices[0][ijr][eT][iEbin]->GetEntries()) { // Only draw histograms with entries
+            filled++;
+          }
+          else {
+            continue;
+          }
+          if (grouped) {
+            DrawGammaSetMarker( jesSlices[0][ijr][eT][iEbin], markerStyleEta[eT-5], 1.5*markerSizeEta[eT-5], colorEta[eT-5], colorEta[eT-5]);
+          }
+          else {
+            DrawGammaSetMarker( jesSlices[0][ijr][eT][iEbin], markerStyleEta[eT], 1.5*markerSizeEta[eT], colorEta[eT], colorEta[eT]);
+          }
+          jesSlices[0][ijr][eT][iEbin]->SetLineWidth(4);
+          sliceStack->Add(jesSlices[0][ijr][eT][iEbin]);
+          if (jesSlices[0][ijr][eT][iEbin]->GetMaximum() > max) {
+            max = jesSlices[0][ijr][eT][iEbin]->GetMaximum();
+          }
+          if (grouped) {
+            legendJES3->AddEntry( jesSlices[0][ijr][eT][iEbin],Form("%1.1f < #it{#eta}_{jet} < %1.1f",eta_regions_boundaries[eT-nEta],eta_regions_boundaries[eT-nEta+1]),"l");
+          }
+          else { 
+            legendJES3->AddEntry( jesSlices[0][ijr][eT][iEbin],Form("%1.1f < #it{#eta}_{jet} < %1.1f",partEta[eT],partEta[eT+1]),"l");
+          }
+        }
+        if (filled) {
+          sliceStack->Draw("nostack e");
+          legendJES3->SetY1(1.0-(filled*textSizeLabelsRel));
+          legendJES3->Draw();
+          sliceStack->SetMaximum(max * 1.4);
+          SetStyleHistoTHStackForGraphs(sliceStack, xLabel.Data(), "Normalized Distribution", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1); 
+          TString info[1] = {Form("%1.1f < %s_{jet} < %1.1f %s", spacing * iEbin + offset, symbol.Data(), spacing * (iEbin + 1) + offset, units.Data())};  // Add eta info to plot
+          drawInfo(style, 0.16, 0.92, ijr, 1, info);
+          if (grouped) {
+            cSingleSlice->Print(Form("%s/%s/%s/JES_Slice_Plot_EtaBins%d_grouped.%s", outputFormat.Data(), title.Data(), style.str_jet_type[ijr].Data(), iEbin, style.format.Data()));
+          }
+          else {
+            cSingleSlice->Print(Form("%s/%s/%s/JES_Slice_Plot_EtaBins%d.%s", outputFormat.Data(), title.Data(), style.str_jet_type[ijr].Data(), iEbin, style.format.Data()));
+          }
+        }
       }
     }
   }
