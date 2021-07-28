@@ -222,71 +222,7 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
 
 // ANCHOR save function after event loop
 void jetresolutionhistosSave(){
-  for (Int_t eT = 0; eT < nEta+1; eT++){
-    for( int isel=0;isel<njettypes;isel++){
-      if(h_jetscale_pT[isel][eT]){
-        // make projections for JES and JER
-        for (Int_t i=1; i < h_jetscale_pT[isel][eT]->GetNbinsX()+1; i++){
-          TH1D* projectionYdummy = (TH1D*)h_jetscale_pT[isel][eT]->ProjectionY(Form("projectionYdummy%d%d%d",isel,i,eT), i,i+1,"e");
-          // projectionYdummy->GetXaxis()->SetRangeUser(-0.6,0);
-          h_JES_pT[isel][eT]->SetBinContent(i,projectionYdummy->GetMean());
-          h_JES_pT[isel][eT]->SetBinError(i,projectionYdummy->GetMeanError());
-          h_JER_pT[isel][eT]->SetBinContent(i,projectionYdummy->GetStdDev()); //GetMeanError()
-          h_JER_pT[isel][eT]->SetBinError(i,projectionYdummy->GetStdDevError()); //GetMeanError()
-        }
-      }
-      if(h_jetscale_E[isel][eT]){
-        for (Int_t i=1; i < h_jetscale_E[isel][eT]->GetNbinsX()+1; i++){
-          // TH1D* projectionYdummy = (TH1D*)h_jetscale_E[isel][eT]->ProjectionY(Form("projectionYdummy%d%d",isel,i), h_jetscale_E[isel][eT]->GetXaxis()->FindBin(partP[i-1]+0.001), h_jetscale_E[isel][eT]->GetXaxis()->FindBin(partP[i]+0.001),"e");
-          TH1D* projectionYdummy = (TH1D*)h_jetscale_E[isel][eT]->ProjectionY(Form("projectionYdummy2%d%d%d",isel,i,eT), i,i+1,"e");
-          // projectionYdummy->GetXaxis()->SetRangeUser(-0.6,0);
-          h_JES_E[isel][eT]->SetBinContent(i,projectionYdummy->GetMean());
-          h_JES_E[isel][eT]->SetBinError(i,projectionYdummy->GetMeanError());
-          h_JER_E[isel][eT]->SetBinContent(i,projectionYdummy->GetStdDev()); //GetMeanError()
-          h_JER_E[isel][eT]->SetBinError(i,projectionYdummy->GetStdDevError()); //GetMeanError()
-        }
-      }
-      if(h2D_jet_EtaReso_E[isel][eT]){
-        for (Int_t i=1; i < h2D_jet_EtaReso_E[isel][eT]->GetNbinsX()+1; i++){
-          TH1D* projectionYdummy = (TH1D*)h2D_jet_EtaReso_E[isel][eT]->ProjectionY(Form("projectionYdummy3%d%d%d",isel,i,eT), i,i+1,"e");
-          h_EtaReso_Mean_E[isel][eT]->SetBinContent(i,projectionYdummy->GetMean());
-          h_EtaReso_Mean_E[isel][eT]->SetBinError(i,projectionYdummy->GetMeanError());
-          h_EtaReso_Width_E[isel][eT]->SetBinContent(i,projectionYdummy->GetStdDev()); //GetMeanError()
-          h_EtaReso_Width_E[isel][eT]->SetBinError(i,projectionYdummy->GetStdDevError()); //GetMeanError()
-        }
-      }
-      if (h2D_jet_PhiReso_E[isel][eT]) {
-        for (Int_t i = 1; i < h2D_jet_PhiReso_E[isel][eT]->GetNbinsX() + 1; i++) {
-          TH1D *projectionYdummy = (TH1D*)h2D_jet_PhiReso_E[isel][eT]->ProjectionY(Form("projectionYdummy3%d%d%d",isel,i,eT), i,i+1,"e");
-          h_PhiReso_Mean_E[isel][eT]->SetBinContent(i,projectionYdummy->GetMean());
-          h_PhiReso_Mean_E[isel][eT]->SetBinError(i,projectionYdummy->GetMeanError());
-          h_PhiReso_Width_E[isel][eT]->SetBinContent(i,projectionYdummy->GetStdDev()); //GetMeanError()
-          h_PhiReso_Width_E[isel][eT]->SetBinError(i,projectionYdummy->GetStdDevError()); //GetMeanError()
-        }
-      }
-    }
-  }
-  for( int isel=0;isel<njettypes;isel++){
-    if(h2D_jet_EtaReso_Eta[isel]){
-      for (Int_t i=1; i < h2D_jet_EtaReso_Eta[isel]->GetNbinsX()+1; i++){
-        TH1D* projectionYdummy = (TH1D*)h2D_jet_EtaReso_Eta[isel]->ProjectionY(Form("projectionYdummy4%d%d",isel,i), i,i+1,"e");
-        h_EtaReso_Mean_Eta[isel]->SetBinContent(i,projectionYdummy->GetMean());
-        h_EtaReso_Mean_Eta[isel]->SetBinError(i,projectionYdummy->GetMeanError());
-        h_EtaReso_Width_Eta[isel]->SetBinContent(i,projectionYdummy->GetStdDev()); //GetMeanError()
-        h_EtaReso_Width_Eta[isel]->SetBinError(i,projectionYdummy->GetStdDevError()); //GetMeanError()
-      }
-    }
-    if (h2D_jet_PhiReso_Eta[isel]) {
-      for (Int_t i = 1; i < h2D_jet_PhiReso_Eta[isel]->GetNbinsX() + 1; i++) {
-        TH1D* projectionYdummy = (TH1D*)h2D_jet_PhiReso_Eta[isel]->ProjectionY(Form("projectionYdummy4%d%d",isel,i), i,i+1,"e");
-        h_PhiReso_Mean_Eta[isel]->SetBinContent(i,projectionYdummy->GetMean());
-        h_PhiReso_Mean_Eta[isel]->SetBinError(i,projectionYdummy->GetMeanError());
-        h_PhiReso_Width_Eta[isel]->SetBinContent(i,projectionYdummy->GetStdDev()); //GetMeanError()
-        h_PhiReso_Width_Eta[isel]->SetBinError(i,projectionYdummy->GetStdDevError()); //GetMeanError()
-      }
-    }
-  }
-  // define output file
+    // define output file
   TFile* fileOutput = new TFile(Form("%s/output_JRH.root",outputDir.Data()),"RECREATE");
 
   // write histograms

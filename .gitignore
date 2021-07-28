@@ -9,6 +9,7 @@ treeAnalysis/*.txt
 # Output data
 treeAnalysis/treeProcessing
 resolutionJETS/plotsTree
+trackingresolution/plots
 
 # IDE Data
 .vscode
