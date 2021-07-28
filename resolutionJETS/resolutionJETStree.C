@@ -335,48 +335,78 @@ void resolutionJETStree(
 
 void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][nEta+eta_regions], TString title, TString outputFormat, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel) {
   // SETUP
-  TCanvas *canvasJES = new TCanvas("canvasJES", "", 200, 10, 1000, 900);
-  DrawGammaCanvasSettings( canvasJES, 0.1, 0.01, 0.01, 0.11);
-  Double_t textSizeSinglePad = 0.05;
-  Double_t textSizeLabelsPixel = 35;
-  Double_t textSizeLabelsRel = 58.0 / 1300;
-  TH2F * scaleHist = new TH2F("scaleHist", "scaleHist", 1000, 0, 109, 1000, yMin, yMax);
-  SetStyleHistoTH2ForGraphs(scaleHist, xLabel, yLabel, 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91);
-  scaleHist->GetXaxis()->SetNoExponent();
-  scaleHist->GetYaxis()->SetNdivisions(505,true);
-  scaleHist->GetXaxis()->SetMoreLogLabels(true);
-  DrawGammaLines(0, 109, 0., 0., 1, kGray+2, 7);
-  
-  // ITERATE OVER JET TYPES
-  for(int ijr=0; ijr<njettypes; ijr++){
-    if (ijr == 0) {
-      scaleHist->GetXaxis()->SetRangeUser(0, 59);
-    }
-    else {
-      scaleHist->GetXaxis()->SetRangeUser(0, 109);
-    }
-    scaleHist->DrawCopy();
-    TLegend *scaleLegend = GetAndSetLegend2(0.7, 0.95-((nEta-firstEtaBin[ijr])*textSizeLabelsRel), 1.05, 0.95,textSizeLabelsPixel, 1, "", 43, 0.15);
-    // ITERATE OVER ETA RANGES
-    for (int eta = nEta/*firstEtaBin[ijr]*/; eta < nEta + eta_regions; eta++) {
-      if (eta == nEta - 1) {
-        continue; // Skip 3.5-4 range
+  for (int grouped = 0; grouped <= 1; grouped++) {
+    TCanvas *canvasJES = new TCanvas("canvasJES", "", 200, 10, 1000, 900);
+    DrawGammaCanvasSettings( canvasJES, 0.1, 0.01, 0.01, 0.11);
+    Double_t textSizeSinglePad = 0.05;
+    Double_t textSizeLabelsPixel = 35;
+    Double_t textSizeLabelsRel = 58.0 / 1300;
+    TH2F * scaleHist = new TH2F("scaleHist", "scaleHist", 1000, 0, 109, 1000, yMin, yMax);
+    SetStyleHistoTH2ForGraphs(scaleHist, xLabel, yLabel, 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91);
+    scaleHist->GetXaxis()->SetNoExponent();
+    scaleHist->GetYaxis()->SetNdivisions(505,true);
+    scaleHist->GetXaxis()->SetMoreLogLabels(true);
+    DrawGammaLines(0, 109, 0., 0., 1, kGray+2, 7);
+    
+    // ITERATE OVER JET TYPES
+    for(int ijr=0; ijr<njettypes; ijr++){
+      if (ijr == 0) {
+        scaleHist->GetXaxis()->SetRangeUser(0, 59);
       }
-      DrawGammaSetMarker(scaleData[0][ijr][eta], markerStyleEta[eta-nEta], markerSizeEta[eta-nEta], colorEta[eta-nEta], colorEta[eta-nEta]);
+      else {
+        scaleHist->GetXaxis()->SetRangeUser(0, 109);
+      }
+      scaleHist->DrawCopy();
+      TLegend *scaleLegend;
+      if (grouped) {
+        scaleLegend = GetAndSetLegend2(0.7, 0.95-(3*textSizeLabelsRel), 1.05, 0.95,textSizeLabelsPixel, 1, "", 43, 0.15);
+      } 
+      else {
+        scaleLegend = GetAndSetLegend2(0.7, 0.95-((nEta-firstEtaBin[ijr])*textSizeLabelsRel), 1.05, 0.95,textSizeLabelsPixel, 1, "", 43, 0.15);
+      }
+        
+      // ITERATE OVER ETA RANGES
+      int eta_start, eta_end;
+      if (grouped){
+        eta_start = nEta;
+        eta_end = nEta + eta_regions;
+      } 
+      else {
+        eta_start = firstEtaBin[ijr];
+        eta_end = nEta;
+      }
 
-      scaleData[0][ijr][eta]->Draw("same,p");
+      for (int eta = eta_start; eta < eta_end; eta++) {
+        if (eta == nEta - 1) {
+          continue; // Skip 3.5-4 range
+        }
+        
+        if (grouped) {
+          DrawGammaSetMarker(scaleData[0][ijr][eta], markerStyleEta[eta-5], markerSizeEta[eta-5], colorEta[eta-5], colorEta[eta-5]);
+        }
+        else {
+          DrawGammaSetMarker(scaleData[0][ijr][eta], markerStyleEta[eta], markerSizeEta[eta], colorEta[eta], colorEta[eta]);
+        }
 
-      if(eta < nEta)
-        scaleLegend->AddEntry(scaleData[0][ijr][eta],Form("%1.1f < #it{#eta} < %1.1f",partEta[eta], partEta[eta + 1]),"pl");
-      else
-        scaleLegend->AddEntry(scaleData[0][ijr][eta],Form("%1.1f < #it{#eta} < %1.1f",eta_regions_boundaries[eta-nEta], eta_regions_boundaries[eta-nEta+1]),"pl");
+        scaleData[0][ijr][eta]->Draw("same,p");
+
+        if(eta < nEta)
+          scaleLegend->AddEntry(scaleData[0][ijr][eta],Form("%1.1f < #it{#eta} < %1.1f",partEta[eta], partEta[eta + 1]),"pl");
+        else
+          scaleLegend->AddEntry(scaleData[0][ijr][eta],Form("%1.1f < #it{#eta} < %1.1f",eta_regions_boundaries[eta-nEta], eta_regions_boundaries[eta-nEta+1]),"pl");
+      }
+      // DRAWING AND SAVING
+      scaleLegend->Draw();
+      drawLatexAdd(title.Data(), 0.16, 0.94, textSizeLabelsRel, kFALSE, kFALSE, kFALSE);
+      drawInfo(style, 0.16, 0.895, ijr);
+      scaleHist->Draw("same,axis");
+      if (grouped) {
+        canvasJES->Print(Form("%s_%s_grouped.%s", outputFormat.Data(), style.str_jet_type[ijr].Data(), style.format.Data())); 
+      }
+      else {
+        canvasJES->Print(Form("%s_%s.%s", outputFormat.Data(), style.str_jet_type[ijr].Data(), style.format.Data())); 
+      }
     }
-    // DRAWING AND SAVING
-    scaleLegend->Draw();
-    drawLatexAdd(title.Data(), 0.16, 0.94, textSizeLabelsRel, kFALSE, kFALSE, kFALSE);
-    drawInfo(style, 0.16, 0.895, ijr);
-    scaleHist->Draw("same,axis");
-    canvasJES->Print(Form("%s_%s.%s", outputFormat.Data(), style.str_jet_type[ijr].Data(), style.format.Data())); 
   }
 }
 
