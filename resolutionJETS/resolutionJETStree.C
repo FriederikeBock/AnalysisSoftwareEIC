@@ -223,6 +223,12 @@ void resolutionJETStree(
           h2D_jet_EtaReso_E[iInp][ijr][nEta + i]->Add(h2D_jet_EtaReso_E[iInp][ijr][bin]);
           bin++;
         }
+        histo2D_JES_E[iInp][ijr][nEta + i]->Sumw2();
+        histo2D_JES_pT[iInp][ijr][nEta + i]->Sumw2();
+        histo2D_JES_eta[iInp][ijr][nEta + i]->Sumw2();
+        histo2D_JES_phi[iInp][ijr][nEta + i]->Sumw2();
+        h2D_jet_PhiReso_E[iInp][ijr][nEta + i]->Sumw2();
+        h2D_jet_EtaReso_E[iInp][ijr][nEta + i]->Sumw2();
       }
     }
   }
