@@ -11,7 +11,6 @@
 #include <TH2.h>
 #include <THStack.h>
 #include <TLegend.h>
-#include <TList.h>
 
 #include <iostream>
 
@@ -214,7 +213,7 @@ void resolutionJETStree(
       // Combine eta ranges 
       int bin = 0;
       for (int i = 0; i < eta_regions; i++) {
-        while (partEta[bin] < eta_regions_boundaries[i + 1]) {
+        while (partEta[bin] + 0.05 < eta_regions_boundaries[i + 1]) { // add a little bit to partEta to avoid floating point issues
           // std::cerr << partEta[bin] << "\t" << eta_regions_boundaries[i + 1] << std::endl;
           histo2D_JES_E[iInp][ijr][nEta + i]->Add(histo2D_JES_E[iInp][ijr][bin]);
           histo2D_JES_pT[iInp][ijr][nEta + i]->Add(histo2D_JES_pT[iInp][ijr][bin]);
