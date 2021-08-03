@@ -173,7 +173,7 @@ void runclusterizer(
     for(int itow=0; itow<_nTowers_FEMC; itow++){
       if(_tower_FEMC_E[itow]>aggE){
         towersStrct tempstructT;
-        tempstructT.tower_E       = _tower_FEMC_E[itow];
+        tempstructT.tower_E       = 1.25*_tower_FEMC_E[itow]; // temp fix for ROS setting
         tempstructT.tower_iEta    = _tower_FEMC_iEta[itow];
         tempstructT.tower_iPhi    = _tower_FEMC_iPhi[itow];
         tempstructT.tower_trueID  = GetCorrectMCArrayEntry(_tower_FEMC_trueID[itow]);
