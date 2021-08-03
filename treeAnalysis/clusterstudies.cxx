@@ -1,6 +1,6 @@
 
 // ANCHOR debug output verbosity
-int int_CS_verbosity = 2;
+int int_CS_verbosity = 1;
 
 const int nParticlesPDG_CS = 7;
 int int_CS_mcparticles_PDG[nParticlesPDG_CS] = {11 /*e*/,22 /*gamma*/,211  /*pi*/,  2212/*p*/,  2112/*n*/,  321/*K*/, 13/*mu*/};
@@ -67,15 +67,22 @@ TCanvas* cReso_clusterizer = new TCanvas("cReso_clusterizer","",0,0,1000,1000);
 // ANCHOR main function to be called in event loop
 void clusterstudies(){
   for(int icalo=0;icalo<_active_calo;icalo++){
+    if (!caloEnabled[icalo]) continue;
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
 
+      int maxNTowers  = 100;
+      if (icalo == kLFHCAL ) maxNTowers = 100*5;
+      float maxM02    = 2;
+      int maxNM02     = 100;
+      if (IsHCALCalorimeter(icalo)){
+        maxM02      = 5;
+        maxNM02     = 250;
+      }
       // initialize histos if not yet done
       if(!h_CS_clusters_E[icalo][ialgo])h_CS_clusters_E[icalo][ialgo]= new TH1F(Form("h_CS_clusters_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP);
-      if(!h_CS_clusters_M02_E[icalo][ialgo])h_CS_clusters_M02_E[icalo][ialgo]= new TH2F(Form("h_CS_clusters_M02_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "" , 100, 0, 2, nBinsP, binningP);
-      if(!h_CS_clusters_M20_E[icalo][ialgo])h_CS_clusters_M20_E[icalo][ialgo]= new TH2F(Form("h_CS_clusters_M20_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "" , 100, 0, 2, nBinsP, binningP);
-      if(!h_CS_clusters_NTower_E[icalo][ialgo])h_CS_clusters_NTower_E[icalo][ialgo]= new TH2F(Form("h_CS_clusters_NTower_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "" , nBinsP, binningP, 30, -0.5, 29.5);
-      if(!h_clusterizer_clsspec_matched_E_eta[icalo][ialgo])h_clusterizer_clsspec_matched_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspec_matched_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
-      if(!h_clusterizer_clsspecMC_matched_E_eta[icalo][ialgo])h_clusterizer_clsspecMC_matched_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspecMC_matched_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+      if(!h_CS_clusters_M02_E[icalo][ialgo])h_CS_clusters_M02_E[icalo][ialgo]= new TH2F(Form("h_CS_clusters_M02_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "" , maxNM02, 0, maxM02, nBinsP, binningP);
+      if(!h_CS_clusters_M20_E[icalo][ialgo])h_CS_clusters_M20_E[icalo][ialgo]= new TH2F(Form("h_CS_clusters_M20_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "" , maxNM02, 0, maxM02, nBinsP, binningP);
+      if(!h_CS_clusters_NTower_E[icalo][ialgo])h_CS_clusters_NTower_E[icalo][ialgo]= new TH2F(Form("h_CS_clusters_NTower_E_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "" , nBinsP, binningP, maxNTowers, -0.5, maxNTowers-0.5);
 
       if(!h_clusterizer_1tower_E_eta[icalo][ialgo])h_clusterizer_1tower_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_1tower_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
       if(!h_clusterizer_1towerMC_E_eta[icalo][ialgo])h_clusterizer_1towerMC_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_1towerMC_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
@@ -85,29 +92,36 @@ void clusterstudies(){
 
       if(!h_clusterizer_clsspecSE_E_eta[icalo][ialgo])h_clusterizer_clsspecSE_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspecSE_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
       if(!h_clusterizer_clsspecSEMC_E_eta[icalo][ialgo])h_clusterizer_clsspecSEMC_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspecSEMC_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
-      if(!h_clusterizer_clsspecSE_matched_E_eta[icalo][ialgo])h_clusterizer_clsspecSE_matched_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspecSE_matched_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
-      if(!h_clusterizer_clsspecSEMC_matched_E_eta[icalo][ialgo])h_clusterizer_clsspecSEMC_matched_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspecSEMC_matched_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
-
+      
+      if (tracksEnabled){
+        if(!h_clusterizer_clsspec_matched_E_eta[icalo][ialgo])h_clusterizer_clsspec_matched_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspec_matched_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+        if(!h_clusterizer_clsspecMC_matched_E_eta[icalo][ialgo])h_clusterizer_clsspecMC_matched_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspecMC_matched_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+        if(!h_clusterizer_clsspecSE_matched_E_eta[icalo][ialgo])h_clusterizer_clsspecSE_matched_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspecSE_matched_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+        if(!h_clusterizer_clsspecSEMC_matched_E_eta[icalo][ialgo])h_clusterizer_clsspecSEMC_matched_E_eta[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspecSEMC_matched_E_eta_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+        if(!h_clusterizer_clsspec_matched_PDG[icalo][ialgo])h_clusterizer_clsspec_matched_PDG[icalo][ialgo] 	= new TH1F(Form("h_clusterizer_clsspec_matched_PDG_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 2500,0,2500);
+      }
+      
       if(!h_clusterizer_clsspecSE_E_NCl[icalo][ialgo])h_clusterizer_clsspecSE_E_NCl[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspecSE_E_NCl_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, 0.5, 80.5);
       if(!h_clusterizer_clsspecSEMC_E_NCl[icalo][ialgo])h_clusterizer_clsspecSEMC_E_NCl[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_clsspecSEMC_E_NCl_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP, 80, 0.5, 80.5);
 
       if(!h_clusterizer_clsspec_PDG[icalo][ialgo])h_clusterizer_clsspec_PDG[icalo][ialgo] 	= new TH1F(Form("h_clusterizer_clsspec_PDG_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 2500,0,2500);
-      if(!h_clusterizer_clsspec_matched_PDG[icalo][ialgo])h_clusterizer_clsspec_matched_PDG[icalo][ialgo] 	= new TH1F(Form("h_clusterizer_clsspec_matched_PDG_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 2500,0,2500);
 
       if(!h_clusterizer_NClPerMCLabel[icalo][ialgo])h_clusterizer_NClPerMCLabel[icalo][ialgo] 	= new TH1F(Form("h_clusterizer_NClPerMCLabel_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 10,-0.5,9.5);
       if(!h_clusterizer_ClSameMCLabel_dR[icalo][ialgo])h_clusterizer_ClSameMCLabel_dR[icalo][ialgo] 	= new TH1F(Form("h_clusterizer_ClSameMCLabel_dR_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "",600,0,600);
 
       for (int iPDG = 0; iPDG < nParticlesPDG_CS; iPDG++){
-        if(!h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG])h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG]= new TH2F(Form("h_CS_clusters_M02_part_E_truth_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "" , 100, 0, 2, nBinsP, binningP);
-        if(!h_CS_clusters_M20_part_E_truth[icalo][ialgo][iPDG])h_CS_clusters_M20_part_E_truth[icalo][ialgo][iPDG]= new TH2F(Form("h_CS_clusters_M20_part_E_truth_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "" , 100, 0, 2, nBinsP, binningP);
+        if(!h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG])h_CS_clusters_M02_part_E_truth[icalo][ialgo][iPDG]= new TH2F(Form("h_CS_clusters_M02_part_E_truth_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "" , maxNM02, 0, maxM02, nBinsP, binningP);
+        if(!h_CS_clusters_M20_part_E_truth[icalo][ialgo][iPDG])h_CS_clusters_M20_part_E_truth[icalo][ialgo][iPDG]= new TH2F(Form("h_CS_clusters_M20_part_E_truth_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "" , maxNM02, 0, maxM02, nBinsP, binningP);
         if(!h_clusterizer_clsspec_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspec_particle_E_eta[icalo][ialgo][iPDG] 	= new TH2F(Form("h_clusterizer_clsspec_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
         if(!h_clusterizer_clsspecMC_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspecMC_particle_E_eta[icalo][ialgo][iPDG] 	= new TH2F(Form("h_clusterizer_clsspecMC_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
         if(!h_clusterizer_clsspecSE_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspecSE_particle_E_eta[icalo][ialgo][iPDG] 	= new TH2F(Form("h_clusterizer_clsspecSE_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
         if(!h_clusterizer_clsspecSEMC_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspecSEMC_particle_E_eta[icalo][ialgo][iPDG] 	= new TH2F(Form("h_clusterizer_clsspecSEMC_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
-        if(!h_clusterizer_clsspec_matched_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspec_matched_particle_E_eta[icalo][ialgo][iPDG] 	= new TH2F(Form("h_clusterizer_clsspec_matched_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
-        if(!h_clusterizer_clsspecMC_matched_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspecMC_matched_particle_E_eta[icalo][ialgo][iPDG] 	= new TH2F(Form("h_clusterizer_clsspecMC_matched_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
-        if(!h_clusterizer_clsspecSE_matched_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspecSE_matched_particle_E_eta[icalo][ialgo][iPDG] 	= new TH2F(Form("h_clusterizer_clsspecSE_matched_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
-        if(!h_clusterizer_clsspecSEMC_matched_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspecSEMC_matched_particle_E_eta[icalo][ialgo][iPDG] 	= new TH2F(Form("h_clusterizer_clsspecSEMC_matched_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+        if (tracksEnabled){
+          if(!h_clusterizer_clsspec_matched_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspec_matched_particle_E_eta[icalo][ialgo][iPDG] 	= new TH2F(Form("h_clusterizer_clsspec_matched_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+          if(!h_clusterizer_clsspecMC_matched_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspecMC_matched_particle_E_eta[icalo][ialgo][iPDG] 	= new TH2F(Form("h_clusterizer_clsspecMC_matched_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+          if(!h_clusterizer_clsspecSE_matched_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspecSE_matched_particle_E_eta[icalo][ialgo][iPDG] 	= new TH2F(Form("h_clusterizer_clsspecSE_matched_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+          if(!h_clusterizer_clsspecSEMC_matched_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspecSEMC_matched_particle_E_eta[icalo][ialgo][iPDG] 	= new TH2F(Form("h_clusterizer_clsspecSEMC_matched_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
+        }
       }
 
       if(!loadClusterizerInput(
@@ -145,7 +159,7 @@ void clusterstudies(){
         }
         if (clusters_CLSTD_E[iclus] == highestEnergy)
           isHighest = kTRUE;
-        for (int id = 0; id < uniqueIDs.size() && !particleFilled ; id++){
+        for (int id = 0; id < (int)uniqueIDs.size() && !particleFilled ; id++){
           if ( uniqueIDs.at(id).particle_ID == (int)(clusters_CLSTD_trueID[iclus]) )
             particleFilled = kTRUE;
         }
@@ -296,6 +310,7 @@ void clusterstudiesSave(){
   // gSystem->Exec("mkdir -p treeProcessing/clusterstudies");
   // define output file
   for(int icalo=0;icalo<_active_calo;icalo++){
+    if (!caloEnabled[icalo]) continue;
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
 
       h_CS_clusters_NTowerMean_E[icalo][ialgo]  = new TH1D(Form("h_CS_NTowerMean_%s_%s_E",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()),"",nP, partP);
@@ -337,6 +352,7 @@ void clusterstudiesSave(){
 
   // write histograms
   for(int icalo=0;icalo<_active_calo;icalo++){
+    if (!caloEnabled[icalo]) continue;
     fileOutput->mkdir(Form("%s",str_calorimeter[icalo].Data()));
     fileOutput->cd(Form("%s",str_calorimeter[icalo].Data()));
     for(int ialgo=0;ialgo<_active_algo;ialgo++){

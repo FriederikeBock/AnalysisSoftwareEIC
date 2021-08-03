@@ -100,23 +100,23 @@ void hitstudiesSave(){
   // write histograms
   for(int il=0;il<_maxProjectionLayers;il++){
 
-    h_hits_layer_xy[il]->Scale(1/_nEventsTree);
-    h_hits_layer_xy[il]->Write();
-    h_hits_layer_etaphi[il]->Scale(1/_nEventsTree);
-    h_hits_layer_etaphi[il]->Write();
+    if (h_hits_layer_xy[il]) h_hits_layer_xy[il]->Scale(1/_nEventsTree);
+    if (h_hits_layer_xy[il]) h_hits_layer_xy[il]->Write();
+    if (h_hits_layer_etaphi[il]) h_hits_layer_etaphi[il]->Scale(1/_nEventsTree);
+    if (h_hits_layer_etaphi[il])h_hits_layer_etaphi[il]->Write();
 
-    h_trackProj_layer_xy[il]->Scale(1/_nEventsTree);
-    h_trackProj_layer_xy[il]->Write();
-    h_trackProj_layer_etaphi[il]->Scale(1/_nEventsTree);
-    h_trackProj_layer_etaphi[il]->Write();
+    if (h_trackProj_layer_xy[il]) h_trackProj_layer_xy[il]->Scale(1/_nEventsTree);
+    if (h_trackProj_layer_xy[il]) h_trackProj_layer_xy[il]->Write();
+    if (h_trackProj_layer_etaphi[il]) h_trackProj_layer_etaphi[il]->Scale(1/_nEventsTree);
+    if (h_trackProj_layer_etaphi[il]) h_trackProj_layer_etaphi[il]->Write();
 
-    h_hitslayer_vs_tracks[il]->Scale(1./h_hitslayer_vs_tracks[il]->GetEntries());
-    h_hitslayer_vs_tracks[il]->Write();
+    if (h_hitslayer_vs_tracks[il]) h_hitslayer_vs_tracks[il]->Scale(1./h_hitslayer_vs_tracks[il]->GetEntries());
+    if (h_hitslayer_vs_tracks[il]) h_hitslayer_vs_tracks[il]->Write();
     for(int icalo=0;icalo<_active_calo;icalo++){
-      h_hitslayer_vs_clusters[il][icalo]->Scale(1./h_hitslayer_vs_clusters[il][icalo]->GetEntries());
-      h_hitslayer_vs_clusters[il][icalo]->Write();
-      h_hitslayer_vs_towers[il][icalo]->Scale(1./h_hitslayer_vs_towers[il][icalo]->GetEntries());
-      h_hitslayer_vs_towers[il][icalo]->Write();
+      if (h_hitslayer_vs_clusters[il][icalo]) h_hitslayer_vs_clusters[il][icalo]->Scale(1./h_hitslayer_vs_clusters[il][icalo]->GetEntries());
+      if (h_hitslayer_vs_clusters[il][icalo]) h_hitslayer_vs_clusters[il][icalo]->Write();
+      if (h_hitslayer_vs_towers[il][icalo]) h_hitslayer_vs_towers[il][icalo]->Scale(1./h_hitslayer_vs_towers[il][icalo]->GetEntries());
+      if (h_hitslayer_vs_towers[il][icalo]) h_hitslayer_vs_towers[il][icalo]->Write();
     }
   }
 

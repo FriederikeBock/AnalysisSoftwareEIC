@@ -3,6 +3,7 @@ typedef struct {
   float tower_E;
   int tower_iEta;
   int tower_iPhi;
+  int tower_iL;
   int tower_trueID;
 } towersStrct;
 
@@ -12,24 +13,33 @@ typedef struct {
   int nClusters;
 } occuranceStrct;
 
-enum calotype {
-  kFHCAL         = 0,
-  kFEMC         = 1,
-  kDRCALO        = 2,
-  kEEMC         = 3,
-  kCEMC         = 4,
-  kEHCAL         = 5,
-  kHCALIN       = 6,
-  kHCALOUT       = 7,
-  kLFHCAL        = 8,
-  kEEMCG         = 9,
-  kBECAL         = 10
-};
+// enum calotype {
+//   kFHCAL         = 0,
+//   kFEMC         = 1,
+//   kDRCALO        = 2,
+//   kEEMC         = 3,
+//   kCEMC         = 4,
+//   kEHCAL         = 5,
+//   kHCALIN       = 6,
+//   kHCALOUT       = 7,
+//   kLFHCAL        = 8,
+//   kEEMCG         = 9,
+//   kBECAL         = 10
+// };
 const int maxcalo = 11;
 int calogeomindex[maxcalo] = {0};
 
 TString str_calorimeter[maxcalo] = {"FHCAL", "FEMC", "DRCALO", "EEMC", "CEMC", "EHCAL", "HCALIN", "HCALOUT", "LFHCAL", "EEMCG", "BECAL"};
+int _combCalo[maxcalo]           = {kFEMC,  -1,     -1,       -1,      -1,    kEEMC,    kBECAL,   kBECAL,     kFEMC,  -1,       -1};
+int _combCalo2[maxcalo]          = {-1,     -1,     -1,       -1,      -1,    -1,    -1,      kHCALIN,    -1,     -1,       -1};
 const int _active_calo = 11;
+
+void CheckBarrelCaloVersion (){
+  if (caloEnabled[kCEMC]) {
+    _combCalo[kHCALIN]  = kCEMC;
+    _combCalo[kHCALOUT] = kCEMC;
+  }
+}
 
 enum clusterizertype {
     kMA         = 0,
@@ -72,7 +82,6 @@ void setBOOLClusterArrayToZero(bool* &arrayinput){
   }
 }
 // conversion functions for processing
-TVector3 TowerPositionVectorFromIndicesGeometry(int ieta,int iphi, int caloSelect = 0);
 
 float weightM02 = 4.5;
 float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers, float w_0, float cluster_E_calc, int caloSelect, Bool_t debugOutput);
@@ -88,6 +97,25 @@ void SetGeometryIndices(){
   }
 }
 
+bool IsHCALCalorimeter(int caloID){
+  switch (caloID){
+    case kDRCALO: return true;
+    case kFHCAL: return true;
+    case kFEMC: return false;
+    case kEHCAL: return true;
+    case kEEMC: return false;
+    case kHCALIN: return true;
+    case kHCALOUT: return true;
+    case kCEMC: return false;
+    case kEEMCG: return false;
+    case kLFHCAL: return true;
+    case kBECAL: return false;
+    default:
+      cout << "IsHCALCalorimeter: caloID " << caloID << " not defined, returning false" << endl;
+      return false;
+  }
+  return false;
+}
 bool IsForwardCalorimeter(int caloID){
   switch (caloID){
     case kDRCALO: return true;
@@ -162,6 +190,51 @@ void SetFwdCalorimeterPosition(int caloID, float zposin){
   }
 }
 
+// ANCHOR function to return a TVector3 for the tower position based on iEta and iPhi indices
+TVector3 TowerPositionVectorFromIndicesGeometry(int i_Eta,int i_Phi, int i_L, int caloSelect = 0){
+  float xpos = -10000;
+  float ypos = -10000;
+  float zpos = -10000;
+
+  if(calogeomindex[caloSelect]==-1) cout << "calorimeter not found in geometry!" << endl;
+  tt_geometry->GetEntry(calogeomindex[caloSelect]);
+  if (caloSelect == kLFHCAL){
+    for (Long64_t itow=0; itow<_calogeom_towers_N;itow++) {
+      if(_calogeom_towers_iEta[itow]==i_Eta){
+        if(_calogeom_towers_iPhi[itow]==i_Phi){
+          if(_calogeom_towers_iL[itow]==i_L){
+            xpos = _calogeom_towers_x[itow];
+            ypos = _calogeom_towers_y[itow];
+            zpos = _calogeom_towers_z[itow];
+          }
+        }
+      }
+    }
+  } else {
+    for (Long64_t itow=0; itow<_calogeom_towers_N;itow++) {
+      if(_calogeom_towers_iEta[itow]==i_Eta){
+        if(_calogeom_towers_iPhi[itow]==i_Phi){
+          xpos = _calogeom_towers_x[itow];
+          ypos = _calogeom_towers_y[itow];
+          zpos = _calogeom_towers_z[itow];
+        }
+      }
+    }
+  }
+//   if(xpos==-10000 || ypos==-10000 || zpos==-10000){
+//     cout << "something is terribly wrong in your geometry: x="<<xpos<<"\ty="<<ypos<<"\tz="<<zpos<<endl;
+//   }
+  if(IsForwardCalorimeter(caloSelect) && zpos!=-10000){
+    if(ReturnFwdCalorimeterPosition(caloSelect)==1){
+      SetFwdCalorimeterPosition(caloSelect, zpos);
+    }
+  }
+  TVector3 twrPositionVec(xpos,ypos,zpos);
+  return twrPositionVec;
+}
+
+
+
 int ReturnProjectionIndexForCalorimeter(int caloID){
   switch (caloID){
     case kDRCALO: return 1;
@@ -223,36 +296,6 @@ float ReturnTrackMatchingWindowForCalo(int caloID){
 }
 
 
-// ANCHOR function to return a TVector3 for the tower position based on iEta and iPhi indices
-TVector3 TowerPositionVectorFromIndicesGeometry(int i_Eta,int i_Phi, int caloSelect = 0){
-  float xpos = -10000;
-  float ypos = -10000;
-  float zpos = -10000;
-
-  if(calogeomindex[caloSelect]==-1) cout << "calorimeter not found in geometry!" << endl;
-  tt_geometry->GetEntry(calogeomindex[caloSelect]);
-  for (Long64_t itow=0; itow<_calogeom_towers_N;itow++) {
-    if(_calogeom_towers_iEta[itow]==i_Eta){
-      if(_calogeom_towers_iPhi[itow]==i_Phi){
-        xpos = _calogeom_towers_x[itow];
-        ypos = _calogeom_towers_y[itow];
-        zpos = _calogeom_towers_z[itow];
-      }
-    }
-  }
-  if(xpos==-10000 || ypos==-10000 || zpos==-10000){
-    cout << "something is terribly wrong in your geometry: x="<<xpos<<"\ty="<<ypos<<"\tz="<<zpos<<endl;
-  }
-  if(IsForwardCalorimeter(caloSelect) && zpos!=-10000){
-    if(ReturnFwdCalorimeterPosition(caloSelect)==1){
-      SetFwdCalorimeterPosition(caloSelect, zpos);
-    }
-  }
-  TVector3 twrPositionVec(xpos,ypos,zpos);
-  return twrPositionVec;
-}
-
-
 // ANCHOR function to determine shower shape
 float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers, float w_0, float cluster_E_calc, int caloSelect, bool debugOutput){
     static float returnVariables[7]; //0:M02, 1:M20, 2:eta, 3: phi
@@ -264,18 +307,19 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
 
     vecTwr = {0.,0.,0.};
     //calculation of weights and weighted position vector
-    for(int cellI=0; cellI<cluster_towers.size(); cellI++){
+    for(int cellI=0; cellI<(int)cluster_towers.size(); cellI++){
         w_i.push_back(TMath::Max( (float)0, (float) (w_0 + TMath::Log(cluster_towers.at(cellI).tower_E/cluster_E_calc) )));
         w_tot += w_i.at(cellI);
-        vecTwrTmp = TowerPositionVectorFromIndicesGeometry(cluster_towers.at(cellI).tower_iEta,cluster_towers.at(cellI).tower_iPhi, caloSelect);
-        // cout << caloSelect << "\t" << vecTwrTmp.X() << "\t" << vecTwrTmp.Y() << "\t" << vecTwrTmp.Z() << endl;
+        vecTwrTmp = TowerPositionVectorFromIndicesGeometry(cluster_towers.at(cellI).tower_iEta,cluster_towers.at(cellI).tower_iPhi, cluster_towers.at(cellI).tower_iL, caloSelect);
+//         cout << caloSelect << "\t" << vecTwrTmp.X() << "\t" << vecTwrTmp.Y() << "\t" << vecTwrTmp.Z() << endl;
         vecTwr += w_i.at(cellI)*vecTwrTmp;
         if(cellI==0 && ReturnFwdCalorimeterPosition(caloSelect))zHC=vecTwrTmp.Z();
     }
     returnVariables[2]=vecTwr.Eta();
     returnVariables[3]=vecTwr.Phi(); //(vecTwr.Phi()<0 ? vecTwr.Phi()+TMath::Pi() : vecTwr.Phi()-TMath::Pi());
+//     cout << "X: "<< vecTwr.X() << "\t" << " Y: "<< vecTwr.Y() << "\t" << " Z: "<< vecTwr.Z() << "\t zHC: " <<  zHC << endl;
     if(IsForwardCalorimeter(caloSelect)){
-      vecTwr*=abs(zHC/vecTwr.Z());
+      vecTwr*=abs(zHC/vecTwr.Z()); // wtot/Ntowers?
     }
     returnVariables[4]=vecTwr.X();
     returnVariables[5]=vecTwr.Y();
@@ -286,7 +330,7 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
     float delta_eta_eta[4] = {0};
     float delta_eta_phi[4] = {0};
     int supModLeadingCell = -1;
-    for(int cellI=0; cellI<cluster_towers.size(); cellI++){
+    for(int cellI=0; cellI<(int)cluster_towers.size(); cellI++){
         int iphi=cluster_towers.at(cellI).tower_iPhi;
         int ieta=cluster_towers.at(cellI).tower_iEta;
         delta_phi_phi[1] += (w_i.at(cellI)*iphi*iphi)/w_tot;

@@ -76,6 +76,10 @@ void treeProcessing(
     SetBranchAddressesGeometryTree(tt_geometry);
     SetGeometryIndices();
 
+    for (Int_t c = 0; c < 11; c++){
+      cout << str_calorimeter[c] << "\t" << caloEnabled[c] << endl; 
+    }
+    
     Long64_t nEntriesTree                 = tt_event->GetEntries();
     std::cout << "Number of events in tree: " << nEntriesTree << std::endl;
     if(maxNEvent>0 && maxNEvent<nEntriesTree){
@@ -135,7 +139,7 @@ void treeProcessing(
         float seed_E = 0.5;
         float aggregation_E = 0.1;
         // run clusterizers FHCAL
-        if(do_reclus && _nTowers_FHCAL){
+        if(do_reclus && _nTowers_FHCAL && caloEnabled[kFHCAL]){
             if(k3x3<_active_algo){
                 if(verbosity>1) cout << "clusterizing 3x3 for FHCAL" << endl;
                 runclusterizer(k3x3, kFHCAL,seed_E, aggregation_E, primaryTrackSource,
@@ -247,10 +251,12 @@ void treeProcessing(
             _nclusters_C5_FHCAL = 0;
         }
         // run clusterizers FEMC
-        if(do_reclus && _nTowers_FEMC){
+        if(do_reclus && _nTowers_FEMC && caloEnabled[kFEMC]){
+          Float_t seed_E_FEMC         = 0.1;
+          Float_t aggregation_E_FEMC  = 0.05;
             if(k3x3<_active_algo){
                 if(verbosity>1) cout << "clusterizing 3x3 for FEMC" << endl;
-                runclusterizer(k3x3, kFEMC,seed_E, aggregation_E, primaryTrackSource,
+                runclusterizer(k3x3, kFEMC,seed_E_FEMC, aggregation_E_FEMC, primaryTrackSource,
                     _nclusters_3x3_FEMC,
                     _clusters_3x3_FEMC_E,
                     _clusters_3x3_FEMC_Eta,
@@ -267,7 +273,7 @@ void treeProcessing(
             }
             if(k5x5<_active_algo){
                 if(verbosity>1) cout << "clusterizing 5x5 for FEMC" << endl;
-                runclusterizer(k5x5, kFEMC,seed_E, aggregation_E, primaryTrackSource,
+                runclusterizer(k5x5, kFEMC,seed_E_FEMC, aggregation_E_FEMC, primaryTrackSource,
                     _nclusters_5x5_FEMC,
                     _clusters_5x5_FEMC_E,
                     _clusters_5x5_FEMC_Eta,
@@ -284,7 +290,7 @@ void treeProcessing(
             }
             if(kV3<_active_algo){
                 if(verbosity>1) cout << "clusterizing V3 for FEMC" << endl;
-                runclusterizer(kV3, kFEMC,seed_E, aggregation_E, primaryTrackSource,
+                runclusterizer(kV3, kFEMC,seed_E_FEMC, aggregation_E_FEMC, primaryTrackSource,
                     _nclusters_V3_FEMC,
                     _clusters_V3_FEMC_E,
                     _clusters_V3_FEMC_Eta,
@@ -301,7 +307,7 @@ void treeProcessing(
             }
             if(kMA<_active_algo){
                 if(verbosity>1) cout << "clusterizing MA for FEMC" << endl;
-                runclusterizer(kMA, kFEMC,seed_E, aggregation_E, primaryTrackSource,
+                runclusterizer(kMA, kFEMC,seed_E_FEMC, aggregation_E_FEMC, primaryTrackSource,
                     _nclusters_MA_FEMC,
                     _clusters_MA_FEMC_E,
                     _clusters_MA_FEMC_Eta,
@@ -318,7 +324,7 @@ void treeProcessing(
             }
             if(kC3<_active_algo){
                 if(verbosity>1) cout << "clusterizing C3 for FEMC" << endl;
-                runclusterizer(kC3, kFEMC,seed_E, aggregation_E, primaryTrackSource,
+                runclusterizer(kC3, kFEMC,seed_E_FEMC, aggregation_E_FEMC, primaryTrackSource,
                     _nclusters_C3_FEMC,
                     _clusters_C3_FEMC_E,
                     _clusters_C3_FEMC_Eta,
@@ -335,7 +341,7 @@ void treeProcessing(
             }
             if(kC5<_active_algo){
                 if(verbosity>1) cout << "clusterizing C5 for FEMC" << endl;
-                runclusterizer(kC5, kFEMC,seed_E, aggregation_E, primaryTrackSource,
+                runclusterizer(kC5, kFEMC,seed_E_FEMC, aggregation_E_FEMC, primaryTrackSource,
                     _nclusters_C5_FEMC,
                     _clusters_C5_FEMC_E,
                     _clusters_C5_FEMC_Eta,
@@ -359,7 +365,7 @@ void treeProcessing(
             _nclusters_C5_FEMC = 0;
         }
 
-        if(do_reclus && _nTowers_CEMC){
+        if(do_reclus && _nTowers_CEMC && caloEnabled[kCEMC]){
             float seed_E_CEMC = 0.5;
             float aggregation_E_CEMC = 0.1;
             if(kMA<_active_algo){
@@ -381,7 +387,7 @@ void treeProcessing(
             }
         } else _nclusters_MA_CEMC = 0;
 
-        if(do_reclus && _nTowers_HCALIN){
+        if(do_reclus && _nTowers_HCALIN && caloEnabled[kHCALIN]){
             float seed_E_HCALIN = 0.2;
             float aggregation_E_HCALIN = 0.05;
             if(kMA<_active_algo){
@@ -403,7 +409,7 @@ void treeProcessing(
             }
         } else _nclusters_MA_HCALIN = 0;
 
-        if(do_reclus && _nTowers_HCALOUT){
+        if(do_reclus && _nTowers_HCALOUT && caloEnabled[kHCALOUT]){
             float seed_E_HCALOUT = 0.5;
             float aggregation_E_HCALOUT = 0.1;
             if(kMA<_active_algo){
@@ -425,7 +431,7 @@ void treeProcessing(
             }
         } else _nclusters_MA_HCALOUT = 0;
 
-        if(do_reclus && _nTowers_EEMCG){
+        if(do_reclus && _nTowers_EEMCG && caloEnabled[kEEMCG]){
             float seed_E_EEMCG = 0.1;
             float aggregation_E_EEMCG = 0.01;
             if(kMA<_active_algo){
@@ -447,7 +453,7 @@ void treeProcessing(
             }
         } else _nclusters_MA_EEMCG = 0;
 
-        if(do_reclus && _nTowers_BECAL){
+        if(do_reclus && _nTowers_BECAL  && caloEnabled[kBECAL]){
             float seed_E_BECAL = 0.1;
             float aggregation_E_BECAL = 0.01;
             if(kMA<_active_algo){
@@ -469,7 +475,7 @@ void treeProcessing(
             }
         } else _nclusters_MA_BECAL = 0;
 
-        if(do_reclus && _nTowers_EEMC){
+        if(do_reclus && _nTowers_EEMC  && caloEnabled[kEEMC]){
             float seed_E_EEMC = 0.1;
             float aggregation_E_EEMC = 0.05;
             if(kMA<_active_algo){
@@ -491,9 +497,9 @@ void treeProcessing(
             }
         } else _nclusters_MA_EEMC = 0;
 
-        if(do_reclus && _nTowers_LFHCAL){
+        if(do_reclus && _nTowers_LFHCAL && caloEnabled[kLFHCAL]){
             float seed_E_LFHCAL = 0.1;
-            float aggregation_E_LFHCAL = 0.05;
+            float aggregation_E_LFHCAL = 0.001;
             if(kMA<_active_algo){
                 if(verbosity>1) cout << "clusterizing MA for LFHCAL" << endl;
                 runclusterizer(kMA, kLFHCAL,seed_E_LFHCAL, aggregation_E_LFHCAL, primaryTrackSource,
@@ -513,7 +519,7 @@ void treeProcessing(
             }
         } else _nclusters_MA_LFHCAL = 0;
 
-        if(do_reclus && _nTowers_EHCAL){
+        if(do_reclus && _nTowers_EHCAL && caloEnabled[kEHCAL]){
             float seed_E_EHCAL = 0.01;
             float aggregation_E_EHCAL = 0.005;
             if(kMA<_active_algo){
@@ -535,7 +541,7 @@ void treeProcessing(
             }
         } else _nclusters_MA_EHCAL = 0;
 
-        if(do_reclus && _nTowers_DRCALO){ //do_V1clusterizerDRCALO
+        if(do_reclus && _nTowers_DRCALO && caloEnabled[kDRCALO]){ //do_V1clusterizerDRCALO
             float seed_E_DRCALO = 0.3;
             float aggregation_E_DRCALO = 0.05;
             if(verbosity>1) cout << "clusterizing V1 for DRCALO" << endl;
@@ -564,7 +570,7 @@ void treeProcessing(
         // for(Int_t ihit=0; ihit<_nHitsLayers; ihit++){
         //     if(verbosity>1) std::cout << "\tHIT: hit " << ihit << "\tin layer " << _hits_layerID[ihit] << "\twith X = " << _hits_x[ihit] << " cm" << std::endl;
         // }
-        hitstudies(primaryTrackSource);
+        if(tracksEnabled) hitstudies(primaryTrackSource);
 
         // ANCHOR Track loop variables:
         // float* _track_ID[itrk]
@@ -813,20 +819,21 @@ void treeProcessing(
             jetresolutionhistos(jetsAllRec,jetsTrue,4);
 // TString jettype[njettypes] = {"track", "full","hcal","calo","all"};
         }
-        
-        if(verbosity>1) cout << "running trackingefficiency" << endl;
-        trackingefficiency();
-        if(verbosity>1) cout << "running trackingresolution" << endl;
-        trackingresolution();
-        if(verbosity>1) cout << "running trackingcomparison" << endl;
-        // trackingcomparison();
-        if(verbosity>1) cout << "finished tracking studies" << endl;
+        if(tracksEnabled){        
+          if(verbosity>1) cout << "running trackingefficiency" << endl;
+          trackingefficiency();
+          if(verbosity>1) cout << "running trackingresolution" << endl;
+          trackingresolution();
+          if(verbosity>1) cout << "running trackingcomparison" << endl;
+          // trackingcomparison();
+          if(verbosity>1) cout << "finished tracking studies" << endl;
+        }
         if(verbosity>1) cout << "running clusterstudies" << endl;
         clusterstudies();
         if(verbosity>1) std::cout << "running resolutionhistos" << std::endl;
         resolutionhistos();
         if(verbosity>1) std::cout << "loop done ... next event" << std::endl;
-        trackmatchingstudies();
+        if(tracksEnabled) trackmatchingstudies();
 
     } // event loop end
     if (_do_jetfinding) {
@@ -845,16 +852,27 @@ void treeProcessing(
     resolutionhistosSave();
     std::cout << "running clusterstudiesSave" << std::endl;
     clusterstudiesSave();
-    std::cout << "running trackingefficiencyhistosSave" << std::endl;
-    trackingefficiencyhistosSave();
-    std::cout << "running trackingresolutionhistosSave" << std::endl;
-    trackingresolutionhistosSave();
-    std::cout << "running trackingcomparisonhistosSave" << std::endl;
-    trackingcomparisonhistosSave();
-    std::cout << "running hitstudiesSave" << std::endl;
-    hitstudiesSave();
-    std::cout << "running trackmatchingstudiesSave" << std::endl;
-    trackmatchingstudiesSave();
+    
+    if(tracksEnabled){
+      std::cout << "running trackingefficiencyhistosSave" << std::endl;
+      trackingefficiencyhistosSave();
+    }
+    if(tracksEnabled) {
+      std::cout << "running trackingresolutionhistosSave" << std::endl;
+      trackingresolutionhistosSave();
+    }
+    if(tracksEnabled) {
+      std::cout << "running trackingcomparisonhistosSave" << std::endl;
+      trackingcomparisonhistosSave();
+    }
+    if(tracksEnabled){
+      std::cout << "running hitstudiesSave" << std::endl;
+      hitstudiesSave();
+    }
+    if(tracksEnabled) {
+      std::cout << "running trackmatchingstudiesSave" << std::endl;
+      trackmatchingstudiesSave();
+    }
     std::cout << "running clusterizerSave" << std::endl;
     clusterizerSave();
     std::cout << "all done :)" << std::endl;

@@ -1,6 +1,10 @@
 #include <TROOT.h>
 #include <TString.h>
 #include <TRandom3.h>
+#include <TTree.h>
+#include <TVector3.h>
+#include <TParticlePDG.h>
+#include <TDatabasePDG.h>
 
 TString outputDir;
 // Constants are from the EventEvaluator class in coresoftware
@@ -17,6 +21,25 @@ const int _maxNMCPart = 100000;
 const int _maxNHepmcp = 1000;
 
 float _nEventsTree;
+
+enum calotype {
+  kFHCAL         = 0,
+  kFEMC         = 1,
+  kDRCALO        = 2,
+  kEEMC         = 3,
+  kCEMC         = 4,
+  kEHCAL         = 5,
+  kHCALIN       = 6,
+  kHCALOUT       = 7,
+  kLFHCAL        = 8,
+  kEEMCG         = 9,
+  kBECAL         = 10
+};
+
+bool caloEnabled[20]      = {0};
+bool tracksEnabled        = 0;
+bool vertexEnabled        = 0;
+bool xSectionEnabled      = 0;
 
 // Event level info
 float _cross_section;
@@ -85,6 +108,7 @@ int _nTowers_LFHCAL;
 float* _tower_LFHCAL_E            = new float[_maxNTowersDR];
 int* _tower_LFHCAL_iEta         = new int[_maxNTowersDR];
 int* _tower_LFHCAL_iPhi         = new int[_maxNTowersDR];
+int* _tower_LFHCAL_iL           = new int[_maxNTowersDR];
 int* _tower_LFHCAL_trueID       = new int[_maxNTowersDR];
 
 // towers
@@ -168,6 +192,7 @@ int _calogeom_ID;
 int _calogeom_towers_N;
 int*  _calogeom_towers_iEta = new int[_maxNTowersCalo];
 int*  _calogeom_towers_iPhi = new int[_maxNTowersCalo];
+int*  _calogeom_towers_iL   = new int[_maxNTowersCalo];
 float*  _calogeom_towers_Eta = new float[_maxNTowersCalo];
 float*  _calogeom_towers_Phi = new float[_maxNTowersCalo];
 float*  _calogeom_towers_x = new float[_maxNTowersCalo];
@@ -181,6 +206,7 @@ void SetBranchAddressesGeometryTree(TTree* inputTreeGeo){
     inputTreeGeo->SetBranchAddress("calo_towers_N",     &_calogeom_towers_N);
     inputTreeGeo->SetBranchAddress("calo_towers_iEta",  _calogeom_towers_iEta);
     inputTreeGeo->SetBranchAddress("calo_towers_iPhi",  _calogeom_towers_iPhi);
+    inputTreeGeo->SetBranchAddress("calo_towers_iL",    _calogeom_towers_iL);
     inputTreeGeo->SetBranchAddress("calo_towers_Eta",   _calogeom_towers_Eta);
     inputTreeGeo->SetBranchAddress("calo_towers_Phi",   _calogeom_towers_Phi);
     inputTreeGeo->SetBranchAddress("calo_towers_x",     _calogeom_towers_x);
@@ -189,10 +215,12 @@ void SetBranchAddressesGeometryTree(TTree* inputTreeGeo){
 }
 void SetBranchAddressesTree(TTree* inputTree){
 
-    inputTree->SetBranchAddress("cross_section", &_cross_section);
-    inputTree->SetBranchAddress("event_weight", &_event_weight);
-    inputTree->SetBranchAddress("n_generator_accepted", &_n_generator_accepted);
-
+    if (inputTree->GetBranchStatus("cross_section") ){
+      xSectionEnabled = 1;
+      inputTree->SetBranchAddress("cross_section", &_cross_section);
+      inputTree->SetBranchAddress("event_weight", &_event_weight);
+      inputTree->SetBranchAddress("n_generator_accepted", &_n_generator_accepted);
+    }
     inputTree->SetBranchAddress("nHits",                        &_nHitsLayers);
     inputTree->SetBranchAddress("hits_layerID",                 _hits_layerID);
     inputTree->SetBranchAddress("hits_x",               _hits_x);
@@ -200,125 +228,165 @@ void SetBranchAddressesTree(TTree* inputTree){
     inputTree->SetBranchAddress("hits_z",               _hits_z);
     inputTree->SetBranchAddress("hits_t",               _hits_t);
 
-    inputTree->SetBranchAddress("nTracks",              &_nTracks);
-    inputTree->SetBranchAddress("tracks_ID",            _track_ID);
-    inputTree->SetBranchAddress("tracks_px",            _track_px);
-    inputTree->SetBranchAddress("tracks_py",            _track_py);
-    inputTree->SetBranchAddress("tracks_pz",            _track_pz);
-    inputTree->SetBranchAddress("tracks_trueID",        _track_trueID);
-    inputTree->SetBranchAddress("tracks_source",        _track_source);
+    if (inputTree->GetBranchStatus("nTracks") ){
+      tracksEnabled = 1;
+      inputTree->SetBranchAddress("nTracks",              &_nTracks);
+      inputTree->SetBranchAddress("tracks_ID",            _track_ID);
+      inputTree->SetBranchAddress("tracks_px",            _track_px);
+      inputTree->SetBranchAddress("tracks_py",            _track_py);
+      inputTree->SetBranchAddress("tracks_pz",            _track_pz);
+      inputTree->SetBranchAddress("tracks_trueID",        _track_trueID);
+      inputTree->SetBranchAddress("tracks_source",        _track_source);
+      
+      inputTree->SetBranchAddress("nProjections",         &_nProjections);
+      inputTree->SetBranchAddress("track_ProjTrackID",    _track_ProjTrackID);
+      inputTree->SetBranchAddress("track_ProjLayer",      _track_ProjLayer);
 
-    inputTree->SetBranchAddress("nProjections",         &_nProjections);
-    inputTree->SetBranchAddress("track_ProjTrackID",    _track_ProjTrackID);
-    inputTree->SetBranchAddress("track_ProjLayer",      _track_ProjLayer);
-
-    inputTree->SetBranchAddress("track_TLP_x",           _track_Proj_x);
-    inputTree->SetBranchAddress("track_TLP_y",           _track_Proj_y);
-    inputTree->SetBranchAddress("track_TLP_z",           _track_Proj_z);
-    inputTree->SetBranchAddress("track_TLP_t",           _track_Proj_t);
-    inputTree->SetBranchAddress("track_TLP_true_x",      _track_Proj_true_x);
-    inputTree->SetBranchAddress("track_TLP_true_y",      _track_Proj_true_y);
-    inputTree->SetBranchAddress("track_TLP_true_z",      _track_Proj_true_z);
-    inputTree->SetBranchAddress("track_TLP_true_t",      _track_Proj_true_t);
+      inputTree->SetBranchAddress("track_TLP_x",           _track_Proj_x);
+      inputTree->SetBranchAddress("track_TLP_y",           _track_Proj_y);
+      inputTree->SetBranchAddress("track_TLP_z",           _track_Proj_z);
+      inputTree->SetBranchAddress("track_TLP_t",           _track_Proj_t);
+      inputTree->SetBranchAddress("track_TLP_true_x",      _track_Proj_true_x);
+      inputTree->SetBranchAddress("track_TLP_true_y",      _track_Proj_true_y);
+      inputTree->SetBranchAddress("track_TLP_true_z",      _track_Proj_true_z);
+      inputTree->SetBranchAddress("track_TLP_true_t",      _track_Proj_true_t);
+    }
 
     // towers EEMC
-    inputTree->SetBranchAddress("tower_EEMC_N",                &_nTowers_EEMC);
-    inputTree->SetBranchAddress("tower_EEMC_E",                _tower_EEMC_E);
-    inputTree->SetBranchAddress("tower_EEMC_iEta",             _tower_EEMC_iEta);
-    inputTree->SetBranchAddress("tower_EEMC_iPhi",             _tower_EEMC_iPhi);
-    inputTree->SetBranchAddress("tower_EEMC_trueID",           _tower_EEMC_trueID);
-
+    if( inputTree->GetBranchStatus("tower_EEMC_N") ){
+      caloEnabled[kEEMC] = 1;
+      inputTree->SetBranchAddress("tower_EEMC_N",                &_nTowers_EEMC);
+      inputTree->SetBranchAddress("tower_EEMC_E",                _tower_EEMC_E);
+      inputTree->SetBranchAddress("tower_EEMC_iEta",             _tower_EEMC_iEta);
+      inputTree->SetBranchAddress("tower_EEMC_iPhi",             _tower_EEMC_iPhi);
+      inputTree->SetBranchAddress("tower_EEMC_trueID",           _tower_EEMC_trueID);
+    } 
     // towers EEMCG
-    inputTree->SetBranchAddress("tower_EEMCG_N",                &_nTowers_EEMCG);
-    inputTree->SetBranchAddress("tower_EEMCG_E",                _tower_EEMCG_E);
-    inputTree->SetBranchAddress("tower_EEMCG_iEta",             _tower_EEMCG_iEta);
-    inputTree->SetBranchAddress("tower_EEMCG_iPhi",             _tower_EEMCG_iPhi);
-    inputTree->SetBranchAddress("tower_EEMCG_trueID",           _tower_EEMCG_trueID);
+    if( inputTree->GetBranchStatus("tower_EEMCG_N") ){
+      caloEnabled[kEEMCG] = 1;
+      inputTree->SetBranchAddress("tower_EEMCG_N",                &_nTowers_EEMCG);
+      inputTree->SetBranchAddress("tower_EEMCG_E",                _tower_EEMCG_E);
+      inputTree->SetBranchAddress("tower_EEMCG_iEta",             _tower_EEMCG_iEta);
+      inputTree->SetBranchAddress("tower_EEMCG_iPhi",             _tower_EEMCG_iPhi);
+      inputTree->SetBranchAddress("tower_EEMCG_trueID",           _tower_EEMCG_trueID);
+    } 
 
     // towers EHCAL
-    inputTree->SetBranchAddress("tower_EHCAL_N",                &_nTowers_EHCAL);
-    inputTree->SetBranchAddress("tower_EHCAL_E",                _tower_EHCAL_E);
-    inputTree->SetBranchAddress("tower_EHCAL_iEta",             _tower_EHCAL_iEta);
-    inputTree->SetBranchAddress("tower_EHCAL_iPhi",             _tower_EHCAL_iPhi);
-    inputTree->SetBranchAddress("tower_EHCAL_trueID",           _tower_EHCAL_trueID);
+    if( inputTree->GetBranchStatus("tower_EHCAL_N") ){
+      caloEnabled[kEHCAL] = 1;
+      inputTree->SetBranchAddress("tower_EHCAL_N",                &_nTowers_EHCAL);
+      inputTree->SetBranchAddress("tower_EHCAL_E",                _tower_EHCAL_E);
+      inputTree->SetBranchAddress("tower_EHCAL_iEta",             _tower_EHCAL_iEta);
+      inputTree->SetBranchAddress("tower_EHCAL_iPhi",             _tower_EHCAL_iPhi);
+      inputTree->SetBranchAddress("tower_EHCAL_trueID",           _tower_EHCAL_trueID);
+    }
 
     // towers HCALIN
-    inputTree->SetBranchAddress("tower_HCALIN_N",                &_nTowers_HCALIN);
-    inputTree->SetBranchAddress("tower_HCALIN_E",                _tower_HCALIN_E);
-    inputTree->SetBranchAddress("tower_HCALIN_iEta",             _tower_HCALIN_iEta);
-    inputTree->SetBranchAddress("tower_HCALIN_iPhi",             _tower_HCALIN_iPhi);
-    inputTree->SetBranchAddress("tower_HCALIN_trueID",           _tower_HCALIN_trueID);
+    if( inputTree->GetBranchStatus("tower_HCALIN_N") ){
+      caloEnabled[kHCALIN] = 1;
+      inputTree->SetBranchAddress("tower_HCALIN_N",                &_nTowers_HCALIN);
+      inputTree->SetBranchAddress("tower_HCALIN_E",                _tower_HCALIN_E);
+      inputTree->SetBranchAddress("tower_HCALIN_iEta",             _tower_HCALIN_iEta);
+      inputTree->SetBranchAddress("tower_HCALIN_iPhi",             _tower_HCALIN_iPhi);
+      inputTree->SetBranchAddress("tower_HCALIN_trueID",           _tower_HCALIN_trueID);
+    } 
 
     // towers HCALOUT
-    inputTree->SetBranchAddress("tower_HCALOUT_N",                &_nTowers_HCALOUT);
-    inputTree->SetBranchAddress("tower_HCALOUT_E",                _tower_HCALOUT_E);
-    inputTree->SetBranchAddress("tower_HCALOUT_iEta",             _tower_HCALOUT_iEta);
-    inputTree->SetBranchAddress("tower_HCALOUT_iPhi",             _tower_HCALOUT_iPhi);
-    inputTree->SetBranchAddress("tower_HCALOUT_trueID",           _tower_HCALOUT_trueID);
+    if( inputTree->GetBranchStatus("tower_HCALOUT_N") ){
+      caloEnabled[kHCALOUT] = 1;
+      inputTree->SetBranchAddress("tower_HCALOUT_N",                &_nTowers_HCALOUT);
+      inputTree->SetBranchAddress("tower_HCALOUT_E",                _tower_HCALOUT_E);
+      inputTree->SetBranchAddress("tower_HCALOUT_iEta",             _tower_HCALOUT_iEta);
+      inputTree->SetBranchAddress("tower_HCALOUT_iPhi",             _tower_HCALOUT_iPhi);
+      inputTree->SetBranchAddress("tower_HCALOUT_trueID",           _tower_HCALOUT_trueID);
+    } 
 
     // towers CEMC
-    inputTree->SetBranchAddress("tower_CEMC_N",                &_nTowers_CEMC);
-    inputTree->SetBranchAddress("tower_CEMC_E",                _tower_CEMC_E);
-    inputTree->SetBranchAddress("tower_CEMC_iEta",             _tower_CEMC_iEta);
-    inputTree->SetBranchAddress("tower_CEMC_iPhi",             _tower_CEMC_iPhi);
-    inputTree->SetBranchAddress("tower_CEMC_trueID",           _tower_CEMC_trueID);
+    if( inputTree->GetBranchStatus("tower_CEMC_N") ){
+      caloEnabled[kCEMC] = 1;
+      inputTree->SetBranchAddress("tower_CEMC_N",                &_nTowers_CEMC);
+      inputTree->SetBranchAddress("tower_CEMC_E",                _tower_CEMC_E);
+      inputTree->SetBranchAddress("tower_CEMC_iEta",             _tower_CEMC_iEta);
+      inputTree->SetBranchAddress("tower_CEMC_iPhi",             _tower_CEMC_iPhi);
+      inputTree->SetBranchAddress("tower_CEMC_trueID",           _tower_CEMC_trueID);
+    } 
 
     // towers BECAL
-    inputTree->SetBranchAddress("tower_BECAL_N",                &_nTowers_BECAL);
-    inputTree->SetBranchAddress("tower_BECAL_E",                _tower_BECAL_E);
-    inputTree->SetBranchAddress("tower_BECAL_iEta",             _tower_BECAL_iEta);
-    inputTree->SetBranchAddress("tower_BECAL_iPhi",             _tower_BECAL_iPhi);
-    inputTree->SetBranchAddress("tower_BECAL_trueID",           _tower_BECAL_trueID);
+    if( inputTree->GetBranchStatus("tower_BECAL_N") ){
+      caloEnabled[kBECAL] = 1;
+      inputTree->SetBranchAddress("tower_BECAL_N",                &_nTowers_BECAL);
+      inputTree->SetBranchAddress("tower_BECAL_E",                _tower_BECAL_E);
+      inputTree->SetBranchAddress("tower_BECAL_iEta",             _tower_BECAL_iEta);
+      inputTree->SetBranchAddress("tower_BECAL_iPhi",             _tower_BECAL_iPhi);
+      inputTree->SetBranchAddress("tower_BECAL_trueID",           _tower_BECAL_trueID);
+    } 
 
     // towers LFHCAL
-    inputTree->SetBranchAddress("tower_LFHCAL_N",                &_nTowers_LFHCAL);
-    inputTree->SetBranchAddress("tower_LFHCAL_E",                _tower_LFHCAL_E);
-    inputTree->SetBranchAddress("tower_LFHCAL_iEta",             _tower_LFHCAL_iEta);
-    inputTree->SetBranchAddress("tower_LFHCAL_iPhi",             _tower_LFHCAL_iPhi);
-    inputTree->SetBranchAddress("tower_LFHCAL_trueID",           _tower_LFHCAL_trueID);
-
+    if( inputTree->GetBranchStatus("tower_LFHCAL_N") ){
+      caloEnabled[kLFHCAL] = 1;
+      inputTree->SetBranchAddress("tower_LFHCAL_N",                &_nTowers_LFHCAL);
+      inputTree->SetBranchAddress("tower_LFHCAL_E",                _tower_LFHCAL_E);
+      inputTree->SetBranchAddress("tower_LFHCAL_iEta",             _tower_LFHCAL_iEta);
+      inputTree->SetBranchAddress("tower_LFHCAL_iPhi",             _tower_LFHCAL_iPhi);
+      inputTree->SetBranchAddress("tower_LFHCAL_iL",               _tower_LFHCAL_iL);
+      inputTree->SetBranchAddress("tower_LFHCAL_trueID",           _tower_LFHCAL_trueID);
+    } 
     // towers DRCALO
-    inputTree->SetBranchAddress("tower_DRCALO_N",                &_nTowers_DRCALO);
-    inputTree->SetBranchAddress("tower_DRCALO_E",                _tower_DRCALO_E);
-    inputTree->SetBranchAddress("tower_DRCALO_iEta",             _tower_DRCALO_iEta);
-    inputTree->SetBranchAddress("tower_DRCALO_iPhi",             _tower_DRCALO_iPhi);
-    inputTree->SetBranchAddress("tower_DRCALO_trueID",           _tower_DRCALO_trueID);
+    if( inputTree->GetBranchStatus("tower_DRCALO_N") ){
+      caloEnabled[kDRCALO] = 1;
+      inputTree->SetBranchAddress("tower_DRCALO_N",                &_nTowers_DRCALO);
+      inputTree->SetBranchAddress("tower_DRCALO_E",                _tower_DRCALO_E);
+      inputTree->SetBranchAddress("tower_DRCALO_iEta",             _tower_DRCALO_iEta);
+      inputTree->SetBranchAddress("tower_DRCALO_iPhi",             _tower_DRCALO_iPhi);
+      inputTree->SetBranchAddress("tower_DRCALO_trueID",           _tower_DRCALO_trueID);
+    } 
 
-    // towers HCAL
-    inputTree->SetBranchAddress("tower_FHCAL_N",                &_nTowers_FHCAL);
-    inputTree->SetBranchAddress("tower_FHCAL_E",                _tower_FHCAL_E);
-    inputTree->SetBranchAddress("tower_FHCAL_iEta",             _tower_FHCAL_iEta);
-    inputTree->SetBranchAddress("tower_FHCAL_iPhi",             _tower_FHCAL_iPhi);
-    inputTree->SetBranchAddress("tower_FHCAL_trueID",           _tower_FHCAL_trueID);
+    // towers FHCAL
+    if( inputTree->GetBranchStatus("tower_FHCAL_N") ){
+      caloEnabled[kFHCAL] = 1;
+      inputTree->SetBranchAddress("tower_FHCAL_N",                &_nTowers_FHCAL);
+      inputTree->SetBranchAddress("tower_FHCAL_E",                _tower_FHCAL_E);
+      inputTree->SetBranchAddress("tower_FHCAL_iEta",             _tower_FHCAL_iEta);
+      inputTree->SetBranchAddress("tower_FHCAL_iPhi",             _tower_FHCAL_iPhi);
+      inputTree->SetBranchAddress("tower_FHCAL_trueID",           _tower_FHCAL_trueID);
+    } 
 
-    // towers EMC
-    inputTree->SetBranchAddress("tower_FEMC_N",                 &_nTowers_FEMC);
-    inputTree->SetBranchAddress("tower_FEMC_E",                 _tower_FEMC_E);
-    inputTree->SetBranchAddress("tower_FEMC_iEta",              _tower_FEMC_iEta);
-    inputTree->SetBranchAddress("tower_FEMC_iPhi",              _tower_FEMC_iPhi);
-    inputTree->SetBranchAddress("tower_FEMC_trueID",            _tower_FEMC_trueID);
+    // towers FEMC
+    if( inputTree->GetBranchStatus("tower_FEMC_N") ){
+      caloEnabled[kFEMC] = 1;
+      inputTree->SetBranchAddress("tower_FEMC_N",                 &_nTowers_FEMC);
+      inputTree->SetBranchAddress("tower_FEMC_E",                 _tower_FEMC_E);
+      inputTree->SetBranchAddress("tower_FEMC_iEta",              _tower_FEMC_iEta);
+      inputTree->SetBranchAddress("tower_FEMC_iPhi",              _tower_FEMC_iPhi);
+      inputTree->SetBranchAddress("tower_FEMC_trueID",            _tower_FEMC_trueID);
+    }
 
     // clusters HCAL
-    inputTree->SetBranchAddress("cluster_FHCAL_N",                &_nclusters_FHCAL);
-    inputTree->SetBranchAddress("cluster_FHCAL_E",                _clusters_FHCAL_E);
-    inputTree->SetBranchAddress("cluster_FHCAL_Eta",             _clusters_FHCAL_Eta);
-    inputTree->SetBranchAddress("cluster_FHCAL_Phi",             _clusters_FHCAL_Phi);
-    inputTree->SetBranchAddress("cluster_FHCAL_NTower",             _clusters_FHCAL_NTower);
-    inputTree->SetBranchAddress("cluster_FHCAL_trueID",           _clusters_FHCAL_trueID);
-
+    if (caloEnabled[kFHCAL]){
+      inputTree->SetBranchAddress("cluster_FHCAL_N",                &_nclusters_FHCAL);
+      inputTree->SetBranchAddress("cluster_FHCAL_E",                _clusters_FHCAL_E);
+      inputTree->SetBranchAddress("cluster_FHCAL_Eta",             _clusters_FHCAL_Eta);
+      inputTree->SetBranchAddress("cluster_FHCAL_Phi",             _clusters_FHCAL_Phi);
+      inputTree->SetBranchAddress("cluster_FHCAL_NTower",             _clusters_FHCAL_NTower);
+      inputTree->SetBranchAddress("cluster_FHCAL_trueID",           _clusters_FHCAL_trueID);
+    }
     // clusters EMC
-    inputTree->SetBranchAddress("cluster_FEMC_N",                 &_nclusters_FEMC);
-    inputTree->SetBranchAddress("cluster_FEMC_E",                 _clusters_FEMC_E);
-    inputTree->SetBranchAddress("cluster_FEMC_Eta",              _clusters_FEMC_Eta);
-    inputTree->SetBranchAddress("cluster_FEMC_Phi",              _clusters_FEMC_Phi);
-    inputTree->SetBranchAddress("cluster_FEMC_NTower",              _clusters_FEMC_NTower);
-    inputTree->SetBranchAddress("cluster_FEMC_trueID",            _clusters_FEMC_trueID);
-
+    if (caloEnabled[kFEMC]){
+      inputTree->SetBranchAddress("cluster_FEMC_N",                 &_nclusters_FEMC);
+      inputTree->SetBranchAddress("cluster_FEMC_E",                 _clusters_FEMC_E);
+      inputTree->SetBranchAddress("cluster_FEMC_Eta",              _clusters_FEMC_Eta);
+      inputTree->SetBranchAddress("cluster_FEMC_Phi",              _clusters_FEMC_Phi);
+      inputTree->SetBranchAddress("cluster_FEMC_NTower",              _clusters_FEMC_NTower);
+      inputTree->SetBranchAddress("cluster_FEMC_trueID",            _clusters_FEMC_trueID);
+    }
     // vertex
-    inputTree->SetBranchAddress("vertex_x",                     &_vertex_x);
-    inputTree->SetBranchAddress("vertex_y",                     &_vertex_y);
-    inputTree->SetBranchAddress("vertex_z",                     &_vertex_z);
 
+    if (inputTree->GetBranchStatus("vertex_x") ){
+      vertexEnabled = 1;
+      inputTree->SetBranchAddress("vertex_x",                     &_vertex_x);
+      inputTree->SetBranchAddress("vertex_y",                     &_vertex_y);
+      inputTree->SetBranchAddress("vertex_z",                     &_vertex_z);
+    }
     // MC particles
     inputTree->SetBranchAddress("nMCPart",       &_nMCPart);
     inputTree->SetBranchAddress("mcpart_ID",     _mcpart_ID);
