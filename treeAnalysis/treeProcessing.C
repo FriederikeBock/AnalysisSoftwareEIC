@@ -851,6 +851,8 @@ void treeProcessing(
             fillJetSpectra(jetObservablesCalo, std::get<1>(jetsCaloRec), jetR);
             fillJetSpectra(jetObservablesFull, std::get<1>(jetsFullRec), jetR);
 
+            fillHadronObservables(jetObservablesTrue);
+
             jetresolutionhistos(jetsTrackRec, jetsTrueCharged, 0, jetR);
             jetresolutionhistos(jetsFullRec, jetsTrue, 1, jetR);
             jetresolutionhistos(jetsHcalRec, jetsTrue, 2, jetR);
@@ -881,7 +883,7 @@ void treeProcessing(
         std::cout << "saving event level observables\n";
         eventObservables.Write(outputDir.Data());
         std::cout << "saving jet observables\n";
-        jetObservablesTrue.Write(outputDir.Data());
+        jetObservablesTrue.Write(outputDir.Data(), "RECREATE");
         jetObservablesTrueCharged.Write(outputDir.Data());
         jetObservablesCharged.Write(outputDir.Data());
         jetObservablesCalo.Write(outputDir.Data());

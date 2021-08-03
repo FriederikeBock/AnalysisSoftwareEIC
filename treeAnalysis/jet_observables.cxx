@@ -85,12 +85,14 @@ struct JetObservables {
     JetType_t jetType;
     std::string tag = "";
     std::map<std::string, TH1D> spectra{};
+    std::vector<TH1D> backwardHadrons;
     bool initialized{false};
 
     JetObservables(JetType_t _jetType):
         jetType(_jetType),
         tag(""),
         spectra{},
+        backwardHadrons{},
         initialized{false}
     {}
 
@@ -98,6 +100,7 @@ struct JetObservables {
         jetType(_jetType),
         tag(_tag),
         spectra{},
+        backwardHadrons{},
         initialized{false}
     {}
 
@@ -123,17 +126,23 @@ struct JetObservables {
                 spectra[identifier].Sumw2();
             }
         }
+        std::string name = "nBackwardHadrons";
+        name += "_" + jetTypes.at(jetType);
+        name += "_" + tag;
+        backwardHadrons.emplace_back(TH1D(name.c_str(), name.c_str(), 100, 0, 100));
+        backwardHadrons.back().Sumw2();
         initialized = true;
     }
 
-    void Write(std::string outputDir)
+    void Write(std::string outputDir, std::string openOption = "UPDATE")
     {
         // define output file
-        std::shared_ptr<TFile> fileOutput = std::make_shared<TFile>(TString::Format("%s/output_JetObservables.root", outputDir.c_str()), "RECREATE");
+        std::shared_ptr<TFile> fileOutput = std::make_shared<TFile>(TString::Format("%s/output_JetObservables.root", outputDir.c_str()), openOption.c_str());
         //for (auto && [_, h] : spectra) {
         for (auto & h : spectra) {
             h.second.Write();
         }
+        backwardHadrons[0].Write();
     }
 };
 
@@ -144,10 +153,15 @@ void fillEventObservables(EventObservables & eventObservables, unsigned short pr
 {
     // NOTE: The cross section isn't available in the current test production, so set to 1 if not available.
     double cross_section = _cross_section ? _cross_section : 1;
+    // TODO: Enable and replace the hard code below when available
+    /*double incomingElectronEnergy = _hepmc_part_E[0];
+    double incomingProtonEnergy = _hepmc_part_E[1];*/
+    double incomingElectronEnergy = 10;
+    double incomingProtonEnergy = 250;
     // Calculate the kinmeatics using J-B
     try {
         // TODO: Use args for e and p energies
-        auto disKinematics = JBKinematics(primaryTrackSource, 10, 250);
+        auto disKinematics = JBKinematics(primaryTrackSource, incomingElectronEnergy, incomingProtonEnergy);
 
         // Fill the hist.
         eventObservables.Q2Measured.Fill(disKinematics.Q2, cross_section);
@@ -180,3 +194,15 @@ void fillJetSpectra(JetObservables & observables, const std::vector<fastjet::Pse
     }
 }
 
+void fillHadronObservables(JetObservables & observables)
+{
+    // True hadrons going in the backwards direction
+    unsigned int nHadrons = 0;
+    for (std::size_t i = 0; i < _nMCPart; ++i)
+    {
+        if (_mcpart_Eta[i] < -1.5 && _mcpart_E[i] > 0.2 && _mcpart_ID[i] != 11) {
+            ++nHadrons;
+        }
+    }
+    observables.backwardHadrons[0].Fill(nHadrons);
+}
