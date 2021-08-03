@@ -77,7 +77,10 @@ void resolutionJETStree(
   gSystem->Exec("mkdir -p "+outputDir+"/JetMomentumResolution");
   gSystem->Exec("mkdir -p "+outputDir+"/JetMomentumScale");
   gSystem->Exec("mkdir -p "+outputDir+"/JetEfficiency");
-  gSystem->Exec("mkdir -p "+outputDir+"/Spectra");
+  gSystem->Exec("mkdir -p "+outputDir+"/Spectra/eta");
+  gSystem->Exec("mkdir -p "+outputDir+"/Spectra/phi");
+  gSystem->Exec("mkdir -p "+outputDir+"/Spectra/E");
+  gSystem->Exec("mkdir -p "+outputDir+"/Spectra/pT");
 
 
 
@@ -319,10 +322,10 @@ void resolutionJETStree(
 
   // Plot spectra
   if (make_spectra_plots) {
-    plotSpectra(h3D_truth_reco_eta, style, TString("eta"), TString(Form("%s/Spectra/eta", outputDir.Data())), h2_reco_eta, h2_truth_eta);
-    plotSpectra(h3D_truth_reco_phi, style, TString("phi"), TString(Form("%s/Spectra/phi", outputDir.Data())), h2_reco_phi, h2_truth_phi, 0.18);
-    plotSpectra(h3D_truth_reco_E, style, TString("E"), TString(Form("%s/Spectra/E", outputDir.Data())), h2_reco_E, h2_truth_E, 0.3);
-    plotSpectra(h3D_truth_reco_pT, style, TString("pT"), TString(Form("%s/Spectra/pT", outputDir.Data())), h2_reco_pT, h2_truth_pT);
+    plotSpectra(h3D_truth_reco_eta, style, TString("eta"), TString(Form("%s/Spectra/eta/", outputDir.Data())), h2_reco_eta, h2_truth_eta);
+    plotSpectra(h3D_truth_reco_phi, style, TString("phi"), TString(Form("%s/Spectra/phi/", outputDir.Data())), h2_reco_phi, h2_truth_phi, 0.18);
+    plotSpectra(h3D_truth_reco_E, style, TString("E"), TString(Form("%s/Spectra/E/", outputDir.Data())), h2_reco_E, h2_truth_E, 0.3);
+    plotSpectra(h3D_truth_reco_pT, style, TString("pT"), TString(Form("%s/Spectra/pT/", outputDir.Data())), h2_reco_pT, h2_truth_pT);
   }
 
   // Plot slices
@@ -416,7 +419,7 @@ void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][nEta+eta_regions], TStr
   }
 }
 
-void plotSpectra(TH3F *spectra[nInputs][njettypes], plottingStyleData style, TString title, TString outputFormat, TH2F *reco[nInputs][njettypes]=nullptr, TH2F *truth[nInputs][njettypes]=nullptr, float textX=0.22, float textY=0.83) {
+void plotSpectra(TH3F *spectra[nInputs][njettypes], plottingStyleData style, TString title, TString outputFormat, TH2F *reco[nInputs][njettypes]=nullptr, TH2F *truth[nInputs][njettypes]=nullptr, float textX=0.22, float textY=0.83) { 
   Double_t textSizeLabelsRel = 58.0 / 1300;
   int canvasWidth = 2000;
   int canvasDivisions = 2;
@@ -515,7 +518,7 @@ void plotSpectra(TH3F *spectra[nInputs][njettypes], plottingStyleData style, TSt
         fullLegend->Draw();
       }
 
-    spectraCanvas->Print(Form("%s_%s_%d.%s", outputFormat.Data(), style.str_jet_type[i].Data(), j, style.format.Data()));
+    spectraCanvas->Print(Form("%s%s_%d.%s", outputFormat.Data(), style.str_jet_type[i].Data(), j, style.format.Data()));
 
     }
   }
