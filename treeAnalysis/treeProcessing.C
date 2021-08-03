@@ -845,11 +845,11 @@ void treeProcessing(
             
             // Jet observables
             fillEventObservables(eventObservables, primaryTrackSource);
-            fillJetSpectra(jetObservablesTrue, std::get<1>(jetsTrue), jetR);
-            fillJetSpectra(jetObservablesTrueCharged, std::get<1>(jetsTrueCharged), jetR);
-            fillJetSpectra(jetObservablesCharged, std::get<1>(jetsTrackRec), jetR);
-            fillJetSpectra(jetObservablesCalo, std::get<1>(jetsCaloRec), jetR);
-            fillJetSpectra(jetObservablesFull, std::get<1>(jetsFullRec), jetR);
+            fillJetObservables(jetObservablesTrue, std::get<1>(jetsTrue), jetR);
+            fillJetObservables(jetObservablesTrueCharged, std::get<1>(jetsTrueCharged), jetR);
+            fillJetObservables(jetObservablesCharged, std::get<1>(jetsTrackRec), jetR);
+            fillJetObservables(jetObservablesCalo, std::get<1>(jetsCaloRec), jetR);
+            fillJetObservables(jetObservablesFull, std::get<1>(jetsFullRec), jetR);
 
             fillHadronObservables(jetObservablesTrue);
 
