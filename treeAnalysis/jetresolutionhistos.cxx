@@ -1,4 +1,5 @@
 #include <TROOT.h>
+#include <TH3F.h>
 #include <TH2F.h>
 #include <TH1D.h>
 #include <TString.h>
@@ -51,25 +52,25 @@ TH1D *h_PhiReso_Mean_Eta[njettypes] = {NULL};
 TH1D *h_PhiReso_Width_Eta[njettypes] = {NULL};
 
 // Plot the jet spectra in eta, phi, E, pT
-TH2F *h2D_truth_reco_eta[njettypes] = {NULL};
-TH1F *h_truth_eta[njettypes] = {NULL};
-TH1F *h_reco_eta[njettypes] = {NULL};
+TH3F *h3D_truth_reco_eta[njettypes] = {NULL};
+TH2F *h2_truth_eta[njettypes] = {NULL};
+TH2F *h2_reco_eta[njettypes] = {NULL};
 
-TH2F *h2D_truth_reco_phi[njettypes] = {NULL};
-TH1F *h_truth_phi[njettypes] = {NULL};
-TH1F *h_reco_phi[njettypes] = {NULL};
+TH3F *h3D_truth_reco_phi[njettypes] = {NULL};
+TH2F *h2_truth_phi[njettypes] = {NULL};
+TH2F *h2_reco_phi[njettypes] = {NULL};
 
-TH2F *h2D_truth_reco_E[njettypes] = {NULL};
-TH1F *h_truth_E[njettypes] = {NULL};
-TH1F *h_reco_E[njettypes] = {NULL};
+TH3F *h3D_truth_reco_E[njettypes] = {NULL};
+TH2F *h2_truth_E[njettypes] = {NULL};
+TH2F *h2_reco_E[njettypes] = {NULL};
 
-TH2F *h2D_truth_reco_pT[njettypes] = {NULL};
-TH1F *h_truth_pT[njettypes] = {NULL};
-TH1F *h_reco_pT[njettypes] = {NULL};
+TH3F *h3D_truth_reco_pT[njettypes] = {NULL};
+TH2F *h2_truth_pT[njettypes] = {NULL};
+TH2F *h2_reco_pT[njettypes] = {NULL};
 
-TH2F *h2D_truth_reco_p[njettypes] = {NULL};
-TH1F *h_truth_p[njettypes] = {NULL};
-TH1F *h_reco_p[njettypes] = {NULL};
+TH3F *h3D_truth_reco_p[njettypes] = {NULL};
+TH2F *h2_truth_p[njettypes] = {NULL};
+TH2F *h2_reco_p[njettypes] = {NULL};
 
 // For creating jet efficiency graphs
 TH1F *h_truth_count[njettypes] = {NULL};
@@ -100,25 +101,25 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
     if(!h_PhiReso_Mean_Eta[isel])h_PhiReso_Mean_Eta[isel]    = new TH1D(Form("h_PhiReso_Mean_%s_Eta",jettype[isel].Data()),"",40, 0, 4);
     if(!h_PhiReso_Width_Eta[isel])h_PhiReso_Width_Eta[isel]  = new TH1D(Form("h_PhiReso_Width_%s_Eta",jettype[isel].Data()),"",40, 0, 4);
 
-    if (!h2D_truth_reco_eta[isel]) h2D_truth_reco_eta[isel] = new TH2F(Form("h2D_truth_reco_eta_%s", jettype[isel].Data()), "", 40, -7, 7, 40, -7, 7);
-    if (!h_truth_eta[isel]) h_truth_eta[isel] = new TH1F(Form("h_truth_eta_%s", jettype[isel].Data()), "", 40, -7, 7);
-    if (!h_reco_eta[isel]) h_reco_eta[isel] = new TH1F(Form("h_reco_eta_%s", jettype[isel].Data()), "", 40, -7, 7);
+    if (!h3D_truth_reco_eta[isel]) h3D_truth_reco_eta[isel] = new TH3F(Form("h3D_truth_reco_eta_%s", jettype[isel].Data()), "", 40, -7, 7, 40, -7, 7, 14, -3.5, 3.5);
+    if (!h2_truth_eta[isel]) h2_truth_eta[isel] = new TH2F(Form("h2_truth_eta_%s", jettype[isel].Data()), "", 40, -7, 7, 14, -3.5, 3.5);
+    if (!h2_reco_eta[isel]) h2_reco_eta[isel] = new TH2F(Form("h2_reco_eta_%s", jettype[isel].Data()), "", 40, -7, 7, 14, -3.5, 3.5);
     
-    if (!h2D_truth_reco_phi[isel]) h2D_truth_reco_phi[isel] = new TH2F(Form("h2D_truth_reco_phi_%s", jettype[isel].Data()), "", 40, 0, 7, 40, 0, 7);
-    if (!h_truth_phi[isel]) h_truth_phi[isel] = new TH1F(Form("h_truth_phi_%s", jettype[isel].Data()), "", 40, 0, 7);
-    if (!h_reco_phi[isel]) h_reco_phi[isel] = new TH1F(Form("h_reco_phi_%s", jettype[isel].Data()), "", 40, 0, 7);
+    if (!h3D_truth_reco_phi[isel]) h3D_truth_reco_phi[isel] = new TH3F(Form("h3D_truth_reco_phi_%s", jettype[isel].Data()), "", 40, 0, 7, 40, 0, 7, 14, -3.5, 3.5);
+    if (!h2_truth_phi[isel]) h2_truth_phi[isel] = new TH2F(Form("h2_truth_phi_%s", jettype[isel].Data()), "", 40, 0, 7, 14, -3.5, 3.5);
+    if (!h2_reco_phi[isel]) h2_reco_phi[isel] = new TH2F(Form("h2_reco_phi_%s", jettype[isel].Data()), "", 40, 0, 7, 14, -3.5, 3.5);
     
-    if (!h2D_truth_reco_E[isel]) h2D_truth_reco_E[isel] = new TH2F(Form("h2D_truth_reco_E_%s", jettype[isel].Data()), "", 40, 0, 150, 40, 0, 150);
-    if (!h_truth_E[isel]) h_truth_E[isel] = new TH1F(Form("h_truth_E_%s", jettype[isel].Data()), "", 40, 0, 150);
-    if (!h_reco_E[isel]) h_reco_E[isel] = new TH1F(Form("h_reco_E_%s", jettype[isel].Data()), "", 40, 0, 150);
+    if (!h3D_truth_reco_E[isel]) h3D_truth_reco_E[isel] = new TH3F(Form("h3D_truth_reco_E_%s", jettype[isel].Data()), "", 40, 0, 150, 40, 0, 150, 14, -3.5, 3.5);
+    if (!h2_truth_E[isel]) h2_truth_E[isel] = new TH2F(Form("h2_truth_E_%s", jettype[isel].Data()), "", 40, 0, 150, 14, -3.5, 3.5);
+    if (!h2_reco_E[isel]) h2_reco_E[isel] = new TH2F(Form("h2_reco_E_%s", jettype[isel].Data()), "", 40, 0, 150, 14, -3.5, 3.5);
     
-    if (!h2D_truth_reco_pT[isel]) h2D_truth_reco_pT[isel] = new TH2F(Form("h2D_truth_reco_pT_%s", jettype[isel].Data()), "", 40, 0, 120, 40, 0, 120);
-    if (!h_truth_pT[isel]) h_truth_pT[isel] = new TH1F(Form("h_truth_pT_%s", jettype[isel].Data()), "", 40, 0, 120);
-    if (!h_reco_pT[isel]) h_reco_pT[isel] = new TH1F(Form("h_reco_pT_%s", jettype[isel].Data()), "", 40, 0, 120);
+    if (!h3D_truth_reco_pT[isel]) h3D_truth_reco_pT[isel] = new TH3F(Form("h3D_truth_reco_pT_%s", jettype[isel].Data()), "", 40, 0, 120, 40, 0, 120, 14, -3.5, 3.5);
+    if (!h2_truth_pT[isel]) h2_truth_pT[isel] = new TH2F(Form("h2_truth_pT_%s", jettype[isel].Data()), "", 40, 0, 120, 14, -3.5, 3.5);
+    if (!h2_reco_pT[isel]) h2_reco_pT[isel] = new TH2F(Form("h2_reco_pT_%s", jettype[isel].Data()), "", 40, 0, 120, 14, -3.5, 3.5);
 
-    if (!h2D_truth_reco_p[isel]) h2D_truth_reco_p[isel] = new TH2F(Form("h2D_truth_reco_p_%s", jettype[isel].Data()), "", 40, 0, 120, 40, 0, 120);
-    if (!h_truth_p[isel]) h_truth_p[isel] = new TH1F(Form("h_truth_p_%s", jettype[isel].Data()), "", 40, 0, 120);
-    if (!h_reco_p[isel]) h_reco_p[isel] = new TH1F(Form("h_reco_p_%s", jettype[isel].Data()), "", 40, 0, 120);
+    if (!h3D_truth_reco_p[isel]) h3D_truth_reco_p[isel] = new TH3F(Form("h3D_truth_reco_p_%s", jettype[isel].Data()), "", 40, 0, 120, 40, 0, 120, 14, -3.5, 3.5);
+    if (!h2_truth_p[isel]) h2_truth_p[isel] = new TH2F(Form("h2_truth_p_%s", jettype[isel].Data()), "", 40, 0, 120, 14, -3.5, 3.5);
+    if (!h2_reco_p[isel]) h2_reco_p[isel] = new TH2F(Form("h2_reco_p_%s", jettype[isel].Data()), "", 40, 0, 120, 14, -3.5, 3.5);
 
     if (!h_truth_count[isel]) h_truth_count[isel] = new TH1F(Form("h_truth_count_%s", jettype[isel].Data()), "", 40, 0, 200);
     if (!h_matched_count[isel]) h_matched_count[isel] = new TH1F(Form("h_matched_count_%s", jettype[isel].Data()), "", 40, 0, 200);
@@ -158,11 +159,11 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
       if (eta < min_eta[select] || eta > max_eta[select]) {
         continue;
       }
-      h_truth_phi[select]->Fill(std::get<1>(truejets)[j].phi());
-      h_truth_eta[select]->Fill(eta);
-      h_truth_E[select]->Fill(std::get<1>(truejets)[j].E());
-      h_truth_pT[select]->Fill(std::get<1>(truejets)[j].pt());
-      h_truth_p[select]->Fill(momentum(std::get<1>(truejets)[j]));
+      h2_truth_phi[select]->Fill(std::get<1>(truejets)[j].phi(), eta);
+      h2_truth_eta[select]->Fill(eta, eta);
+      h2_truth_E[select]->Fill(std::get<1>(truejets)[j].E(), eta);
+      h2_truth_pT[select]->Fill(std::get<1>(truejets)[j].pt(), eta);
+      h2_truth_p[select]->Fill(momentum(std::get<1>(truejets)[j]), eta);
       h_constituents_true_Eta[select]->Fill(std::get<1>(truejets)[j].eta(),(std::get<1>(truejets)[j].constituents()).size());
      
       jets++;
@@ -187,11 +188,11 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
     if (eta < min_eta[select] || eta > max_eta[select]) {
       continue;
     }
-    h_reco_phi[select]->Fill(std::get<1>(recjets)[i].phi());
-    h_reco_eta[select]->Fill(std::get<1>(recjets)[i].eta());
-    h_reco_E[select]->Fill(std::get<1>(recjets)[i].E());
-    h_reco_pT[select]->Fill(std::get<1>(recjets)[i].pt());
-    h_reco_p[select]->Fill(momentum(std::get<1>(recjets)[i]));
+    h2_reco_phi[select]->Fill(std::get<1>(recjets)[i].phi(), eta);
+    h2_reco_eta[select]->Fill(eta, eta);
+    h2_reco_E[select]->Fill(std::get<1>(recjets)[i].E(), eta);
+    h2_reco_pT[select]->Fill(std::get<1>(recjets)[i].pt(), eta);
+    h2_reco_p[select]->Fill(momentum(std::get<1>(recjets)[i]), eta);
     // if(verbosityJRH>1)std::cout << "jet " << i << ": "<< std::get<1>(recjets)[i].pt() << " " << std::get<1>(recjets)[i].rap() << " " << std::get<1>(recjets)[i].phi() << "  Ntrue: " << std::get<1>(truejets).size() << endl;
     h_constituents_Eta[select]->Fill(std::get<1>(recjets)[i].eta(),(std::get<1>(recjets)[i].constituents()).size());
 
@@ -207,11 +208,11 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
       
       if(deltaRTrueRec<0.25){
         // Spectra
-        h2D_truth_reco_phi[select]->Fill(std::get<1>(truejets)[j].phi(), std::get<1>(recjets)[i].phi());
-        h2D_truth_reco_eta[select]->Fill(std::get<1>(truejets)[j].eta(), std::get<1>(recjets)[i].eta());
-        h2D_truth_reco_E[select]->Fill(std::get<1>(truejets)[j].E(), std::get<1>(recjets)[i].E());
-        h2D_truth_reco_pT[select]->Fill(std::get<1>(truejets)[j].pt(), std::get<1>(recjets)[i].pt());
-        h2D_truth_reco_p[select]->Fill(momentum(std::get<1>(truejets)[j]), momentum(std::get<1>(recjets)[i]));
+        h3D_truth_reco_phi[select]->Fill(std::get<1>(truejets)[j].phi(), std::get<1>(recjets)[i].phi(), eta);
+        h3D_truth_reco_eta[select]->Fill(std::get<1>(truejets)[j].eta(), std::get<1>(recjets)[i].eta(), eta);
+        h3D_truth_reco_E[select]->Fill(std::get<1>(truejets)[j].E(), std::get<1>(recjets)[i].E(), eta);
+        h3D_truth_reco_pT[select]->Fill(std::get<1>(truejets)[j].pt(), std::get<1>(recjets)[i].pt(), eta);
+        h3D_truth_reco_p[select]->Fill(momentum(std::get<1>(truejets)[j]), momentum(std::get<1>(recjets)[i]), eta);
 
         h2D_jet_EtaReso_Eta[select]->Fill(std::get<1>(truejets)[j].eta(),(std::get<1>(recjets)[i].eta()-std::get<1>(truejets)[j].eta()));
 
@@ -275,25 +276,25 @@ void jetresolutionhistosSave(){
       if(h_PhiReso_Mean_E[isel][eT])h_PhiReso_Mean_E[isel][eT]->Write();
       if(h_PhiReso_Width_E[isel][eT])h_PhiReso_Width_E[isel][eT]->Write();
     }
-    if (h2D_truth_reco_eta[isel]) h2D_truth_reco_eta[isel]->Write();
-    if (h_truth_eta[isel]) h_truth_eta[isel]->Write();
-    if (h_reco_eta[isel]) h_reco_eta[isel]->Write();
+    if (h3D_truth_reco_eta[isel]) h3D_truth_reco_eta[isel]->Write();
+    if (h2_truth_eta[isel]) h2_truth_eta[isel]->Write();
+    if (h2_reco_eta[isel]) h2_reco_eta[isel]->Write();
 
-    if (h2D_truth_reco_phi[isel]) h2D_truth_reco_phi[isel]->Write();
-    if (h_truth_phi[isel]) h_truth_phi[isel]->Write();
-    if (h_reco_phi[isel]) h_reco_phi[isel]->Write();
+    if (h3D_truth_reco_phi[isel]) h3D_truth_reco_phi[isel]->Write();
+    if (h2_truth_phi[isel]) h2_truth_phi[isel]->Write();
+    if (h2_reco_phi[isel]) h2_reco_phi[isel]->Write();
 
-    if (h2D_truth_reco_E[isel]) h2D_truth_reco_E[isel]->Write();
-    if (h_truth_E[isel]) h_truth_E[isel]->Write();
-    if (h_reco_E[isel]) h_reco_E[isel]->Write();
+    if (h3D_truth_reco_E[isel]) h3D_truth_reco_E[isel]->Write();
+    if (h2_truth_E[isel]) h2_truth_E[isel]->Write();
+    if (h2_reco_E[isel]) h2_reco_E[isel]->Write();
 
-    if (h2D_truth_reco_pT[isel]) h2D_truth_reco_pT[isel]->Write();   
-    if (h_truth_pT[isel]) h_truth_pT[isel]->Write();
-    if (h_reco_pT[isel]) h_reco_pT[isel]->Write();
+    if (h3D_truth_reco_pT[isel]) h3D_truth_reco_pT[isel]->Write();   
+    if (h2_truth_pT[isel]) h2_truth_pT[isel]->Write();
+    if (h2_reco_pT[isel]) h2_reco_pT[isel]->Write();
 
-    if (h2D_truth_reco_p[isel]) h2D_truth_reco_p[isel]->Write();   
-    if (h_truth_p[isel]) h_truth_p[isel]->Write();
-    if (h_reco_p[isel]) h_reco_p[isel]->Write();
+    if (h3D_truth_reco_p[isel]) h3D_truth_reco_p[isel]->Write();   
+    if (h2_truth_p[isel]) h2_truth_p[isel]->Write();
+    if (h2_reco_p[isel]) h2_reco_p[isel]->Write();
 
     if (h_truth_count[isel]) h_truth_count[isel]->Write(); 
     if (h_matched_count[isel]) h_matched_count[isel]->Write(); 
