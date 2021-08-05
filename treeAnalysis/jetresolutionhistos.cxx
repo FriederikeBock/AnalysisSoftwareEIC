@@ -19,6 +19,11 @@ TString jettype[njettypes] = {"track", "full","hcal", "calo","all", "nocluster",
 const float min_eta[njettypes] = {-3.5, 0, 1.5, 1.5, 0, 1.5, 1.5};  // TODO Save this info as metadata...
 const float max_eta[njettypes] = {3.5, 0, 3.5, 3.5, 0, 3.5, 3.5};
 
+
+// Edges of detectors; prevent jet finding within R of boundaries
+const int detectors = 1;
+const float detector_eta_boundaries[detectors + 1] = {-3.5, 3.5};
+
 TH2F* h_jet_E_eta[njettypes] = {NULL};
 TH2F* h_MCjet_E_eta[njettypes] = {NULL};
 TH2F* h_jetscale_E[njettypes][nEta+1] = {NULL};
@@ -206,6 +211,11 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
       Int_t et = 0;
       while ( ( std::get<1>(truejets)[j].eta() > partEta[et+1] ) && ( et < nEta )) et++;
       
+      for (std::size_t k = 0; k < detectors; k++) {   // Skip jets within R of the detector boundary
+        if (std::abs(std::get<1>(recjets)[i].eta() - detector_eta_boundaries[k]) < 0.5) {
+          continue;
+        }
+      }
       if(deltaRTrueRec<0.25){
         // Spectra
         h3D_truth_reco_phi[select]->Fill(std::get<1>(truejets)[j].phi(), std::get<1>(recjets)[i].phi(), eta);
