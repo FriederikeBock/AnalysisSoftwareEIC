@@ -124,8 +124,11 @@ struct JetObservables {
         double dlogx   = (xlogmax-xlogmin)/(static_cast<double>(nLogBins));
         for (int i=0; i<=nLogBins; i++) {
             double xlog = xlogmin + i*dlogx;
-            logBins[i] = std::exp(std::log(10) * xlog);
+            logBins.at(i) = std::exp(std::log(10) * xlog);
+            //std::cout << logBins[i] << " ";
         }
+        //std::cout << "\n";
+        //std::cout << "size: " << logBins.size() << "\n";
         // Add types of jets, jet R. Make a string
         for (auto R : jetRParameters) {
             //for (auto && [region, info] : regions) {
@@ -148,21 +151,21 @@ struct JetObservables {
                 // a = 0 (mass)
                 // As a function of E
                 identifier = GetIdentifier(R, jetType, v.second, "angularity_a_0_E", tag);
-                jetHadronDPhi[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, nLogBins, logBins.data());
-                jetHadronDPhi[identifier].Sumw2();
+                angularity[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, nLogBins, logBins.data());
+                angularity[identifier].Sumw2();
                 // As a function of p
                 identifier = GetIdentifier(R, jetType, v.second, "angularity_a_0_p", tag);
-                jetHadronDPhi[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, nLogBins, logBins.data());
-                jetHadronDPhi[identifier].Sumw2();
+                angularity[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, nLogBins, logBins.data());
+                angularity[identifier].Sumw2();
                 // a = 1 (girth)
                 // As a function of E
                 identifier = GetIdentifier(R, jetType, v.second, "angularity_a_1_E", tag);
-                jetHadronDPhi[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, nLogBins, logBins.data());
-                jetHadronDPhi[identifier].Sumw2();
+                angularity[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, nLogBins, logBins.data());
+                angularity[identifier].Sumw2();
                 // As a function of p
                 identifier = GetIdentifier(R, jetType, v.second, "angularity_a_1_p", tag);
-                jetHadronDPhi[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, nLogBins, logBins.data());
-                jetHadronDPhi[identifier].Sumw2();
+                angularity[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, nLogBins, logBins.data());
+                angularity[identifier].Sumw2();
 
                 // Jet-hadron as function of E
                 identifier = GetIdentifier(R, jetType, v.second, "jet_hadron_E", tag);
@@ -188,13 +191,19 @@ struct JetObservables {
         // define output file
         std::shared_ptr<TFile> fileOutput = std::make_shared<TFile>(TString::Format("%s/output_JetObservables.root", outputDir.c_str()), openOption.c_str());
         //for (auto && [_, h] : spectra) {
-        for (auto & h : spectra) {
+        // Spectra
+        for (auto & h : this->spectra) {
             h.second.Write();
         }
-        for (auto & h : jetHadronDPhi) {
+        // Angularity
+        for (auto & h : this->angularity) {
             h.second.Write();
         }
-        backwardHadrons[0].Write();
+        // Jet-hadron
+        for (auto & h : this->jetHadronDPhi) {
+            h.second.Write();
+        }
+        this->backwardHadrons[0].Write();
     }
 };
 
@@ -255,13 +264,14 @@ void fillJetObservables(JetObservables & observables, const std::vector<fastjet:
             angularity_a_1 += (constituent.pt() * std::pow(j.delta_R(constituent), 2-1));
 
             // Jet-hadron correlations
+            // TODO: Use all hadrons, not just constituents. Duh...
             observables.jetHadronDPhi[GetIdentifier(jetR, observables.jetType, region, "jet_hadron_E", observables.tag)].Fill(j.e(), j.delta_phi_to(constituent), cross_section);
             observables.jetHadronDPhi[GetIdentifier(jetR, observables.jetType, region, "jet_hadron_p", observables.tag)].Fill(j.modp(), j.delta_phi_to(constituent), cross_section);
         }
         observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_0_E", observables.tag)].Fill(j.e(), angularity_a_0 / j.pt(), cross_section);
-        observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_0_P", observables.tag)].Fill(j.modp(), angularity_a_0 / j.pt(), cross_section);
+        observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_0_p", observables.tag)].Fill(j.modp(), angularity_a_0 / j.pt(), cross_section);
         observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_1_E", observables.tag)].Fill(j.e(), angularity_a_1 / j.pt(), cross_section);
-        observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_1_P", observables.tag)].Fill(j.modp(), angularity_a_1 / j.pt(), cross_section);
+        observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_1_p", observables.tag)].Fill(j.modp(), angularity_a_1 / j.pt(), cross_section);
     }
 }
 
