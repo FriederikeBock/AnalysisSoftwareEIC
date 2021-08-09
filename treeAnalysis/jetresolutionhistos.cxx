@@ -21,7 +21,7 @@ const float max_eta[njettypes] = {3.5, 0, 3.5, 3.5, 0, 3.5, 3.5};
 
 
 // Edges of detectors; prevent jet finding within R of boundaries
-const int max_detectors = 1;
+const int max_detector_sections = 1;
 const int detectors[njettypes] = {1, 0, 1, 1, 0, 1, 1};
 const float detector_eta_boundaries[njettypes][max_detectors + 1] = {{-3.5, 3.5},    // Tracking
                                                                     {},
@@ -185,7 +185,7 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
         if (eta < min_eta[select] || eta > max_eta[select]) {
           continue;
         }
-        if (std::get<1>(truejets)[j].delta_R(std::get<1>(recjets)[i]) < 0.25) {
+        if (std::get<1>(truejets)[j].delta_R(std::get<1>(recjets)[i]) < 0.5) {
           h_matched_count[select]->Fill(std::get<1>(truejets)[j].E());
           matched++;
           break;
