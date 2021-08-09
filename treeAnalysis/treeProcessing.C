@@ -846,13 +846,13 @@ void treeProcessing(
             fillJetSpectra(jetObservablesCalo, std::get<1>(jetsCaloRec), jetR);
             fillJetSpectra(jetObservablesFull, std::get<1>(jetsFullRec), jetR);
 
-            jetresolutionhistos(jetsTrackRec,jetsTrueCharged,0);
-            jetresolutionhistos(jetsFullRec,jetsTrue,1);
-            jetresolutionhistos(jetsHcalRec,jetsTrue,2);
-            jetresolutionhistos(jetsCaloRec,jetsTrue,3);
-            jetresolutionhistos(jetsAllRec,jetsTrue,4);
-            jetresolutionhistos(jetsNoCluster, jetsTrue, 5);
-            jetresolutionhistos(jetsEmcalRec, jetsTrue, 6);
+            jetresolutionhistos(jetsTrackRec, jetsTrueCharged, 0, jetR);
+            jetresolutionhistos(jetsFullRec, jetsTrue, 1, jetR);
+            jetresolutionhistos(jetsHcalRec, jetsTrue, 2, jetR);
+            jetresolutionhistos(jetsCaloRec, jetsTrue, 3, jetR);
+            jetresolutionhistos(jetsAllRec, jetsTrue, 4, jetR);
+            jetresolutionhistos(jetsNoCluster,  jetsTrue,  5, jetR);
+            jetresolutionhistos(jetsEmcalRec,  jetsTrue,  6, jetR);
             
 // TString jettype[njettypes] = {"track", "full","hcal","calo","all"};
         }

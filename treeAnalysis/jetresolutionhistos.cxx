@@ -19,6 +19,18 @@ TString jettype[njettypes] = {"track", "full","hcal", "calo","all", "nocluster",
 const float min_eta[njettypes] = {-3.5, 0, 1.5, 1.5, 0, 1.5, 1.5};  // TODO Save this info as metadata...
 const float max_eta[njettypes] = {3.5, 0, 3.5, 3.5, 0, 3.5, 3.5};
 
+
+// Edges of detectors; prevent jet finding within R of boundaries
+const int max_detector_sections = 1;
+const int detectors[njettypes] = {1, 0, 1, 1, 0, 1, 1};
+const float detector_eta_boundaries[njettypes][max_detectors + 1] = {{-3.5, 3.5},    // Tracking
+                                                                    {},
+                                                                    {1.5, 3.5},     // HCal
+                                                                    {1.5, 3.5},     // Calo
+                                                                    {},
+                                                                    {1.5, 3.5},     // Calo
+                                                                    {1.5, 3.5}};    // ECal
+
 TH2F* h_jet_E_eta[njettypes] = {NULL};
 TH2F* h_MCjet_E_eta[njettypes] = {NULL};
 TH2F* h_jetscale_E[njettypes][nEta+1] = {NULL};
@@ -84,7 +96,7 @@ TH2F *h2D_cluster_eta_phi[njettypes] = {NULL};
 double momentum(fastjet::PseudoJet jet) {return TMath::Sqrt(jet.px() * jet.px() + jet.py() * jet.py() + jet.pz() * jet.pz());}
 
 // ANCHOR main function to be called in event loop
-void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea>, std::vector<fastjet::PseudoJet>> recjets, std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea>, std::vector<fastjet::PseudoJet>> truejets, int select){
+void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea>, std::vector<fastjet::PseudoJet>> recjets, std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea>, std::vector<fastjet::PseudoJet>> truejets, int select, float jetR){
 
   for( int isel=0;isel<njettypes;isel++){
     if(!h_MCjet_E_eta[isel])h_MCjet_E_eta[isel] = new TH2F(Form("h_MCjet_%s_E_eta",jettype[isel].Data()),"",40,0,200,80,-4,4);
@@ -201,6 +213,13 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
       if (eta < min_eta[select] || eta > max_eta[select]) {
         continue;
       }
+      for (std::size_t k = 0; k < detectors[select]; k++) {   // Skip jets within R of the detector boundary
+        if (std::abs(std::get<1>(recjets)[i].eta() - detector_eta_boundaries[select][k]) < jetR) {
+          // std::cout << "excluding jet near edge of " << jettype[select] << std::endl;
+          continue;
+        }
+      }
+      
       Double_t deltaRTrueRec = std::get<1>(truejets)[j].delta_R(std::get<1>(recjets)[i]);
       // cout << deltaRTrueRec << endl;
       Int_t et = 0;

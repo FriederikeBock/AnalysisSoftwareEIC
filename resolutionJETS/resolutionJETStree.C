@@ -22,6 +22,7 @@ const int firstEtaBin[njettypes] = {1, 10, 10, 10, 10};
 const float min_eta[njettypes]   = {-3.5, 1.5, 1.5, 1.5, 1.5};  // TODO Save this info as metadata...
 const float max_eta[njettypes]   = {3.5, 3.5, 3.5, 3.5, 3.5};
 
+// Regions to group plots into
 const int eta_regions = 3;
 const float eta_regions_boundaries[eta_regions + 1] = {-3.5, -1.5, 1.5, 3.5};
 
