@@ -23,7 +23,7 @@ const float max_eta[njettypes] = {3.5, 0, 3.5, 3.5, 0, 3.5, 3.5};
 // Edges of detectors; prevent jet finding within R of boundaries
 const int max_detector_sections = 1;
 const int detectors[njettypes] = {1, 0, 1, 1, 0, 1, 1};
-const float detector_eta_boundaries[njettypes][max_detectors + 1] = {{-3.5, 3.5},    // Tracking
+const float detector_eta_boundaries[njettypes][max_detector_sections + 1] = {{-3.5, 3.5},    // Tracking
                                                                     {},
                                                                     {1.5, 3.5},     // HCal
                                                                     {1.5, 3.5},     // Calo
