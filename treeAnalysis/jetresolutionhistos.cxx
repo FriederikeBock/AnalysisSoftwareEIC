@@ -213,17 +213,18 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
       if (eta < min_eta[select] || eta > max_eta[select]) {
         continue;
       }
-      Double_t deltaRTrueRec = std::get<1>(truejets)[j].delta_R(std::get<1>(recjets)[i]);
-      // cout << deltaRTrueRec << endl;
-      Int_t et = 0;
-      while ( ( std::get<1>(truejets)[j].eta() > partEta[et+1] ) && ( et < nEta )) et++;
-      
       for (std::size_t k = 0; k < detectors[select]; k++) {   // Skip jets within R of the detector boundary
         if (std::abs(std::get<1>(recjets)[i].eta() - detector_eta_boundaries[select][k]) < jetR) {
           // std::cout << "excluding jet near edge of " << jettype[select] << std::endl;
           continue;
         }
       }
+      
+      Double_t deltaRTrueRec = std::get<1>(truejets)[j].delta_R(std::get<1>(recjets)[i]);
+      // cout << deltaRTrueRec << endl;
+      Int_t et = 0;
+      while ( ( std::get<1>(truejets)[j].eta() > partEta[et+1] ) && ( et < nEta )) et++;
+      
       if(deltaRTrueRec<0.25){
         // Spectra
         h3D_truth_reco_phi[select]->Fill(std::get<1>(truejets)[j].phi(), std::get<1>(recjets)[i].phi(), eta);
