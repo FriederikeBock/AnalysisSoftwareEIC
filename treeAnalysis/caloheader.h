@@ -1267,3 +1267,66 @@ float getEnergySmearing( int caloEnum, int algoEnum){
   }
   return 1.0;
 }
+
+void fillHCalClustersIntoJetFindingInputs(
+  const int nclusters, float* clusters_E, float* clusters_eta, float* clusters_phi, bool* clusters_isMatched,
+  std::vector<float> & jetf_hcal_E, std::vector<float> & jetf_hcal_px, std::vector<float> & jetf_hcal_py, std::vector<float> & jetf_hcal_pz,
+  std::vector<float> & jetf_calo_E, std::vector<float> & jetf_calo_px, std::vector<float> & jetf_calo_py, std::vector<float> & jetf_calo_pz,
+  std::vector<float> & jetf_all_E, std::vector<float> & jetf_all_px, std::vector<float> & jetf_all_py, std::vector<float> & jetf_all_pz
+)
+{
+  for(Int_t iclus=0; iclus<nclusters; iclus++){
+      if(!clusters_isMatched[iclus]){
+          double pt = clusters_E[iclus] / cosh(clusters_eta[iclus]);
+          double px = pt * cos(clusters_phi[iclus]);
+          double py = pt * sin(clusters_phi[iclus]);
+          double pz = pt * sinh(clusters_eta[iclus]);
+          jetf_hcal_px.push_back(px);
+          jetf_hcal_py.push_back(py);
+          jetf_hcal_pz.push_back(pz);
+          jetf_hcal_E.push_back(clusters_E[iclus]);
+          jetf_calo_px.push_back(px);
+          jetf_calo_py.push_back(py);
+          jetf_calo_pz.push_back(pz);
+          jetf_calo_E.push_back(clusters_E[iclus]);
+          jetf_all_px.push_back(px);
+          jetf_all_py.push_back(py);
+          jetf_all_pz.push_back(pz);
+          jetf_all_E.push_back(clusters_E[iclus]);
+      }
+  }
+}
+
+void fillECalClustersIntoJetFindingInputs(
+  const int nclusters, float* clusters_E, float* clusters_eta, float* clusters_phi, bool* clusters_isMatched,
+  std::vector<float> & jetf_emcal_E, std::vector<float> & jetf_emcal_px, std::vector<float> & jetf_emcal_py, std::vector<float> & jetf_emcal_pz,
+  std::vector<float> & jetf_calo_E, std::vector<float> & jetf_calo_px, std::vector<float> & jetf_calo_py, std::vector<float> & jetf_calo_pz,
+  std::vector<float> & jetf_all_E, std::vector<float> & jetf_all_px, std::vector<float> & jetf_all_py, std::vector<float> & jetf_all_pz,
+  std::vector<float> & jetf_full_E, std::vector<float> & jetf_full_px, std::vector<float> & jetf_full_py, std::vector<float> & jetf_full_pz
+)
+{
+  for(Int_t iclus=0; iclus<nclusters; iclus++){
+      if(!clusters_isMatched[iclus]){
+          double pt = clusters_E[iclus] / cosh(clusters_eta[iclus]);
+          double px = pt * cos(clusters_phi[iclus]);
+          double py = pt * sin(clusters_phi[iclus]);
+          double pz = pt * sinh(clusters_eta[iclus]);
+          jetf_emcal_px.push_back(px);
+          jetf_emcal_py.push_back(py);
+          jetf_emcal_pz.push_back(pz);
+          jetf_emcal_E.push_back(clusters_E[iclus]);
+          jetf_calo_px.push_back(px);
+          jetf_calo_py.push_back(py);
+          jetf_calo_pz.push_back(pz);
+          jetf_calo_E.push_back(clusters_E[iclus]);
+          jetf_all_px.push_back(px);
+          jetf_all_py.push_back(py);
+          jetf_all_pz.push_back(pz);
+          jetf_all_E.push_back(clusters_E[iclus]);
+          jetf_full_px.push_back(px);
+          jetf_full_py.push_back(py);
+          jetf_full_pz.push_back(pz);
+          jetf_full_E.push_back(clusters_E[iclus]);
+      }
+  }
+}
