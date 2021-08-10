@@ -25,7 +25,7 @@ DISKinematics JBKinematics(unsigned short primaryTrackSource, double incomingEle
     // NOTE: 1e6 is a sentinel value.
     unsigned int electronID = 1e6;
     double electronPt = -1e6;
-    for (unsigned int i = 0; i < _nTracks; ++i) {
+    for (unsigned int i = 0; i < (unsigned int)_nTracks; ++i) {
         if (_track_source[i] != primaryTrackSource) {
             continue;
         }
@@ -47,7 +47,7 @@ DISKinematics JBKinematics(unsigned short primaryTrackSource, double incomingEle
     double px_h = 0;
     double py_h = 0;
     double e_minus_pz = 0;
-    for(unsigned int i = 0; i < _nTracks; ++i) {
+    for(unsigned int i = 0; i < (unsigned int)_nTracks; ++i) {
         // Only consider tracks from the primary track source.
         if (_track_source[i] != primaryTrackSource) {
             continue;

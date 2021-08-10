@@ -131,7 +131,7 @@ void trackingefficiency(){
   }
 
   // see if true reco. track was found
-  for(Int_t itrk=0; itrk<_nTracks; itrk++){
+  for(Int_t itrk=0; itrk<(Int_t)_nTracks; itrk++){
     unsigned short trackSource = _track_source[itrk];
     TVector3 recpartvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
     TVector3 mcpartvec(_mcpart_px[(int)_track_trueID[itrk]],_mcpart_py[(int)_track_trueID[itrk]],_mcpart_pz[(int)_track_trueID[itrk]]);
@@ -147,7 +147,7 @@ void trackingefficiency(){
     Double_t mass = part->Mass();
     float trueE     = TMath::Sqrt(truepmom*truepmom+mass*mass);
 
-    for(int ipart=0;ipart<nPart_TRKEFF;ipart++){
+    for(int ipart=0;ipart<(int)nPart_TRKEFF;ipart++){
       if(abs(_mcpart_PDG[(int)_track_trueID[itrk]])==int_TRKEFF_mcparticles_PDG[ipart]){
         h_particle_rec_pT[trackSource][ipart]->Fill(pt,trueeta);
         h_particle_rec_truepT[trackSource][ipart]->Fill(truept,trueeta);
@@ -217,7 +217,7 @@ void trackingresolution(){
   // Fill n_events and n_tracks
   hNEvents->Fill(1);
   std::vector<unsigned int> nTracks(nTrackSources, 0);
-  for (unsigned int i = 0; i < _nTracks; i++) {
+  for (unsigned int i = 0; i < (unsigned int)_nTracks; i++) {
       ++nTracks[_track_source[i]];
   }
   // Fill each track source
@@ -420,17 +420,17 @@ void trackingcomparison() {
     }
 
     // First, iterate once over track sources and track index
-    for (unsigned int iOuterTrkSource = 0; iOuterTrkSource < nTrackSources; ++iOuterTrkSource) {
-        for (unsigned int iOuterTrk = 0; iOuterTrk < _nTracks; ++iOuterTrk) {
+    for (unsigned int iOuterTrkSource = 0; iOuterTrkSource < (unsigned int)nTrackSources; ++iOuterTrkSource) {
+        for (unsigned int iOuterTrk = 0; iOuterTrk < (unsigned int)_nTracks; ++iOuterTrk) {
             if (_track_source[iOuterTrk] == iOuterTrkSource) {
                 int outerTrueTrackID = static_cast<int>(_track_trueID[iOuterTrk]);
                 // Then, iterate over the track sources and track index again, this time looking for a
                 // new source to compare with.
                 //std::cout << "outerTrueTrackID " << outerTrueTrackID << "\n";
-                for (unsigned int iInnerTrkSource = 0; iInnerTrkSource < nTrackSources; ++iInnerTrkSource) {
+                for (unsigned int iInnerTrkSource = 0; iInnerTrkSource < (unsigned int)nTrackSources; ++iInnerTrkSource) {
                     // Don't correlate with itself, and don't repeat the hists.
                     if (iOuterTrkSource >= iInnerTrkSource) { continue; }
-                    for (unsigned int iInnerTrk = 0; iInnerTrk < _nTracks; ++iInnerTrk) {
+                    for (unsigned int iInnerTrk = 0; iInnerTrk < (unsigned int)_nTracks; ++iInnerTrk) {
                         int innerTrueTrackID = static_cast<int>(_track_trueID[iInnerTrk]);
                         //std::cout << "innerTrueTrackID " << innerTrueTrackID << "\n";
                         // If they match, we can actually take a look

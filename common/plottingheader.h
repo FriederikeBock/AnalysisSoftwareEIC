@@ -1,4 +1,15 @@
 #include <TROOT.h>
+#include <TSystem.h>
+#include <TCanvas.h>
+#include <TPad.h>
+#include <TH1.h>
+#include <TH1D.h>
+#include <TH1F.h>
+#include <TH2.h>
+#include <TH3.h>
+#include <TFile.h>
+#include <TH2D.h>
+#include <TH2F.h>
 #include <TString.h>
 #include <TDatime.h>
 #include <TF1.h>
@@ -243,6 +254,58 @@ void SetStyleHistoTH2ForGraphs( TH2* histo,
   histo->GetZaxis()->SetDecimals();
   histo->GetZaxis()->SetLabelSize(yLableSize);
   histo->GetZaxis()->SetTitleSize(yTitleSize);
+  
+}
+
+//__________________________________________________________________________________________________________
+void SetStyleHistoTH3ForGraphs( TH3* histo,
+                                TString XTitle,
+                                TString YTitle,
+                                TString ZTitle,
+                                Size_t xLableSize,
+                                Size_t xTitleSize,
+                                Size_t yLableSize,
+                                Size_t yTitleSize,
+                                Size_t zLableSize,
+                                Size_t zTitleSize,
+                                Float_t xTitleOffset    = 1,
+                                Float_t yTitleOffset    = 1,
+                                Float_t zTitleOffset    = 1,
+                                Int_t xNDivisions       = 510,
+                                Int_t yNDivisions       = 510,
+                                Int_t zNDivisions       = 510,
+                                Font_t textFontLabel    = 42,
+                                Font_t textFontTitle    = 62
+                              ){
+  histo->SetXTitle(XTitle);
+  histo->SetYTitle(YTitle);
+  histo->SetZTitle(ZTitle);
+  histo->SetTitle("");
+
+  histo->GetXaxis()->SetLabelFont(textFontLabel);
+  histo->GetYaxis()->SetLabelFont(textFontLabel);
+  histo->GetZaxis()->SetLabelFont(textFontLabel);
+  histo->GetXaxis()->SetTitleFont(textFontTitle);
+  histo->GetYaxis()->SetTitleFont(textFontTitle);
+  histo->GetZaxis()->SetTitleFont(textFontTitle);
+
+  histo->GetXaxis()->SetDecimals();
+  histo->GetXaxis()->SetLabelSize(xLableSize);
+  histo->GetXaxis()->SetTitleSize(xTitleSize);
+  histo->GetXaxis()->SetTitleOffset(xTitleOffset);
+  histo->GetXaxis()->SetNdivisions(xNDivisions,kTRUE);
+
+  histo->GetYaxis()->SetDecimals();
+  histo->GetYaxis()->SetLabelSize(yLableSize);
+  histo->GetYaxis()->SetTitleSize(yTitleSize);
+  histo->GetYaxis()->SetTitleOffset(yTitleOffset);
+  histo->GetYaxis()->SetNdivisions(yNDivisions,kTRUE);
+  
+  histo->GetZaxis()->SetDecimals();
+  histo->GetZaxis()->SetLabelSize(zLableSize);
+  histo->GetZaxis()->SetTitleSize(zTitleSize);
+  histo->GetZaxis()->SetTitleOffset(zTitleOffset);
+  histo->GetZaxis()->SetNdivisions(zNDivisions,kTRUE);
   
 }
 
@@ -551,38 +614,53 @@ TLegend *GetAndSetLegend2(  Double_t positionX,
 }
 
 //__________________________________________________________________________________________________________
-void split_canvas(TCanvas* &cPNG, TString canvName, Int_t numInputs){
-  
-  if(numInputs<5){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 2, gStyle->GetCanvasDefH()*2);
-    DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
-    cPNG->Divide(2, 2,0,0);
-  }else if(numInputs<7){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 3, gStyle->GetCanvasDefH()*2);
-    DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
-    cPNG->Divide(3, 2,0,0);
-  }else if(numInputs<10){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 3, gStyle->GetCanvasDefH()*3);
-    DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
-    cPNG->Divide(3, 3,0,0);
-  } else if(numInputs<13){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 4, gStyle->GetCanvasDefH()*3);
-    DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
-    cPNG->Divide(4, 3,0,0);
-  } else if(numInputs<17){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 4, gStyle->GetCanvasDefH()*4);
-    DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
-    cPNG->Divide(4, 4,0,0);
-  } else if(numInputs<21){
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 5, gStyle->GetCanvasDefH()*4);
-    DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
-    cPNG->Divide(5, 4,0,0);
+void split_canvas(TCanvas* &cPNG, TString canvName, Int_t numInputs, bool inARow = false){
+  if (inARow){
+      DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
+      cPNG->Divide(numInputs, 1,0,0);
   } else {
-    cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 5, gStyle->GetCanvasDefH()*5);
-    DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
-    cPNG->Divide(5, 5,0,0);
+    if(numInputs<5){
+      cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 2, gStyle->GetCanvasDefH()*2);
+      DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
+      cPNG->Divide(2, 2,0,0);
+    }else if(numInputs<7){
+      cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 3, gStyle->GetCanvasDefH()*2);
+      DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
+      cPNG->Divide(3, 2,0,0);
+    }else if(numInputs<10){
+      cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 3, gStyle->GetCanvasDefH()*3);
+      DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
+      cPNG->Divide(3, 3,0,0);
+    } else if(numInputs<13){
+      cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 4, gStyle->GetCanvasDefH()*3);
+      DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
+      cPNG->Divide(4, 3,0,0);
+    } else if(numInputs<17){
+      cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 4, gStyle->GetCanvasDefH()*4);
+      DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
+      cPNG->Divide(4, 4,0,0);
+    } else if(numInputs<21){
+      cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 5, gStyle->GetCanvasDefH()*4);
+      DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
+      cPNG->Divide(5, 4,0,0);
+    } else if(numInputs<31){
+      cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 5, gStyle->GetCanvasDefH()*4);
+      DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
+      cPNG->Divide(6, 5,0,0);
+    } else if(numInputs<37){
+      cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 5, gStyle->GetCanvasDefH()*4);
+      DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
+      cPNG->Divide(6, 6,0,0);
+    } else if(numInputs<43){
+      cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 5, gStyle->GetCanvasDefH()*4);
+      DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
+      cPNG->Divide(7, 6,0,0);
+    } else {
+      cPNG = new TCanvas(canvName.Data(), "", gStyle->GetCanvasDefW() * 5, gStyle->GetCanvasDefH()*5);
+      DrawGammaCanvasSettings( cPNG, 0, 0, 0, 0);
+      cPNG->Divide(7, 7,0,0);
+    }
   }
-
 }
 
 //__________________________________________________________________________________________________________
@@ -600,7 +678,7 @@ void SetPlotStyle() {
   gStyle->SetNumberContours(nCont);
 }
 
-
+//__________________________________________________________________________________________________________
 TString GetTrackerLabel(TString label){
   TString detLabel = "";
   if (label.Contains("defaultLBL") ){
@@ -628,7 +706,7 @@ TString GetTrackerLabel(TString label){
   }
   return detLabel;
 }
-
+//__________________________________________________________________________________________________________
 TString GetMagnetLabel(TString label){
   TString magnetLabel = "BABAR (B = 1.5T)";
   if (label.Contains("3T")){
@@ -637,6 +715,7 @@ TString GetMagnetLabel(TString label){
   return magnetLabel;
 }
 
+//__________________________________________________________________________________________________________
 TString GetCollisionEnergy(TString label){
   TString collLabel = "Pythia 6, e+p, 10+250 GeV";
   if (label.Contains("e5p100") ){
@@ -648,3 +727,17 @@ TString GetCollisionEnergy(TString label){
   }
   return collLabel;
 }
+
+//__________________________________________________________________________________________________________
+Double_t FindLargestBin1DHist(TH1* hist, Float_t minX, Float_t maxX ){
+    Double_t largestContent     = 0;
+    Double_t largestBinCenter   = 0;
+    for (Int_t i= hist->FindBin(minX); i < hist->FindBin(maxX)+1; i++){
+        if (largestContent < hist->GetBinContent(i)){
+            largestContent = hist->GetBinContent(i);
+            largestBinCenter = hist->GetBinCenter(i);
+        }
+    }
+    return largestBinCenter;
+}
+

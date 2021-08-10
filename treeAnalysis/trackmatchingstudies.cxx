@@ -261,7 +261,7 @@ bool trackmatchingstudies(){
 
         int largestClusterID = -1;
         float largestClusterE = -1;
-        for (int id = 0; id < currentIDs.size() ; id++){
+        for (int id = 0; id < (int)currentIDs.size() ; id++){
           if ( clusters_TM_E[currentIDs.at(id)] > largestClusterE )
             largestClusterE = clusters_TM_E[currentIDs.at(id)];
             largestClusterID = currentIDs.at(id);

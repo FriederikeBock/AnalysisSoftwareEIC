@@ -1,10 +1,6 @@
 #include "../common/plottingheader.h"
 #define NELEMS(arr) (sizeof(arr)/sizeof(arr[0]))
 
-void split_canvas(TCanvas* &cPNG, TString canvName, Int_t numInputs);
-
-
-
 void trackingreso_flatPt(
                             TString inputFileName   = "file.root",
                             TString suffix          = "pdf",

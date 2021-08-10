@@ -72,6 +72,24 @@ void towerEta(
 
   }
 
+  Double_t zposBECAL[3]     = {233.78+16, 158.0, 285};
+  Double_t radiusBECAL[3]   = {98.60-5, 101.02, 85};
+  for(Int_t iBE=0;iBE<3;iBE++){
+    cout << "BECAL " << iBE << "\t" << zposBECAL[iBE] << "/" << radiusBECAL[iBE] << "\teta: " << -TMath::Log(TMath::Tan(radiusBECAL[iBE]/zposBECAL[iBE]/2)) << endl;
+  }
+
+  Double_t zposEEMChc[2]     = {200, 200};
+  Double_t radiusEEMChc[2]   = {59, 11};
+  for(Int_t iBE=0;iBE<2;iBE++){
+    cout << "EEMC pure crystall w/ BECAL " << iBE << "\t" << zposEEMChc[iBE] << "/" << radiusEEMChc[iBE] << "\teta: " << -TMath::Log(TMath::Tan(radiusEEMChc[iBE]/zposEEMChc[iBE]/2)) << endl;
+  }
+
+  Double_t zposFEMC[2]     = {310, 310};
+  Double_t radiusFEMC[2]   = {10, 179.5};
+  for(Int_t iBE=0;iBE<2;iBE++){
+    cout << "FEMC " << iBE << "\t" << zposFEMC[iBE] << "/" << radiusFEMC[iBE] << "\teta: " << -TMath::Log(TMath::Tan(radiusFEMC[iBE]/zposFEMC[iBE]/2)) << endl;
+  }
+
 
   // drawLatexAdd(collisionSystem.Data(),0.15,0.90,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
   // drawLatexAdd(Form("Anti-#it{k}_{T}, HCAL+ECAL jets"),0.15,0.85,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
