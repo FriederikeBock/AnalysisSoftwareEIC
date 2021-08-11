@@ -611,7 +611,6 @@ void treeProcessing(
                     jetf_track_pz.push_back(_track_pz[itrk]);
                     jetf_track_E.push_back(Etrack);
                 }
-                if(trackvec.Eta()<0) continue;
                 jetf_full_px.push_back(_track_px[itrk]);
                 jetf_full_py.push_back(_track_py[itrk]);
                 jetf_full_pz.push_back(_track_pz[itrk]);
