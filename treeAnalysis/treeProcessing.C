@@ -24,7 +24,6 @@
 #include <iostream>
 #include <fstream>
 
-
 void treeProcessing(
     TString inFile              = "",
     TString inFileGeometry      = "geometry.root",
@@ -612,8 +611,6 @@ void treeProcessing(
                     jetf_track_pz.push_back(_track_pz[itrk]);
                     jetf_track_E.push_back(Etrack);
                 }
-                jetf_track_E.push_back(Etrack);
-                if(trackvec.Eta()<0) continue;
                 jetf_full_px.push_back(_track_px[itrk]);
                 jetf_full_py.push_back(_track_py[itrk]);
                 jetf_full_pz.push_back(_track_pz[itrk]);
@@ -661,8 +658,9 @@ void treeProcessing(
         // for(Int_t iclus=0; iclus<_nclusters_FHCAL; iclus++){
         //     if(verbosity>1) std::cout << "\tcls " << iclus << "\tE " << _clusters_FHCAL_E[iclus] << "\tEta " << _clusters_FHCAL_Eta[iclus] << "\tPhi " << _clusters_FHCAL_Phi[iclus] << "\tntowers: " << _clusters_FHCAL_NTower[iclus] << "\ttrueID: " << _clusters_FHCAL_trueID[iclus] << std::endl;
         // }
-                // apply calibration if desired
+        // apply calibration if desired
         if(kV1<_active_algo){
+            // TODO: Should kV1 in the calibration actually be _active_algo?
             for(Int_t iclus=0; iclus<_nclusters_FHCAL; iclus++){
                 _clusters_FHCAL_trueID[iclus] = GetCorrectMCArrayEntry(_clusters_FHCAL_trueID[iclus]);
                 if(_doClusterECalibration){
@@ -677,30 +675,10 @@ void treeProcessing(
             }
         }
         if(do_reclus && kMA<_active_algo && _do_jetfinding){
-            for(Int_t iclus=0; iclus<_nclusters_MA_FHCAL; iclus++){
-                if(!_clusters_MA_FHCAL_isMatched[iclus]){
-                    double pt = _clusters_MA_FHCAL_E[iclus] / cosh(_clusters_MA_FHCAL_Eta[iclus]);
-                    double px = pt * cos(_clusters_MA_FHCAL_Phi[iclus]);
-                    double py = pt * sin(_clusters_MA_FHCAL_Phi[iclus]);
-                    double pz = pt * sinh(_clusters_MA_FHCAL_Eta[iclus]);
-                    jetf_hcal_px.push_back(px);
-                    jetf_hcal_py.push_back(py);
-                    jetf_hcal_pz.push_back(pz);
-                    jetf_hcal_E.push_back(_clusters_MA_FHCAL_E[iclus]);
-                    jetf_calo_px.push_back(px);
-                    jetf_calo_py.push_back(py);
-                    jetf_calo_pz.push_back(pz);
-                    jetf_calo_E.push_back(_clusters_MA_FHCAL_E[iclus]);
-                    jetf_emcal_px.push_back(px);
-                    jetf_emcal_py.push_back(py);
-                    jetf_emcal_pz.push_back(pz);
-                    jetf_emcal_E.push_back(_clusters_MA_FEMC_E[iclus]);
-                    jetf_all_px.push_back(px);
-                    jetf_all_py.push_back(py);
-                    jetf_all_pz.push_back(pz);
-                    jetf_all_E.push_back(_clusters_MA_FHCAL_E[iclus]);
-                }
-            }
+            fillHCalClustersIntoJetFindingInputs(_nclusters_MA_FHCAL, _clusters_MA_FHCAL_E, _clusters_MA_FHCAL_Eta, _clusters_MA_FHCAL_Phi, _clusters_MA_FHCAL_isMatched,
+                                                jetf_hcal_E, jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz,
+                                                jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
+                                                jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz);
         }
 
         // ANCHOR FEMC cluster loop variables:
@@ -713,27 +691,77 @@ void treeProcessing(
         //     if(verbosity>1) std::cout << "\tFEMC:  cluster " << iclus << "\twith E = " << _clusters_FEMC_E[iclus] << " GeV" << std::endl;
         // }
         if(do_reclus && kMA<_active_algo && _do_jetfinding){
-            for(Int_t iclus=0; iclus<_nclusters_MA_FEMC; iclus++){
-                if(!_clusters_MA_FEMC_isMatched[iclus]){
-                    double pt = _clusters_MA_FEMC_E[iclus] / cosh(_clusters_MA_FEMC_Eta[iclus]);
-                    double px = pt * cos(_clusters_MA_FEMC_Phi[iclus]);
-                    double py = pt * sin(_clusters_MA_FEMC_Phi[iclus]);
-                    double pz = pt * sinh(_clusters_MA_FEMC_Eta[iclus]);
-                    jetf_full_px.push_back(px);
-                    jetf_full_py.push_back(py);
-                    jetf_full_pz.push_back(pz);
-                    jetf_full_E.push_back(_clusters_MA_FEMC_E[iclus]);
-                    jetf_calo_px.push_back(px);
-                    jetf_calo_py.push_back(py);
-                    jetf_calo_pz.push_back(pz);
-                    jetf_calo_E.push_back(_clusters_MA_FEMC_E[iclus]);
-                    jetf_all_px.push_back(px);
-                    jetf_all_py.push_back(py);
-                    jetf_all_pz.push_back(pz);
-                    jetf_all_E.push_back(_clusters_MA_FEMC_E[iclus]);
-                }
-            }
+            fillECalClustersIntoJetFindingInputs(_nclusters_MA_FEMC, _clusters_MA_FEMC_E, _clusters_MA_FEMC_Eta, _clusters_MA_FEMC_Phi, _clusters_MA_FEMC_isMatched,
+                                                jetf_emcal_E, jetf_emcal_px, jetf_emcal_py, jetf_emcal_pz,
+                                                jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
+                                                jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz,
+                                                jetf_full_E, jetf_full_px, jetf_full_py, jetf_full_pz);
         }
+
+        // Add rest of calorimeter clusters to jet finder inputs
+        if(do_reclus && kMA<_active_algo && _do_jetfinding) {
+            // EEMC
+            fillECalClustersIntoJetFindingInputs(
+                _nclusters_MA_EEMCG, _clusters_MA_EEMCG_E, _clusters_MA_EEMCG_Eta, _clusters_MA_EEMCG_Phi, _clusters_MA_EEMCG_isMatched,
+                jetf_emcal_E, jetf_emcal_px, jetf_emcal_py, jetf_emcal_pz,
+                jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
+                jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz,
+                jetf_full_E, jetf_full_px, jetf_full_py, jetf_full_pz
+            );
+            // EEMCG
+            fillECalClustersIntoJetFindingInputs(
+                _nclusters_MA_EEMCG, _clusters_MA_EEMCG_E, _clusters_MA_EEMCG_Eta, _clusters_MA_EEMCG_Phi, _clusters_MA_EEMCG_isMatched,
+                jetf_emcal_E, jetf_emcal_px, jetf_emcal_py, jetf_emcal_pz,
+                jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
+                jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz,
+                jetf_full_E, jetf_full_px, jetf_full_py, jetf_full_pz
+            );
+            // EHCAL
+            fillHCalClustersIntoJetFindingInputs(
+                _nclusters_MA_EHCAL, _clusters_MA_EHCAL_E, _clusters_MA_EHCAL_Eta, _clusters_MA_EHCAL_Phi, _clusters_MA_EHCAL_isMatched,
+                jetf_hcal_E, jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz,
+                jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
+                jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz
+            );
+            // CEMC
+            fillECalClustersIntoJetFindingInputs(
+                _nclusters_MA_CEMC, _clusters_MA_CEMC_E, _clusters_MA_CEMC_Eta, _clusters_MA_CEMC_Phi, _clusters_MA_CEMC_isMatched,
+                jetf_emcal_E, jetf_emcal_px, jetf_emcal_py, jetf_emcal_pz,
+                jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
+                jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz,
+                jetf_full_E, jetf_full_px, jetf_full_py, jetf_full_pz
+            );
+            // BECAL
+            fillECalClustersIntoJetFindingInputs(
+                _nclusters_MA_BECAL, _clusters_MA_BECAL_E, _clusters_MA_BECAL_Eta, _clusters_MA_BECAL_Phi, _clusters_MA_BECAL_isMatched,
+                jetf_emcal_E, jetf_emcal_px, jetf_emcal_py, jetf_emcal_pz,
+                jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
+                jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz,
+                jetf_full_E, jetf_full_px, jetf_full_py, jetf_full_pz
+            );
+            // HCALIN
+            fillHCalClustersIntoJetFindingInputs(
+                _nclusters_MA_HCALIN, _clusters_MA_HCALIN_E, _clusters_MA_HCALIN_Eta, _clusters_MA_HCALIN_Phi, _clusters_MA_HCALIN_isMatched,
+                jetf_hcal_E, jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz,
+                jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
+                jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz
+            );
+            // HCALOUT
+            fillHCalClustersIntoJetFindingInputs(
+                _nclusters_MA_HCALOUT, _clusters_MA_HCALOUT_E, _clusters_MA_HCALOUT_Eta, _clusters_MA_HCALOUT_Phi, _clusters_MA_HCALOUT_isMatched,
+                jetf_hcal_E, jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz,
+                jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
+                jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz
+            );
+            // LFHCAL
+            fillHCalClustersIntoJetFindingInputs(
+                _nclusters_MA_LFHCAL, _clusters_MA_LFHCAL_E, _clusters_MA_LFHCAL_Eta, _clusters_MA_LFHCAL_Phi, _clusters_MA_LFHCAL_isMatched,
+                jetf_hcal_E, jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz,
+                jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
+                jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz
+            );
+        }
+
         // ANCHOR FHCAL tower loop variables:
         // float* _tower_FHCAL_E[itwrH]
         // int* _tower_FHCAL_iEta[itwrH]
@@ -845,11 +873,13 @@ void treeProcessing(
             
             // Jet observables
             fillEventObservables(eventObservables, primaryTrackSource);
-            fillJetSpectra(jetObservablesTrue, std::get<1>(jetsTrue), jetR);
-            fillJetSpectra(jetObservablesTrueCharged, std::get<1>(jetsTrueCharged), jetR);
-            fillJetSpectra(jetObservablesCharged, std::get<1>(jetsTrackRec), jetR);
-            fillJetSpectra(jetObservablesCalo, std::get<1>(jetsCaloRec), jetR);
-            fillJetSpectra(jetObservablesFull, std::get<1>(jetsFullRec), jetR);
+            fillJetObservables(jetObservablesTrue, std::get<1>(jetsTrue), jetR);
+            fillJetObservables(jetObservablesTrueCharged, std::get<1>(jetsTrueCharged), jetR);
+            fillJetObservables(jetObservablesCharged, std::get<1>(jetsTrackRec), jetR);
+            fillJetObservables(jetObservablesCalo, std::get<1>(jetsCaloRec), jetR);
+            fillJetObservables(jetObservablesFull, std::get<1>(jetsFullRec), jetR);
+
+            fillHadronObservables(jetObservablesTrue);
 
             jetresolutionhistos(jetsTrackRec, jetsTrueCharged, 0, jetR);
             jetresolutionhistos(jetsFullRec, jetsTrue, 1, jetR);
@@ -881,7 +911,7 @@ void treeProcessing(
         std::cout << "saving event level observables\n";
         eventObservables.Write(outputDir.Data());
         std::cout << "saving jet observables\n";
-        jetObservablesTrue.Write(outputDir.Data());
+        jetObservablesTrue.Write(outputDir.Data(), "RECREATE");
         jetObservablesTrueCharged.Write(outputDir.Data());
         jetObservablesCharged.Write(outputDir.Data());
         jetObservablesCalo.Write(outputDir.Data());
