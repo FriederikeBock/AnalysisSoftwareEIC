@@ -48,6 +48,7 @@ void drawInfo(plottingStyleData style, float x, float y, int jettype, int numExt
 
 void resolutionJETStree(
     TString suffix              = "pdf",
+    TString mainInputFilename   = "treeAnalysis/treeProcessing/output_JRH.root",
     bool make_resolution_plots  = true,
     bool do_plot_scale          = true,
     bool make_spectra_plots     = true,
@@ -90,7 +91,9 @@ void resolutionJETStree(
   TString str_input_type[nInputs] = {"ALL-SI-TTL"};//, "", "", ""};//{"ALLSI-TTL", "ALLSI-noTTL" , "ALLSI-3T", "ALLSI-noTTL-3T","ALLSI-TTL-2xGran"};
   TString str_input_type_plot[nInputs] = {"ALL-SI-TTL"};//, "", "", ""};//{"ALL-SI+TTL (500#mum), BABAR (#it{B}=1.5T)", "ALL-SI, BABAR (#it{B}=1.5T)" , "ALL-SI, BEAST (#it{B}=3.0T)", "ALL-SI+TTL (500#mum), BEAST (#it{B}=3.0T)","ALL-SI+TTL (500#mum), 2x CALO granularity"};
   TFile* inputFiles[nInputs];
-  inputFiles[0] = new TFile("/home/tristan/ecce/Singularity/analysis/AnalysisSoftwareEIC/treeAnalysis/treeProcessing/output_JRH.root");
+  //inputFiles[0] = new TFile("/home/tristan/ecce/Singularity/analysis/AnalysisSoftwareEIC/treeAnalysis/treeProcessing/output_JRH.root");
+  //inputFiles[0] = new TFile("/software/rehlers/dev/eic/analysis_software_EIC/treeAnalysis/treeProcessing/output_JRH.root");
+  inputFiles[0] = new TFile(mainInputFilename.Data());
 
   // const Int_t nEta                = 15;
   // Double_t partEta[nEta+1]        = { -4.0, -3.5, -3.0, -2.5, -2.0, -1.5, -1.2, -0.4, 0.4, 1.2,
