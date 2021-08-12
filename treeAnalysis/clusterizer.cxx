@@ -234,7 +234,7 @@ void runclusterizer(
       if(_tower_DRCALO_E[itow]>aggE){
         towersStrct tempstructT;
         tempstructT.tower_E       = _tower_DRCALO_E[itow];
-        tempstructT.tower_iEta    =   _tower_DRCALO_iEta[itow];
+        tempstructT.tower_iEta    = _tower_DRCALO_iEta[itow];
         tempstructT.tower_iPhi    = _tower_DRCALO_iPhi[itow];
         tempstructT.tower_trueID  = GetCorrectMCArrayEntry(_tower_DRCALO_trueID[itow]);
         input_towers.push_back(tempstructT);
