@@ -279,7 +279,7 @@ void fillHadronObservables(JetObservables & observables)
 {
     // True hadrons going in the backwards direction
     unsigned int nHadrons = 0;
-    for (std::size_t i = 0; i < _nMCPart; ++i)
+    for (std::size_t i = 0; i < (std::size_t)_nMCPart; ++i)
     {
         if (_mcpart_Eta[i] < -1.5 && _mcpart_E[i] > 0.2 && _mcpart_ID[i] != 11) {
             ++nHadrons;

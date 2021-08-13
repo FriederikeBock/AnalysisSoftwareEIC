@@ -26,63 +26,6 @@ TH2F*  h_RH_ResoCombCalib_Erec[particleSpRes][_active_calo][_active_algo];
 TH2F*  h_RH_ResoCombCalib_smeared_Erec[particleSpRes][_active_calo][_active_algo];
 TH2F*  h_RH_ResoComb_E_Eta[particleSpRes][_active_calo][_active_algo][nEta+1];
 
-int nclusters_RH = 0;
-float* clusters_RH_E            = new float[_maxNclusters];
-float* clusters_RH_Eta         = new float[_maxNclusters];
-float* clusters_RH_Phi         = new float[_maxNclusters];
-float* clusters_RH_M02         = new float[_maxNclusters];
-float* clusters_RH_M20         = new float[_maxNclusters];
-bool* clusters_RH_isMatched         = new bool[_maxNclusters];
-int* clusters_RH_NTower         = new int[_maxNclusters];
-int* clusters_RH_trueID       = new int[_maxNclusters];
-int* clusters_RH_NtrueID       = new int[_maxNclusters];
-float* clusters_RH_X         = new float[_maxNclusters];
-float* clusters_RH_Y         = new float[_maxNclusters];
-float* clusters_RH_Z         = new float[_maxNclusters];
-
-int nclusters_comb_RH = 0;
-float* clusters_comb_RH_E            = new float[_maxNclusters];
-float* clusters_comb_RH_Eta         = new float[_maxNclusters];
-float* clusters_comb_RH_Phi         = new float[_maxNclusters];
-float* clusters_comb_RH_M02         = new float[_maxNclusters];
-float* clusters_comb_RH_M20         = new float[_maxNclusters];
-bool* clusters_comb_RH_isMatched         = new bool[_maxNclusters];
-int* clusters_comb_RH_NTower         = new int[_maxNclusters];
-int* clusters_comb_RH_trueID       = new int[_maxNclusters];
-int* clusters_comb_RH_NtrueID       = new int[_maxNclusters];
-float* clusters_comb_RH_X         = new float[_maxNclusters];
-float* clusters_comb_RH_Y         = new float[_maxNclusters];
-float* clusters_comb_RH_Z         = new float[_maxNclusters];
-
-int nclusters_comb_RE = 0;
-float* clusters_comb_RE_E            = new float[_maxNclusters];
-float* clusters_comb_RE_Eta         = new float[_maxNclusters];
-float* clusters_comb_RE_Phi         = new float[_maxNclusters];
-float* clusters_comb_RE_M02         = new float[_maxNclusters];
-float* clusters_comb_RE_M20         = new float[_maxNclusters];
-bool* clusters_comb_RE_isMatched         = new bool[_maxNclusters];
-int* clusters_comb_RE_NTower         = new int[_maxNclusters];
-int* clusters_comb_RE_trueID       = new int[_maxNclusters];
-int* clusters_comb_RE_NtrueID       = new int[_maxNclusters];
-float* clusters_comb_RE_X         = new float[_maxNclusters];
-float* clusters_comb_RE_Y         = new float[_maxNclusters];
-float* clusters_comb_RE_Z         = new float[_maxNclusters];
-
-int nclusters_comb_RI = 0;
-float* clusters_comb_RI_E            = new float[_maxNclusters];
-float* clusters_comb_RI_Eta         = new float[_maxNclusters];
-float* clusters_comb_RI_Phi         = new float[_maxNclusters];
-float* clusters_comb_RI_M02         = new float[_maxNclusters];
-float* clusters_comb_RI_M20         = new float[_maxNclusters];
-bool* clusters_comb_RI_isMatched         = new bool[_maxNclusters];
-int* clusters_comb_RI_NTower         = new int[_maxNclusters];
-int* clusters_comb_RI_trueID       = new int[_maxNclusters];
-int* clusters_comb_RI_NtrueID       = new int[_maxNclusters];
-float* clusters_comb_RI_X         = new float[_maxNclusters];
-float* clusters_comb_RI_Y         = new float[_maxNclusters];
-float* clusters_comb_RI_Z         = new float[_maxNclusters];
-
-
 // ANCHOR main function to be called in event loop
 void resolutionhistos(){
 
@@ -96,22 +39,11 @@ void resolutionhistos(){
     if (!caloEnabled[icalo]) continue;
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
       if(verbosityRH) cout << "Calo-type: " << icalo << "\t Algorithm: " << ialgo << endl;
-      if(!loadClusterizerInput(
-        ialgo,
-        icalo,
-        nclusters_RH,
-        clusters_RH_E,
-        clusters_RH_Eta,
-        clusters_RH_Phi,
-        clusters_RH_M02,
-        clusters_RH_M20,
-        clusters_RH_isMatched,
-        clusters_RH_NTower,
-        clusters_RH_trueID,
-        clusters_RH_NtrueID,
-        clusters_RH_X,
-        clusters_RH_Y,
-        clusters_RH_Z))continue;
+      if(!loadClusterizerInput( ialgo, icalo )) continue;
+      
+      std::sort(_clusters_calo[ialgo][icalo].begin(), _clusters_calo[ialgo][icalo].end(), &acompareCl);
+
+      
       int nbinsx = 400;
       if(icalo==kFHCAL) nbinsx = 200;
       if(icalo==kEHCAL || icalo==kHCALOUT || icalo==kHCALOUT) nbinsx = 100;
@@ -134,63 +66,57 @@ void resolutionhistos(){
           if(!h_RH_Reso_E_Eta[sp][icalo][ialgo][eT])h_RH_Reso_E_Eta[sp][icalo][ialgo][eT] 	= new TH2F(Form("h_RH_Reso_%sE_Eta_%s_%s_%d", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data(), eT), "", 500, 0.25, 250.25, nbinsx, 0, 2);
         }        
       }
-      Int_t highestECl = 0;
-      Float_t tempclE    = 0; 
-      for(Int_t iclus=0; iclus<nclusters_RH; iclus++){
-        if(clusters_RH_NTower[iclus]<2) continue;
-        if (clusters_RH_E[iclus] > tempclE){
-          tempclE = clusters_RH_E[iclus];
-          highestECl = iclus;
-        }
-      }
-      for(Int_t iclus=0; iclus<nclusters_RH; iclus++){
+      
+      for(Int_t iclus=0; iclus<(Int_t)_clusters_calo[ialgo][icalo].size(); iclus++){
         // if(verbosityRH>1) cout << "\tFHCAL: cluster " << iclus << "\twith E = " << _clusters_FHCAL_E[iclus] << " GeV" << endl;
         // if(verbosityRH>1) cout << "\tFHCAL: cluster MC ID " << _clusters_FHCAL_trueID[iclus] << endl;
 
         // cluster should have at least 2 towers
-        if(clusters_RH_NTower[iclus]<2) continue;
+        if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_NTowers<2) continue;
 
-        float clusterE_calo = clusters_RH_E[iclus];
-        clusterE_calo/=getCalibrationValue(clusters_RH_E[iclus], icalo, ialgo);
+        float clusterE_calo = (_clusters_calo[ialgo][icalo].at(iclus)).cluster_E;
+        clusterE_calo/=getCalibrationValue((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E, icalo, ialgo);
+        
+        int mcID = (_clusters_calo[ialgo][icalo].at(iclus)).cluster_trueID;
         // loop over MC particles
 
         int pClass = -1;
         int nTry  = 0;
         while (pClass == -1 && nTry < particleSpRes-1){
-          if(abs(_mcpart_PDG[clusters_RH_trueID[iclus]])== pdgCodeRes[nTry]) pClass = nTry;
+          if(abs(_mcpart_PDG[mcID])== pdgCodeRes[nTry]) pClass = nTry;
           nTry++;  
         }
         
         // find true MC particle for given cluster
-        // if(verbosityRH>1) cout << "\tfound MC:  particle " << clusters_RH_trueID[iclus] << "\twith E = " << _mcpart_E[clusters_RH_trueID[iclus]] << " GeV" << endl;
-        h_RH_Reso_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[clusters_RH_trueID[iclus]],clusters_RH_E[iclus]/_mcpart_E[clusters_RH_trueID[iclus]]);
-        if (pClass != -1) h_RH_Reso_E[pClass][icalo][ialgo]->Fill(_mcpart_E[clusters_RH_trueID[iclus]],clusters_RH_E[iclus]/_mcpart_E[clusters_RH_trueID[iclus]]);
+        // if(verbosityRH>1) cout << "\tfound MC:  particle " << mcID << "\twith E = " << _mcpart_E[mcID] << " GeV" << endl;
+        h_RH_Reso_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[mcID],(_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/_mcpart_E[mcID]);
+        if (pClass != -1) h_RH_Reso_E[pClass][icalo][ialgo]->Fill(_mcpart_E[mcID],(_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/_mcpart_E[mcID]);
 
-        if (highestECl == iclus && _nMCPart==1 ){
-          h_RH_Reso_Ehighest[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[clusters_RH_trueID[iclus]],clusters_RH_E[iclus]/_mcpart_E[clusters_RH_trueID[iclus]]);
-          if (pClass != -1) h_RH_Reso_Ehighest[pClass][icalo][ialgo]->Fill(_mcpart_E[clusters_RH_trueID[iclus]],clusters_RH_E[iclus]/_mcpart_E[clusters_RH_trueID[iclus]]);
+        if (iclus == 0 && _nMCPart==1 ){
+          h_RH_Reso_Ehighest[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[mcID],(_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/_mcpart_E[mcID]);
+          if (pClass != -1) h_RH_Reso_Ehighest[pClass][icalo][ialgo]->Fill(_mcpart_E[mcID],(_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/_mcpart_E[mcID]);
         
         }
-        float smearedClusE = clusters_RH_E[iclus]*=getEnergySmearing(icalo,ialgo);
-        h_RH_Reso_smear_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[clusters_RH_trueID[iclus]],smearedClusE/_mcpart_E[clusters_RH_trueID[iclus]]);
-        if (pClass != -1) h_RH_Reso_smear_E[pClass][icalo][ialgo]->Fill(_mcpart_E[clusters_RH_trueID[iclus]],smearedClusE/_mcpart_E[clusters_RH_trueID[iclus]]);
+        float smearedClusE = (_clusters_calo[ialgo][icalo].at(iclus)).cluster_E*=getEnergySmearing(icalo,ialgo);
+        h_RH_Reso_smear_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[mcID],smearedClusE/_mcpart_E[mcID]);
+        if (pClass != -1) h_RH_Reso_smear_E[pClass][icalo][ialgo]->Fill(_mcpart_E[mcID],smearedClusE/_mcpart_E[mcID]);
 
         Int_t et = 0;
-        while ( ( clusters_RH_Eta[iclus] > partEta[et+1] ) && ( et < nEta )) et++;
-        h_RH_Reso_E_Eta[particleSpRes-1][icalo][ialgo][et]->Fill(_mcpart_E[clusters_RH_trueID[iclus]],clusters_RH_E[iclus]/_mcpart_E[clusters_RH_trueID[iclus]]);
-        if (pClass != -1) h_RH_Reso_E_Eta[pClass][icalo][ialgo][et]->Fill(_mcpart_E[clusters_RH_trueID[iclus]],clusters_RH_E[iclus]/_mcpart_E[clusters_RH_trueID[iclus]]);
+        while ( ( (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta > partEta[et+1] ) && ( et < nEta )) et++;
+        h_RH_Reso_E_Eta[particleSpRes-1][icalo][ialgo][et]->Fill(_mcpart_E[mcID],(_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/_mcpart_E[mcID]);
+        if (pClass != -1) h_RH_Reso_E_Eta[pClass][icalo][ialgo][et]->Fill(_mcpart_E[mcID],(_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/_mcpart_E[mcID]);
         
-        h_RH_Reso_Erec[particleSpRes-1][icalo][ialgo]->Fill(clusters_RH_E[iclus],clusters_RH_E[iclus]/_mcpart_E[clusters_RH_trueID[iclus]]);
-        if (pClass != -1) h_RH_Reso_Erec[pClass][icalo][ialgo]->Fill(clusters_RH_E[iclus],clusters_RH_E[iclus]/_mcpart_E[clusters_RH_trueID[iclus]]);
+        h_RH_Reso_Erec[particleSpRes-1][icalo][ialgo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E,(_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/_mcpart_E[mcID]);
+        if (pClass != -1) h_RH_Reso_Erec[pClass][icalo][ialgo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E,(_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/_mcpart_E[mcID]);
         
-        h_RH_ResoCalib_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[clusters_RH_trueID[iclus]],clusterE_calo/_mcpart_E[clusters_RH_trueID[iclus]]);
-        if (pClass != -1) h_RH_ResoCalib_E[pClass][icalo][ialgo]->Fill(_mcpart_E[clusters_RH_trueID[iclus]],clusterE_calo/_mcpart_E[clusters_RH_trueID[iclus]]);
+        h_RH_ResoCalib_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[mcID],clusterE_calo/_mcpart_E[mcID]);
+        if (pClass != -1) h_RH_ResoCalib_E[pClass][icalo][ialgo]->Fill(_mcpart_E[mcID],clusterE_calo/_mcpart_E[mcID]);
 
-        h_RH_ResoCalib_Erec[particleSpRes-1][icalo][ialgo]->Fill(clusterE_calo,clusterE_calo/_mcpart_E[clusters_RH_trueID[iclus]]);
-        if (pClass != -1) h_RH_ResoCalib_Erec[pClass][icalo][ialgo]->Fill(clusterE_calo,clusterE_calo/_mcpart_E[clusters_RH_trueID[iclus]]);
+        h_RH_ResoCalib_Erec[particleSpRes-1][icalo][ialgo]->Fill(clusterE_calo,clusterE_calo/_mcpart_E[mcID]);
+        if (pClass != -1) h_RH_ResoCalib_Erec[pClass][icalo][ialgo]->Fill(clusterE_calo,clusterE_calo/_mcpart_E[mcID]);
 
-        h_RH_ResoCalib_smeared_Erec[particleSpRes-1][icalo][ialgo]->Fill(clusterE_calo,(clusterE_calo*getEnergySmearing(icalo,ialgo))/_mcpart_E[clusters_RH_trueID[iclus]]);
-        if (pClass != -1) h_RH_ResoCalib_smeared_Erec[pClass][icalo][ialgo]->Fill(clusterE_calo,(clusterE_calo*getEnergySmearing(icalo,ialgo))/_mcpart_E[clusters_RH_trueID[iclus]]);
+        h_RH_ResoCalib_smeared_Erec[particleSpRes-1][icalo][ialgo]->Fill(clusterE_calo,(clusterE_calo*getEnergySmearing(icalo,ialgo))/_mcpart_E[mcID]);
+        if (pClass != -1) h_RH_ResoCalib_smeared_Erec[pClass][icalo][ialgo]->Fill(clusterE_calo,(clusterE_calo*getEnergySmearing(icalo,ialgo))/_mcpart_E[mcID]);
       }
     }
   }
@@ -202,63 +128,25 @@ void resolutionhistos(){
       if (!caloEnabled[_combCalo[icalo]]) continue; // inner HCal or Ecal ran
       for(int ialgo=0;ialgo<_active_algo;ialgo++){
         if (_combCalo[icalo] == -1 ) continue;
-        if(!loadClusterizerInput(
-          ialgo,
-          icalo,
-          nclusters_comb_RH,
-          clusters_comb_RH_E,
-          clusters_comb_RH_Eta,
-          clusters_comb_RH_Phi,
-          clusters_comb_RH_M02,
-          clusters_comb_RH_M20,
-          clusters_comb_RH_isMatched,
-          clusters_comb_RH_NTower,
-          clusters_comb_RH_trueID,
-          clusters_comb_RH_NtrueID,
-          clusters_comb_RH_X,
-          clusters_comb_RH_Y,
-          clusters_comb_RH_Z))continue;
-        if(!loadClusterizerInput(
-          ialgo,
-          _combCalo[icalo],
-          nclusters_comb_RE,
-          clusters_comb_RE_E,
-          clusters_comb_RE_Eta,
-          clusters_comb_RE_Phi,
-          clusters_comb_RE_M02,
-          clusters_comb_RE_M20,
-          clusters_comb_RE_isMatched,
-          clusters_comb_RE_NTower,
-          clusters_comb_RE_trueID,
-          clusters_comb_RE_NtrueID,
-          clusters_comb_RE_X,
-          clusters_comb_RE_Y,
-          clusters_comb_RE_Z))continue;
+        bool bRefCalo = loadClusterizerInput( ialgo, icalo);
+        bool b1stCalo = loadClusterizerInput( ialgo, _combCalo[icalo]);
+        
+        std::sort(_clusters_calo[ialgo][_combCalo[icalo]].begin(), _clusters_calo[ialgo][_combCalo[icalo]].end(), &acompareCl);    
           
         bool b2ndCalo = false;
         if (_combCalo2[icalo] != -1 ){
           if (caloEnabled[_combCalo2[icalo]]){ 
-            b2ndCalo = loadClusterizerInput(
-                                                ialgo,
-                                                _combCalo2[icalo],
-                                                nclusters_comb_RI,
-                                                clusters_comb_RI_E,
-                                                clusters_comb_RI_Eta,
-                                                clusters_comb_RI_Phi,
-                                                clusters_comb_RI_M02,
-                                                clusters_comb_RI_M20,
-                                                clusters_comb_RI_isMatched,
-                                                clusters_comb_RI_NTower,
-                                                clusters_comb_RI_trueID,
-                                                clusters_comb_RI_NtrueID,
-                                                clusters_comb_RI_X,
-                                                clusters_comb_RI_Y,
-                                                clusters_comb_RI_Z
-                                            );
+            b2ndCalo = loadClusterizerInput( ialgo, _combCalo2[icalo]);
           }
+          std::sort(_clusters_calo[ialgo][_combCalo2[icalo]].begin(), _clusters_calo[ialgo][_combCalo2[icalo]].end(), &acompareCl);  
         }
+        
+        if (!(b1stCalo || b2ndCalo)) continue;
+          
         if (verbosityRH){
-          cout << "Calo-type: " << icalo << "\t Algorithm: " << ialgo << " with ECal: "<< _combCalo[icalo] ;
+          cout << "Calo-type: " << icalo << "\t Algorithm: " << ialgo ;
+          if (b1stCalo)
+            cout  << " with ECal: "<< _combCalo[icalo] ;
           if (b2ndCalo)
             cout << " and 2nd calo: " <<  _combCalo2[icalo] << endl;
           else 
@@ -287,103 +175,126 @@ void resolutionhistos(){
         }
 
         Int_t highestECl = -1;
-        Float_t tempclE    = 0; 
-        for(Int_t iclus=0; iclus<nclusters_comb_RH; iclus++){
-          if(clusters_comb_RH_NTower[iclus]<2) continue;
-          if (clusters_comb_RH_E[iclus] > tempclE){
-            tempclE = clusters_comb_RH_E[iclus];
-            highestECl = iclus;
-          }
+        if (bRefCalo){
+          highestECl = 0;
         }
         Int_t highestECl2 = -1;
-        Float_t tempclE2    = 0; 
-        for(Int_t iclus=0; iclus<nclusters_comb_RE; iclus++){
-          if(clusters_comb_RE_NTower[iclus]<2) continue;
-          if (clusters_comb_RE_E[iclus] > tempclE2){
-            tempclE2 = clusters_comb_RE_E[iclus];
-            highestECl2 = iclus;
-          }
+        if (b1stCalo){
+          highestECl2 = 0;
         }
+      
         Int_t highestECl3 = -1;
-        Float_t tempclE3    = 0;         
         if (b2ndCalo){
-          for(Int_t iclus=0; iclus<nclusters_comb_RI; iclus++){
-            if(clusters_comb_RI_NTower[iclus]<2) continue;
-            if (clusters_comb_RI_E[iclus] > highestECl3){
-              tempclE3 = clusters_comb_RI_E[iclus];
-              highestECl3 = iclus;
-            }
-          }
+          highestECl3 = 0;
         }
-        if (!(highestECl > -1 || highestECl2 > -1)) continue;
+      
+        if (!(highestECl > -1 || highestECl2 > -1 || highestECl3 > -1)) continue;
         if(verbosityRH>1){
-          cout << "cluster: " << icalo << "\t i:" << highestECl<<"\t" << tempclE << endl;
-          cout << "cluster 2: " << _combCalo[icalo] << "\t i:" << highestECl2<<"\t" << tempclE2 << endl;
-          if (b2ndCalo)cout << "cluster 2" << _combCalo2[icalo] << "\t i:" << highestECl3<<"\t" << tempclE3 << endl;
+          if (bRefCalo) cout << "cluster: " << icalo << "\t i:" << highestECl<<"\t" << (_clusters_calo[ialgo][icalo].at(highestECl)).cluster_E << endl;
+          if (b1stCalo) cout << "cluster 1: " << _combCalo[icalo] << "\t i:" << highestECl2<<"\t" << (_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E << endl;
+          if (b2ndCalo) cout << "cluster 2" << _combCalo2[icalo] << "\t i:" << highestECl3<<"\t" << (_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E << endl;
         }
 
-        float clusterenergy = 0;
-        float clusterenergyCalib = 0;
-        float clusterengeryCalib_smeared = 0;
-        
+        float clustereta                  = 0;
+        float clusterenergy               = 0;
+        float clusterenergyCalib          = 0;
+        float clusterengeryCalib_smeared  = 0;
+        float clusterengery_smeared       = 0;
+        float tempEcalib                  = 0;
+        Int_t currMCID                    = -999999;
         // cluster should have at least 2 towers
         if ( highestECl > -1){
-          if(clusters_comb_RH_NTower[highestECl]>1 && tempclE > 0){
-            clusterenergy = clusters_comb_RH_E[highestECl];
-            clusterenergyCalib = clusters_comb_RH_E[highestECl];
-            clusterenergyCalib/=getCalibrationValue(clusters_comb_RH_E[highestECl], icalo, ialgo);
-            clusterengeryCalib_smeared = clusterenergyCalib*=getEnergySmearing(icalo,ialgo);
+          if((_clusters_calo[ialgo][icalo].at(highestECl)).cluster_NTowers>1 ){
+            currMCID                    = (_clusters_calo[ialgo][icalo].at(highestECl)).cluster_trueID;
+            clustereta                  = (_clusters_calo[ialgo][icalo].at(highestECl)).cluster_Eta;
+            clusterenergy               = (_clusters_calo[ialgo][icalo].at(highestECl)).cluster_E;
+            clusterenergyCalib          = (_clusters_calo[ialgo][icalo].at(highestECl)).cluster_E/
+                                            getCalibrationValue((_clusters_calo[ialgo][icalo].at(highestECl)).cluster_E, icalo, ialgo);
+            clusterengeryCalib_smeared  = clusterenergyCalib*getEnergySmearing(icalo,ialgo);
+            clusterengery_smeared       = clusterenergy*getEnergySmearing(icalo,ialgo);
           }
         }
-        // loop over MC particles
-
         // find true MC particle for given cluster
         if ( highestECl2 > -1){
-          if(clusters_comb_RE_NTower[highestECl2]>1 && tempclE2 > 0){
-            if(clusters_comb_RH_trueID[highestECl]==clusters_comb_RE_trueID[highestECl2]){
-              clusterenergy += (clusters_comb_RE_E[highestECl2]);
-              clusterenergyCalib += (clusters_comb_RE_E[highestECl2]/=getCalibrationValue(clusters_comb_RE_E[highestECl2], _combCalo[icalo], ialgo));
+          if((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_NTowers>1 ){
+            if (bRefCalo && currMCID != -999999){
+              if(currMCID==(_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_trueID){
+                clusterenergy               += ((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E);
+                clusterenergyCalib          += ((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E/
+                                                getCalibrationValue((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E, _combCalo[icalo], ialgo));
+                tempEcalib                  = ((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E / 
+                                                getCalibrationValue((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E, _combCalo[icalo], ialgo));
+                clusterengeryCalib_smeared  += tempEcalib*getEnergySmearing(_combCalo[icalo],ialgo);
+                clusterengery_smeared       += (_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E*getEnergySmearing(icalo,ialgo);
+              }
+            } else {
+              currMCID                      = (_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_trueID;
+              clustereta                    = (_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E;
+              clusterenergy                 += ((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E);
+              clusterenergyCalib            += ((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E/
+                                                getCalibrationValue((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E, _combCalo[icalo], ialgo));
+              tempEcalib                    = ((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E / 
+                                              getCalibrationValue((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E, _combCalo[icalo], ialgo));
+              clusterengeryCalib_smeared    += tempEcalib*getEnergySmearing(_combCalo[icalo],ialgo);
+              clusterengery_smeared         += (_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E*getEnergySmearing(icalo,ialgo);
             }
           }
         }
-        // if(verbosityRH>1) cout << "\tfound MC:  particle " << clusters_comb_RH_trueID[highestECl] << "\twith E = " << _mcpart_E[clusters_comb_RH_trueID[highestECl]] << " GeV" << endl;
-        if (b2ndCalo && highestECl3 > -1){
-          if(clusters_comb_RI_NTower[highestECl3]>1  && tempclE3 > 0){
-            if(clusters_comb_RH_trueID[highestECl3]==clusters_comb_RI_trueID[highestECl3]){
-              clusterenergy += (clusters_comb_RI_E[highestECl3]);
-              clusterenergyCalib += (clusters_comb_RI_E[highestECl3]/=getCalibrationValue(clusters_comb_RI_E[highestECl3], _combCalo2[icalo], ialgo));
+        // if(verbosityRH>1) cout << "\tfound MC:  particle " << currMCID << "\twith E = " << _mcpart_E[currMCID] << " GeV" << endl;
+        if ( highestECl3 > -1){
+          if((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_NTowers>1 ){
+            if ((bRefCalo || b1stCalo) && currMCID != -999999 ){
+              if(currMCID==(_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_trueID){
+                clusterenergy               += ((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E);
+                clusterenergyCalib          += ((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E/
+                                              getCalibrationValue((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E, _combCalo2[icalo], ialgo));
+                tempEcalib                  = ((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E / 
+                                              getCalibrationValue((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E, _combCalo2[icalo], ialgo));
+                clusterengeryCalib_smeared  += tempEcalib*getEnergySmearing(_combCalo2[icalo],ialgo);
+                clusterengery_smeared       += (_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E*getEnergySmearing(icalo,ialgo);
+              }
+            } else {
+              currMCID                      = (_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_trueID;
+              clustereta                    = (_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E;
+              clusterenergy                 += ((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E);
+              clusterenergyCalib            += ((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E/
+                                                getCalibrationValue((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E, _combCalo2[icalo], ialgo));
+              tempEcalib                    = ((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E / 
+                                                getCalibrationValue((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E, _combCalo2[icalo], ialgo));
+              clusterengeryCalib_smeared    += tempEcalib*getEnergySmearing(_combCalo2[icalo],ialgo);
+              clusterengery_smeared         += (_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E*getEnergySmearing(icalo,ialgo);
             }
           }
         }
         int pClass = -1;
         int nTry  = 0;
         while (pClass == -1 && nTry < particleSpRes-1){
-          if(abs(_mcpart_PDG[clusters_comb_RH_trueID[highestECl]])== pdgCodeRes[nTry]) pClass = nTry;
+          if(abs(_mcpart_PDG[currMCID])== pdgCodeRes[nTry]) pClass = nTry;
           nTry++;  
         }
-        h_RH_ResoComb_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[clusters_comb_RH_trueID[highestECl]],clusterenergy/_mcpart_E[clusters_comb_RH_trueID[highestECl]]);
-        if (pClass != -1) h_RH_ResoComb_E[pClass][icalo][ialgo]->Fill(_mcpart_E[clusters_comb_RH_trueID[highestECl]],clusterenergy/_mcpart_E[clusters_comb_RH_trueID[highestECl]]);
-        float smearedClusE = clusters_comb_RH_E[highestECl]*=getEnergySmearing(icalo,ialgo);
-        h_RH_ResoComb_smear_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[clusters_comb_RH_trueID[highestECl]],smearedClusE/_mcpart_E[clusters_comb_RH_trueID[highestECl]]);
-        if (pClass != -1) h_RH_ResoComb_smear_E[pClass][icalo][ialgo]->Fill(_mcpart_E[clusters_comb_RH_trueID[highestECl]],smearedClusE/_mcpart_E[clusters_comb_RH_trueID[highestECl]]);
+
+        h_RH_ResoComb_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[currMCID],clusterenergy/_mcpart_E[currMCID]);
+        if (pClass != -1) h_RH_ResoComb_E[pClass][icalo][ialgo]->Fill(_mcpart_E[currMCID],clusterenergy/_mcpart_E[currMCID]);
+        h_RH_ResoComb_smear_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[currMCID],clusterengery_smeared/_mcpart_E[currMCID]);
+        if (pClass != -1) h_RH_ResoComb_smear_E[pClass][icalo][ialgo]->Fill(_mcpart_E[currMCID],clusterengery_smeared/_mcpart_E[currMCID]);
 
         Int_t et = 0;
-        while ( ( clusters_comb_RH_Eta[highestECl] > partEta[et+1] ) && ( et < nEta )) et++;
-        h_RH_ResoComb_E_Eta[particleSpRes-1][icalo][ialgo][et]->Fill(_mcpart_E[clusters_comb_RH_trueID[highestECl]],clusterenergy/_mcpart_E[clusters_comb_RH_trueID[highestECl]]);
-        if (pClass != -1) h_RH_ResoComb_E_Eta[pClass][icalo][ialgo][et]->Fill(_mcpart_E[clusters_comb_RH_trueID[highestECl]],clusterenergy/_mcpart_E[clusters_comb_RH_trueID[highestECl]]);
+        while ( ( clustereta > partEta[et+1] ) && ( et < nEta )) et++;
+        h_RH_ResoComb_E_Eta[particleSpRes-1][icalo][ialgo][et]->Fill(_mcpart_E[currMCID],clusterenergy/_mcpart_E[currMCID]);
+        if (pClass != -1) h_RH_ResoComb_E_Eta[pClass][icalo][ialgo][et]->Fill(_mcpart_E[currMCID],clusterenergy/_mcpart_E[currMCID]);
         
-        h_RH_ResoComb_Erec[particleSpRes-1][icalo][ialgo]->Fill(clusterenergy,clusterenergy/_mcpart_E[clusters_comb_RH_trueID[highestECl]]);
-        if (pClass != -1) h_RH_ResoComb_Erec[pClass][icalo][ialgo]->Fill(clusterenergy,clusterenergy/_mcpart_E[clusters_comb_RH_trueID[highestECl]]);
+        h_RH_ResoComb_Erec[particleSpRes-1][icalo][ialgo]->Fill(clusterenergy,clusterenergy/_mcpart_E[currMCID]);
+        if (pClass != -1) h_RH_ResoComb_Erec[pClass][icalo][ialgo]->Fill(clusterenergy,clusterenergy/_mcpart_E[currMCID]);
         
-        h_RH_ResoCombCalib_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[clusters_comb_RH_trueID[highestECl]],clusterenergyCalib/_mcpart_E[clusters_comb_RH_trueID[highestECl]]);
-        if (pClass != -1) h_RH_ResoCombCalib_E[pClass][icalo][ialgo]->Fill(_mcpart_E[clusters_comb_RH_trueID[highestECl]],clusterenergyCalib/_mcpart_E[clusters_comb_RH_trueID[highestECl]]);
+        h_RH_ResoCombCalib_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[currMCID],clusterenergyCalib/_mcpart_E[currMCID]);
+        if (pClass != -1) h_RH_ResoCombCalib_E[pClass][icalo][ialgo]->Fill(_mcpart_E[currMCID],clusterenergyCalib/_mcpart_E[currMCID]);
 
-        h_RH_ResoCombCalib_Erec[particleSpRes-1][icalo][ialgo]->Fill(clusterenergy,clusterenergyCalib/_mcpart_E[clusters_comb_RH_trueID[highestECl]]);
-        if (pClass != -1) h_RH_ResoCombCalib_Erec[pClass][icalo][ialgo]->Fill(clusterenergy,clusterenergyCalib/_mcpart_E[clusters_comb_RH_trueID[highestECl]]);
+        h_RH_ResoCombCalib_Erec[particleSpRes-1][icalo][ialgo]->Fill(clusterenergy,clusterenergyCalib/_mcpart_E[currMCID]);
+        if (pClass != -1) h_RH_ResoCombCalib_Erec[pClass][icalo][ialgo]->Fill(clusterenergy,clusterenergyCalib/_mcpart_E[currMCID]);
 
-        h_RH_ResoCombCalib_smeared_Erec[particleSpRes-1][icalo][ialgo]->Fill(clusterenergy,clusterengeryCalib_smeared/_mcpart_E[clusters_comb_RH_trueID[highestECl]]);
-        if (pClass != -1) h_RH_ResoCombCalib_smeared_Erec[pClass][icalo][ialgo]->Fill(clusterenergy,clusterengeryCalib_smeared/_mcpart_E[clusters_comb_RH_trueID[highestECl]]);
-
+        h_RH_ResoCombCalib_smeared_Erec[particleSpRes-1][icalo][ialgo]->Fill(clusterenergy,clusterengeryCalib_smeared/_mcpart_E[currMCID]);
+        if (pClass != -1) h_RH_ResoCombCalib_smeared_Erec[pClass][icalo][ialgo]->Fill(clusterenergy,clusterengeryCalib_smeared/_mcpart_E[currMCID]);
+        
       }
     }
   }

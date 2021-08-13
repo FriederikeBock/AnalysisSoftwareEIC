@@ -118,13 +118,13 @@
   
   TString nameOutEtaRange[3]   = {"backward", "central", "forward"};
   TString labelEtaRange[3]     = {"     e-going", "     barrel", "     h-going"};
-  Int_t minEtaBin[3]           = {1,6,10};
-  Int_t maxEtaBin[3]           = {4,8,13};
-  Int_t maxNEtaBins[3]         = {4, 3, 4};
+  Int_t minEtaBin[3]           = {1, 4, 10};
+  Int_t maxEtaBin[3]           = {4, 8, 13};
+  Int_t maxNEtaBins[3]         = {4, 5,  4};
     
-  Int_t minEtaBinFull[3]       = {1,6,9};
-  Int_t maxEtaBinFull[3]       = {5,8,13};
-  Int_t maxNEtaBinsFull[3]     = {5,3,5};
+  Int_t minEtaBinFull[3]       = {1, 4,  9};
+  Int_t maxEtaBinFull[3]       = {5, 8, 13};
+  Int_t maxNEtaBinsFull[3]     = {5, 5,  5};
 
   const Int_t nClus            = 7;
   TString nameClus[nClus]      = {"MA", "V1", "V3", "3x3", "5x5", "C3", "C5" };

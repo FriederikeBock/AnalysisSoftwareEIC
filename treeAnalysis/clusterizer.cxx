@@ -1,6 +1,6 @@
 #include <algorithm>
 // ANCHOR debug output verbosity
-int verbosityCLS = 1;
+int verbosityCLS = 0;
 
 // ANCHOR define global variables
 float aggregation_margin_V3 = 0.03;
@@ -14,12 +14,7 @@ bool _doClusterECalibration = true;
 
 // ANCHOR track/projection matching function
 // TODO at some point we might want E/p
-bool isClusterMatched(  int clsID, 
-                        float* clusters_X, 
-                        float* clusters_Y, 
-                        float* clusters_Eta, 
-                        float* clusters_Phi, 
-                        float* clusters_E, 
+bool isClusterMatched(  clustersStrct tempcluster, 
                         int caloEnum, 
                         int clusterizerEnum, 
                         unsigned short primaryTrackSource, 
@@ -41,7 +36,7 @@ bool isClusterMatched(  int clsID,
     }
   }
   // in case the cluster position is 0,0 -> no matching to be done
-  if(clusters_X[clsID]==0 && clusters_Y[clsID]==0) return false;
+  if(tempcluster.cluster_X==0 && tempcluster.cluster_Y==0) return false;
 
   float matchingwindow = ReturnTrackMatchingWindowForCalo(caloEnum);
   bool isFwd = IsForwardCalorimeter(caloEnum);
@@ -68,8 +63,8 @@ bool isClusterMatched(  int clsID,
       }
 
       // calculate delta x/y or delta eta/phi between projection and cluster
-      float delta_1 = isFwd ? _track_Proj_x[iproj]-clusters_X[clsID] : projeta-clusters_Eta[clsID];
-      float delta_2 = isFwd ? _track_Proj_y[iproj]-clusters_Y[clsID] : projphi-clusters_Phi[clsID];
+      float delta_1 = isFwd ? _track_Proj_x[iproj]-tempcluster.cluster_X : projeta-tempcluster.cluster_Eta;
+      float delta_2 = isFwd ? _track_Proj_y[iproj]-tempcluster.cluster_Y : projphi-tempcluster.cluster_Phi;
 
       // fill delta histogram
       h_clusterizer_all_2D_delta[caloEnum][clusterizerEnum]->Fill(delta_1,delta_2);
@@ -100,8 +95,8 @@ bool isClusterMatched(  int clsID,
       }
 
       // calculate delta x/y or delta eta/phi between projection and cluster
-      float delta_1 = isFwd ? trackvec.X()-clusters_X[clsID] : tracketa-clusters_Eta[clsID];
-      float delta_2 = isFwd ? trackvec.Y()-clusters_Y[clsID] : trackphi-clusters_Phi[clsID];
+      float delta_1 = isFwd ? trackvec.X()-tempcluster.cluster_X : tracketa-tempcluster.cluster_Eta;
+      float delta_2 = isFwd ? trackvec.Y()-tempcluster.cluster_Y : trackphi-tempcluster.cluster_Phi;
 
       // fill delta histogram
       h_clusterizer_all_2D_delta[caloEnum][clusterizerEnum]->Fill(delta_1,delta_2);
@@ -126,27 +121,9 @@ void runclusterizer(
   int caloEnum,
   float seedE,
   float aggE,
-  unsigned short primaryTrackSource,
-  int &nclusters,
-  float* &clusters_E,
-  float* &clusters_Eta,
-  float* &clusters_Phi,
-  float* &clusters_M02,
-  float* &clusters_M20,
-  bool* &clusters_isMatched,
-  int* &clusters_NTower,
-  int* &clusters_trueID,
-  int* &clusters_NtrueID,
-  float* &clusters_X,
-  float* &clusters_Y,
-  float* &clusters_Z
+  unsigned short primaryTrackSource
 ){
-
-
-
-  nclusters = 0;
-  if(verbosityCLS>1)cout << "runclusterizer: new event" << endl;
-
+  int nclusters = 0;
   for(int icalo=0;icalo<_active_calo;icalo++){
     if (!caloEnabled[icalo]) continue;
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
@@ -163,7 +140,9 @@ void runclusterizer(
   // fill vector with towers for clusterization above aggregation threshold
   float E_scaling = 2; // = 2 would be a first calibration fix
   if(caloEnum==kFHCAL){
+    if (verbosityCLS > 1) std::cout << "FHCAL: "<<_nTowers_FHCAL << std::endl;
     for(int itow=0; itow<_nTowers_FHCAL; itow++){
+      
       if(_tower_FHCAL_E[itow]>(aggE/E_scaling)){
         towersStrct tempstructT;
         tempstructT.tower_E       = _tower_FHCAL_E[itow]*E_scaling;
@@ -174,6 +153,7 @@ void runclusterizer(
       }
     }
   } else if(caloEnum==kFEMC){
+    if (verbosityCLS > 1) std::cout << "FEMC: "<<_nTowers_FEMC << std::endl;
     for(int itow=0; itow<_nTowers_FEMC; itow++){
       if(_tower_FEMC_E[itow]>aggE){
         towersStrct tempstructT;
@@ -185,6 +165,7 @@ void runclusterizer(
       }
     }
   } else if(caloEnum==kCEMC){
+    if (verbosityCLS > 1) std::cout << "CEMC: "<< _nTowers_CEMC << std::endl;
     for(int itow=0; itow<_nTowers_CEMC; itow++){
       if(_tower_CEMC_E[itow]>aggE){
         towersStrct tempstructT;
@@ -196,6 +177,7 @@ void runclusterizer(
       }
     }
   } else if(caloEnum==kHCALIN){
+    if (verbosityCLS > 1) std::cout << "HCALIN: "<< _nTowers_HCALIN << std::endl;
     for(int itow=0; itow<_nTowers_HCALIN; itow++){
       if(_tower_HCALIN_E[itow]>aggE){
         towersStrct tempstructT;
@@ -207,6 +189,7 @@ void runclusterizer(
       }
     }
   } else if(caloEnum==kHCALOUT){
+    if (verbosityCLS > 1) std::cout << "HCALOUT: "<< _nTowers_HCALOUT << std::endl;
     for(int itow=0; itow<_nTowers_HCALOUT; itow++){
       if(_tower_HCALOUT_E[itow]>aggE){
         towersStrct tempstructT;
@@ -218,6 +201,7 @@ void runclusterizer(
       }
     }
   } else if(caloEnum==kLFHCAL){
+    if (verbosityCLS > 1) std::cout << "LFHCAL: "<< _nTowers_LFHCAL << std::endl;
     for(int itow=0; itow<_nTowers_LFHCAL; itow++){
       if(_tower_LFHCAL_E[itow]>aggE){
         towersStrct tempstructT;
@@ -230,6 +214,7 @@ void runclusterizer(
       }
     }
   } else if(caloEnum==kDRCALO){
+    if (verbosityCLS > 1) std::cout << "DRCALO: "<< _nTowers_DRCALO << std::endl;
     for(int itow=0; itow<_nTowers_DRCALO; itow++){
       if(_tower_DRCALO_E[itow]>aggE){
         towersStrct tempstructT;
@@ -241,6 +226,7 @@ void runclusterizer(
       }
     }
   } else if(caloEnum==kEHCAL){
+    if (verbosityCLS > 1) std::cout << "EHCAL: "<< _nTowers_EHCAL << std::endl;
     for(int itow=0; itow<_nTowers_EHCAL; itow++){
       if(_tower_EHCAL_E[itow]>aggE){
         towersStrct tempstructT;
@@ -252,6 +238,7 @@ void runclusterizer(
       }
     }
   } else if(caloEnum==kBECAL){
+    if (verbosityCLS > 1) std::cout << "BECAL: "<< _nTowers_BECAL << std::endl;
     for(int itow=0; itow<_nTowers_BECAL; itow++){
       if(_tower_BECAL_E[itow]>aggE){
         towersStrct tempstructT;
@@ -263,6 +250,7 @@ void runclusterizer(
       }
     }
   } else if(caloEnum==kEEMC){
+    if (verbosityCLS > 1) std::cout << "EEMC: "<< _nTowers_EEMC << std::endl;
     for(int itow=0; itow<_nTowers_EEMC; itow++){
       if(_tower_EEMC_E[itow]>aggE){
         towersStrct tempstructT;
@@ -274,6 +262,7 @@ void runclusterizer(
       }
     }
   } else if(caloEnum==kEEMCG){
+    if (verbosityCLS > 1) std::cout << "EEMCG: "<< _nTowers_EEMCG << std::endl;
     for(int itow=0; itow<_nTowers_EEMCG; itow++){
       if(_tower_EEMCG_E[itow]>aggE){
         towersStrct tempstructT;
@@ -288,23 +277,27 @@ void runclusterizer(
     cout << "Incorrect calorimeter selected! Enum " << caloEnum << " not defined!" << endl;
     return;
   }
+
   // sort vector in descending energy order
   std::sort(input_towers.begin(), input_towers.end(), &acompare);
   std::vector<int> clslabels;
   while (!input_towers.empty()) {
     cluster_towers.clear();
     clslabels.clear();
+    
+    clustersStrct tempstructC;
     // always start with highest energetic tower
     if(input_towers.at(0).tower_E > seedE){
       if (verbosityCLS > 2) std::cout << "new cluster" << std::endl;
       // fill seed cell information into current cluster
-      clusters_E[nclusters] = input_towers.at(0).tower_E;
-      clusters_NTower[nclusters] = 1;
-      clusters_NtrueID[nclusters] = 1;
-      clusters_trueID[nclusters] = input_towers.at(0).tower_trueID; // TODO save all MC labels?
+      tempstructC.cluster_E       = input_towers.at(0).tower_E;
+      tempstructC.cluster_seed    = input_towers.at(0).tower_E;
+      tempstructC.cluster_NTowers = 1;
+      tempstructC.cluster_NtrueID = 1;
+      tempstructC.cluster_trueID = input_towers.at(0).tower_trueID; // TODO save all MC labels?
       cluster_towers.push_back(input_towers.at(0));
       clslabels.push_back(input_towers.at(0).tower_trueID);
-      if (verbosityCLS > 2) std::cout << "seed: "<<  input_towers.at(0).tower_iEta << "\t" << input_towers.at(0).tower_iPhi << "\t" << input_towers.at(0).tower_iL << "\t E:"<< clusters_E[nclusters] << std::endl;
+      if (verbosityCLS > 2) std::cout << "seed: "<<  input_towers.at(0).tower_iEta << "\t" << input_towers.at(0).tower_iPhi << "\t" << input_towers.at(0).tower_iL << "\t E:"<< tempstructC.cluster_E << std::endl;
       
       // ANCHOR C3 clusterizer logic
       if(clusterizerEnum==kC3){
@@ -326,11 +319,11 @@ void runclusterizer(
           int deltaEta = std::abs(iEtaAgg-iEtaRef);
           int deltaPhi = std::abs(iPhiAgg-iPhiRef);
           if( ( deltaEta + deltaPhi ) <= 1 ){
-            clusters_E[nclusters]+=input_towers.at(tit).tower_E;
-            clusters_NTower[nclusters]++;
+            tempstructC.cluster_E+=input_towers.at(tit).tower_E;
+            tempstructC.cluster_NTowers++;
             cluster_towers.push_back(input_towers.at(tit));
             if(!(std::find(clslabels.begin(), clslabels.end(), input_towers.at(tit).tower_trueID) != clslabels.end())){
-              clusters_NtrueID[nclusters]++;
+              tempstructC.cluster_NtrueID++;
               clslabels.push_back(input_towers.at(tit).tower_trueID);
             }
             input_towers.erase(input_towers.begin()+tit);
@@ -358,11 +351,11 @@ void runclusterizer(
           int deltaEta = std::abs(iEtaAgg-iEtaRef);
           int deltaPhi = std::abs(iPhiAgg-iPhiRef);
           if( ( deltaEta + deltaPhi ) <= 2 ){
-            clusters_E[nclusters]+=input_towers.at(tit).tower_E;
-            clusters_NTower[nclusters]++;
+            tempstructC.cluster_E+=input_towers.at(tit).tower_E;
+            tempstructC.cluster_NTowers++;
             cluster_towers.push_back(input_towers.at(tit));
             if(!(std::find(clslabels.begin(), clslabels.end(), input_towers.at(tit).tower_trueID) != clslabels.end())){
-              clusters_NtrueID[nclusters]++;
+              tempstructC.cluster_NtrueID++;
               clslabels.push_back(input_towers.at(tit).tower_trueID);
             }
             input_towers.erase(input_towers.begin()+tit);
@@ -391,11 +384,11 @@ void runclusterizer(
           int deltaPhi = std::abs(iPhiAgg-iPhiRef);
           if( deltaEta < 2 ){
             if( deltaPhi < 2 ){
-              clusters_E[nclusters]+=input_towers.at(tit).tower_E;
-              clusters_NTower[nclusters]++;
+              tempstructC.cluster_E+=input_towers.at(tit).tower_E;
+              tempstructC.cluster_NTowers++;
               cluster_towers.push_back(input_towers.at(tit));
               if(!(std::find(clslabels.begin(), clslabels.end(), input_towers.at(tit).tower_trueID) != clslabels.end())){
-                clusters_NtrueID[nclusters]++;
+                tempstructC.cluster_NtrueID++;
                 clslabels.push_back(input_towers.at(tit).tower_trueID);
               }
               input_towers.erase(input_towers.begin()+tit);
@@ -425,11 +418,11 @@ void runclusterizer(
           int deltaPhi = std::abs(iPhiAgg-iPhiRef);
           if( deltaEta < 3 ){
             if( deltaPhi < 3 ){
-              clusters_E[nclusters]+=input_towers.at(tit).tower_E;
-              clusters_NTower[nclusters]++;
+              tempstructC.cluster_E+=input_towers.at(tit).tower_E;
+              tempstructC.cluster_NTowers++;
               cluster_towers.push_back(input_towers.at(tit));
               if(!(std::find(clslabels.begin(), clslabels.end(), input_towers.at(tit).tower_trueID) != clslabels.end())){
-                clusters_NtrueID[nclusters]++;
+                tempstructC.cluster_NtrueID++;
                 clslabels.push_back(input_towers.at(tit).tower_trueID);
               }
               input_towers.erase(input_towers.begin()+tit);
@@ -466,11 +459,11 @@ void runclusterizer(
             if( (deltaEta+deltaPhi) == 1){
               // only aggregate towers with lower energy than current tower
               if(input_towers.at(ait).tower_E >= (cluster_towers.at(tit).tower_E + aggregation_margin_V3)) continue;
-              clusters_E[nclusters]+=input_towers.at(ait).tower_E;
-              clusters_NTower[nclusters]++;
+              tempstructC.cluster_E+=input_towers.at(ait).tower_E;
+              tempstructC.cluster_NTowers++;
               cluster_towers.push_back(input_towers.at(ait));
               if(!(std::find(clslabels.begin(), clslabels.end(), input_towers.at(ait).tower_trueID) != clslabels.end())){
-                clusters_NtrueID[nclusters]++;
+                tempstructC.cluster_NtrueID++;
                 clslabels.push_back(input_towers.at(ait).tower_trueID);
               }
               input_towers.erase(input_towers.begin()+ait);
@@ -517,11 +510,11 @@ void runclusterizer(
               if(caloEnum != kLFHCAL){
                 if(input_towers.at(ait).tower_E >= (cluster_towers.at(tit).tower_E + aggregation_margin_MA)) continue;
               } 
-              clusters_E[nclusters]+=input_towers.at(ait).tower_E;
-              clusters_NTower[nclusters]++;
+              tempstructC.cluster_E+=input_towers.at(ait).tower_E;
+              tempstructC.cluster_NTowers++;
               cluster_towers.push_back(input_towers.at(ait));
               if(!(std::find(clslabels.begin(), clslabels.end(), input_towers.at(ait).tower_trueID) != clslabels.end())){
-                clusters_NtrueID[nclusters]++;
+                tempstructC.cluster_NtrueID++;
                 clslabels.push_back(input_towers.at(ait).tower_trueID);
               }
               if (verbosityCLS > 2) std::cout << "aggregated: "<< iEtaTwrAgg << "\t" << iPhiTwrAgg << "\t" << iLTwrAgg << "\t E:" << input_towers.at(ait).tower_E << "\t reference: "<< refC << "\t"<< iEtaTwr << "\t" << iPhiTwr << "\t" << iLTwr << "\t cond.: \t"<< neighbor << "\t" << corner2D << "\t  diffs: " << deltaEta << "\t" << deltaPhi << "\t" << deltaL<< std::endl;
@@ -560,11 +553,11 @@ void runclusterizer(
             if( ((deltaEta+deltaPhi) == 1) || (deltaEta==1 && deltaPhi==1)){
               // only aggregate towers with lower energy than current tower
               // if(input_towers.at(ait).tower_E >= (cluster_towers.at(tit).tower_E + aggregation_margin_V3)) continue;
-              clusters_E[nclusters]+=input_towers.at(ait).tower_E;
-              clusters_NTower[nclusters]++;
+              tempstructC.cluster_E+=input_towers.at(ait).tower_E;
+              tempstructC.cluster_NTowers++;
               cluster_towers.push_back(input_towers.at(ait));
               if(!(std::find(clslabels.begin(), clslabels.end(), input_towers.at(ait).tower_trueID) != clslabels.end())){
-                clusters_NtrueID[nclusters]++;
+                tempstructC.cluster_NtrueID++;
                 clslabels.push_back(input_towers.at(ait).tower_trueID);
               }
               input_towers.erase(input_towers.begin()+ait);
@@ -579,20 +572,20 @@ void runclusterizer(
       }
 
       // determine remaining cluster properties from its towers
-      float* showershape_eta_phi = CalculateM02andWeightedPosition(cluster_towers, weightM02, clusters_E[nclusters], caloEnum, false);//(clusterizerEnum==kMA && caloEnum==kFHCAL) ? true : false);
-      clusters_M02[nclusters] = showershape_eta_phi[0];
-      clusters_M20[nclusters] = showershape_eta_phi[1];
-      clusters_Eta[nclusters] = showershape_eta_phi[2];
-      clusters_Phi[nclusters] = showershape_eta_phi[3];
-      clusters_X[nclusters] = showershape_eta_phi[4];
-      clusters_Y[nclusters] = showershape_eta_phi[5];
-      clusters_Z[nclusters] = showershape_eta_phi[6];
+      float* showershape_eta_phi = CalculateM02andWeightedPosition(cluster_towers, weightM02, tempstructC.cluster_E, caloEnum, false);//(clusterizerEnum==kMA && caloEnum==kFHCAL) ? true : false);
+      tempstructC.cluster_M02 = showershape_eta_phi[0];
+      tempstructC.cluster_M20 = showershape_eta_phi[1];
+      tempstructC.cluster_Eta = showershape_eta_phi[2];
+      tempstructC.cluster_Phi = showershape_eta_phi[3];
+      tempstructC.cluster_X = showershape_eta_phi[4];
+      tempstructC.cluster_Y = showershape_eta_phi[5];
+      tempstructC.cluster_Z = showershape_eta_phi[6];
       if (tracksEnabled){
-        clusters_isMatched[nclusters] = isClusterMatched(nclusters,clusters_X,clusters_Y,clusters_Eta,clusters_Phi,clusters_E, caloEnum, clusterizerEnum, primaryTrackSource, true);
+        tempstructC.cluster_isMatched = isClusterMatched(tempstructC, caloEnum, clusterizerEnum, primaryTrackSource, true);
       } else {
-        clusters_isMatched[nclusters] = false;
+        tempstructC.cluster_isMatched = false;
       }
-        if(verbosityCLS>1) cout << clusterizerEnum << "\t" << nclusters << "\tcluster with E = " << clusters_E[nclusters] << "\tEta: " << clusters_Eta[nclusters]<< "\tPhi: " << clusters_Phi[nclusters]<< "\tX: " << clusters_X[nclusters]<< "\tX: " << clusters_X[nclusters]<< "\tZ: " << clusters_Z[nclusters]<< "\tntowers: " << clusters_NTower[nclusters] << "\ttrueID: " << clusters_trueID[nclusters] << endl;
+        if(verbosityCLS>1) cout << clusterizerEnum << "\t" << nclusters << "\tcluster with E = " << tempstructC.cluster_E << "\tEta: " << tempstructC.cluster_Eta<< "\tPhi: " << tempstructC.cluster_Phi<< "\tX: " << tempstructC.cluster_X<< "\tY: " << tempstructC.cluster_Y<< "\tZ: " << tempstructC.cluster_Z<< "\tntowers: " << tempstructC.cluster_NTowers << "\ttrueID: " << tempstructC.cluster_trueID << endl;
       // remove clusterized towers
       if(!(clusterizerEnum==kV3) && !(clusterizerEnum==kMA) && !(clusterizerEnum==kV1)){
         input_towers.erase(input_towers.begin());
@@ -600,9 +593,13 @@ void runclusterizer(
 
       // apply calibration if desired
       if(_doClusterECalibration){
-          clusters_E[nclusters]/=getCalibrationValue(clusters_E[nclusters], caloEnum, clusterizerEnum);
-          clusters_E[nclusters]*=getEnergySmearing( caloEnum, clusterizerEnum);
+          tempstructC.cluster_E/=getCalibrationValue(tempstructC.cluster_E, caloEnum, clusterizerEnum);
+          tempstructC.cluster_E*=getEnergySmearing( caloEnum, clusterizerEnum);
       }
+      
+      
+      _clusters_calo[clusterizerEnum][caloEnum].push_back(tempstructC);
+      
       nclusters++;
     } else {
       for (int ait = 0; ait < (int)input_towers.size(); ait++){
@@ -632,4 +629,18 @@ void clusterizerSave(){
   // write output file
   fileOutput->Write();
   fileOutput->Close();
+}
+
+
+void clearClusterVectors(){
+  for (int icalo = 0; icalo < maxcalo; icalo++){
+    for (int ialgo = 0; ialgo < maxAlgo; ialgo++){
+      if (!_clusters_calo[ialgo][icalo].empty() && caloEnabled[icalo] ){
+        if(verbosityCLS > 3) std::cout << "contained " <<  _clusters_calo[ialgo][icalo].size() << " for calo " << icalo << " \t clusterizer " << ialgo << std::endl ;
+        if(verbosityCLS > 3) std::cout << "clearing ...." << std::endl ;
+        _clusters_calo[ialgo][icalo].clear();
+      }
+    }
+  }
+  
 }

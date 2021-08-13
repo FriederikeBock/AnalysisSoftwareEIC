@@ -66,8 +66,8 @@ void hitstudies(unsigned short primaryTrackSource){
   for(int il=0;il<_maxProjectionLayers;il++){
     h_hitslayer_vs_tracks[il]->Fill(ihitslayer[il],itracksfwd);
     for(int icalo=0;icalo<_active_calo;icalo++){
-      h_hitslayer_vs_clusters[il][icalo]->Fill(ihitslayer[il],icalo==0 ? _nclusters_V3_FHCAL : _nclusters_V3_FEMC);
-      h_hitslayer_vs_towers[il][icalo]->Fill(ihitslayer[il],icalo==0 ? _nTowers_FHCAL : _nTowers_FEMC);
+      h_hitslayer_vs_clusters[il][icalo]->Fill(ihitslayer[il], _clusters_calo[kMA][icalo].size() );
+      h_hitslayer_vs_towers[il][icalo]->Fill(ihitslayer[il], ReturnMaxTowerCalo(icalo));
     }
   }
 

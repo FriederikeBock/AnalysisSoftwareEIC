@@ -8,6 +8,22 @@ typedef struct {
 } towersStrct;
 
 typedef struct {
+  float cluster_E;
+  float cluster_seed;
+  float cluster_Eta;
+  float cluster_Phi;
+  float cluster_Z;
+  float cluster_X;
+  float cluster_Y;
+  float cluster_M02;
+  float cluster_M20;
+  bool cluster_isMatched;
+  int cluster_NTowers;
+  int cluster_trueID;
+  int cluster_NtrueID;
+} clustersStrct;
+
+typedef struct {
   int particle_ID;
   float highest_E;
   int nClusters;
@@ -54,6 +70,7 @@ enum clusterizertype {
 };
 // TString str_clusterizer[7] = {"V1", "V3", "3x3", "5x5", "C3", "C5", "MA"};
 TString str_clusterizer[7] = {"MA", "V3", "V1", "5x5", "C5", "C3", "3x3"};
+const int maxAlgo = 7;
 const int _active_algo = 1;
 
 float _ch_DRCALO_pos_z = 1;
@@ -66,6 +83,7 @@ float _ch_LFHCAL_pos_z = 1;
 
 // sorting function for towers
 bool acompare(towersStrct lhs, towersStrct rhs) { return lhs.tower_E > rhs.tower_E; }
+bool acompareCl(clustersStrct lhs, clustersStrct rhs) { return lhs.cluster_E > rhs.cluster_E; }
 
 void setINTClusterArrayToZero(int* &arrayinput){
   for(int iclus=0;iclus<_maxNclusters;iclus++){
@@ -236,6 +254,26 @@ TVector3 TowerPositionVectorFromIndicesGeometry(int i_Eta,int i_Phi, int i_L, in
   return twrPositionVec;
 }
 
+int ReturnMaxTowerCalo(int caloID){
+  switch (caloID){
+    case kDRCALO: return _nTowers_DRCALO;
+    case kFHCAL: return _nTowers_FHCAL;
+    case kFEMC: return _nTowers_FEMC;
+    case kEHCAL: return _nTowers_EHCAL;
+    case kEEMC: return _nTowers_EEMC;
+    case kHCALIN: return _nTowers_HCALIN;
+    case kHCALOUT: return _nTowers_HCALOUT;
+    case kCEMC: return _nTowers_CEMC;
+    case kEEMCG: return _nTowers_EEMCG;
+    case kLFHCAL: return _nTowers_LFHCAL;
+    case kBECAL: return _nTowers_BECAL;
+    default:
+      cout << "ReturnMaxTowerCalo: caloID " << caloID << " not defined, returning -1" << endl;
+      return -1;
+  }
+  return -1;
+}
+
 
 
 int ReturnProjectionIndexForCalorimeter(int caloID){
@@ -363,833 +401,82 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
 
 
 // 3x3 global cluster variables
-int _nclusters_3x3_FHCAL = 0;
-float* _clusters_3x3_FHCAL_E            = new float[_maxNclusters];
-float* _clusters_3x3_FHCAL_Eta         = new float[_maxNclusters];
-float* _clusters_3x3_FHCAL_Phi         = new float[_maxNclusters];
-float* _clusters_3x3_FHCAL_M02         = new float[_maxNclusters];
-float* _clusters_3x3_FHCAL_M20         = new float[_maxNclusters];
-bool* _clusters_3x3_FHCAL_isMatched         = new bool[_maxNclusters];
-int* _clusters_3x3_FHCAL_NTower         = new int[_maxNclusters];
-int* _clusters_3x3_FHCAL_trueID       = new int[_maxNclusters];
-int* _clusters_3x3_FHCAL_NtrueID       = new int[_maxNclusters];
-float* _clusters_3x3_FHCAL_X         = new float[_maxNclusters];
-float* _clusters_3x3_FHCAL_Y         = new float[_maxNclusters];
-float* _clusters_3x3_FHCAL_Z         = new float[_maxNclusters];
-
-int _nclusters_3x3_FEMC = 0;
-float* _clusters_3x3_FEMC_E            = new float[_maxNclusters];
-float* _clusters_3x3_FEMC_Eta         = new float[_maxNclusters];
-float* _clusters_3x3_FEMC_Phi         = new float[_maxNclusters];
-float* _clusters_3x3_FEMC_M02         = new float[_maxNclusters];
-float* _clusters_3x3_FEMC_M20         = new float[_maxNclusters];
-bool* _clusters_3x3_FEMC_isMatched         = new bool[_maxNclusters];
-int* _clusters_3x3_FEMC_NTower         = new int[_maxNclusters];
-int* _clusters_3x3_FEMC_trueID       = new int[_maxNclusters];
-int* _clusters_3x3_FEMC_NtrueID       = new int[_maxNclusters];
-float* _clusters_3x3_FEMC_X         = new float[_maxNclusters];
-float* _clusters_3x3_FEMC_Y         = new float[_maxNclusters];
-float* _clusters_3x3_FEMC_Z         = new float[_maxNclusters];
-
-// 5x5 global cluster variables
-int _nclusters_5x5_FHCAL = 0;
-float* _clusters_5x5_FHCAL_E            = new float[_maxNclusters];
-float* _clusters_5x5_FHCAL_Eta         = new float[_maxNclusters];
-float* _clusters_5x5_FHCAL_Phi         = new float[_maxNclusters];
-float* _clusters_5x5_FHCAL_M02         = new float[_maxNclusters];
-float* _clusters_5x5_FHCAL_M20         = new float[_maxNclusters];
-bool* _clusters_5x5_FHCAL_isMatched         = new bool[_maxNclusters];
-int* _clusters_5x5_FHCAL_NTower         = new int[_maxNclusters];
-int* _clusters_5x5_FHCAL_trueID       = new int[_maxNclusters];
-int* _clusters_5x5_FHCAL_NtrueID       = new int[_maxNclusters];
-float* _clusters_5x5_FHCAL_X         = new float[_maxNclusters];
-float* _clusters_5x5_FHCAL_Y         = new float[_maxNclusters];
-float* _clusters_5x5_FHCAL_Z         = new float[_maxNclusters];
-
-int _nclusters_5x5_FEMC = 0;
-float* _clusters_5x5_FEMC_E            = new float[_maxNclusters];
-float* _clusters_5x5_FEMC_Eta         = new float[_maxNclusters];
-float* _clusters_5x5_FEMC_Phi         = new float[_maxNclusters];
-float* _clusters_5x5_FEMC_M02         = new float[_maxNclusters];
-float* _clusters_5x5_FEMC_M20         = new float[_maxNclusters];
-bool* _clusters_5x5_FEMC_isMatched         = new bool[_maxNclusters];
-int* _clusters_5x5_FEMC_NTower         = new int[_maxNclusters];
-int* _clusters_5x5_FEMC_trueID       = new int[_maxNclusters];
-int* _clusters_5x5_FEMC_NtrueID       = new int[_maxNclusters];
-float* _clusters_5x5_FEMC_X         = new float[_maxNclusters];
-float* _clusters_5x5_FEMC_Y         = new float[_maxNclusters];
-float* _clusters_5x5_FEMC_Z         = new float[_maxNclusters];
-
-// V3 global cluster variables
-int _nclusters_V3_FHCAL = 0;
-float* _clusters_V3_FHCAL_E            = new float[_maxNclusters];
-float* _clusters_V3_FHCAL_Eta         = new float[_maxNclusters];
-float* _clusters_V3_FHCAL_Phi         = new float[_maxNclusters];
-float* _clusters_V3_FHCAL_M02         = new float[_maxNclusters];
-float* _clusters_V3_FHCAL_M20         = new float[_maxNclusters];
-bool* _clusters_V3_FHCAL_isMatched         = new bool[_maxNclusters];
-int* _clusters_V3_FHCAL_NTower         = new int[_maxNclusters];
-int* _clusters_V3_FHCAL_trueID       = new int[_maxNclusters];
-int* _clusters_V3_FHCAL_NtrueID       = new int[_maxNclusters];
-float* _clusters_V3_FHCAL_X         = new float[_maxNclusters];
-float* _clusters_V3_FHCAL_Y         = new float[_maxNclusters];
-float* _clusters_V3_FHCAL_Z         = new float[_maxNclusters];
-
-int _nclusters_V3_FEMC = 0;
-float* _clusters_V3_FEMC_E            = new float[_maxNclusters];
-float* _clusters_V3_FEMC_Eta         = new float[_maxNclusters];
-float* _clusters_V3_FEMC_Phi         = new float[_maxNclusters];
-float* _clusters_V3_FEMC_M02         = new float[_maxNclusters];
-float* _clusters_V3_FEMC_M20         = new float[_maxNclusters];
-bool* _clusters_V3_FEMC_isMatched         = new bool[_maxNclusters];
-int* _clusters_V3_FEMC_NTower         = new int[_maxNclusters];
-int* _clusters_V3_FEMC_trueID       = new int[_maxNclusters];
-int* _clusters_V3_FEMC_NtrueID       = new int[_maxNclusters];
-float* _clusters_V3_FEMC_X         = new float[_maxNclusters];
-float* _clusters_V3_FEMC_Y         = new float[_maxNclusters];
-float* _clusters_V3_FEMC_Z         = new float[_maxNclusters];
-
-// MA global cluster variables
-int _nclusters_MA_EEMC = 0;
-float* _clusters_MA_EEMC_E            = new float[_maxNclusters];
-float* _clusters_MA_EEMC_Eta         = new float[_maxNclusters];
-float* _clusters_MA_EEMC_Phi         = new float[_maxNclusters];
-float* _clusters_MA_EEMC_M02         = new float[_maxNclusters];
-float* _clusters_MA_EEMC_M20         = new float[_maxNclusters];
-bool* _clusters_MA_EEMC_isMatched         = new bool[_maxNclusters];
-int* _clusters_MA_EEMC_NTower         = new int[_maxNclusters];
-int* _clusters_MA_EEMC_trueID       = new int[_maxNclusters];
-int* _clusters_MA_EEMC_NtrueID       = new int[_maxNclusters];
-float* _clusters_MA_EEMC_X         = new float[_maxNclusters];
-float* _clusters_MA_EEMC_Y         = new float[_maxNclusters];
-float* _clusters_MA_EEMC_Z         = new float[_maxNclusters];
-
-int _nclusters_MA_EEMCG = 0;
-float* _clusters_MA_EEMCG_E            = new float[_maxNclusters];
-float* _clusters_MA_EEMCG_Eta         = new float[_maxNclusters];
-float* _clusters_MA_EEMCG_Phi         = new float[_maxNclusters];
-float* _clusters_MA_EEMCG_M02         = new float[_maxNclusters];
-float* _clusters_MA_EEMCG_M20         = new float[_maxNclusters];
-bool* _clusters_MA_EEMCG_isMatched         = new bool[_maxNclusters];
-int* _clusters_MA_EEMCG_NTower         = new int[_maxNclusters];
-int* _clusters_MA_EEMCG_trueID       = new int[_maxNclusters];
-int* _clusters_MA_EEMCG_NtrueID       = new int[_maxNclusters];
-float* _clusters_MA_EEMCG_X         = new float[_maxNclusters];
-float* _clusters_MA_EEMCG_Y         = new float[_maxNclusters];
-float* _clusters_MA_EEMCG_Z         = new float[_maxNclusters];
-
-int _nclusters_MA_EHCAL = 0;
-float* _clusters_MA_EHCAL_E            = new float[_maxNclusters];
-float* _clusters_MA_EHCAL_Eta         = new float[_maxNclusters];
-float* _clusters_MA_EHCAL_Phi         = new float[_maxNclusters];
-float* _clusters_MA_EHCAL_M02         = new float[_maxNclusters];
-float* _clusters_MA_EHCAL_M20         = new float[_maxNclusters];
-bool* _clusters_MA_EHCAL_isMatched         = new bool[_maxNclusters];
-int* _clusters_MA_EHCAL_NTower         = new int[_maxNclusters];
-int* _clusters_MA_EHCAL_trueID       = new int[_maxNclusters];
-int* _clusters_MA_EHCAL_NtrueID       = new int[_maxNclusters];
-float* _clusters_MA_EHCAL_X         = new float[_maxNclusters];
-float* _clusters_MA_EHCAL_Y         = new float[_maxNclusters];
-float* _clusters_MA_EHCAL_Z         = new float[_maxNclusters];
-
-int _nclusters_MA_CEMC = 0;
-float* _clusters_MA_CEMC_E            = new float[_maxNclusters];
-float* _clusters_MA_CEMC_Eta         = new float[_maxNclusters];
-float* _clusters_MA_CEMC_Phi         = new float[_maxNclusters];
-float* _clusters_MA_CEMC_M02         = new float[_maxNclusters];
-float* _clusters_MA_CEMC_M20         = new float[_maxNclusters];
-bool* _clusters_MA_CEMC_isMatched         = new bool[_maxNclusters];
-int* _clusters_MA_CEMC_NTower         = new int[_maxNclusters];
-int* _clusters_MA_CEMC_trueID       = new int[_maxNclusters];
-int* _clusters_MA_CEMC_NtrueID       = new int[_maxNclusters];
-float* _clusters_MA_CEMC_X         = new float[_maxNclusters];
-float* _clusters_MA_CEMC_Y         = new float[_maxNclusters];
-float* _clusters_MA_CEMC_Z         = new float[_maxNclusters];
-
-int _nclusters_MA_BECAL = 0;
-float* _clusters_MA_BECAL_E            = new float[_maxNclusters];
-float* _clusters_MA_BECAL_Eta         = new float[_maxNclusters];
-float* _clusters_MA_BECAL_Phi         = new float[_maxNclusters];
-float* _clusters_MA_BECAL_M02         = new float[_maxNclusters];
-float* _clusters_MA_BECAL_M20         = new float[_maxNclusters];
-bool* _clusters_MA_BECAL_isMatched         = new bool[_maxNclusters];
-int* _clusters_MA_BECAL_NTower         = new int[_maxNclusters];
-int* _clusters_MA_BECAL_trueID       = new int[_maxNclusters];
-int* _clusters_MA_BECAL_NtrueID       = new int[_maxNclusters];
-float* _clusters_MA_BECAL_X         = new float[_maxNclusters];
-float* _clusters_MA_BECAL_Y         = new float[_maxNclusters];
-float* _clusters_MA_BECAL_Z         = new float[_maxNclusters];
-
-int _nclusters_MA_HCALIN = 0;
-float* _clusters_MA_HCALIN_E            = new float[_maxNclusters];
-float* _clusters_MA_HCALIN_Eta         = new float[_maxNclusters];
-float* _clusters_MA_HCALIN_Phi         = new float[_maxNclusters];
-float* _clusters_MA_HCALIN_M02         = new float[_maxNclusters];
-float* _clusters_MA_HCALIN_M20         = new float[_maxNclusters];
-bool* _clusters_MA_HCALIN_isMatched         = new bool[_maxNclusters];
-int* _clusters_MA_HCALIN_NTower         = new int[_maxNclusters];
-int* _clusters_MA_HCALIN_trueID       = new int[_maxNclusters];
-int* _clusters_MA_HCALIN_NtrueID       = new int[_maxNclusters];
-float* _clusters_MA_HCALIN_X         = new float[_maxNclusters];
-float* _clusters_MA_HCALIN_Y         = new float[_maxNclusters];
-float* _clusters_MA_HCALIN_Z         = new float[_maxNclusters];
-
-int _nclusters_MA_HCALOUT = 0;
-float* _clusters_MA_HCALOUT_E            = new float[_maxNclusters];
-float* _clusters_MA_HCALOUT_Eta         = new float[_maxNclusters];
-float* _clusters_MA_HCALOUT_Phi         = new float[_maxNclusters];
-float* _clusters_MA_HCALOUT_M02         = new float[_maxNclusters];
-float* _clusters_MA_HCALOUT_M20         = new float[_maxNclusters];
-bool* _clusters_MA_HCALOUT_isMatched         = new bool[_maxNclusters];
-int* _clusters_MA_HCALOUT_NTower         = new int[_maxNclusters];
-int* _clusters_MA_HCALOUT_trueID       = new int[_maxNclusters];
-int* _clusters_MA_HCALOUT_NtrueID       = new int[_maxNclusters];
-float* _clusters_MA_HCALOUT_X         = new float[_maxNclusters];
-float* _clusters_MA_HCALOUT_Y         = new float[_maxNclusters];
-float* _clusters_MA_HCALOUT_Z         = new float[_maxNclusters];
-
-int _nclusters_MA_LFHCAL = 0;
-float* _clusters_MA_LFHCAL_E            = new float[_maxNclusters];
-float* _clusters_MA_LFHCAL_Eta         = new float[_maxNclusters];
-float* _clusters_MA_LFHCAL_Phi         = new float[_maxNclusters];
-float* _clusters_MA_LFHCAL_M02         = new float[_maxNclusters];
-float* _clusters_MA_LFHCAL_M20         = new float[_maxNclusters];
-bool* _clusters_MA_LFHCAL_isMatched         = new bool[_maxNclusters];
-int* _clusters_MA_LFHCAL_NTower         = new int[_maxNclusters];
-int* _clusters_MA_LFHCAL_trueID       = new int[_maxNclusters];
-int* _clusters_MA_LFHCAL_NtrueID       = new int[_maxNclusters];
-float* _clusters_MA_LFHCAL_X         = new float[_maxNclusters];
-float* _clusters_MA_LFHCAL_Y         = new float[_maxNclusters];
-float* _clusters_MA_LFHCAL_Z         = new float[_maxNclusters];
-
-int _nclusters_MA_FHCAL = 0;
-float* _clusters_MA_FHCAL_E            = new float[_maxNclusters];
-float* _clusters_MA_FHCAL_Eta         = new float[_maxNclusters];
-float* _clusters_MA_FHCAL_Phi         = new float[_maxNclusters];
-float* _clusters_MA_FHCAL_M02         = new float[_maxNclusters];
-float* _clusters_MA_FHCAL_M20         = new float[_maxNclusters];
-bool* _clusters_MA_FHCAL_isMatched         = new bool[_maxNclusters];
-int* _clusters_MA_FHCAL_NTower         = new int[_maxNclusters];
-int* _clusters_MA_FHCAL_trueID       = new int[_maxNclusters];
-int* _clusters_MA_FHCAL_NtrueID       = new int[_maxNclusters];
-float* _clusters_MA_FHCAL_X         = new float[_maxNclusters];
-float* _clusters_MA_FHCAL_Y         = new float[_maxNclusters];
-float* _clusters_MA_FHCAL_Z         = new float[_maxNclusters];
-
-int _nclusters_MA_FEMC = 0;
-float* _clusters_MA_FEMC_E            = new float[_maxNclusters];
-float* _clusters_MA_FEMC_Eta         = new float[_maxNclusters];
-float* _clusters_MA_FEMC_Phi         = new float[_maxNclusters];
-float* _clusters_MA_FEMC_M02         = new float[_maxNclusters];
-float* _clusters_MA_FEMC_M20         = new float[_maxNclusters];
-bool* _clusters_MA_FEMC_isMatched         = new bool[_maxNclusters];
-int* _clusters_MA_FEMC_NTower         = new int[_maxNclusters];
-int* _clusters_MA_FEMC_trueID       = new int[_maxNclusters];
-int* _clusters_MA_FEMC_NtrueID       = new int[_maxNclusters];
-float* _clusters_MA_FEMC_X         = new float[_maxNclusters];
-float* _clusters_MA_FEMC_Y         = new float[_maxNclusters];
-float* _clusters_MA_FEMC_Z         = new float[_maxNclusters];
-
-// C3 global cluster variables
-int _nclusters_C3_FHCAL = 0;
-float* _clusters_C3_FHCAL_E            = new float[_maxNclusters];
-float* _clusters_C3_FHCAL_Eta         = new float[_maxNclusters];
-float* _clusters_C3_FHCAL_Phi         = new float[_maxNclusters];
-float* _clusters_C3_FHCAL_M02         = new float[_maxNclusters];
-float* _clusters_C3_FHCAL_M20         = new float[_maxNclusters];
-bool* _clusters_C3_FHCAL_isMatched         = new bool[_maxNclusters];
-int* _clusters_C3_FHCAL_NTower         = new int[_maxNclusters];
-int* _clusters_C3_FHCAL_trueID       = new int[_maxNclusters];
-int* _clusters_C3_FHCAL_NtrueID       = new int[_maxNclusters];
-float* _clusters_C3_FHCAL_X         = new float[_maxNclusters];
-float* _clusters_C3_FHCAL_Y         = new float[_maxNclusters];
-float* _clusters_C3_FHCAL_Z         = new float[_maxNclusters];
-
-int _nclusters_C3_FEMC = 0;
-float* _clusters_C3_FEMC_E            = new float[_maxNclusters];
-float* _clusters_C3_FEMC_Eta         = new float[_maxNclusters];
-float* _clusters_C3_FEMC_Phi         = new float[_maxNclusters];
-float* _clusters_C3_FEMC_M02         = new float[_maxNclusters];
-float* _clusters_C3_FEMC_M20         = new float[_maxNclusters];
-bool* _clusters_C3_FEMC_isMatched         = new bool[_maxNclusters];
-int* _clusters_C3_FEMC_NTower         = new int[_maxNclusters];
-int* _clusters_C3_FEMC_trueID       = new int[_maxNclusters];
-int* _clusters_C3_FEMC_NtrueID       = new int[_maxNclusters];
-float* _clusters_C3_FEMC_X         = new float[_maxNclusters];
-float* _clusters_C3_FEMC_Y         = new float[_maxNclusters];
-float* _clusters_C3_FEMC_Z         = new float[_maxNclusters];
-
-// C5 global cluster variables
-int _nclusters_C5_FHCAL = 0;
-float* _clusters_C5_FHCAL_E            = new float[_maxNclusters];
-float* _clusters_C5_FHCAL_Eta         = new float[_maxNclusters];
-float* _clusters_C5_FHCAL_Phi         = new float[_maxNclusters];
-float* _clusters_C5_FHCAL_M02         = new float[_maxNclusters];
-float* _clusters_C5_FHCAL_M20         = new float[_maxNclusters];
-bool* _clusters_C5_FHCAL_isMatched         = new bool[_maxNclusters];
-int* _clusters_C5_FHCAL_NTower         = new int[_maxNclusters];
-int* _clusters_C5_FHCAL_trueID       = new int[_maxNclusters];
-int* _clusters_C5_FHCAL_NtrueID       = new int[_maxNclusters];
-float* _clusters_C5_FHCAL_X         = new float[_maxNclusters];
-float* _clusters_C5_FHCAL_Y         = new float[_maxNclusters];
-float* _clusters_C5_FHCAL_Z         = new float[_maxNclusters];
-
-int _nclusters_C5_FEMC = 0;
-float* _clusters_C5_FEMC_E            = new float[_maxNclusters];
-float* _clusters_C5_FEMC_Eta         = new float[_maxNclusters];
-float* _clusters_C5_FEMC_Phi         = new float[_maxNclusters];
-float* _clusters_C5_FEMC_M02         = new float[_maxNclusters];
-float* _clusters_C5_FEMC_M20         = new float[_maxNclusters];
-bool* _clusters_C5_FEMC_isMatched         = new bool[_maxNclusters];
-int* _clusters_C5_FEMC_NTower         = new int[_maxNclusters];
-int* _clusters_C5_FEMC_trueID       = new int[_maxNclusters];
-int* _clusters_C5_FEMC_NtrueID       = new int[_maxNclusters];
-float* _clusters_C5_FEMC_X         = new float[_maxNclusters];
-float* _clusters_C5_FEMC_Y         = new float[_maxNclusters];
-float* _clusters_C5_FEMC_Z         = new float[_maxNclusters];
-
-
-// MA global cluster variables
-int _nclusters_V1_DRCALO = 0;
-float* _clusters_V1_DRCALO_E            = new float[_maxNclusters];
-float* _clusters_V1_DRCALO_Eta         = new float[_maxNclusters];
-float* _clusters_V1_DRCALO_Phi         = new float[_maxNclusters];
-float* _clusters_V1_DRCALO_M02         = new float[_maxNclusters];
-float* _clusters_V1_DRCALO_M20         = new float[_maxNclusters];
-bool* _clusters_V1_DRCALO_isMatched         = new bool[_maxNclusters];
-int* _clusters_V1_DRCALO_NTower         = new int[_maxNclusters];
-int* _clusters_V1_DRCALO_trueID       = new int[_maxNclusters];
-int* _clusters_V1_DRCALO_NtrueID       = new int[_maxNclusters];
-float* _clusters_V1_DRCALO_X         = new float[_maxNclusters];
-float* _clusters_V1_DRCALO_Y         = new float[_maxNclusters];
-float* _clusters_V1_DRCALO_Z         = new float[_maxNclusters];
+std::vector<clustersStrct> _clusters_calo[maxAlgo][maxcalo];
 
 bool loadClusterizerInput(
   int clusterizerEnum,
-  int caloEnum,
-  int &nclusters,
-  float* &clusters_E,
-  float* &clusters_Eta,
-  float* &clusters_Phi,
-  float* &clusters_M02,
-  float* &clusters_M20,
-  bool* &clusters_isMatched,
-  int* &clusters_NTower,
-  int* &clusters_trueID,
-  int* &clusters_NtrueID,
-  float* &clusters_X,
-  float* &clusters_Y,
-  float* &clusters_Z
+  int caloEnum
 ){
   // cout << clusterizerEnum << "\t" << caloEnum << endl;
-  if(clusterizerEnum==k3x3){
-    if(caloEnum==kFHCAL){
-      nclusters = _nclusters_3x3_FHCAL;
-      clusters_E = _clusters_3x3_FHCAL_E;
-      clusters_Eta = _clusters_3x3_FHCAL_Eta;
-      clusters_Phi = _clusters_3x3_FHCAL_Phi;
-      clusters_M02 = _clusters_3x3_FHCAL_M02;
-      clusters_M20 = _clusters_3x3_FHCAL_M20;
-      clusters_isMatched = _clusters_3x3_FHCAL_isMatched;
-      clusters_NTower = _clusters_3x3_FHCAL_NTower;
-      clusters_trueID = _clusters_3x3_FHCAL_trueID;
-      clusters_NtrueID = _clusters_3x3_FHCAL_NtrueID;
-      clusters_X = _clusters_3x3_FHCAL_X;
-      clusters_Y = _clusters_3x3_FHCAL_Y;
-      clusters_Z = _clusters_3x3_FHCAL_Z;
+  if (clusterizerEnum != kV1 ){
+    if (!_clusters_calo[clusterizerEnum][caloEnum].empty() && caloEnabled[caloEnum])
       return true;
-    } else if(caloEnum==kFEMC){
-      nclusters = _nclusters_3x3_FEMC;
-      clusters_E = _clusters_3x3_FEMC_E;
-      clusters_Eta = _clusters_3x3_FEMC_Eta;
-      clusters_Phi = _clusters_3x3_FEMC_Phi;
-      clusters_M02 = _clusters_3x3_FEMC_M02;
-      clusters_M20 = _clusters_3x3_FEMC_M20;
-      clusters_isMatched = _clusters_3x3_FEMC_isMatched;
-      clusters_NTower = _clusters_3x3_FEMC_NTower;
-      clusters_trueID = _clusters_3x3_FEMC_trueID;
-      clusters_NtrueID = _clusters_3x3_FEMC_NtrueID;
-      clusters_X = _clusters_3x3_FEMC_X;
-      clusters_Y = _clusters_3x3_FEMC_Y;
-      clusters_Z = _clusters_3x3_FEMC_Z;
-      return true;
-    } else {
+    else 
       return false;
-      // nclusters = 0;
-      // setFLOATClusterArrayToZero(clusters_E);
-      // setFLOATClusterArrayToZero(clusters_Eta);
-      // setFLOATClusterArrayToZero(clusters_Phi);
-      // setFLOATClusterArrayToZero(clusters_M02);
-      // setFLOATClusterArrayToZero(clusters_M20);
-      // setBOOLClusterArrayToZero(clusters_isMatched);
-      // setINTClusterArrayToZero(clusters_NTower);
-      // setINTClusterArrayToZero(clusters_trueID);
-      // setINTClusterArrayToZero(clusters_NtrueID);
-      // setFLOATClusterArrayToZero(clusters_X);
-      // setFLOATClusterArrayToZero(clusters_Y);
-      // setFLOATClusterArrayToZero(clusters_Z);
-    }
-  }
-  else if(clusterizerEnum==k5x5){
-    if(caloEnum==kFHCAL){
-      nclusters = _nclusters_5x5_FHCAL;
-      clusters_E = _clusters_5x5_FHCAL_E;
-      clusters_Eta = _clusters_5x5_FHCAL_Eta;
-      clusters_Phi = _clusters_5x5_FHCAL_Phi;
-      clusters_M02 = _clusters_5x5_FHCAL_M02;
-      clusters_M20 = _clusters_5x5_FHCAL_M20;
-      clusters_isMatched = _clusters_5x5_FHCAL_isMatched;
-      clusters_NTower = _clusters_5x5_FHCAL_NTower;
-      clusters_trueID = _clusters_5x5_FHCAL_trueID;
-      clusters_NtrueID = _clusters_5x5_FHCAL_NtrueID;
-      clusters_X = _clusters_5x5_FHCAL_X;
-      clusters_Y = _clusters_5x5_FHCAL_Y;
-      clusters_Z = _clusters_5x5_FHCAL_Z;
-      return true;
+  } else {
+    
+    if(caloEnum==kFHCAL){      
+      if (!_clusters_calo[clusterizerEnum][caloEnum].empty() && caloEnabled[caloEnum]){
+        return true;
+      } else {
+        if (_nclusters_FHCAL > 0 ){
+          for (Int_t iclus = 0; iclus < (Int_t)_nclusters_FHCAL; iclus++){
+            clustersStrct tempstructC;
+            tempstructC.cluster_seed    = -1;
+            tempstructC.cluster_E       =_clusters_FHCAL_E[iclus];
+            tempstructC.cluster_NTowers =_clusters_FHCAL_NTower[iclus];
+            tempstructC.cluster_M02     = 0;
+            tempstructC.cluster_M20     = 0;
+            tempstructC.cluster_Eta     = _clusters_FHCAL_Eta[iclus];
+            tempstructC.cluster_Phi     = _clusters_FHCAL_Phi[iclus];
+            tempstructC.cluster_X       = 0;
+            tempstructC.cluster_Y       = 0;
+            tempstructC.cluster_Z       = 0;
+            tempstructC.cluster_isMatched = false;
+            tempstructC.cluster_trueID  = _clusters_FHCAL_trueID[iclus];
+            tempstructC.cluster_NtrueID = 0;
+            _clusters_calo[clusterizerEnum][caloEnum].push_back(tempstructC);
+          } 
+          return true;
+        } else {
+          return false;
+        }
+      }
     } else if(caloEnum==kFEMC){
-      nclusters = _nclusters_5x5_FEMC;
-      clusters_E = _clusters_5x5_FEMC_E;
-      clusters_Eta = _clusters_5x5_FEMC_Eta;
-      clusters_Phi = _clusters_5x5_FEMC_Phi;
-      clusters_M02 = _clusters_5x5_FEMC_M02;
-      clusters_M20 = _clusters_5x5_FEMC_M20;
-      clusters_isMatched = _clusters_5x5_FEMC_isMatched;
-      clusters_NTower = _clusters_5x5_FEMC_NTower;
-      clusters_trueID = _clusters_5x5_FEMC_trueID;
-      clusters_NtrueID = _clusters_5x5_FEMC_NtrueID;
-      clusters_X = _clusters_5x5_FEMC_X;
-      clusters_Y = _clusters_5x5_FEMC_Y;
-      clusters_Z = _clusters_5x5_FEMC_Z;
-      return true;
+      if (!_clusters_calo[clusterizerEnum][caloEnum].empty() && caloEnabled[caloEnum]){
+        return true;
+      } else {
+        if (_nclusters_FEMC > 0 ){
+          for (Int_t iclus = 0; iclus < (Int_t)_nclusters_FEMC; iclus++){
+            clustersStrct tempstructC;
+            tempstructC.cluster_seed    = -1;
+            tempstructC.cluster_E       =_clusters_FEMC_E[iclus];
+            tempstructC.cluster_NTowers =_clusters_FEMC_NTower[iclus];
+            tempstructC.cluster_M02     = 0;
+            tempstructC.cluster_M20     = 0;
+            tempstructC.cluster_Eta     = _clusters_FEMC_Eta[iclus];
+            tempstructC.cluster_Phi     = _clusters_FEMC_Phi[iclus];
+            tempstructC.cluster_X       = 0;
+            tempstructC.cluster_Y       = 0;
+            tempstructC.cluster_Z       = 0;
+            tempstructC.cluster_isMatched = false;
+            tempstructC.cluster_trueID  = _clusters_FEMC_trueID[iclus];
+            tempstructC.cluster_NtrueID = 0;
+            _clusters_calo[clusterizerEnum][caloEnum].push_back(tempstructC);
+          } 
+          return true;
+        } else {
+          return false;
+        }
+      } 
     } else {
-      return false;
-      // nclusters = 0;
-      // setFLOATClusterArrayToZero(clusters_E);
-      // setFLOATClusterArrayToZero(clusters_Eta);
-      // setFLOATClusterArrayToZero(clusters_Phi);
-      // setFLOATClusterArrayToZero(clusters_M02);
-      // setFLOATClusterArrayToZero(clusters_M20);
-      // setBOOLClusterArrayToZero(clusters_isMatched);
-      // setINTClusterArrayToZero(clusters_NTower);
-      // setINTClusterArrayToZero(clusters_trueID);
-      // setINTClusterArrayToZero(clusters_NtrueID);
-      // setFLOATClusterArrayToZero(clusters_X);
-      // setFLOATClusterArrayToZero(clusters_Y);
-      // setFLOATClusterArrayToZero(clusters_Z);
-    }
-  }
-// V3 global cluster variables
-  else if(clusterizerEnum==kV3){
-    if(caloEnum==kFHCAL){
-      nclusters = _nclusters_V3_FHCAL;
-      clusters_E = _clusters_V3_FHCAL_E;
-      clusters_Eta = _clusters_V3_FHCAL_Eta;
-      clusters_Phi = _clusters_V3_FHCAL_Phi;
-      clusters_M02 = _clusters_V3_FHCAL_M02;
-      clusters_M20 = _clusters_V3_FHCAL_M20;
-      clusters_isMatched = _clusters_V3_FHCAL_isMatched;
-      clusters_NTower = _clusters_V3_FHCAL_NTower;
-      clusters_trueID = _clusters_V3_FHCAL_trueID;
-      clusters_NtrueID = _clusters_V3_FHCAL_NtrueID;
-      clusters_X = _clusters_V3_FHCAL_X;
-      clusters_Y = _clusters_V3_FHCAL_Y;
-      clusters_Z = _clusters_V3_FHCAL_Z;
-      return true;
-    } else if(caloEnum==kFEMC){
-      nclusters = _nclusters_V3_FEMC;
-      clusters_E = _clusters_V3_FEMC_E;
-      clusters_Eta = _clusters_V3_FEMC_Eta;
-      clusters_Phi = _clusters_V3_FEMC_Phi;
-      clusters_M02 = _clusters_V3_FEMC_M02;
-      clusters_M20 = _clusters_V3_FEMC_M20;
-      clusters_isMatched = _clusters_V3_FEMC_isMatched;
-      clusters_NTower = _clusters_V3_FEMC_NTower;
-      clusters_trueID = _clusters_V3_FEMC_trueID;
-      clusters_NtrueID = _clusters_V3_FEMC_NtrueID;
-      clusters_X = _clusters_V3_FEMC_X;
-      clusters_Y = _clusters_V3_FEMC_Y;
-      clusters_Z = _clusters_V3_FEMC_Z;
-      return true;
-    } else {
-      return false;
-      // nclusters = 0;
-      // setFLOATClusterArrayToZero(clusters_E);
-      // setFLOATClusterArrayToZero(clusters_Eta);
-      // setFLOATClusterArrayToZero(clusters_Phi);
-      // setFLOATClusterArrayToZero(clusters_M02);
-      // setFLOATClusterArrayToZero(clusters_M20);
-      // setBOOLClusterArrayToZero(clusters_isMatched);
-      // setINTClusterArrayToZero(clusters_NTower);
-      // setINTClusterArrayToZero(clusters_trueID);
-      // setINTClusterArrayToZero(clusters_NtrueID);
-      // setFLOATClusterArrayToZero(clusters_X);
-      // setFLOATClusterArrayToZero(clusters_Y);
-      // setFLOATClusterArrayToZero(clusters_Z);
-    }
-  }
-// MA global cluster variables
-  else if(clusterizerEnum==kMA){
-    if(caloEnum==kFHCAL){
-      nclusters = _nclusters_MA_FHCAL;
-      clusters_E = _clusters_MA_FHCAL_E;
-      clusters_Eta = _clusters_MA_FHCAL_Eta;
-      clusters_Phi = _clusters_MA_FHCAL_Phi;
-      clusters_M02 = _clusters_MA_FHCAL_M02;
-      clusters_M20 = _clusters_MA_FHCAL_M20;
-      clusters_isMatched = _clusters_MA_FHCAL_isMatched;
-      clusters_NTower = _clusters_MA_FHCAL_NTower;
-      clusters_trueID = _clusters_MA_FHCAL_trueID;
-      clusters_NtrueID = _clusters_MA_FHCAL_NtrueID;
-      clusters_X = _clusters_MA_FHCAL_X;
-      clusters_Y = _clusters_MA_FHCAL_Y;
-      clusters_Z = _clusters_MA_FHCAL_Z;
-      return true;
-    } else if(caloEnum==kFEMC){
-      nclusters = _nclusters_MA_FEMC;
-      clusters_E = _clusters_MA_FEMC_E;
-      clusters_Eta = _clusters_MA_FEMC_Eta;
-      clusters_Phi = _clusters_MA_FEMC_Phi;
-      clusters_M02 = _clusters_MA_FEMC_M02;
-      clusters_M20 = _clusters_MA_FEMC_M20;
-      clusters_isMatched = _clusters_MA_FEMC_isMatched;
-      clusters_NTower = _clusters_MA_FEMC_NTower;
-      clusters_trueID = _clusters_MA_FEMC_trueID;
-      clusters_NtrueID = _clusters_MA_FEMC_NtrueID;
-      clusters_X = _clusters_MA_FEMC_X;
-      clusters_Y = _clusters_MA_FEMC_Y;
-      clusters_Z = _clusters_MA_FEMC_Z;
-      return true;
-    } else if(caloEnum==kLFHCAL){
-      nclusters = _nclusters_MA_LFHCAL;
-      clusters_E = _clusters_MA_LFHCAL_E;
-      clusters_Eta = _clusters_MA_LFHCAL_Eta;
-      clusters_Phi = _clusters_MA_LFHCAL_Phi;
-      clusters_M02 = _clusters_MA_LFHCAL_M02;
-      clusters_M20 = _clusters_MA_LFHCAL_M20;
-      clusters_isMatched = _clusters_MA_LFHCAL_isMatched;
-      clusters_NTower = _clusters_MA_LFHCAL_NTower;
-      clusters_trueID = _clusters_MA_LFHCAL_trueID;
-      clusters_NtrueID = _clusters_MA_LFHCAL_NtrueID;
-      clusters_X = _clusters_MA_LFHCAL_X;
-      clusters_Y = _clusters_MA_LFHCAL_Y;
-      clusters_Z = _clusters_MA_LFHCAL_Z;
-      return true;
-    } else if(caloEnum==kEEMC){
-      nclusters = _nclusters_MA_EEMC;
-      clusters_E = _clusters_MA_EEMC_E;
-      clusters_Eta = _clusters_MA_EEMC_Eta;
-      clusters_Phi = _clusters_MA_EEMC_Phi;
-      clusters_M02 = _clusters_MA_EEMC_M02;
-      clusters_M20 = _clusters_MA_EEMC_M20;
-      clusters_isMatched = _clusters_MA_EEMC_isMatched;
-      clusters_NTower = _clusters_MA_EEMC_NTower;
-      clusters_trueID = _clusters_MA_EEMC_trueID;
-      clusters_NtrueID = _clusters_MA_EEMC_NtrueID;
-      clusters_X = _clusters_MA_EEMC_X;
-      clusters_Y = _clusters_MA_EEMC_Y;
-      clusters_Z = _clusters_MA_EEMC_Z;
-      return true;
-    } else if(caloEnum==kEEMCG){
-      nclusters = _nclusters_MA_EEMCG;
-      clusters_E = _clusters_MA_EEMCG_E;
-      clusters_Eta = _clusters_MA_EEMCG_Eta;
-      clusters_Phi = _clusters_MA_EEMCG_Phi;
-      clusters_M02 = _clusters_MA_EEMCG_M02;
-      clusters_M20 = _clusters_MA_EEMCG_M20;
-      clusters_isMatched = _clusters_MA_EEMCG_isMatched;
-      clusters_NTower = _clusters_MA_EEMCG_NTower;
-      clusters_trueID = _clusters_MA_EEMCG_trueID;
-      clusters_NtrueID = _clusters_MA_EEMCG_NtrueID;
-      clusters_X = _clusters_MA_EEMCG_X;
-      clusters_Y = _clusters_MA_EEMCG_Y;
-      clusters_Z = _clusters_MA_EEMCG_Z;
-      return true;
-    } else if(caloEnum==kEHCAL){
-      nclusters = _nclusters_MA_EHCAL;
-      clusters_E = _clusters_MA_EHCAL_E;
-      clusters_Eta = _clusters_MA_EHCAL_Eta;
-      clusters_Phi = _clusters_MA_EHCAL_Phi;
-      clusters_M02 = _clusters_MA_EHCAL_M02;
-      clusters_M20 = _clusters_MA_EHCAL_M20;
-      clusters_isMatched = _clusters_MA_EHCAL_isMatched;
-      clusters_NTower = _clusters_MA_EHCAL_NTower;
-      clusters_trueID = _clusters_MA_EHCAL_trueID;
-      clusters_NtrueID = _clusters_MA_EHCAL_NtrueID;
-      clusters_X = _clusters_MA_EHCAL_X;
-      clusters_Y = _clusters_MA_EHCAL_Y;
-      clusters_Z = _clusters_MA_EHCAL_Z;
-      return true;
-    } else if(caloEnum==kCEMC){
-      nclusters = _nclusters_MA_CEMC;
-      clusters_E = _clusters_MA_CEMC_E;
-      clusters_Eta = _clusters_MA_CEMC_Eta;
-      clusters_Phi = _clusters_MA_CEMC_Phi;
-      clusters_M02 = _clusters_MA_CEMC_M02;
-      clusters_M20 = _clusters_MA_CEMC_M20;
-      clusters_isMatched = _clusters_MA_CEMC_isMatched;
-      clusters_NTower = _clusters_MA_CEMC_NTower;
-      clusters_trueID = _clusters_MA_CEMC_trueID;
-      clusters_NtrueID = _clusters_MA_CEMC_NtrueID;
-      clusters_X = _clusters_MA_CEMC_X;
-      clusters_Y = _clusters_MA_CEMC_Y;
-      clusters_Z = _clusters_MA_CEMC_Z;
-      return true;
-    } else if(caloEnum==kBECAL){
-      nclusters = _nclusters_MA_BECAL;
-      clusters_E = _clusters_MA_BECAL_E;
-      clusters_Eta = _clusters_MA_BECAL_Eta;
-      clusters_Phi = _clusters_MA_BECAL_Phi;
-      clusters_M02 = _clusters_MA_BECAL_M02;
-      clusters_M20 = _clusters_MA_BECAL_M20;
-      clusters_isMatched = _clusters_MA_BECAL_isMatched;
-      clusters_NTower = _clusters_MA_BECAL_NTower;
-      clusters_trueID = _clusters_MA_BECAL_trueID;
-      clusters_NtrueID = _clusters_MA_BECAL_NtrueID;
-      clusters_X = _clusters_MA_BECAL_X;
-      clusters_Y = _clusters_MA_BECAL_Y;
-      clusters_Z = _clusters_MA_BECAL_Z;
-      return true;
-    } else if(caloEnum==kHCALIN){
-      nclusters = _nclusters_MA_HCALIN;
-      clusters_E = _clusters_MA_HCALIN_E;
-      clusters_Eta = _clusters_MA_HCALIN_Eta;
-      clusters_Phi = _clusters_MA_HCALIN_Phi;
-      clusters_M02 = _clusters_MA_HCALIN_M02;
-      clusters_M20 = _clusters_MA_HCALIN_M20;
-      clusters_isMatched = _clusters_MA_HCALIN_isMatched;
-      clusters_NTower = _clusters_MA_HCALIN_NTower;
-      clusters_trueID = _clusters_MA_HCALIN_trueID;
-      clusters_NtrueID = _clusters_MA_HCALIN_NtrueID;
-      clusters_X = _clusters_MA_HCALIN_X;
-      clusters_Y = _clusters_MA_HCALIN_Y;
-      clusters_Z = _clusters_MA_HCALIN_Z;
-      return true;
-    } else if(caloEnum==kHCALOUT){
-      nclusters = _nclusters_MA_HCALOUT;
-      clusters_E = _clusters_MA_HCALOUT_E;
-      clusters_Eta = _clusters_MA_HCALOUT_Eta;
-      clusters_Phi = _clusters_MA_HCALOUT_Phi;
-      clusters_M02 = _clusters_MA_HCALOUT_M02;
-      clusters_M20 = _clusters_MA_HCALOUT_M20;
-      clusters_isMatched = _clusters_MA_HCALOUT_isMatched;
-      clusters_NTower = _clusters_MA_HCALOUT_NTower;
-      clusters_trueID = _clusters_MA_HCALOUT_trueID;
-      clusters_NtrueID = _clusters_MA_HCALOUT_NtrueID;
-      clusters_X = _clusters_MA_HCALOUT_X;
-      clusters_Y = _clusters_MA_HCALOUT_Y;
-      clusters_Z = _clusters_MA_HCALOUT_Z;
-      return true;
-    } else {
-      return false;
-      // nclusters = 0;
-      // setFLOATClusterArrayToZero(clusters_E);
-      // setFLOATClusterArrayToZero(clusters_Eta);
-      // setFLOATClusterArrayToZero(clusters_Phi);
-      // setFLOATClusterArrayToZero(clusters_M02);
-      // setFLOATClusterArrayToZero(clusters_M20);
-      // setBOOLClusterArrayToZero(clusters_isMatched);
-      // setINTClusterArrayToZero(clusters_NTower);
-      // setINTClusterArrayToZero(clusters_trueID);
-      // setINTClusterArrayToZero(clusters_NtrueID);
-      // setFLOATClusterArrayToZero(clusters_X);
-      // setFLOATClusterArrayToZero(clusters_Y);
-      // setFLOATClusterArrayToZero(clusters_Z);
-    }
-  }
-// V1 global cluster variables
-  else if(clusterizerEnum==kV1){
-    if(caloEnum==kDRCALO){
-      nclusters = _nclusters_V1_DRCALO;
-      clusters_E = _clusters_V1_DRCALO_E;
-      clusters_Eta = _clusters_V1_DRCALO_Eta;
-      clusters_Phi = _clusters_V1_DRCALO_Phi;
-      clusters_M02 = _clusters_V1_DRCALO_M02;
-      clusters_M20 = _clusters_V1_DRCALO_M20;
-      clusters_isMatched = _clusters_V1_DRCALO_isMatched;
-      clusters_NTower = _clusters_V1_DRCALO_NTower;
-      clusters_trueID = _clusters_V1_DRCALO_trueID;
-      clusters_NtrueID = _clusters_V1_DRCALO_NtrueID;
-      clusters_X = _clusters_V1_DRCALO_X;
-      clusters_Y = _clusters_V1_DRCALO_Y;
-      clusters_Z = _clusters_V1_DRCALO_Z;
-      return true;
-    }else if(caloEnum==kFHCAL){
-      nclusters = _nclusters_FHCAL;
-      clusters_E = _clusters_FHCAL_E;
-      clusters_Eta = _clusters_FHCAL_Eta;
-      clusters_Phi = _clusters_FHCAL_Phi;
-      clusters_M02 = new float[_maxNclusters];
-      clusters_M20 = new float[_maxNclusters];
-      clusters_isMatched = new bool[_maxNclusters];
-      setFLOATClusterArrayToZero(clusters_M02);
-      setFLOATClusterArrayToZero(clusters_M20);
-      setBOOLClusterArrayToZero(clusters_isMatched);
-      clusters_NTower = _clusters_FHCAL_NTower;
-      clusters_trueID = _clusters_FHCAL_trueID;
-      clusters_NtrueID = new int[_maxNclusters];
-      clusters_X = new float[_maxNclusters];
-      clusters_Y = new float[_maxNclusters];
-      clusters_Z = new float[_maxNclusters];
-      setINTClusterArrayToZero(clusters_NtrueID);
-      setFLOATClusterArrayToZero(clusters_X);
-      setFLOATClusterArrayToZero(clusters_Y);
-      setFLOATClusterArrayToZero(clusters_Z);
-      return true;
-    } else if(caloEnum==kFEMC){
-      nclusters = _nclusters_FEMC;
-      clusters_E = _clusters_FEMC_E;
-      clusters_Eta = _clusters_FEMC_Eta;
-      clusters_Phi = _clusters_FEMC_Phi;
-      clusters_M02 = new float[_maxNclusters];
-      clusters_M20 = new float[_maxNclusters];
-      clusters_isMatched = new bool[_maxNclusters];
-      setFLOATClusterArrayToZero(clusters_M02);
-      setFLOATClusterArrayToZero(clusters_M20);
-      setBOOLClusterArrayToZero(clusters_isMatched);
-      clusters_NTower = _clusters_FEMC_NTower;
-      clusters_trueID = _clusters_FEMC_trueID;
-      clusters_NtrueID = new int[_maxNclusters];
-      clusters_X = new float[_maxNclusters];
-      clusters_Y = new float[_maxNclusters];
-      clusters_Z = new float[_maxNclusters];
-      setINTClusterArrayToZero(clusters_NtrueID);
-      setFLOATClusterArrayToZero(clusters_X);
-      setFLOATClusterArrayToZero(clusters_Y);
-      setFLOATClusterArrayToZero(clusters_Z);
-      return true;
-    } else {
-      return false;
-      // nclusters = 0;
-      // setFLOATClusterArrayToZero(clusters_E);
-      // setFLOATClusterArrayToZero(clusters_Eta);
-      // setFLOATClusterArrayToZero(clusters_Phi);
-      // setFLOATClusterArrayToZero(clusters_M02);
-      // setFLOATClusterArrayToZero(clusters_M20);
-      // setBOOLClusterArrayToZero(clusters_isMatched);
-      // setINTClusterArrayToZero(clusters_NTower);
-      // setINTClusterArrayToZero(clusters_trueID);
-      // setINTClusterArrayToZero(clusters_NtrueID);
-      // setFLOATClusterArrayToZero(clusters_X);
-      // setFLOATClusterArrayToZero(clusters_Y);
-      // setFLOATClusterArrayToZero(clusters_Z);
+      if (!_clusters_calo[clusterizerEnum][caloEnum].empty() && caloEnabled[caloEnum])
+        return true;
+      else 
+        return false;
     }
   }
 
-// C3 global cluster variables
-  else if(clusterizerEnum==kC3){
-    if(caloEnum==kFHCAL){
-      nclusters = _nclusters_C3_FHCAL;
-      clusters_E = _clusters_C3_FHCAL_E;
-      clusters_Eta = _clusters_C3_FHCAL_Eta;
-      clusters_Phi = _clusters_C3_FHCAL_Phi;
-      clusters_M02 = _clusters_C3_FHCAL_M02;
-      clusters_M20 = _clusters_C3_FHCAL_M20;
-      clusters_isMatched = _clusters_C3_FHCAL_isMatched;
-      clusters_NTower = _clusters_C3_FHCAL_NTower;
-      clusters_trueID = _clusters_C3_FHCAL_trueID;
-      clusters_NtrueID = _clusters_C3_FHCAL_NtrueID;
-      clusters_X = _clusters_C3_FHCAL_X;
-      clusters_Y = _clusters_C3_FHCAL_Y;
-      clusters_Z = _clusters_C3_FHCAL_Z;
-      return true;
-    } else if(caloEnum==kFEMC){
-      nclusters = _nclusters_C3_FEMC;
-      clusters_E = _clusters_C3_FEMC_E;
-      clusters_Eta = _clusters_C3_FEMC_Eta;
-      clusters_Phi = _clusters_C3_FEMC_Phi;
-      clusters_M02 = _clusters_C3_FEMC_M02;
-      clusters_M20 = _clusters_C3_FEMC_M20;
-      clusters_isMatched = _clusters_C3_FEMC_isMatched;
-      clusters_NTower = _clusters_C3_FEMC_NTower;
-      clusters_trueID = _clusters_C3_FEMC_trueID;
-      clusters_NtrueID = _clusters_C3_FEMC_NtrueID;
-      clusters_X = _clusters_C3_FEMC_X;
-      clusters_Y = _clusters_C3_FEMC_Y;
-      clusters_Z = _clusters_C3_FEMC_Z;
-      return true;
-    } else {
-      return false;
-      // nclusters = 0;
-      // setFLOATClusterArrayToZero(clusters_E);
-      // setFLOATClusterArrayToZero(clusters_Eta);
-      // setFLOATClusterArrayToZero(clusters_Phi);
-      // setFLOATClusterArrayToZero(clusters_M02);
-      // setFLOATClusterArrayToZero(clusters_M20);
-      // setBOOLClusterArrayToZero(clusters_isMatched);
-      // setINTClusterArrayToZero(clusters_NTower);
-      // setINTClusterArrayToZero(clusters_trueID);
-      // setINTClusterArrayToZero(clusters_NtrueID);
-      // setFLOATClusterArrayToZero(clusters_X);
-      // setFLOATClusterArrayToZero(clusters_Y);
-      // setFLOATClusterArrayToZero(clusters_Z);
-    }
-  }
-
-// C5 global cluster variables
-  else if(clusterizerEnum==kC5){
-    if(caloEnum==kFHCAL){
-      nclusters = _nclusters_C5_FHCAL;
-      clusters_E = _clusters_C5_FHCAL_E;
-      clusters_Eta = _clusters_C5_FHCAL_Eta;
-      clusters_Phi = _clusters_C5_FHCAL_Phi;
-      clusters_M02 = _clusters_C5_FHCAL_M02;
-      clusters_M20 = _clusters_C5_FHCAL_M20;
-      clusters_isMatched = _clusters_C5_FHCAL_isMatched;
-      clusters_NTower = _clusters_C5_FHCAL_NTower;
-      clusters_trueID = _clusters_C5_FHCAL_trueID;
-      clusters_NtrueID = _clusters_C5_FHCAL_NtrueID;
-      clusters_X = _clusters_C5_FHCAL_X;
-      clusters_Y = _clusters_C5_FHCAL_Y;
-      clusters_Z = _clusters_C5_FHCAL_Z;
-      return true;
-    } else if(caloEnum==kFEMC){
-      nclusters = _nclusters_C5_FEMC;
-      clusters_E = _clusters_C5_FEMC_E;
-      clusters_Eta = _clusters_C5_FEMC_Eta;
-      clusters_Phi = _clusters_C5_FEMC_Phi;
-      clusters_M02 = _clusters_C5_FEMC_M02;
-      clusters_M20 = _clusters_C5_FEMC_M20;
-      clusters_isMatched = _clusters_C5_FEMC_isMatched;
-      clusters_NTower = _clusters_C5_FEMC_NTower;
-      clusters_trueID = _clusters_C5_FEMC_trueID;
-      clusters_NtrueID = _clusters_C5_FEMC_NtrueID;
-      clusters_X = _clusters_C5_FEMC_X;
-      clusters_Y = _clusters_C5_FEMC_Y;
-      clusters_Z = _clusters_C5_FEMC_Z;
-      return true;
-    } else {
-      return false;
-      // nclusters = 0;
-      // setFLOATClusterArrayToZero(clusters_E);
-      // setFLOATClusterArrayToZero(clusters_Eta);
-      // setFLOATClusterArrayToZero(clusters_Phi);
-      // setFLOATClusterArrayToZero(clusters_M02);
-      // setFLOATClusterArrayToZero(clusters_M20);
-      // setBOOLClusterArrayToZero(clusters_isMatched);
-      // setINTClusterArrayToZero(clusters_NTower);
-      // setINTClusterArrayToZero(clusters_trueID);
-      // setINTClusterArrayToZero(clusters_NtrueID);
-      // setFLOATClusterArrayToZero(clusters_X);
-      // setFLOATClusterArrayToZero(clusters_Y);
-      // setFLOATClusterArrayToZero(clusters_Z);
-    }
-  }
-  else {
-    return false;
-    // nclusters = 0;
-    // setFLOATClusterArrayToZero(clusters_E);
-    // setFLOATClusterArrayToZero(clusters_Eta);
-    // setFLOATClusterArrayToZero(clusters_Phi);
-    // setFLOATClusterArrayToZero(clusters_M02);
-    // setFLOATClusterArrayToZero(clusters_M20);
-    // setBOOLClusterArrayToZero(clusters_isMatched);
-    // setINTClusterArrayToZero(clusters_NTower);
-    // setINTClusterArrayToZero(clusters_trueID);
-    // setINTClusterArrayToZero(clusters_NtrueID);
-    // setFLOATClusterArrayToZero(clusters_X);
-    // setFLOATClusterArrayToZero(clusters_Y);
-    // setFLOATClusterArrayToZero(clusters_Z);
-  }
 }
 
 float getCalibrationValue(float clusterE, int caloEnum, int algoEnum){
@@ -1268,65 +555,64 @@ float getEnergySmearing( int caloEnum, int algoEnum){
   return 1.0;
 }
 
-void fillHCalClustersIntoJetFindingInputs(
-  const int nclusters, float* clusters_E, float* clusters_eta, float* clusters_phi, bool* clusters_isMatched,
+void fillHCalClustersIntoJetFindingInputs( int caloEnum, int clusterizerEnum,  
   std::vector<float> & jetf_hcal_E, std::vector<float> & jetf_hcal_px, std::vector<float> & jetf_hcal_py, std::vector<float> & jetf_hcal_pz,
   std::vector<float> & jetf_calo_E, std::vector<float> & jetf_calo_px, std::vector<float> & jetf_calo_py, std::vector<float> & jetf_calo_pz,
   std::vector<float> & jetf_all_E, std::vector<float> & jetf_all_px, std::vector<float> & jetf_all_py, std::vector<float> & jetf_all_pz
 )
 {
-  for(Int_t iclus=0; iclus<nclusters; iclus++){
-      if(!clusters_isMatched[iclus]){
-          double pt = clusters_E[iclus] / cosh(clusters_eta[iclus]);
-          double px = pt * cos(clusters_phi[iclus]);
-          double py = pt * sin(clusters_phi[iclus]);
-          double pz = pt * sinh(clusters_eta[iclus]);
+  for(Int_t iclus=0; iclus<(Int_t)_clusters_calo[clusterizerEnum][caloEnum].size(); iclus++){
+      if(!(_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_isMatched){
+          double pt = (_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_E / cosh((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_Eta);
+          double px = pt * cos((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_Phi);
+          double py = pt * sin((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_Phi);
+          double pz = pt * sinh((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_Eta);
           jetf_hcal_px.push_back(px);
           jetf_hcal_py.push_back(py);
           jetf_hcal_pz.push_back(pz);
-          jetf_hcal_E.push_back(clusters_E[iclus]);
+          jetf_hcal_E.push_back((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_E);
           jetf_calo_px.push_back(px);
           jetf_calo_py.push_back(py);
           jetf_calo_pz.push_back(pz);
-          jetf_calo_E.push_back(clusters_E[iclus]);
+          jetf_calo_E.push_back((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_E);
           jetf_all_px.push_back(px);
           jetf_all_py.push_back(py);
           jetf_all_pz.push_back(pz);
-          jetf_all_E.push_back(clusters_E[iclus]);
+          jetf_all_E.push_back((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_E);
       }
   }
 }
 
 void fillECalClustersIntoJetFindingInputs(
-  const int nclusters, float* clusters_E, float* clusters_eta, float* clusters_phi, bool* clusters_isMatched,
+  int caloEnum, int clusterizerEnum,  
   std::vector<float> & jetf_emcal_E, std::vector<float> & jetf_emcal_px, std::vector<float> & jetf_emcal_py, std::vector<float> & jetf_emcal_pz,
   std::vector<float> & jetf_calo_E, std::vector<float> & jetf_calo_px, std::vector<float> & jetf_calo_py, std::vector<float> & jetf_calo_pz,
   std::vector<float> & jetf_all_E, std::vector<float> & jetf_all_px, std::vector<float> & jetf_all_py, std::vector<float> & jetf_all_pz,
   std::vector<float> & jetf_full_E, std::vector<float> & jetf_full_px, std::vector<float> & jetf_full_py, std::vector<float> & jetf_full_pz
 )
 {
-  for(Int_t iclus=0; iclus<nclusters; iclus++){
-      if(!clusters_isMatched[iclus]){
-          double pt = clusters_E[iclus] / cosh(clusters_eta[iclus]);
-          double px = pt * cos(clusters_phi[iclus]);
-          double py = pt * sin(clusters_phi[iclus]);
-          double pz = pt * sinh(clusters_eta[iclus]);
+    for(Int_t iclus=0; iclus<(Int_t)_clusters_calo[clusterizerEnum][caloEnum].size(); iclus++){
+      if(!(_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_isMatched){
+          double pt = (_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_E / cosh((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_Eta);
+          double px = pt * cos((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_Phi);
+          double py = pt * sin((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_Phi);
+          double pz = pt * sinh((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_Eta);
           jetf_emcal_px.push_back(px);
           jetf_emcal_py.push_back(py);
           jetf_emcal_pz.push_back(pz);
-          jetf_emcal_E.push_back(clusters_E[iclus]);
+          jetf_emcal_E.push_back((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_E);
           jetf_calo_px.push_back(px);
           jetf_calo_py.push_back(py);
           jetf_calo_pz.push_back(pz);
-          jetf_calo_E.push_back(clusters_E[iclus]);
+          jetf_calo_E.push_back((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_E);
           jetf_all_px.push_back(px);
           jetf_all_py.push_back(py);
           jetf_all_pz.push_back(pz);
-          jetf_all_E.push_back(clusters_E[iclus]);
+          jetf_all_E.push_back((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_E);
           jetf_full_px.push_back(px);
           jetf_full_py.push_back(py);
           jetf_full_pz.push_back(pz);
-          jetf_full_E.push_back(clusters_E[iclus]);
+          jetf_full_E.push_back((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_E);
       }
   }
 }
