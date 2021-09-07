@@ -9,6 +9,7 @@
 
 #include "jetresolutionhistos.cxx"
 #include "resolutionhistos.cxx"
+#include "extracaloresolutionhistos.cxx"
 #include "clusterstudies.cxx"
 #include "trackingefficiency.cxx"
 #include "hitstudies.cxx"
@@ -493,6 +494,7 @@ void treeProcessing(
         clusterstudies();
         if(verbosity>1) std::cout << "running resolutionhistos" << std::endl;
         resolutionhistos();
+        extracaloresolutionhistos();
         if(verbosity>1) std::cout << "loop done ... next event" << std::endl;
         if(tracksEnabled) trackmatchingstudies();
 
@@ -513,6 +515,7 @@ void treeProcessing(
     jetresolutionhistosSave();
     std::cout << "running resolutionhistosSave" << std::endl;
     resolutionhistosSave();
+    extracaloresolutionhistosSave();
     std::cout << "running clusterstudiesSave" << std::endl;
     clusterstudiesSave();
 
