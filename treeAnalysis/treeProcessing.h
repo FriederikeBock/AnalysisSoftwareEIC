@@ -8,7 +8,7 @@
 
 TString outputDir;
 // Constants are from the EventEvaluator class in coresoftware
-const int _maxNHits = 5000;
+const int _maxNHits = 10000;
 const int _maxNTowers = 50 * 50;
 const int _maxNTowersCentral = 2000;
 const int _maxNTowersDR = 3000 * 3000;
@@ -176,14 +176,15 @@ float* _track_Proj_true_z             = new float[_maxNProjections];
 float* _track_Proj_true_t             = new float[_maxNProjections];
 // MC particles
 int _nMCPart;
-int* _mcpart_ID                = new int[_maxNMCPart];
-int* _mcpart_ID_parent         = new int[_maxNMCPart];
-int* _mcpart_PDG               = new int[_maxNMCPart];
+int* _mcpart_ID                  = new int[_maxNMCPart];
+int* _mcpart_ID_parent           = new int[_maxNMCPart];
+int* _mcpart_PDG                 = new int[_maxNMCPart];
 float* _mcpart_E                 = new float[_maxNMCPart];
 float* _mcpart_px                = new float[_maxNMCPart];
 float* _mcpart_py                = new float[_maxNMCPart];
 float* _mcpart_pz                = new float[_maxNMCPart];
 float* _mcpart_Eta                = new float[_maxNMCPart];
+float* _mcpart_Phi                = new float[_maxNMCPart];
 
 TRandom3  _fRandom;                                  // random for effi generation
 
@@ -397,6 +398,8 @@ void SetBranchAddressesTree(TTree* inputTree){
     inputTree->SetBranchAddress("mcpart_py",     _mcpart_py);
     inputTree->SetBranchAddress("mcpart_pz",     _mcpart_pz);
 }
+
+
 
 //__________________________________________________________________________________________________________
 TString ReturnDateStr(){

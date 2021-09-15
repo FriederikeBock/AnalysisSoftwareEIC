@@ -43,10 +43,10 @@ PIDS=()
 echo ""
 echo "Starting ${NUMTHREADS} processes..."
 echo "Progress can be monitored with 'tail -f treeProcessing/logs/*.log'"
-# Start NUMTHREADS instances of the analyzer 
+# Start NUMTHREADS instances of the analyzer
 for (( i=0; i<$NUMTHREADS; i++ )); do
   printf -v J "%02d" $i
-  root -b -x -q -l 'treeProcessing.C("treeProcessing/input_files/x'$J'", "geometry.root", "'$J'", true, true)' > "treeProcessing/logs/$J.log" 2> "treeProcessing/logs/$J.err" &
+  root -b -x -q -l 'treeProcessing.C("treeProcessing/input_files/x'$J'", "geometry.root", "'$J'", true, true, true, true, -1, 0, true)' > "treeProcessing/logs/$J.log" 2> "treeProcessing/logs/$J.err" &
   PIDS+=( $! )
 done;
 
@@ -56,7 +56,7 @@ echo "Done processing, merging histograms..."
 # Merge histograms with hadd
 for FILE in  output_CS.root output_HITS.root output_JRH.root output_TMSTUD.root output_TRKRS.root output_CLSIZER.root output_EventObservables.root output_JetObservables.root output_RH.root output_TRKEFF.root output_TRKS_Comparison.root; do
     FILEPATHS=()
-    for (( i=0; i<$NUMTHREADS; i++)); do 
+    for (( i=0; i<$NUMTHREADS; i++)); do
         printf -v FILEPATH "treeProcessing/%02d/%s" $i $FILE
         FILEPATHS+=( $FILEPATH )
     done

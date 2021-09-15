@@ -118,21 +118,21 @@
   
   TString nameOutEtaRange[3]   = {"backward", "central", "forward"};
   TString labelEtaRange[3]     = {"     e-going", "     barrel", "     h-going"};
-  Int_t minEtaBin[3]           = {1,6,10};
-  Int_t maxEtaBin[3]           = {4,8,13};
-  Int_t maxNEtaBins[3]         = {4, 3, 4};
+  Int_t minEtaBin[3]           = {1, 4, 10};
+  Int_t maxEtaBin[3]           = {4, 8, 13};
+  Int_t maxNEtaBins[3]         = {4, 5,  4};
     
-  Int_t minEtaBinFull[3]       = {1,6,9};
-  Int_t maxEtaBinFull[3]       = {5,8,13};
-  Int_t maxNEtaBinsFull[3]     = {5,3,5};
+  Int_t minEtaBinFull[3]       = {1, 4,  9};
+  Int_t maxEtaBinFull[3]       = {5, 8, 13};
+  Int_t maxNEtaBinsFull[3]     = {5, 5,  5};
 
   const Int_t nClus            = 7;
-  TString nameClus[nClus]      = {"V1", "V3", "3x3", "5x5", "C3", "C5", "MA"};
+  TString nameClus[nClus]      = {"MA", "V1", "V3", "3x3", "5x5", "C3", "C5" };
   
   Bool_t enableClus[nClus]             = {1, 1, 0, 1, 0, 1, 1};
-  Color_t colorClus[3][nClus]           = { {kBlack, kRed+1, kGreen+2, kCyan+2, kAzure,  kOrange, kMagenta+2}, 
-                                            {kGray+1, kRed-1, kGreen-1, kCyan-1, kAzure+3,  kOrange-3, kMagenta-1}, 
-                                            {kGray+2, kRed-6, kGreen-6, kCyan-6, kAzure-5, kOrange+4, kMagenta-6}
+  Color_t colorClus[3][nClus]           = { {kMagenta+2, kBlack, kRed+1, kGreen+2, kCyan+2, kAzure,  kOrange }, 
+                                            {kMagenta-1, kGray+1, kRed-1, kGreen-1, kCyan-1, kAzure+3,  kOrange-3 }, 
+                                            {kMagenta-6, kGray+2, kRed-6, kGreen-6, kCyan-6, kAzure-5, kOrange+4}
                                           };
-  Style_t markerStyleClus[nClus]    = {20, 24, 25, 27, 28, 30, 46};
+  Style_t markerStyleClus[nClus]    = {46, 20, 24, 25, 27, 28, 30 };
   Size_t markerSizeClus[nClus]      = {1.5, 1.4, 1.5, 1.9, 1.6, 1.8, 1.5};

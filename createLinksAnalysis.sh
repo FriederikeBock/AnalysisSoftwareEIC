@@ -6,10 +6,10 @@ fi
 
 mkdir trackingresolution/
 mkdir treeAnalysis/
-mkdir resolutionHCAL/
+mkdir resolutionCalo/
 mkdir clusterProperties/
 mkdir common/
-mkdir plotEtaPhi/
+mkdir visualizationGeomAndClusters/
 ln -s $EICANA/trackingresolution/*.C trackingresolution/
 # ln -s $EICANA/trackingresolution/*.h trackingresolution/
 ln -s $EICANA/trackingresolution/*.sh trackingresolution/
@@ -18,8 +18,8 @@ ln -s $EICANA/treeAnalysis/*.cxx treeAnalysis/
 ln -s $EICANA/treeAnalysis/*.C treeAnalysis/
 ln -s $EICANA/treeAnalysis/*.sh treeAnalysis/
 ln -s $EICANA/clusterProperties/*.C clusterProperties/
-ln -s $EICANA/plotEtaPhi/*.C plotEtaPhi/
-ln -s $EICANA/plotEtaPhi/*.sh plotEtaPhi/
-ln -s $EICANA/resolutionHCAL/*.C resolutionHCAL/
+ln -s $EICANA/visualizationGeomAndClusters/*.C visualizationGeomAndClusters/
+ln -s $EICANA/visualizationGeomAndClusters/*.sh visualizationGeomAndClusters/
+ln -s $EICANA/resolutionCalo/*.C resolutionCalo/
 ln -s $EICANA/common/*.h common/
 ln -s $EICANA/*.sh .

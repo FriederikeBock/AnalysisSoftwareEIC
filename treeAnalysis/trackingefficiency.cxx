@@ -85,7 +85,7 @@ void trackingefficiency(){
 
   for(int imc=0; imc<_nMCPart; imc++){
     TVector3 mcpartvec(_mcpart_px[imc],_mcpart_py[imc],_mcpart_pz[imc]);
-    float trueeta = mcpartvec.Eta();
+    float trueeta = _mcpart_Eta[imc];
     float truept  = mcpartvec.Pt();
     float truep   = mcpartvec.Mag();
 

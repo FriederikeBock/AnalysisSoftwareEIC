@@ -213,7 +213,7 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
       if (eta < min_eta[select] || eta > max_eta[select]) {
         continue;
       }
-      for (std::size_t k = 0; k < detectors[select]; k++) {   // Skip jets within R of the detector boundary
+      for (std::size_t k = 0; k < (std::size_t)detectors[select]; k++) {   // Skip jets within R of the detector boundary
         if (std::abs(std::get<1>(recjets)[i].eta() - detector_eta_boundaries[select][k]) < jetR) {
           // std::cout << "excluding jet near edge of " << jettype[select] << std::endl;
           continue;
