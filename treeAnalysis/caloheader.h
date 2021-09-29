@@ -18,6 +18,7 @@ typedef struct {
   float cluster_M02;
   float cluster_M20;
   bool cluster_isMatched;
+  vector<int> cluster_matchedTrackIDs;
   int cluster_NTowers;
   int cluster_trueID;
   int cluster_NtrueID;

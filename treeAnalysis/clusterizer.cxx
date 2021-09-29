@@ -14,7 +14,7 @@ bool _doClusterECalibration = true;
 
 // ANCHOR track/projection matching function
 // TODO at some point we might want E/p
-bool isClusterMatched(  clustersStrct tempcluster, 
+vector<int> isClusterMatched(  clustersStrct tempcluster, 
                         int caloEnum, 
                         int clusterizerEnum, 
                         unsigned short primaryTrackSource, 
@@ -35,15 +35,18 @@ bool isClusterMatched(  clustersStrct tempcluster,
                                                                     nbins2Ddelta, min2Ddeltahist, max2Ddeltahist, nbins2Ddelta, min2Ddeltahist, max2Ddeltahist);
     }
   }
+
+  vector<int> matching_trackIDs;
+
   // in case the cluster position is 0,0 -> no matching to be done
-  if(tempcluster.cluster_X==0 && tempcluster.cluster_Y==0) return false;
+  if(tempcluster.cluster_X==0 && tempcluster.cluster_Y==0) return matching_trackIDs;
 
   float matchingwindow = ReturnTrackMatchingWindowForCalo(caloEnum);
   bool isFwd = IsForwardCalorimeter(caloEnum);
 
   if(useProjection){
     int projectionlayer = ReturnProjectionIndexForCalorimeter(caloEnum);
-    if(projectionlayer==-1) return false;
+    if(projectionlayer==-1) return matching_trackIDs;
     for(Int_t iproj=0; iproj<_nProjections; iproj++){
       // check for correct projection layer
       if(_track_ProjLayer[iproj]!=projectionlayer) continue;
@@ -74,7 +77,7 @@ bool isClusterMatched(  clustersStrct tempcluster,
         // check y or phi difference
         if(abs(delta_2) < matchingwindow){
           h_clusterizer_matched_2D_delta[caloEnum][clusterizerEnum]->Fill(delta_1,delta_2);
-          return true; // cluster is matched to projection!
+          matching_trackIDs.push_back((int)_track_ProjTrackID[iproj]);
         }
       }
     }
@@ -106,12 +109,12 @@ bool isClusterMatched(  clustersStrct tempcluster,
         // check y or phi difference
         if(abs(delta_2) < matchingwindow){
           h_clusterizer_matched_2D_delta[caloEnum][clusterizerEnum]->Fill(delta_1,delta_2);
-          return true; // cluster is matched to track!
+          matching_trackIDs.push_back((int)_track_ID[itrk]);
         }
       }
     }
   }
-  return false;
+  return matching_trackIDs;
 }
 
 
@@ -581,7 +584,12 @@ void runclusterizer(
       tempstructC.cluster_Y = showershape_eta_phi[5];
       tempstructC.cluster_Z = showershape_eta_phi[6];
       if (tracksEnabled){
-        tempstructC.cluster_isMatched = isClusterMatched(tempstructC, caloEnum, clusterizerEnum, primaryTrackSource, true);
+	tempstructC.cluster_matchedTrackIDs = isClusterMatched(tempstructC, caloEnum, clusterizerEnum, primaryTrackSource, true);
+	if(tempstructC.cluster_matchedTrackIDs.size() > 0) {
+          tempstructC.cluster_isMatched = true;
+	} else {
+          tempstructC.cluster_isMatched = false;
+        }
       } else {
         tempstructC.cluster_isMatched = false;
       }
