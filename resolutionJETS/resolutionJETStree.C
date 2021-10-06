@@ -18,8 +18,8 @@
 const int njettypes = 5;
 const int nInputs = 1;
 
-const int firstEtaBin[njettypes] = {1, 10, 10, 10, 10};
-const float min_eta[njettypes]   = {-3.5, 1.5, 1.5, 1.5, 1.5};  // TODO Save this info as metadata...
+const int firstEtaBin[njettypes] = {1, 1, 1, 10, 10};
+const float min_eta[njettypes]   = {-3.5, -3.5, -3.5, 1.5, 1.5};  // TODO Save this info as metadata...
 const float max_eta[njettypes]   = {3.5, 3.5, 3.5, 3.5, 3.5};
 
 // Regions to group plots into
