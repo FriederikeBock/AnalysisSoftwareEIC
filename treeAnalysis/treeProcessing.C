@@ -77,9 +77,9 @@ void treeProcessing(
     SetGeometryIndices();
 
     for (Int_t c = 0; c < 11; c++){
-      cout << str_calorimeter[c] << "\t" << caloEnabled[c] << endl; 
+      cout << str_calorimeter[c] << "\t" << caloEnabled[c] << endl;
     }
-    
+
     Long64_t nEntriesTree                 = tt_event->GetEntries();
     std::cout << "Number of events in tree: " << nEntriesTree << std::endl;
     if(maxNEvent>0 && maxNEvent<nEntriesTree){
@@ -140,7 +140,7 @@ void treeProcessing(
             }
             // if(_mcpart_PDG[imc]==111) cout << "pi0 found (" << _mcpart_ID[imc] << ") with mother: " << _mcpart_PDG[motherid] << " (" <<  _mcpart_ID_parent[imc] << ")" << endl;
         }
-        
+
         if (verbosity > 0){
           for(int imc=0; imc<_nMCPart; imc++){
             std::cout << "MC part: \t" << imc << "\t E = " << _mcpart_E[imc] << "\tEta: " << _mcpart_Eta[imc]<< "\tPhi: " << _mcpart_Phi[imc]<<  std::endl;
@@ -153,21 +153,21 @@ void treeProcessing(
         Int_t nTowers[maxcalo] = {_nTowers_FHCAL, _nTowers_FEMC, _nTowers_DRCALO, _nTowers_EEMC, _nTowers_CEMC,
                                   _nTowers_EHCAL, _nTowers_HCALIN, _nTowers_HCALOUT, _nTowers_LFHCAL, _nTowers_EEMCG,
                                   _nTowers_BECAL  };
-        
+
         // run clusterizers normal calos
-        for (int cal = 0; cal < maxcalo; cal++){                          
+        for (int cal = 0; cal < maxcalo; cal++){
           if(do_reclus && nTowers[cal] > 0 && caloEnabled[cal]){
             for (int algo = 0; algo < _active_algo; algo++){
               if(verbosity>1) cout << "clusterizing " << str_clusterizer[algo].Data() <<  " for " << str_calorimeter[cal].Data() << endl;
               runclusterizer(algo, cal, seedE[cal], aggE[cal], primaryTrackSource);
             }
-          } 
+          }
         }
 
         if(do_reclus && _nTowers_DRCALO && caloEnabled[kDRCALO]){ //do_V1clusterizerDRCALO
           if(verbosity>1) cout << "clusterizing V1 for DRCALO" << endl;
           runclusterizer(kV1, kDRCALO, seedE[kDRCALO], aggE[kDRCALO], primaryTrackSource);
-        } 
+        }
         if((do_reclus) && verbosity>1) cout << "done with clusterization!" << endl;
 
         // ANCHOR Hits loop variables:
@@ -230,8 +230,8 @@ void treeProcessing(
             }
         }
 
-        
-      
+
+
         // ANCHOR jet variables:
         std::vector<float> jetf_hcal_E;
         std::vector<float> jetf_hcal_px;
@@ -245,22 +245,22 @@ void treeProcessing(
         std::vector<float> jetf_calo_px;
         std::vector<float> jetf_calo_py;
         std::vector<float> jetf_calo_pz;
-        
+
         int fwdCaloID = kFHCAL;
         if (!caloEnabled[kFHCAL]) fwdCaloID = kLFHCAL;
-        
+
         for (Int_t icalo = 0; icalo < maxcalo; icalo++){
           for (Int_t ialgo = 0; ialgo < maxAlgo; ialgo++){
             if (loadClusterizerInput(ialgo, icalo) && verbosity>2) std::cout << str_calorimeter[icalo].Data() << "\t" << ialgo << endl;
           }
         }
-        
+
         if (verbosity > 4){
           for(Int_t iclus=0; iclus<(Int_t)_clusters_calo[kV1][fwdCaloID].size(); iclus++){
             std::cout << "\tcls " << iclus << "\tE " << (_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_E << "\tEta " << (_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_Eta << "\tPhi " << (_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_Phi << "\tntowers: " << (_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_NTowers << "\ttrueID: " << _clusters_FHCAL_trueID[iclus] << std::endl;
           }
         }
-        
+
         // apply calibration if desired
         if(kV1<_active_algo){
           // TODO: Should kV1 in the calibration actually be _active_algo?
@@ -277,29 +277,20 @@ void treeProcessing(
             }
           }
         }
-        if (caloEnabled[fwdCaloID]){
-          if(do_reclus && kMA<_active_algo && _do_jetfinding){
-              fillHCalClustersIntoJetFindingInputs( fwdCaloID, kMA,
-                                                  jetf_hcal_E, jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz,
-                                                  jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
-                                                  jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz);
+        if(do_reclus && kMA<_active_algo && _do_jetfinding){
+          // ANCHOR FEMC cluster loop variables:
+          // for(Int_t iclus=0; iclus<_nclusters_FEMC; iclus++){
+          //     if(verbosity>1) std::cout << "\tFEMC:  cluster " << iclus << "\twith E = " << (_clusters_calo[kV1][kFEMC].at(iclus)).cluster_E << " GeV" << std::endl;
+          // }
+          if (caloEnabled[kFEMC]){
+            fillECalClustersIntoJetFindingInputs(
+                kFEMC, kMA,
+                jetf_emcal_E, jetf_emcal_px, jetf_emcal_py, jetf_emcal_pz,
+                jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
+                jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz,
+                jetf_full_E, jetf_full_px, jetf_full_py, jetf_full_pz
+            );
           }
-        }
-        // ANCHOR FEMC cluster loop variables:
-        // for(Int_t iclus=0; iclus<_nclusters_FEMC; iclus++){
-        //     if(verbosity>1) std::cout << "\tFEMC:  cluster " << iclus << "\twith E = " << (_clusters_calo[kV1][kFEMC].at(iclus)).cluster_E << " GeV" << std::endl;
-        // }
-        if (caloEnabled[kFEMC]){
-          if(do_reclus && kMA<_active_algo && _do_jetfinding){
-              fillECalClustersIntoJetFindingInputs( kFEMC, kMA,
-                                                  jetf_emcal_E, jetf_emcal_px, jetf_emcal_py, jetf_emcal_pz,
-                                                  jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
-                                                  jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz,
-                                                  jetf_full_E, jetf_full_px, jetf_full_py, jetf_full_pz);
-          }
-        }
-        // Add rest of calorimeter clusters to jet finder inputs
-        if(do_reclus && kMA<_active_algo && _do_jetfinding) {
           // EEMC
           if (caloEnabled[kEEMC]){
             fillECalClustersIntoJetFindingInputs(
@@ -340,7 +331,16 @@ void treeProcessing(
                 jetf_full_E, jetf_full_px, jetf_full_py, jetf_full_pz
             );
           }
-          
+
+          // Forward HCal
+          if (caloEnabled[fwdCaloID]){
+            fillHCalClustersIntoJetFindingInputs(
+                fwdCaloID, kMA,
+                jetf_hcal_E, jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz,
+                jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
+                jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz
+            );
+          }
           // EHCAL
           if (caloEnabled[kEHCAL]){
             fillHCalClustersIntoJetFindingInputs(
@@ -396,10 +396,10 @@ void treeProcessing(
                     jetf_truth_py.push_back(_mcpart_py[imc]);
                     jetf_truth_pz.push_back(_mcpart_pz[imc]);
                     jetf_truth_E.push_back(_mcpart_E[imc]);
-//                 } 
+//                 }
                 // fill charged only inputs (reject neutral particles)
 //                 std::cout << _mcpart_PDG[imc] << std::endl;
-                if(abs(_mcpart_PDG[imc])==211 || abs(_mcpart_PDG[imc])==321 || abs(_mcpart_PDG[imc])==2212 || abs(_mcpart_PDG[imc])==11 || abs(_mcpart_PDG[imc])==13){ 
+                if(abs(_mcpart_PDG[imc])==211 || abs(_mcpart_PDG[imc])==321 || abs(_mcpart_PDG[imc])==2212 || abs(_mcpart_PDG[imc])==11 || abs(_mcpart_PDG[imc])==13){
                     jetf_truthcharged_px.push_back(_mcpart_px[imc]);
                     jetf_truthcharged_py.push_back(_mcpart_py[imc]);
                     jetf_truthcharged_pz.push_back(_mcpart_pz[imc]);
@@ -447,7 +447,7 @@ void treeProcessing(
             // emcal jets (rec)
             auto jetsEmcalRec = findJets(jetR, jetAlgorithm, jetf_emcal_px, jetf_emcal_py, jetf_emcal_pz, jetf_emcal_E);
             if(verbosity>1) std::cout << "found " << std::get<1>(jetsEmcalRec).size() << " rec emcal jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
-            
+
             // calo jets (rec)
             auto jetsCaloRec = findJets(jetR, jetAlgorithm, jetf_calo_px, jetf_calo_py, jetf_calo_pz, jetf_calo_E);
             if(verbosity>1) std::cout << "found " << std::get<1>(jetsCaloRec).size() << " rec calo jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
@@ -459,8 +459,8 @@ void treeProcessing(
             // calo jets, no clustering
             auto jetsNoCluster = findJets(jetR, jetAlgorithm, nocluster_px, nocluster_py, nocluster_pz, nocluster_E);
             if(verbosity>1) std::cout << "found " << std::get<1>(jetsNoCluster).size() << " rec calo jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
-            
-            
+
+
             // Jet observables
             fillEventObservables(eventObservables, primaryTrackSource);
             fillJetObservables(jetObservablesTrue, std::get<1>(jetsTrue), jetR);
@@ -480,7 +480,7 @@ void treeProcessing(
             jetresolutionhistos(jetsEmcalRec,  jetsTrue,  6, jetR);
             // TString jettype[njettypes] = {"track", "full","hcal","calo","all"};
         }
-        if(tracksEnabled){        
+        if(tracksEnabled){
           if(verbosity>1) cout << "running trackingefficiency" << endl;
           trackingefficiency();
           if(verbosity>1) cout << "running trackingresolution" << endl;
@@ -495,7 +495,7 @@ void treeProcessing(
         resolutionhistos();
         if(verbosity>1) std::cout << "loop done ... next event" << std::endl;
         if(tracksEnabled) trackmatchingstudies();
-        
+
         clearClusterVectors();
 
     } // event loop end
@@ -515,7 +515,7 @@ void treeProcessing(
     resolutionhistosSave();
     std::cout << "running clusterstudiesSave" << std::endl;
     clusterstudiesSave();
-    
+
     if(tracksEnabled){
       std::cout << "running trackingefficiencyhistosSave" << std::endl;
       trackingefficiencyhistosSave();
