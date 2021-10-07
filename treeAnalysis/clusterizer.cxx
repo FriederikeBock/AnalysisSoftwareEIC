@@ -87,7 +87,7 @@ bool isClusterMatched(  clustersStrct tempcluster,
       TVector3 trackvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
       float tracketa,trackphi = -20;
       if(isFwd){
-        trackvec*=(zHC/trackvec.Z());
+        trackvec*=(zHC/abs(trackvec.Z()));
       } else {
           tracketa = trackvec.Eta();
           trackphi = trackvec.Phi();
