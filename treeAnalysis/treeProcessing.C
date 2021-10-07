@@ -150,145 +150,23 @@ void treeProcessing(
               std::cout << "towers " <<   str_calorimeter[icalo].Data() << "\t" << ReturnMaxTowerCalo(icalo) << std::endl;
           }
         }
-
+        Int_t nTowers[maxcalo] = {_nTowers_FHCAL, _nTowers_FEMC, _nTowers_DRCALO, _nTowers_EEMC, _nTowers_CEMC,
+                                  _nTowers_EHCAL, _nTowers_HCALIN, _nTowers_HCALOUT, _nTowers_LFHCAL, _nTowers_EEMCG,
+                                  _nTowers_BECAL  };
         
-        float seed_E = 0.5;
-        float aggregation_E = 0.1;
-        // run clusterizers FHCAL
-        if(do_reclus && _nTowers_FHCAL && caloEnabled[kFHCAL]){
-            if(k3x3<_active_algo){
-                if(verbosity>1) cout << "clusterizing 3x3 for FHCAL" << endl;
-                runclusterizer(k3x3, kFHCAL,seed_E, aggregation_E, primaryTrackSource);
+        // run clusterizers normal calos
+        for (int cal = 0; cal < maxcalo; cal++){                          
+          if(do_reclus && nTowers[cal] > 0 && caloEnabled[cal]){
+            for (int algo = 0; algo < _active_algo; algo++){
+              if(verbosity>1) cout << "clusterizing " << str_clusterizer[algo].Data() <<  " for " << str_calorimeter[cal].Data() << endl;
+              runclusterizer(algo, cal, seedE[cal], aggE[cal], primaryTrackSource);
             }
-            if(k5x5<_active_algo){
-                if(verbosity>1) cout << "clusterizing 5x5 for FHCAL" << endl;
-                runclusterizer(k5x5, kFHCAL,seed_E, aggregation_E, primaryTrackSource);
-            }
-            if(kV3<_active_algo){
-                if(verbosity>1) cout << "clusterizing V3 for FHCAL" << endl;
-                runclusterizer(kV3, kFHCAL,seed_E, aggregation_E, primaryTrackSource);
-            }
-            if(kMA<_active_algo){
-                if(verbosity>1) cout << "clusterizing MA for FHCAL" << endl;
-                runclusterizer(kMA, kFHCAL,seed_E, aggregation_E, primaryTrackSource);
-            }
-            if(kC3<_active_algo){
-                if(verbosity>1) cout << "clusterizing C3 for FHCAL" << endl;
-                runclusterizer(kC3, kFHCAL,seed_E, aggregation_E, primaryTrackSource);
-            }
-            if(kC5<_active_algo){
-                if(verbosity>1) cout << "clusterizing C5 for FHCAL" << endl;
-                runclusterizer(kC5, kFHCAL,seed_E, aggregation_E, primaryTrackSource);
-            }
-        } 
-        
-        // run clusterizers FEMC
-        if(do_reclus && _nTowers_FEMC && caloEnabled[kFEMC]){
-          Float_t seed_E_FEMC         = 0.1;
-          Float_t aggregation_E_FEMC  = 0.005;
-            if(k3x3<_active_algo){
-                if(verbosity>1) cout << "clusterizing 3x3 for FEMC" << endl;
-                runclusterizer(k3x3, kFEMC,seed_E_FEMC, aggregation_E_FEMC, primaryTrackSource);
-            }
-            if(k5x5<_active_algo){
-                if(verbosity>1) cout << "clusterizing 5x5 for FEMC" << endl;
-                runclusterizer(k5x5, kFEMC,seed_E_FEMC, aggregation_E_FEMC, primaryTrackSource);
-            }
-            if(kV3<_active_algo){
-                if(verbosity>1) cout << "clusterizing V3 for FEMC" << endl;
-                runclusterizer(kV3, kFEMC,seed_E_FEMC, aggregation_E_FEMC, primaryTrackSource);
-            }
-            if(kMA<_active_algo){
-                if(verbosity>1) cout << "clusterizing MA for FEMC" << endl;
-                runclusterizer(kMA, kFEMC,seed_E_FEMC, aggregation_E_FEMC, primaryTrackSource);
-            }
-            if(kC3<_active_algo){
-                if(verbosity>1) cout << "clusterizing C3 for FEMC" << endl;
-                runclusterizer(kC3, kFEMC,seed_E_FEMC, aggregation_E_FEMC, primaryTrackSource);
-            }
-            if(kC5<_active_algo){
-                if(verbosity>1) cout << "clusterizing C5 for FEMC" << endl;
-                runclusterizer(kC5, kFEMC,seed_E_FEMC, aggregation_E_FEMC, primaryTrackSource);
-            }
-        } 
-
-        if(do_reclus && _nTowers_CEMC && caloEnabled[kCEMC]){
-            float seed_E_CEMC = 0.5;
-            float aggregation_E_CEMC = 0.1;
-            if(kMA<_active_algo){
-                if(verbosity>1) cout << "clusterizing MA for CEMC" << endl;
-                runclusterizer(kMA, kCEMC,seed_E_CEMC, aggregation_E_CEMC, primaryTrackSource);
-            }
-        } 
-
-        if(do_reclus && _nTowers_HCALIN && caloEnabled[kHCALIN]){
-            float seed_E_HCALIN = 0.2;
-            float aggregation_E_HCALIN = 0.05;
-            if(kMA<_active_algo){
-                if(verbosity>1) cout << "clusterizing MA for HCALIN" << endl;
-                runclusterizer(kMA, kHCALIN,seed_E_HCALIN, aggregation_E_HCALIN, primaryTrackSource);
-            }
-        } 
-
-        if(do_reclus && _nTowers_HCALOUT && caloEnabled[kHCALOUT]){
-            float seed_E_HCALOUT = 0.5;
-            float aggregation_E_HCALOUT = 0.1;
-            if(kMA<_active_algo){
-                if(verbosity>1) cout << "clusterizing MA for HCALOUT" << endl;
-                runclusterizer(kMA, kHCALOUT,seed_E_HCALOUT, aggregation_E_HCALOUT, primaryTrackSource);
-            }
-        } 
-
-        if(do_reclus && _nTowers_EEMCG && caloEnabled[kEEMCG]){
-            float seed_E_EEMCG = 0.1;
-            float aggregation_E_EEMCG = 0.01;
-            if(kMA<_active_algo){
-                if(verbosity>1) cout << "clusterizing MA for EEMCG" << endl;
-                runclusterizer(kMA, kEEMCG,seed_E_EEMCG, aggregation_E_EEMCG, primaryTrackSource);
-            }
-        } 
-
-        if(do_reclus && _nTowers_BECAL  && caloEnabled[kBECAL]){
-            float seed_E_BECAL = 0.1;
-            float aggregation_E_BECAL = 0.01;
-            if(kMA<_active_algo){
-                if(verbosity>1) cout << "clusterizing MA for BECAL" << endl;
-                runclusterizer(kMA, kBECAL,seed_E_BECAL, aggregation_E_BECAL, primaryTrackSource);
-            }
-        } 
-
-        if(do_reclus && _nTowers_EEMC  && caloEnabled[kEEMC]){
-            float seed_E_EEMC = 0.1;
-            float aggregation_E_EEMC = 0.05;
-            if(kMA<_active_algo){
-                if(verbosity>1) cout << "clusterizing MA for EEMC" << endl;
-                runclusterizer(kMA, kEEMC,seed_E_EEMC, aggregation_E_EEMC, primaryTrackSource);
-            }
-        } 
-
-        if(do_reclus && _nTowers_LFHCAL && caloEnabled[kLFHCAL]){
-            float seed_E_LFHCAL = 0.1;
-            float aggregation_E_LFHCAL = 0.001;
-            if(kMA<_active_algo){
-                if(verbosity>1) cout << "clusterizing MA for LFHCAL" << endl;
-                runclusterizer(kMA, kLFHCAL,seed_E_LFHCAL, aggregation_E_LFHCAL, primaryTrackSource);
-            }
-        } 
-
-        if(do_reclus && _nTowers_EHCAL && caloEnabled[kEHCAL]){
-            float seed_E_EHCAL = 0.01;
-            float aggregation_E_EHCAL = 0.005;
-            if(kMA<_active_algo){
-                if(verbosity>1) cout << "clusterizing MA for EHCAL" << endl;
-                runclusterizer(kMA, kEHCAL,seed_E_EHCAL, aggregation_E_EHCAL, primaryTrackSource);
-            }
-        } 
+          } 
+        }
 
         if(do_reclus && _nTowers_DRCALO && caloEnabled[kDRCALO]){ //do_V1clusterizerDRCALO
-            float seed_E_DRCALO = 0.3;
-            float aggregation_E_DRCALO = 0.05;
-            if(verbosity>1) cout << "clusterizing V1 for DRCALO" << endl;
-            runclusterizer(kV1, kDRCALO,seed_E_DRCALO, aggregation_E_DRCALO, primaryTrackSource);
+          if(verbosity>1) cout << "clusterizing V1 for DRCALO" << endl;
+          runclusterizer(kV1, kDRCALO, seedE[kDRCALO], aggE[kDRCALO], primaryTrackSource);
         } 
         if((do_reclus) && verbosity>1) cout << "done with clusterization!" << endl;
 
@@ -399,28 +277,31 @@ void treeProcessing(
             }
           }
         }
-        if(do_reclus && kMA<_active_algo && _do_jetfinding){
-            fillHCalClustersIntoJetFindingInputs( fwdCaloID, kMA,
-                                                jetf_hcal_E, jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz,
-                                                jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
-                                                jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz);
+        if (caloEnabled[fwdCaloID]){
+          if(do_reclus && kMA<_active_algo && _do_jetfinding){
+              fillHCalClustersIntoJetFindingInputs( fwdCaloID, kMA,
+                                                  jetf_hcal_E, jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz,
+                                                  jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
+                                                  jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz);
+          }
         }
-
         // ANCHOR FEMC cluster loop variables:
         // for(Int_t iclus=0; iclus<_nclusters_FEMC; iclus++){
         //     if(verbosity>1) std::cout << "\tFEMC:  cluster " << iclus << "\twith E = " << (_clusters_calo[kV1][kFEMC].at(iclus)).cluster_E << " GeV" << std::endl;
         // }
-        if(do_reclus && kMA<_active_algo && _do_jetfinding){
-            fillECalClustersIntoJetFindingInputs( kFEMC, kMA,
-                                                jetf_emcal_E, jetf_emcal_px, jetf_emcal_py, jetf_emcal_pz,
-                                                jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
-                                                jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz,
-                                                jetf_full_E, jetf_full_px, jetf_full_py, jetf_full_pz);
+        if (caloEnabled[kFEMC]){
+          if(do_reclus && kMA<_active_algo && _do_jetfinding){
+              fillECalClustersIntoJetFindingInputs( kFEMC, kMA,
+                                                  jetf_emcal_E, jetf_emcal_px, jetf_emcal_py, jetf_emcal_pz,
+                                                  jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
+                                                  jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz,
+                                                  jetf_full_E, jetf_full_px, jetf_full_py, jetf_full_pz);
+          }
         }
-
         // Add rest of calorimeter clusters to jet finder inputs
         if(do_reclus && kMA<_active_algo && _do_jetfinding) {
-            // EEMC
+          // EEMC
+          if (caloEnabled[kEEMC]){
             fillECalClustersIntoJetFindingInputs(
                 kEEMC, kMA,
                 jetf_emcal_E, jetf_emcal_px, jetf_emcal_py, jetf_emcal_pz,
@@ -428,7 +309,9 @@ void treeProcessing(
                 jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz,
                 jetf_full_E, jetf_full_px, jetf_full_py, jetf_full_pz
             );
-            // EEMCG
+          }
+          // EEMCG
+          if (caloEnabled[kEEMCG]){
             fillECalClustersIntoJetFindingInputs(
                 kEEMCG, kMA,
                 jetf_emcal_E, jetf_emcal_px, jetf_emcal_py, jetf_emcal_pz,
@@ -436,14 +319,9 @@ void treeProcessing(
                 jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz,
                 jetf_full_E, jetf_full_px, jetf_full_py, jetf_full_pz
             );
-            // EHCAL
-            fillHCalClustersIntoJetFindingInputs(
-                kEHCAL, kMA,
-                jetf_hcal_E, jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz,
-                jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
-                jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz
-            );
-            // CEMC
+          }
+          // CEMC
+          if (caloEnabled[kCEMC]){
             fillECalClustersIntoJetFindingInputs(
                 kCEMC, kMA,
                 jetf_emcal_E, jetf_emcal_px, jetf_emcal_py, jetf_emcal_pz,
@@ -451,7 +329,9 @@ void treeProcessing(
                 jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz,
                 jetf_full_E, jetf_full_px, jetf_full_py, jetf_full_pz
             );
-            // BECAL
+          }
+          // BECAL
+          if (caloEnabled[kBECAL]){
             fillECalClustersIntoJetFindingInputs(
                 kBECAL, kMA,
                 jetf_emcal_E, jetf_emcal_px, jetf_emcal_py, jetf_emcal_pz,
@@ -459,20 +339,35 @@ void treeProcessing(
                 jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz,
                 jetf_full_E, jetf_full_px, jetf_full_py, jetf_full_pz
             );
-            // HCALIN
+          }
+          
+          // EHCAL
+          if (caloEnabled[kEHCAL]){
+            fillHCalClustersIntoJetFindingInputs(
+                kEHCAL, kMA,
+                jetf_hcal_E, jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz,
+                jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
+                jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz
+            );
+          }
+          // HCALIN
+          if (caloEnabled[kHCALIN]){
             fillHCalClustersIntoJetFindingInputs(
                 kHCALIN, kMA,
                 jetf_hcal_E, jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz,
                 jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
                 jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz
             );
-            // HCALOUT
+          }
+          // HCALOUT
+          if (caloEnabled[kHCALOUT]){
             fillHCalClustersIntoJetFindingInputs(
                 kHCALOUT, kMA,
                 jetf_hcal_E, jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz,
                 jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz,
                 jetf_all_E, jetf_all_px, jetf_all_py, jetf_all_pz
             );
+          }
         }
 
         // ANCHOR MC particle loop variables:
@@ -518,7 +413,7 @@ void treeProcessing(
             std::vector<double> nocluster_E;
             if (true) {
                 for (uint32_t i = 0; i < (uint32_t)_nTowers_FEMC; i++) {
-                    if (_tower_FEMC_E[i] < seed_E) {
+                    if (_tower_FEMC_E[i] < seedE[kFEMC]) {
                         continue;
                     }
                     TVector3 twrPos = TowerPositionVectorFromIndicesGeometry(_tower_FEMC_iEta[i], _tower_FEMC_iPhi[i], kFEMC);

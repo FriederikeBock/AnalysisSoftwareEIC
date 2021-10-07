@@ -222,13 +222,15 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("event_weight", &_event_weight);
       inputTree->SetBranchAddress("n_generator_accepted", &_n_generator_accepted);
     }
-    inputTree->SetBranchAddress("nHits",                        &_nHitsLayers);
-    inputTree->SetBranchAddress("hits_layerID",                 _hits_layerID);
-    inputTree->SetBranchAddress("hits_x",               _hits_x);
-    inputTree->SetBranchAddress("hits_y",               _hits_y);
-    inputTree->SetBranchAddress("hits_z",               _hits_z);
-    inputTree->SetBranchAddress("hits_t",               _hits_t);
-
+    if (inputTree->GetBranchStatus("nHits") ){
+      inputTree->SetBranchAddress("nHits",                        &_nHitsLayers);
+      inputTree->SetBranchAddress("hits_layerID",                 _hits_layerID);
+      inputTree->SetBranchAddress("hits_x",               _hits_x);
+      inputTree->SetBranchAddress("hits_y",               _hits_y);
+      inputTree->SetBranchAddress("hits_z",               _hits_z);
+      inputTree->SetBranchAddress("hits_t",               _hits_t);
+    }
+    
     if (inputTree->GetBranchStatus("nTracks") ){
       tracksEnabled = 1;
       inputTree->SetBranchAddress("nTracks",              &_nTracks);
@@ -364,21 +366,25 @@ void SetBranchAddressesTree(TTree* inputTree){
 
     // clusters HCAL
     if (caloEnabled[kFHCAL]){
-      inputTree->SetBranchAddress("cluster_FHCAL_N",                &_nclusters_FHCAL);
-      inputTree->SetBranchAddress("cluster_FHCAL_E",                _clusters_FHCAL_E);
-      inputTree->SetBranchAddress("cluster_FHCAL_Eta",             _clusters_FHCAL_Eta);
-      inputTree->SetBranchAddress("cluster_FHCAL_Phi",             _clusters_FHCAL_Phi);
-      inputTree->SetBranchAddress("cluster_FHCAL_NTower",             _clusters_FHCAL_NTower);
-      inputTree->SetBranchAddress("cluster_FHCAL_trueID",           _clusters_FHCAL_trueID);
+      if (inputTree->GetBranchStatus("cluster_FHCAL_N") ){
+        inputTree->SetBranchAddress("cluster_FHCAL_N",                &_nclusters_FHCAL);
+        inputTree->SetBranchAddress("cluster_FHCAL_E",                _clusters_FHCAL_E);
+        inputTree->SetBranchAddress("cluster_FHCAL_Eta",             _clusters_FHCAL_Eta);
+        inputTree->SetBranchAddress("cluster_FHCAL_Phi",             _clusters_FHCAL_Phi);
+        inputTree->SetBranchAddress("cluster_FHCAL_NTower",             _clusters_FHCAL_NTower);
+        inputTree->SetBranchAddress("cluster_FHCAL_trueID",           _clusters_FHCAL_trueID);
+      }
     }
     // clusters EMC
     if (caloEnabled[kFEMC]){
-      inputTree->SetBranchAddress("cluster_FEMC_N",                 &_nclusters_FEMC);
-      inputTree->SetBranchAddress("cluster_FEMC_E",                 _clusters_FEMC_E);
-      inputTree->SetBranchAddress("cluster_FEMC_Eta",              _clusters_FEMC_Eta);
-      inputTree->SetBranchAddress("cluster_FEMC_Phi",              _clusters_FEMC_Phi);
-      inputTree->SetBranchAddress("cluster_FEMC_NTower",              _clusters_FEMC_NTower);
-      inputTree->SetBranchAddress("cluster_FEMC_trueID",            _clusters_FEMC_trueID);
+      if (inputTree->GetBranchStatus("cluster_FEMC_N") ){
+        inputTree->SetBranchAddress("cluster_FEMC_N",                 &_nclusters_FEMC);
+        inputTree->SetBranchAddress("cluster_FEMC_E",                 _clusters_FEMC_E);
+        inputTree->SetBranchAddress("cluster_FEMC_Eta",              _clusters_FEMC_Eta);
+        inputTree->SetBranchAddress("cluster_FEMC_Phi",              _clusters_FEMC_Phi);
+        inputTree->SetBranchAddress("cluster_FEMC_NTower",              _clusters_FEMC_NTower);
+        inputTree->SetBranchAddress("cluster_FEMC_trueID",            _clusters_FEMC_trueID);
+      }
     }
     // vertex
 

@@ -162,7 +162,7 @@ void plotGeometry3D(
             h_ZR_iPhi->Fill(  _calogeom_towers_z[itow], TMath::Sqrt(_calogeom_towers_x[itow]*_calogeom_towers_x[itow]+_calogeom_towers_y[itow]*_calogeom_towers_y[itow]), 10);
           }
         }
-      } else if (caloIndex == -1){
+      } else if (caloIndex == -1){ // ECALs
         if (_calogeom_ID == 1 || _calogeom_ID == 3 || _calogeom_ID == 4|| _calogeom_ID == 9 || _calogeom_ID == 10){
           cout << "found calo: "<< _calogeom_ID << "\t"<< _calogeom_towers_N << endl;
           for (Long64_t itow=0; itow<_calogeom_towers_N;itow++) {
@@ -211,7 +211,7 @@ void plotGeometry3D(
         } else {
           continue;
         }
-      } else if (caloIndex == -2){
+      } else if (caloIndex == -2){ // HCALs
         if (_calogeom_ID == 0 || _calogeom_ID == 2 || _calogeom_ID == 5|| _calogeom_ID == 6 || _calogeom_ID == 7 || _calogeom_ID == 8){
           cout << "found calo: "<< _calogeom_ID << "\t"<< _calogeom_towers_N << endl;
           for (Long64_t itow=0; itow<_calogeom_towers_N;itow++) {
@@ -260,7 +260,7 @@ void plotGeometry3D(
         } else {
           continue;
         }
-      } else if (caloIndex == -3){
+      } else if (caloIndex == -3){ // all calos
         cout << "found calo: "<< _calogeom_ID << "\t"<< _calogeom_towers_N << endl;
         for (Long64_t itow=0; itow<_calogeom_towers_N;itow++) {
           if (_calogeom_towers_x[itow] < minX)

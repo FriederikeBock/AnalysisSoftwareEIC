@@ -1,7 +1,7 @@
 EICANA=""
 
 if [ $1 = "fbock" ]; then
-  EICANA="/home/fbock/eic/developEIC/AnalysisSoftwareEIC"
+  EICANA="/home/fbock/EIC/Software/AnalysisSoftwareEIC"
 fi
 
 mkdir trackingresolution/

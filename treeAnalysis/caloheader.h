@@ -68,6 +68,10 @@ enum clusterizertype {
     k3x3        = 6,
     kDummy      = 7
 };
+//                      FHCAL   FEMC   DRCALO EEMC  CEMC  EHCAL HCALIN  HCALOUT LFHCAL  EEMCG BECAL
+float seedE[maxcalo]  = {0.5,   0.1,   0.3,   0.1,  0.5,  0.5,  0.2,    0.5,    0.1,    0.1,  0.1   };
+float aggE[maxcalo]   = {0.1,   0.005, 0.05,  0.01, 0.1,  0.1,  0.05,   0.1,    0.001,  0.01, 0.01  };
+
 // TString str_clusterizer[7] = {"V1", "V3", "3x3", "5x5", "C3", "C5", "MA"};
 TString str_clusterizer[7] = {"MA", "V3", "V1", "5x5", "C5", "C3", "3x3"};
 const int maxAlgo = 7;
