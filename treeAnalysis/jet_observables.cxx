@@ -4,6 +4,15 @@
   * author: Raymond Ehlers <raymond.ehlers@cern.ch>, ORNL
   */
 
+#include <map>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+#include <TH1D.h>
+
+#include <LHAPDF/LHAPDF.h>
+
 enum class EtaRegion_t {
     forward,
     midRapidity,
@@ -88,6 +97,7 @@ struct JetObservables {
     std::map<std::string, TH2D> angularity{};
     std::map<std::string, TH2D> jetHadronDPhi{};
     std::vector<TH1D> backwardHadrons{};
+    std::unique_ptr<LHAPDF::PDF> pdf{};
     bool initialized{false};
 
     JetObservables(JetType_t _jetType):
@@ -97,6 +107,7 @@ struct JetObservables {
         angularity{},
         jetHadronDPhi{},
         backwardHadrons{},
+        pdf{},
         initialized{false}
     {}
 
@@ -107,11 +118,16 @@ struct JetObservables {
         angularity{},
         jetHadronDPhi{},
         backwardHadrons{},
+        pdf{},
         initialized{false}
     {}
 
     void Init(std::vector<double> jetRParameters)
     {
+        gSystem->Load("libLHAPDF");
+        //this->pdf = std::make_unique<LHAPDF::PDF>(LHAPDF::mkPDF("EPPS16nlo_CT14nlo_Au197"));
+        this->pdf.reset(LHAPDF::mkPDF("EPPS16nlo_CT14nlo_Au197"));
+        //this->pdf = LHAPDF::mkPDF("EPPS16nlo_CT14nlo_Au197");
         // Setup
         std::string identifier = "";
         // Log base 10 bins for angularity
@@ -236,6 +252,7 @@ void fillEventObservables(EventObservables & eventObservables, unsigned short pr
 /**
   * Fill jet spectra.
   */
+//void fillJetObservables(JetObservables & observables, const std::vector<fastjet::PseudoJet> & jets, double jetR, DISKinematics & kinematics)
 void fillJetObservables(JetObservables & observables, const std::vector<fastjet::PseudoJet> & jets, double jetR)
 {
     // NOTE: The cross section isn't available in the current test production, so set to 1 if not available.
