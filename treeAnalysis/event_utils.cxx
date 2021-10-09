@@ -9,9 +9,9 @@
 struct DISKinematics {
     DISKinematics() = default;
 
-    double x;
-    double y;
-    double Q2;
+    double x{-1};
+    double y{-1};
+    double Q2{-1};
 };
 
 /**
@@ -74,3 +74,15 @@ DISKinematics JBKinematics(unsigned short primaryTrackSource, double incomingEle
 }
 
 
+int findStruckQuarkHepMCIndex()
+{
+    unsigned int index = 0;
+    for (unsigned int i = 0; i < _nHepmcp; ++i) {
+        // Any struck quark
+        if (std::abs(_hepmcp_PDG[i]) < 9) {
+            index = i;
+            break;
+        }
+    }
+    return index;
+}

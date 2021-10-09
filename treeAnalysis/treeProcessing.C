@@ -18,10 +18,14 @@
 #include <TString.h>
 #include <TSystem.h>
 #include <TChain.h>
+#include <TRandom3.h>
 #include <TVector3.h>
 
 #include <iostream>
 #include <fstream>
+
+using std::cout;
+using std::endl;
 
 void treeProcessing(
     TString inFile              = "",
@@ -32,7 +36,7 @@ void treeProcessing(
     // Double_t maxNEvent = 1e5,
     bool hasTiming              = true,
     bool isALLSILICON           = true,
-    Double_t maxNEvent          = -1,
+    Int_t maxNEvent             = -1,
     Int_t verbosity             = 0,
     bool doCalibration          = false,
     // Defaults to tracking from all layers.
@@ -94,23 +98,27 @@ void treeProcessing(
     }
     // Additional setup
     auto eventObservables = EventObservables();
-    auto jetObservablesTrue = JetObservables{JetType_t::full, "true"};
-    auto jetObservablesTrueCharged = JetObservables{JetType_t::charged, "true"};
-    auto jetObservablesCharged = JetObservables{JetType_t::charged};
-    auto jetObservablesCalo = JetObservables{JetType_t::calo};
-    auto jetObservablesFull = JetObservables{JetType_t::full};
+    std::map<std::string, JetObservables> jetObservables;
+    std::vector<std::string> nPDFNames = {"ep", "EPPS16nlo_CT14nlo_Au197"};
+    TRandom3 eASelector(0);
+    for (auto pdfLabel : nPDFNames) {
+      std::string fullLabel = (pdfLabel != "") ? ("_" + pdfLabel) : "";
+      jetObservables.emplace("true" + fullLabel, JetObservables(JetType_t::full, pdfLabel, "true"));
+      jetObservables.emplace("true_charged" + fullLabel, JetObservables(JetType_t::charged, pdfLabel, "true"));
+      jetObservables.emplace("charged" + fullLabel, JetObservables(JetType_t::charged, pdfLabel));
+      jetObservables.emplace("calo" + fullLabel, JetObservables(JetType_t::calo, pdfLabel));
+      jetObservables.emplace("full" + fullLabel, JetObservables(JetType_t::full, pdfLabel));
+    }
 
     if (_do_jetfinding) {
         // Event level
         eventObservables.Init();
 
-        // TODO: Add fully to arguments
+        // TODO: Add R values fully to arguments
         std::vector<double> jetRParameters = {0.5};
-        jetObservablesTrue.Init(jetRParameters);
-        jetObservablesTrueCharged.Init(jetRParameters);
-        jetObservablesCharged.Init(jetRParameters);
-        jetObservablesCalo.Init(jetRParameters);
-        jetObservablesFull.Init(jetRParameters);
+        for (auto && [k, v] : jetObservables) {
+          v.Init(jetRParameters);
+        }
     }
 
     _nEventsTree=0;
@@ -474,14 +482,27 @@ void treeProcessing(
 
 
             // Jet observables
-            fillEventObservables(eventObservables, primaryTrackSource);
-            fillJetObservables(jetObservablesTrue, std::get<1>(jetsTrue), jetR);
-            fillJetObservables(jetObservablesTrueCharged, std::get<1>(jetsTrueCharged), jetR);
-            fillJetObservables(jetObservablesCharged, std::get<1>(jetsTrackRec), jetR);
-            fillJetObservables(jetObservablesCalo, std::get<1>(jetsCaloRec), jetR);
-            fillJetObservables(jetObservablesFull, std::get<1>(jetsFullRec), jetR);
+            auto kinematics = fillEventObservables(eventObservables, primaryTrackSource);
+            // We want the ep and eA samples to be independent, so divide it here
+            bool fill_eA = (eASelector.Rndm() >= 0.5);
+            for (auto pdfLabel : nPDFNames) {
+              // IF we're filling eA, skip ep
+              if (fill_eA == true && pdfLabel == "ep") {
+                continue;
+              }
+              // If we're filling ep, skip eA
+              if (fill_eA == false && pdfLabel != "ep") {
+                continue;
+              }
+              std::string fullLabel = (pdfLabel != "") ? ("_" + pdfLabel) : "";
+              fillJetObservables(jetObservables.at("true" + fullLabel), std::get<1>(jetsTrue), jetR, kinematics);
+              fillJetObservables(jetObservables.at("true_charged" + fullLabel), std::get<1>(jetsTrueCharged), jetR, kinematics);
+              fillJetObservables(jetObservables.at("charged" + fullLabel), std::get<1>(jetsTrackRec), jetR, kinematics);
+              fillJetObservables(jetObservables.at("calo" + fullLabel), std::get<1>(jetsCaloRec), jetR, kinematics);
+              fillJetObservables(jetObservables.at("full" + fullLabel), std::get<1>(jetsFullRec), jetR, kinematics);
+            }
 
-            fillHadronObservables(jetObservablesTrue);
+            fillHadronObservables(jetObservables.at("true_ep"));
 
             jetresolutionhistos(jetsTrackRec, jetsTrueCharged, 0, jetR);
             jetresolutionhistos(jetsFullRec, jetsTrue, 1, jetR);
@@ -518,11 +539,27 @@ void treeProcessing(
         std::cout << "saving event level observables\n";
         eventObservables.Write(outputDir.Data());
         std::cout << "saving jet observables\n";
-        jetObservablesTrue.Write(outputDir.Data(), "RECREATE");
-        jetObservablesTrueCharged.Write(outputDir.Data());
-        jetObservablesCharged.Write(outputDir.Data());
-        jetObservablesCalo.Write(outputDir.Data());
-        jetObservablesFull.Write(outputDir.Data());
+
+        // The strategy here is that we want to overwrite previous outputs, but we otherwise want to group similar
+        // results in the same file. To do this, we have each type with a separate output file write the first time
+        // with "RECREATE", and then the rest write with "UPDATE"
+        std::map<std::string, bool> firstWrite;
+        for (const auto & pdfLabel : nPDFNames) {
+          firstWrite.emplace(pdfLabel, true);
+        }
+        for (auto && [k, v] : jetObservables) {
+          //std::cout << "Writing: " << k << "\n";
+          std::string writeOption = "UPDATE";
+          for (auto && [pdfLabel, first] : firstWrite) {
+            if (k.find("_" + pdfLabel) != std::string::npos && first == true) {
+              //std::cout << "First write for " << pdfLabel << "\n";
+              std::cout << "Writing file for " << pdfLabel << "\n";
+              writeOption = "RECREATE";
+              first = false;
+            }
+          }
+          v.Write(outputDir.Data(), writeOption);
+        }
     }
     std::cout << "running jetresolutionhistosSave" << std::endl;
     jetresolutionhistosSave();
