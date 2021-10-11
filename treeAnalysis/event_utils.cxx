@@ -164,7 +164,7 @@ DISKinematics KinematicsUsingTrueInfo(unsigned int primaryTrackSource)
 
     // Find the incoming proton, incoming electron, and the quark struck by the electron
     // All based on HepMC because the mcpart info only contains final state particles
-    unsigned int hepmc_incomingProtonIndex = findHepMCIndexOfIncomingElectron();
+    unsigned int hepmc_incomingProtonIndex = findHepMCIndexOfIncomingProton();
     unsigned int hepmc_incomingElectronIndex = findHepMCIndexOfIncomingElectron();
     unsigned int hepmc_struckQuarkIndex = findHepMCIndexOfStruckQuark();
 
