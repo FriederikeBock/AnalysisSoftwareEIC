@@ -1,6 +1,5 @@
 #include <cmath>
 
-#include <TLorentzVector.h>
 #include <Math/Vector3D.h>
 #include <Math/Vector4D.h>
 
@@ -129,9 +128,9 @@ unsigned int findDetLevelIndexOfOutgoingElectron(unsigned int partLevelIndex, un
         if (_track_source[i] != primaryTrackSource) {
             continue;
         }
-        if (_mcpart_PDG[static_cast<int>(_track_trueID[i])] == 11) {
-            std::cout << i << ": PDG electron\n";
-        }
+        //if (_mcpart_PDG[static_cast<int>(_track_trueID[i])] == 11) {
+        //    std::cout << i << ": PDG electron\n";
+        //}
         if (_track_trueID[i] == partLevelIndex) {
             index = i;
         }
@@ -145,13 +144,15 @@ DISKinematics CalculateKinematicsFromFourVectors(const ROOT::Math::PxPyPzEVector
     double q2 = -virtualPhoton.mag2();
 
     double x = q2 / (2 * virtualPhoton.Dot(incomingProton));
-    double y = (incomingProton.Dot(incomingProton)) / (incomingProton.Dot(incomingElectron));
+    double y = (incomingProton.Dot(virtualPhoton)) / (incomingProton.Dot(incomingElectron));
 
     return DISKinematics{x, y, q2};
 }
 
 enum KinematicsErrors_t {
-    kINVALID_X = 0,
+    kInvalid_x = 0,
+    kInvalidOption,
+    kRecoElectronNotFound,
     kSuccess,
 };
 
@@ -159,246 +160,168 @@ enum DirectKinematicsOptions_t {
     kHepMCStored = 0,
     kHepMCCalculated,
     kPartLevel,
-    kDetLevel
-}
+    kDetLevel,
+};
 
-DISKinematics KinematicsUsingTrueInfo(DirectKinematicsOptions_t option, unsigned int primaryTrackSource = 0)
+DISKinematics KinematicsUsingTrueInfo(DirectKinematicsOptions_t option, unsigned int primaryTrackSource = 0, unsigned int verbosity = 0)
 {
-    // Setup
-    // Would be better to take this from an evaluator, but I'm not sure how to do that.
-    // So, instead I'll just define it here.
-    double crossingAngle = 0.025;
-
-    // Find the incoming proton, incoming electron, and the quark struck by the electron
-    // All based on HepMC because the mcpart info only contains final state particles
-    unsigned int hepmc_incomingProtonIndex = findHepMCIndexOfIncomingProton();
-    unsigned int hepmc_incomingElectronIndex = findHepMCIndexOfIncomingElectron();
-    unsigned int hepmc_struckQuarkIndex = findHepMCIndexOfStruckQuark();
-
-    // Outgoing electron for various levels
-    unsigned int hepmc_outgoingElectronIndex = findHepMCIndexOfOutgoingElectron();
-    unsigned int part_outgoingElectronIndex = findPartLevelIndexOfOutgoingElectron();
-    unsigned int det_outgoingElectronIndex = findDetLevelIndexOfOutgoingElectron(part_outgoingElectronIndex, primaryTrackSource);
-
-    // Checks
-    if (_mcpart_BCID[part_outgoingElectronIndex] != _hepmcp_BCID[hepmc_outgoingElectronIndex]) {
-        std::cout << "WARNING: BCID mismatch for outgoing electron index, meaning different electrons were found at particle level and in HepMC. Check this out...\n";
-        std::cout << "mcpart BCID: " << _mcpart_BCID[part_outgoingElectronIndex]
-                  << "\nhepmc BCID: " << _hepmcp_BCID[hepmc_outgoingElectronIndex] << "\n";
-    }
-    /*
-    std::cout << "Kinematics\n";
-    std::cout << "mcpart"
-              << ", px=" << _mcpart_px[part_outgoingElectronIndex]
-              << ", py=" << _mcpart_py[part_outgoingElectronIndex]
-              << ", pz=" << _mcpart_pz[part_outgoingElectronIndex]
-              << ", E=" << _mcpart_E[part_outgoingElectronIndex]
-              << "\n";
-    std::cout << "hepmcp"
-              << ", px=" << _hepmcp_px[hepmc_outgoingElectronIndex]
-              << ", py=" << _hepmcp_py[hepmc_outgoingElectronIndex]
-              << ", pz=" << _hepmcp_pz[hepmc_outgoingElectronIndex]
-              << ", E=" << _hepmcp_E[hepmc_outgoingElectronIndex]
-              << "\n";
-    */
-
-    // HepMC in the head-on frame
-    // Incoming particles
-    /*ROOT::Math::PxPyPzEVector hepmc_incomingProton(
-        -std::abs(_hepmcp_pz[hepmc_incomingProtonIndex]) * std::sin(crossingAngle),
-        0,
-        std::abs(_hepmcp_pz[hepmc_incomingProtonIndex]) * std::cos(crossingAngle),
-        _hepmcp_E[hepmc_incomingProtonIndex]
-    );*/
-    ROOT::Math::PxPyPzEVector hepmc_incomingProton(
-        // NOTE: px and py are effectively 0 (usually 1e-13 or so).
-        //       Here, I set them to be identically 0 to avoid numerical instabilities, especially
-        //       since their values shouldn't matter.
-        //_hepmcp_px[hepmc_incomingProtonIndex],
-        //_hepmcp_py[hepmc_incomingProtonIndex],
-        0, 0,
-        // NOTE: The sign on pz is positive.
-        _hepmcp_pz[hepmc_incomingProtonIndex],
-        _hepmcp_E[hepmc_incomingProtonIndex]
-    );
-    std::cout << "Proton"
-        << ", px=" << _hepmcp_px[hepmc_incomingProtonIndex]
-        << ", py=" << _hepmcp_py[hepmc_incomingProtonIndex]
-        << ", pz=" << _hepmcp_pz[hepmc_incomingProtonIndex]
-        << ", E=" << _hepmcp_E[hepmc_incomingProtonIndex] << "\n";
-    std::cout << "Electron"
-        << ", px=" << _hepmcp_px[hepmc_incomingElectronIndex]
-        << ", py=" << _hepmcp_py[hepmc_incomingElectronIndex]
-        << ", pz=" << _hepmcp_pz[hepmc_incomingElectronIndex]
-        << ", E=" << _hepmcp_E[hepmc_incomingElectronIndex] << "\n";
-    // Electron kinematics
-    //std::cout << "hepmc_incomingElectronIndex=" << hepmc_incomingElectronIndex
-    //          << ", det_outgoingElectronIndex=" << det_outgoingElectronIndex
-    //          << "\n";
-    ROOT::Math::PxPyPzEVector hepmc_incomingElectron(
-        // NOTE: px and py are effectively 0 (usually 1e-13 or so).
-        //       Here, I set them to be identically 0 to avoid numerical instabilities, especially
-        //       since their values shouldn't matter.
-        //_hepmcp_px[hepmc_incomingElectronIndex],
-        //_hepmcp_py[hepmc_incomingElectronIndex],
-        0, 0,
-        // NOTE: The sign on the pz is negative.
-        _hepmcp_pz[hepmc_incomingElectronIndex],
-        _hepmcp_E[hepmc_incomingElectronIndex]
-    );
-    // Outoging electron
-    //std::cout << "outgoingElectronIndex: " << hepmc_outgoingElectronIndex << "\n";
-    ROOT::Math::PxPyPzEVector hepmc_outgoingElectron(
-        _hepmcp_px[hepmc_outgoingElectronIndex],
-        _hepmcp_py[hepmc_outgoingElectronIndex],
-        _hepmcp_pz[hepmc_outgoingElectronIndex],
-        _hepmcp_E[hepmc_outgoingElectronIndex]
-    );
-
-    // Calculate kinematics for HepMC (as crosscheck)
-    auto hepmc_calculatedKinematics = CalculateKinematicsFromFourVectors(
-        hepmc_incomingProton, hepmc_incomingElectron, hepmc_outgoingElectron
-    );
-    std::cout << "************************\n";
-    std::cout << "HepMC calculated x: " << hepmc_calculatedKinematics.x
-              << ", y=" << hepmc_calculatedKinematics.y
-              << ", q2=" << hepmc_calculatedKinematics.Q2 << "\n";
-
-    // Now on to kinematics in the lab frame.
-    // To start, we don't have the incoming beam particles in the lab frame (ie. we don't store them in mcpart).
-    // So we'll do the best we can by rotating the proton incoming energy from HepMC (following John's example).
-    ROOT::Math::PxPyPzEVector lab_incomingProton(
-        -_hepmcp_pz[hepmc_incomingProtonIndex] * std::sin(crossingAngle),
-        0,
-        _hepmcp_pz[hepmc_incomingProtonIndex] * std::cos(crossingAngle),
-        _hepmcp_E[hepmc_incomingProtonIndex]
-    );
-    // For the electorn, we just take the energy
-    ROOT::Math::PxPyPzEVector lab_incomingElectron(
-        0, 0,
-        _hepmcp_pz[hepmc_incomingElectronIndex],
-        _hepmcp_E[hepmc_incomingElectronIndex]
-    );
-    // Outoging electron
-    // At particle level:
-    //std::cout << "outgoingElectronIndex: " << hepmc_outgoingElectronIndex << "\n";
-    ROOT::Math::PxPyPzEVector part_outgoingElectron(
-        _mcpart_px[part_outgoingElectronIndex],
-        _mcpart_py[part_outgoingElectronIndex],
-        _mcpart_pz[part_outgoingElectronIndex],
-        _mcpart_E[part_outgoingElectronIndex]
-    );
-
-    auto part_calculatedKinematics = CalculateKinematicsFromFourVectors(
-        lab_incomingProton, lab_incomingElectron, part_outgoingElectron
-    );
-    std::cout << "Part. level calculated x: " << part_calculatedKinematics.x
-              << ", y=" << part_calculatedKinematics.y
-              << ", q2=" << part_calculatedKinematics.Q2 << "\n";
-
-    // At reconstructed level, using the reconstructed electron
-    // NOTE: The lab proton and electron are the same because we're not mesasuring them
-    if (det_outgoingElectronIndex < 1e6) {
-        ROOT::Math::PxPyPzEVector reco_outgoingElectron(
-            _track_px[det_outgoingElectronIndex],
-            _track_py[det_outgoingElectronIndex],
-            _track_pz[det_outgoingElectronIndex],
-            std::sqrt(
-                std::pow(_track_px[det_outgoingElectronIndex], 2) +
-                std::pow(_track_py[det_outgoingElectronIndex], 2) +
-                std::pow(_track_pz[det_outgoingElectronIndex], 2)
-            )
-        );
-        auto reco_calculatedKinematics = CalculateKinematicsFromFourVectors(
-            lab_incomingProton, lab_incomingElectron, reco_outgoingElectron
-        );
-        std::cout << "Reco. level calculated x: " << reco_calculatedKinematics.x
-                << ", y=" << reco_calculatedKinematics.y
-                << ", q2=" << reco_calculatedKinematics.Q2 << "\n";
-    }
-
-    /*
-    // Calculated HepMC kinmeatics
-    auto hepmc_virtualPhoton = hepmc_incomingElectron - hepmc_outgoingElectron;
-    double hepmc_calculated_q2 = -hepmc_virtualPhoton.mag2();
-
-    double x = hepmc_calculated_q2 / (2 * hepmc_virtualPhoton.Dot(hepmc_incomingProton));
-    double y = (hepmc_incomingProton.Dot(hepmc_incomingProton)) / (hepmc_incomingProton.Dot(hepmc_incomingElectron));
-    */
-
-
-    // Return to anti-kt for now...
-    /*ROOT::Math::PxPyPzEVector hepmc_outgoingElectron(
-        _track_px[det_outgoingElectronIndex],
-        _track_py[det_outgoingElectronIndex],
-        _track_pz[det_outgoingElectronIndex],
-        std::sqrt(
-            std::pow(_track_px[det_outgoingElectronIndex], 2) +
-            std::pow(_track_py[det_outgoingElectronIndex], 2) +
-            std::pow(_track_pz[det_outgoingElectronIndex], 2)
-        )
-    );*/
-    /*ROOT::Math::PxPyPzEVector hepmc_outgoingElectron(
-        _mcpart_px[part_outgoingElectronIndex],
-        _mcpart_py[part_outgoingElectronIndex],
-        _mcpart_pz[part_outgoingElectronIndex],
-        std::sqrt(
-            std::pow(_mcpart_px[part_outgoingElectronIndex], 2) +
-            std::pow(_mcpart_py[part_outgoingElectronIndex], 2) +
-            std::pow(_mcpart_pz[part_outgoingElectronIndex], 2)
-        )
-    );*/
-
-    /*
-    auto hepmc_virtualPhoton = hepmc_incomingElectron - hepmc_outgoingElectron;
-    double q2 = -hepmc_virtualPhoton.mag2();
-
-    // Proton kinematics
-    double crossingAngle = 0.025;
-    ROOT::Math::PxPyPzEVector hepmc_incomingProton(
-        -std::abs(_hepmcp_pz[hepmc_incomingProtonIndex]) * std::sin(crossingAngle),
-        0,
-        std::abs(_hepmcp_pz[hepmc_incomingProtonIndex]) * std::cos(crossingAngle),
-        _hepmcp_E[hepmc_incomingProtonIndex]
-    );
-
-    double x = q2 / (2 * hepmc_virtualPhoton.Dot(hepmc_incomingProton));
-    double y = (hepmc_incomingProton.Dot(hepmc_incomingProton)) / (hepmc_incomingProton.Dot(hepmc_incomingElectron));
-
-    std::cout << "Calculated: q2=" << q2 << ", x=" << x << ", y=" << y << "\n";*/
-    std::cout << "From HepMC: q2=" << _hepmcp_Q2 << ", x=" << _hepmcp_x1 << "\n";
-    std::cout << "************************\n";
-
-    /*std::cout << "Try with TLorentzVector...\n";
-
-    TLorentzVector e_i(0, 0, -18, 18);
-    std::cout << "Ref Q2=" << _hepmcp_Q2 << "\n";
-    for (unsigned int i = 0; i < _nMCPart; ++i) {
-        if (_mcpart_PDG[i] != 11) {
-            continue;
+    // Cross check. This seems the most relevant place, so we'll look here
+    // NOTE: Scoped so it doesn't mess with anything else.
+    {
+        unsigned int hepmc_outgoingElectronIndex = findHepMCIndexOfOutgoingElectron();
+        unsigned int part_outgoingElectronIndex = findPartLevelIndexOfOutgoingElectron();
+        if (_mcpart_BCID[part_outgoingElectronIndex] != _hepmcp_BCID[hepmc_outgoingElectronIndex]) {
+            std::cout << "WARNING: BCID mismatch for outgoing electron index, meaning different electrons were found at particle level and in HepMC. Check this out...\n";
+            std::cout << "mcpart BCID: " << _mcpart_BCID[part_outgoingElectronIndex]
+                    << "\nhepmc BCID: " << _hepmcp_BCID[hepmc_outgoingElectronIndex] << "\n";
         }
-        TLorentzVector e_f(_mcpart_px[i], _mcpart_py[i], _mcpart_pz[i], _mcpart_E[i]);
-        TLorentzVector virtualPhoton = (e_i - e_f);
-        double TLorentzVectorQ2 = -virtualPhoton.Mag2();
-        std::cout << "Trying " << i << " with Q2: " << TLorentzVectorQ2 << "\n";
     }
 
-    std::cout << "And then back to the new types:\n";
-    ROOT::Math::PxPyPzEVector e_i2(0, 0, -18, 18);
-    std::cout << "Ref Q2=" << _hepmcp_Q2 << "\n";
-    for (unsigned int i = 0; i < _nMCPart; ++i) {
-        if (_mcpart_PDG[i] != 11) {
-            continue;
+    DISKinematics returnKinematics;
+    if (option == DirectKinematicsOptions_t::kHepMCStored || option == DirectKinematicsOptions_t::kHepMCCalculated) {
+        // Incoming proton
+        unsigned int hepmc_incomingProtonIndex = findHepMCIndexOfIncomingProton();
+        ROOT::Math::PxPyPzEVector hepmc_incomingProton(
+            // NOTE: px and py are effectively 0 (usually 1e-13 or so).
+            //       Here, I set them to be identically 0 to avoid numerical instabilities, especially
+            //       since their values shouldn't matter.
+            //_hepmcp_px[hepmc_incomingProtonIndex],
+            //_hepmcp_py[hepmc_incomingProtonIndex],
+            0, 0,
+            // NOTE: The sign on pz is positive.
+            _hepmcp_pz[hepmc_incomingProtonIndex],
+            _hepmcp_E[hepmc_incomingProtonIndex]
+        );
+        // Incoming electron
+        unsigned int hepmc_incomingElectronIndex = findHepMCIndexOfIncomingElectron();
+        ROOT::Math::PxPyPzEVector hepmc_incomingElectron(
+            // NOTE: px and py are effectively 0 (usually 1e-13 or so).
+            //       Here, I set them to be identically 0 to avoid numerical instabilities, especially
+            //       since their values shouldn't matter.
+            //_hepmcp_px[hepmc_incomingElectronIndex],
+            //_hepmcp_py[hepmc_incomingElectronIndex],
+            0, 0,
+            // NOTE: The sign on the pz is negative.
+            _hepmcp_pz[hepmc_incomingElectronIndex],
+            _hepmcp_E[hepmc_incomingElectronIndex]
+        );
+        //std::cout << "Proton"
+        //    << ", px=" << _hepmcp_px[hepmc_incomingProtonIndex]
+        //    << ", py=" << _hepmcp_py[hepmc_incomingProtonIndex]
+        //    << ", pz=" << _hepmcp_pz[hepmc_incomingProtonIndex]
+        //    << ", E=" << _hepmcp_E[hepmc_incomingProtonIndex] << "\n";
+        //std::cout << "Electron"
+        //    << ", px=" << _hepmcp_px[hepmc_incomingElectronIndex]
+        //    << ", py=" << _hepmcp_py[hepmc_incomingElectronIndex]
+        //    << ", pz=" << _hepmcp_pz[hepmc_incomingElectronIndex]
+        //    << ", E=" << _hepmcp_E[hepmc_incomingElectronIndex] << "\n";
+        // Outoging electron
+        unsigned int hepmc_outgoingElectronIndex = findHepMCIndexOfOutgoingElectron();
+        ROOT::Math::PxPyPzEVector hepmc_outgoingElectron(
+            _hepmcp_px[hepmc_outgoingElectronIndex],
+            _hepmcp_py[hepmc_outgoingElectronIndex],
+            _hepmcp_pz[hepmc_outgoingElectronIndex],
+            _hepmcp_E[hepmc_outgoingElectronIndex]
+        );
+
+        if (option == kHepMCStored) {
+            auto virtualPhoton = hepmc_incomingElectron - hepmc_outgoingElectron;
+            double q2 = -virtualPhoton.mag2();
+
+            // Here, we only have to calculate y, and then we return stored values for the rest.
+            double y = (hepmc_incomingProton.Dot(virtualPhoton)) / (hepmc_incomingProton.Dot(hepmc_incomingElectron));
+            returnKinematics = DISKinematics{_hepmcp_x1, y, _hepmcp_Q2};
+            // NOTE: Intentionally no newline so it blends with the line printout.
+            if (verbosity > 1) { std::cout << "Stored HepMC "; }
         }
-        ROOT::Math::PxPyPzEVector e_f2(_mcpart_px[i], _mcpart_py[i], _mcpart_pz[i], _mcpart_E[i]);
-        ROOT::Math::PxPyPzEVector virtualPhoton = (e_i2 - e_f2);
-        double tempQ2 = -virtualPhoton.mag2();
-        std::cout << "Trying " << i << " with Q2: " << tempQ2 << "\n";
+        else {
+            returnKinematics = CalculateKinematicsFromFourVectors(
+                hepmc_incomingProton, hepmc_incomingElectron, hepmc_outgoingElectron
+            );
+            // NOTE: Intentionally no newline so it blends with the line printout.
+            if (verbosity > 1) { std::cout << "Calculated HepMC "; }
+        }
     }
-    std::cout << "Done. They should be the same.\n";*/
+    else if (option == DirectKinematicsOptions_t::kPartLevel || option == DirectKinematicsOptions_t::kDetLevel) {
+        // Handle kinematics in the lab frame.
 
-    //return DISKinematics{x, y, q2};
-    return hepmc_calculatedKinematics;
+        // Setup
+        // Would be better to take this from an evaluator, but I'm not sure how to do that.
+        // So, instead I'll just define it here.
+        double crossingAngle = 0.025;
+
+        // To start, we don't have the incoming beam particles in the lab frame (ie. we don't store them in mcpart).
+        // So we'll do the best we can by rotating the proton incoming energy from HepMC (following John's example).
+        unsigned int hepmc_incomingProtonIndex = findHepMCIndexOfIncomingProton();
+        ROOT::Math::PxPyPzEVector lab_incomingProton(
+            -_hepmcp_pz[hepmc_incomingProtonIndex] * std::sin(crossingAngle),
+            0,
+            _hepmcp_pz[hepmc_incomingProtonIndex] * std::cos(crossingAngle),
+            _hepmcp_E[hepmc_incomingProtonIndex]
+        );
+        // For the electorn, we just take the energy
+        unsigned int hepmc_incomingElectronIndex = findHepMCIndexOfIncomingElectron();
+        ROOT::Math::PxPyPzEVector lab_incomingElectron(
+            0, 0,
+            _hepmcp_pz[hepmc_incomingElectronIndex],
+            _hepmcp_E[hepmc_incomingElectronIndex]
+        );
+
+        unsigned int part_outgoingElectronIndex = findPartLevelIndexOfOutgoingElectron();
+
+        // Here, we split paths depending on whether we want the particle level or detector level.
+        if (option == DirectKinematicsOptions_t::kPartLevel) {
+            // Outoging electron at particle level:
+            ROOT::Math::PxPyPzEVector part_outgoingElectron(
+                _mcpart_px[part_outgoingElectronIndex],
+                _mcpart_py[part_outgoingElectronIndex],
+                _mcpart_pz[part_outgoingElectronIndex],
+                _mcpart_E[part_outgoingElectronIndex]
+            );
+
+            returnKinematics = CalculateKinematicsFromFourVectors(
+                lab_incomingProton, lab_incomingElectron, part_outgoingElectron
+            );
+            // NOTE: Intentionally no newline so it blends with the line printout.
+            if (verbosity > 1) { std::cout << "Part. level "; }
+        }
+        else {
+            // At reconstructed level, using the reconstructed electron
+            unsigned int det_outgoingElectronIndex = findDetLevelIndexOfOutgoingElectron(part_outgoingElectronIndex, primaryTrackSource);
+            // NOTE: The lab proton and electron are the same because we're not mesasuring them
+            if (det_outgoingElectronIndex < 1e6) {
+                ROOT::Math::PxPyPzEVector reco_outgoingElectron(
+                    _track_px[det_outgoingElectronIndex],
+                    _track_py[det_outgoingElectronIndex],
+                    _track_pz[det_outgoingElectronIndex],
+                    std::sqrt(
+                        std::pow(_track_px[det_outgoingElectronIndex], 2) +
+                        std::pow(_track_py[det_outgoingElectronIndex], 2) +
+                        std::pow(_track_pz[det_outgoingElectronIndex], 2)
+                    )
+                );
+                returnKinematics = CalculateKinematicsFromFourVectors(
+                    lab_incomingProton, lab_incomingElectron, reco_outgoingElectron
+                );
+                // NOTE: Intentionally no newline so it blends with the line printout.
+                if (verbosity > 1) { std::cout << "Reco. level "; }
+            }
+            else {
+                throw KinematicsErrors_t::kRecoElectronNotFound;
+            }
+        }
+    }
+    else {
+        throw KinematicsErrors_t::kInvalidOption;
+    }
+
+    if (verbosity > 1) {
+        std::cout << "calculated x: " << returnKinematics.x
+                << ", y=" << returnKinematics.y
+                << ", q2=" << returnKinematics.Q2 << "\n";
+    }
+
+    return returnKinematics;
 }
 
 /**
