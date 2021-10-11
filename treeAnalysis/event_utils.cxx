@@ -1,5 +1,6 @@
 #include <cmath>
 
+#include <TLorentzVector.h>
 #include <Math/Vector3D.h>
 #include <Math/Vector4D.h>
 
@@ -175,9 +176,16 @@ DISKinematics KinematicsUsingTrueInfo(unsigned int primaryTrackSource)
     std::cout << "hepmc_incomingElectronIndex=" << hepmc_incomingElectronIndex
               << ", det_outgoingElectronIndex=" << det_outgoingElectronIndex
               << "\n";
-    ROOT::Math::PxPyPzEVector hepmc_incomingElectron(0, 0, _hepmcp_pz[hepmc_incomingElectronIndex], _hepmcp_E[hepmc_incomingElectronIndex]);
+    ROOT::Math::PxPyPzEVector hepmc_incomingElectron(
+        0, 0,
+        //_hepmcp_pz[hepmc_incomingElectronIndex],
+        //_hepmcp_E[hepmc_incomingElectronIndex]
+        -18,
+        18
+    );
+    // Return to anti-kt for now...
     //ROOT::Math::PxPyPzEVector hepmc_incomingElectron(0, 0, _hepmcp_pz[hepmc_incomingElectronIndex], _hepmcp_pz[hepmc_incomingElectronIndex]);
-    /*ROOT::Math::PxPyPzEVector hepmc_outgoingElectron(
+    ROOT::Math::PxPyPzEVector hepmc_outgoingElectron(
         _track_px[det_outgoingElectronIndex],
         _track_py[det_outgoingElectronIndex],
         _track_pz[det_outgoingElectronIndex],
@@ -186,7 +194,7 @@ DISKinematics KinematicsUsingTrueInfo(unsigned int primaryTrackSource)
             std::pow(_track_py[det_outgoingElectronIndex], 2) +
             std::pow(_track_pz[det_outgoingElectronIndex], 2)
         )
-    );*/
+    );
     /*ROOT::Math::PxPyPzEVector hepmc_outgoingElectron(
         _mcpart_px[part_outgoingElectronIndex],
         _mcpart_py[part_outgoingElectronIndex],
@@ -197,7 +205,7 @@ DISKinematics KinematicsUsingTrueInfo(unsigned int primaryTrackSource)
             std::pow(_mcpart_pz[part_outgoingElectronIndex], 2)
         )
     );*/
-    ROOT::Math::PxPyPzEVector hepmc_outgoingElectron(
+    /*ROOT::Math::PxPyPzEVector hepmc_outgoingElectron(
         _hepmcp_px[hepmc_outgoingElectronIndex],
         _hepmcp_py[hepmc_outgoingElectronIndex],
         _hepmcp_pz[hepmc_outgoingElectronIndex],
@@ -206,7 +214,7 @@ DISKinematics KinematicsUsingTrueInfo(unsigned int primaryTrackSource)
             std::pow(_hepmcp_py[hepmc_outgoingElectronIndex], 2) +
             std::pow(_hepmcp_pz[hepmc_outgoingElectronIndex], 2)
         )
-    );
+    );*/
 
     auto hepmc_virtualPhoton = hepmc_incomingElectron - hepmc_outgoingElectron;
 
@@ -224,7 +232,21 @@ DISKinematics KinematicsUsingTrueInfo(unsigned int primaryTrackSource)
     double y = (hepmc_incomingProton.Dot(hepmc_incomingProton)) / (hepmc_incomingProton.Dot(hepmc_incomingElectron));
 
     std::cout << "Calculated: q2=" << q2 << ", x=" << x << ", y=" << y << "\n";
-    std::cout << "From HepMC: q2=" << _hepmcp_Q2 << ", x=" << _hepmcp_x2 << "\n";
+    std::cout << "From HepMC: q2=" << _hepmcp_Q2 << ", x=" << _hepmcp_x1 << "\n";
+
+    std::cout << "Try with TLorentzVector...\n";
+
+    TLorentzVector e_i(0, 0, -18, 18);
+    std::cout << "Ref Q2=" << _hepmcp_Q2 << "\n";
+    for (unsigned int i = 0; i < _nMCPart; ++i) {
+        if (_mcpart_PDG[i] != 11) {
+            continue;
+        }
+        TLorentzVector e_f(_mcpart_px[i], _mcpart_py[i], _mcpart_pz[i], _mcpart_E[i]);
+        TLorentzVector virtualPhoton = (e_i - e_f);
+        double TLorentzVectorQ2 = -virtualPhoton.Mag2();
+        std::cout << "Trying " << i << " with Q2: " << TLorentzVectorQ2 << "\n";
+    }
 
     return DISKinematics{x, y, q2};
 }
