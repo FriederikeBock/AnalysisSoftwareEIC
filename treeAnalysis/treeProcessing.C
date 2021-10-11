@@ -442,9 +442,21 @@ void treeProcessing(
                     nocluster_E.push_back(_tower_FEMC_E[i]);
                 }
             }
+            // Event level
+            auto kinematics = fillEventObservables(eventObservables, primaryTrackSource);
+            auto hepmcCalculatedStored = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kHepMCStored, primaryTrackSource, verbosity);
+            auto hepmcCalculatedKinematcs = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kHepMCCalculated, primaryTrackSource, verbosity);
+            auto partLevelCalculatedKinematcs = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kPartLevel, primaryTrackSource, verbosity);
+            try {
+              auto detLevelCalculatedKinematcs = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kDetLevel, primaryTrackSource, verbosity);
+            }
+            catch (KinematicsErrors_t e) {
+              std::cout << "Reco level kinematics error: " << e << ". Skipping...\n";
+            }
+
             // ANCHOR JET FINDING
-            // truth jets
             for (double jetR : jetRParameters) {
+              // truth jets
               auto jetsTrue = findJets(jetR, jetAlgorithm, jetf_truth_px, jetf_truth_py, jetf_truth_pz, jetf_truth_E);
               if(verbosity>1) std::cout << "found " << std::get<1>(jetsTrue).size() << " true jets" << std::endl;        // printJets(std::get<1>(jetsTrue));
 
@@ -481,8 +493,6 @@ void treeProcessing(
 
 
               // Jet observables
-              auto kinematics = fillEventObservables(eventObservables, primaryTrackSource);
-              KinematicsUsingTrueInfo(primaryTrackSource);
               // We want the ep and eA samples to be independent, so divide it here
               bool fill_eA = (eASelector.Rndm() >= 0.5);
               for (auto pdfLabel : nPDFNames) {
