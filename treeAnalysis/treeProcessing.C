@@ -121,7 +121,7 @@ void treeProcessing(
         _nEventsTree++;
 
         // processing progress info
-        if(i>0 && nEntriesTree>100 && i%(nEntriesTree/(20))==0) std::cout << "//processed " << 100*(i)/nEntriesTree << "%"  << std::endl;
+        if(i>0 && nEntriesTree>100 && i%(nEntriesTree/(50))==0) std::cout << "//processed " << 100*(i)/nEntriesTree << "%"  << std::endl;
         if(verbosity>0){
           std::cout << "***********************************************************************************************************" << std::endl;
           std::cout << "event " << i << std::endl;
