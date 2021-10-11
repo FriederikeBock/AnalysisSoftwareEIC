@@ -44,11 +44,12 @@ void treeProcessing(
     std::string jetAlgorithm    = "anti-kt",
     std::vector<double> jetRParameters = {0.3, 0.5, 0.8, 1.0},
     double tracked_jet_max_pT   = 30,
-    bool runCaloRes             = true
+    bool runCaloRes             = true,
+    std::string baseOutputDir = "."
 ){
     // make output directory
     TString dateForOutput = ReturnDateStr();
-    outputDir = Form("treeProcessing/%s",addOutputName.Data());
+    outputDir = Form("%s/treeProcessing/%s", baseOutputDir.c_str(), addOutputName.Data());
     gSystem->Exec("mkdir -p "+outputDir);
     gSystem->Exec("mkdir -p "+outputDir + "/etaphi");
 
