@@ -62,11 +62,12 @@ void treeProcessing(
         tt_event->AddFile(inFile);
     }
     else {                                              // or are we loading a bunch?
-        std::cout << "loading a list of files" << std::endl;
+        std::cout << "loading a list of files at " << inFile << std::endl;
         std::ifstream files(inFile);
         std::string filePath;
 
         while (std::getline(files, filePath)) {
+            std::cout << filePath << "\n";
             tt_event->AddFile(filePath.c_str());
         }
         files.close();
@@ -98,26 +99,30 @@ void treeProcessing(
         std::cout << "clusters will be energy-corrected and subsequently smeared to meet testbeam constant term!" << std::endl;
     }
     // Additional setup
+    // Base setup for jet related observables (defined here since we need to access them everywhere)
     auto eventObservables = EventObservables();
     std::map<std::string, JetObservables> jetObservables;
     std::vector<std::string> nPDFNames = {"ep", "EPPS16nlo_CT14nlo_Au197"};
     TRandom3 eASelector(0);
-    for (auto pdfLabel : nPDFNames) {
-      std::string fullLabel = (pdfLabel != "") ? ("_" + pdfLabel) : "";
-      jetObservables.emplace("true" + fullLabel, JetObservables(JetType_t::full, pdfLabel, "true"));
-      jetObservables.emplace("true_charged" + fullLabel, JetObservables(JetType_t::charged, pdfLabel, "true"));
-      jetObservables.emplace("charged" + fullLabel, JetObservables(JetType_t::charged, pdfLabel));
-      jetObservables.emplace("calo" + fullLabel, JetObservables(JetType_t::calo, pdfLabel));
-      jetObservables.emplace("full" + fullLabel, JetObservables(JetType_t::full, pdfLabel));
-    }
-
     if (_do_jetfinding) {
-        // Event level
-        eventObservables.Init();
+      // Create jet level observables
+      std::cout << "About to create jet observables.\n" << std::endl;
+      for (auto pdfLabel : nPDFNames) {
+        std::string fullLabel = (pdfLabel != "") ? ("_" + pdfLabel) : "";
+        jetObservables.emplace("true" + fullLabel, JetObservables(JetType_t::full, pdfLabel, "true"));
+        jetObservables.emplace("true_charged" + fullLabel, JetObservables(JetType_t::charged, pdfLabel, "true"));
+        jetObservables.emplace("charged" + fullLabel, JetObservables(JetType_t::charged, pdfLabel));
+        jetObservables.emplace("calo" + fullLabel, JetObservables(JetType_t::calo, pdfLabel));
+        jetObservables.emplace("full" + fullLabel, JetObservables(JetType_t::full, pdfLabel));
+      }
+      // Initialization
+      // Event level
+      eventObservables.Init();
 
-        for (auto && [k, v] : jetObservables) {
-          v.Init(jetRParameters);
-        }
+      // Jet level
+      for (auto && [k, v] : jetObservables) {
+        v.Init(jetRParameters);
+      }
     }
 
     _nEventsTree=0;
@@ -216,6 +221,7 @@ void treeProcessing(
         std::vector<float> jetf_all_pz;
         std::vector<float> jetf_all_E;
         double massHypothesis = 0.139;
+        //std::cout << "Tracks\n";
         for(Int_t itrk=0; itrk<_nTracks; itrk++){
             _track_trueID[itrk] = GetCorrectMCArrayEntry(_track_trueID[itrk]);
             // if(verbosity>1) std::cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk] << "\tand X = " << _track_px[itrk] << " cm" << std::endl;
@@ -228,6 +234,12 @@ void treeProcessing(
             if(_do_jetfinding){
                 TVector3 trackvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
                 float Etrack = TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)+TMath::Power(_track_pz[itrk],2) + TMath::Power(massHypothesis, 2));
+                //std::cout << itrk << "-> px=" << _track_px[itrk]
+                //          << ", py=" << _track_py[itrk]
+                //          << ", pz=" << _track_pz[itrk]
+                //          << ", E=" << Etrack
+                //          << ", trueID=" << _track_trueID[itrk]
+                //          << "\n";
                 // create track vector for jet finder
                 float track_pT = Etrack / cosh(trackvec.Eta());
                 if (track_pT < tracked_jet_max_pT) {
@@ -248,7 +260,6 @@ void treeProcessing(
         }
         // obtain labels for different track sources
         prepareMCMatchInfo();
-
 
 
         // ANCHOR jet variables:
@@ -407,6 +418,7 @@ void treeProcessing(
             std::vector<float> jetf_truthcharged_pz;
             std::vector<float> jetf_truthcharged_E;
             for(Int_t imc=0; imc<_nMCPart; imc++){
+                //std::cout << imc << "-> id=" << _mcpart_PDG[imc] << ", barcode=" << _mcpart_BCID[imc] << "\n";
                 TVector3 truevec(_mcpart_px[imc],_mcpart_py[imc],_mcpart_pz[imc]);
 //                 if(truevec.Eta()<1){
                     if(verbosity>1) std::cout << "\tMC:  particle " << imc << "\twith E = " << _mcpart_E[imc] << " GeV" << std::endl;
@@ -425,6 +437,17 @@ void treeProcessing(
                     jetf_truthcharged_E.push_back(_mcpart_E[imc]);
                 }
             }
+            // Compare to hepmc
+            //std::cout << "HepMC\n";
+            //for (unsigned int i = 0; i < _nHepmcp; ++i) {
+            //  std::cout << i << "-> id=" << _hepmcp_PDG[i] << ", barcode=" << _hepmcp_BCID[i] << ", px=" << _hepmcp_px[i]
+            //            << ", py=" << _hepmcp_py[i]
+            //            << ", pz=" << _hepmcp_pz[i]
+            //            << ", E=" << _hepmcp_E[i]
+            //            << ", status=" << _hepmcp_status[i]
+            //            << "\n";
+            //}
+            //std::cout << "End\n";
 
             std::vector<double> nocluster_px;
             std::vector<double> nocluster_py;
@@ -455,74 +478,80 @@ void treeProcessing(
               std::cout << "Reco level kinematics error: " << e << ". Skipping...\n";
             }
 
+            bool skipJetFindingDueToKinematics = false;
+            if (kinematics.x < 0 || kinematics.x > 1) {
+              skipJetFindingDueToKinematics = true;
+            }
+
             // ANCHOR JET FINDING
-            for (double jetR : jetRParameters) {
-              // truth jets
-              auto jetsTrue = findJets(jetR, jetAlgorithm, jetf_truth_px, jetf_truth_py, jetf_truth_pz, jetf_truth_E);
-              if(verbosity>1) std::cout << "found " << std::get<1>(jetsTrue).size() << " true jets" << std::endl;        // printJets(std::get<1>(jetsTrue));
+            if (skipJetFindingDueToKinematics == false) {
+              for (double jetR : jetRParameters) {
+                // truth jets
+                auto jetsTrue = findJets(jetR, jetAlgorithm, jetf_truth_px, jetf_truth_py, jetf_truth_pz, jetf_truth_E);
+                if(verbosity>1) std::cout << "found " << std::get<1>(jetsTrue).size() << " true jets" << std::endl;        // printJets(std::get<1>(jetsTrue));
 
-              auto jetsTrueCharged = findJets(jetR, jetAlgorithm, jetf_truthcharged_px, jetf_truthcharged_py, jetf_truthcharged_pz, jetf_truthcharged_E);
-              if(verbosity>1) std::cout << "found " << std::get<1>(jetsTrueCharged).size() << " true charged jets" << std::endl;        // printJets(std::get<1>(jetsTrue));
+                auto jetsTrueCharged = findJets(jetR, jetAlgorithm, jetf_truthcharged_px, jetf_truthcharged_py, jetf_truthcharged_pz, jetf_truthcharged_E);
+                if(verbosity>1) std::cout << "found " << std::get<1>(jetsTrueCharged).size() << " true charged jets" << std::endl;        // printJets(std::get<1>(jetsTrue));
 
-              // track-based jets (rec)
-              auto jetsTrackRec = findJets(jetR, jetAlgorithm, jetf_track_px, jetf_track_py, jetf_track_pz, jetf_track_E);
-              if(verbosity>1) std::cout << "found " << std::get<1>(jetsTrackRec).size() << " rec track jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
+                // track-based jets (rec)
+                auto jetsTrackRec = findJets(jetR, jetAlgorithm, jetf_track_px, jetf_track_py, jetf_track_pz, jetf_track_E);
+                if(verbosity>1) std::cout << "found " << std::get<1>(jetsTrackRec).size() << " rec track jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
 
-              // full jets (rec)
-              auto jetsFullRec = findJets(jetR, jetAlgorithm, jetf_full_px, jetf_full_py, jetf_full_pz, jetf_full_E);
-              if(verbosity>1) std::cout << "found " << std::get<1>(jetsFullRec).size() << " rec full jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
+                // full jets (rec)
+                auto jetsFullRec = findJets(jetR, jetAlgorithm, jetf_full_px, jetf_full_py, jetf_full_pz, jetf_full_E);
+                if(verbosity>1) std::cout << "found " << std::get<1>(jetsFullRec).size() << " rec full jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
 
-              // hcal jets (rec)
-              auto jetsHcalRec = findJets(jetR, jetAlgorithm, jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz, jetf_hcal_E);
-              if(verbosity>1) std::cout << "found " << std::get<1>(jetsHcalRec).size() << " rec hcal jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
+                // hcal jets (rec)
+                auto jetsHcalRec = findJets(jetR, jetAlgorithm, jetf_hcal_px, jetf_hcal_py, jetf_hcal_pz, jetf_hcal_E);
+                if(verbosity>1) std::cout << "found " << std::get<1>(jetsHcalRec).size() << " rec hcal jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
 
-              // emcal jets (rec)
-              auto jetsEmcalRec = findJets(jetR, jetAlgorithm, jetf_emcal_px, jetf_emcal_py, jetf_emcal_pz, jetf_emcal_E);
-              if(verbosity>1) std::cout << "found " << std::get<1>(jetsEmcalRec).size() << " rec emcal jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
+                // emcal jets (rec)
+                auto jetsEmcalRec = findJets(jetR, jetAlgorithm, jetf_emcal_px, jetf_emcal_py, jetf_emcal_pz, jetf_emcal_E);
+                if(verbosity>1) std::cout << "found " << std::get<1>(jetsEmcalRec).size() << " rec emcal jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
 
-              // calo jets (rec)
-              auto jetsCaloRec = findJets(jetR, jetAlgorithm, jetf_calo_px, jetf_calo_py, jetf_calo_pz, jetf_calo_E);
-              if(verbosity>1) std::cout << "found " << std::get<1>(jetsCaloRec).size() << " rec calo jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
+                // calo jets (rec)
+                auto jetsCaloRec = findJets(jetR, jetAlgorithm, jetf_calo_px, jetf_calo_py, jetf_calo_pz, jetf_calo_E);
+                if(verbosity>1) std::cout << "found " << std::get<1>(jetsCaloRec).size() << " rec calo jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
 
-              // all jets (rec)
-              auto jetsAllRec = findJets(jetR, jetAlgorithm, jetf_all_px, jetf_all_py, jetf_all_pz, jetf_all_E);
-              if(verbosity>1) std::cout << "found " << std::get<1>(jetsAllRec).size() << " rec all jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
+                // all jets (rec)
+                auto jetsAllRec = findJets(jetR, jetAlgorithm, jetf_all_px, jetf_all_py, jetf_all_pz, jetf_all_E);
+                if(verbosity>1) std::cout << "found " << std::get<1>(jetsAllRec).size() << " rec all jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
 
-              // calo jets, no clustering
-              auto jetsNoCluster = findJets(jetR, jetAlgorithm, nocluster_px, nocluster_py, nocluster_pz, nocluster_E);
-              if(verbosity>1) std::cout << "found " << std::get<1>(jetsNoCluster).size() << " rec calo jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
+                // calo jets, no clustering
+                auto jetsNoCluster = findJets(jetR, jetAlgorithm, nocluster_px, nocluster_py, nocluster_pz, nocluster_E);
+                if(verbosity>1) std::cout << "found " << std::get<1>(jetsNoCluster).size() << " rec calo jets" << std::endl;        // printJets(std::get<1>(jetsTrackRec));
 
 
-              // Jet observables
-              // We want the ep and eA samples to be independent, so divide it here
-              bool fill_eA = (eASelector.Rndm() >= 0.5);
-              for (auto pdfLabel : nPDFNames) {
-                // IF we're filling eA, skip ep
-                if (fill_eA == true && pdfLabel == "ep") {
-                  continue;
+                // Jet observables
+                // We want the ep and eA samples to be independent, so divide it here
+                bool fill_eA = (eASelector.Rndm() >= 0.5);
+                for (auto pdfLabel : nPDFNames) {
+                  // IF we're filling eA, skip ep
+                  if (fill_eA == true && pdfLabel == "ep") {
+                    continue;
+                  }
+                  // If we're filling ep, skip eA
+                  if (fill_eA == false && pdfLabel != "ep") {
+                    continue;
+                  }
+                  std::string fullLabel = (pdfLabel != "") ? ("_" + pdfLabel) : "";
+                  fillJetObservables(jetObservables.at("true" + fullLabel), std::get<1>(jetsTrue), jetR, kinematics);
+                  fillJetObservables(jetObservables.at("true_charged" + fullLabel), std::get<1>(jetsTrueCharged), jetR, kinematics);
+                  fillJetObservables(jetObservables.at("charged" + fullLabel), std::get<1>(jetsTrackRec), jetR, kinematics);
+                  fillJetObservables(jetObservables.at("calo" + fullLabel), std::get<1>(jetsCaloRec), jetR, kinematics);
+                  fillJetObservables(jetObservables.at("full" + fullLabel), std::get<1>(jetsFullRec), jetR, kinematics);
                 }
-                // If we're filling ep, skip eA
-                if (fill_eA == false && pdfLabel != "ep") {
-                  continue;
-                }
-                std::string fullLabel = (pdfLabel != "") ? ("_" + pdfLabel) : "";
-                fillJetObservables(jetObservables.at("true" + fullLabel), std::get<1>(jetsTrue), jetR, kinematics);
-                fillJetObservables(jetObservables.at("true_charged" + fullLabel), std::get<1>(jetsTrueCharged), jetR, kinematics);
-                fillJetObservables(jetObservables.at("charged" + fullLabel), std::get<1>(jetsTrackRec), jetR, kinematics);
-                fillJetObservables(jetObservables.at("calo" + fullLabel), std::get<1>(jetsCaloRec), jetR, kinematics);
-                fillJetObservables(jetObservables.at("full" + fullLabel), std::get<1>(jetsFullRec), jetR, kinematics);
+
+                fillHadronObservables(jetObservables.at("true_ep"));
+
+                jetresolutionhistos(jetsTrackRec, jetsTrueCharged, 0, jetR);
+                jetresolutionhistos(jetsFullRec, jetsTrue, 1, jetR);
+                jetresolutionhistos(jetsHcalRec, jetsTrue, 2, jetR);
+                jetresolutionhistos(jetsCaloRec, jetsTrue, 3, jetR);
+                jetresolutionhistos(jetsAllRec, jetsTrue, 4, jetR);
+                jetresolutionhistos(jetsNoCluster,  jetsTrue,  5, jetR);
+                jetresolutionhistos(jetsEmcalRec,  jetsTrue,  6, jetR);
               }
-
-              fillHadronObservables(jetObservables.at("true_ep"));
-
-              jetresolutionhistos(jetsTrackRec, jetsTrueCharged, 0, jetR);
-              jetresolutionhistos(jetsFullRec, jetsTrue, 1, jetR);
-              jetresolutionhistos(jetsHcalRec, jetsTrue, 2, jetR);
-              jetresolutionhistos(jetsCaloRec, jetsTrue, 3, jetR);
-              jetresolutionhistos(jetsAllRec, jetsTrue, 4, jetR);
-              jetresolutionhistos(jetsNoCluster,  jetsTrue,  5, jetR);
-              jetresolutionhistos(jetsEmcalRec,  jetsTrue,  6, jetR);
-
             }
             // TString jettype[njettypes] = {"track", "full","hcal","calo","all"};
         }
