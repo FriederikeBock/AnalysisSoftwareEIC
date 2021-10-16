@@ -275,7 +275,7 @@ void fillJetObservables(JetObservables & observables, const std::vector<fastjet:
     if (eA) {
         // TODO: Fully implement finding struck quark...
         int struckQuarkFlavor = 1;
-        std::cout << "x=" << kinematics.x << ", y=" << kinematics.y << ", Q2=" << kinematics.Q2 << "\n";
+        //std::cout << "x=" << kinematics.x << ", y=" << kinematics.y << ", Q2=" << kinematics.Q2 << "\n";
         if (kinematics.x > -1 && kinematics.x < 2) {
             weight *= observables.pdf->xfxQ(struckQuarkFlavor, kinematics.x, std::sqrt(kinematics.Q2)) / kinematics.x;
         }
