@@ -99,6 +99,8 @@ void treeProcessing(
         std::cout << "clusters will be energy-corrected and subsequently smeared to meet testbeam constant term!" << std::endl;
     }
     // Additional setup
+    // Jet energy scale + resolution only support one R, so we select it here
+    double jetRForJES = 0.5;
     // Base setup for jet related observables (defined here since we need to access them everywhere)
     auto eventObservables = EventObservables();
     std::map<std::string, JetObservables> jetObservables;
@@ -453,7 +455,7 @@ void treeProcessing(
             std::vector<double> nocluster_py;
             std::vector<double> nocluster_pz;
             std::vector<double> nocluster_E;
-            if (true) {
+            if (caloEnabled[kFEMC]){
                 for (uint32_t i = 0; i < (uint32_t)_nTowers_FEMC; i++) {
                     if (_tower_FEMC_E[i] < seedE[kFEMC]) {
                         continue;
@@ -544,13 +546,15 @@ void treeProcessing(
 
                 fillHadronObservables(jetObservables.at("true_ep"));
 
-                jetresolutionhistos(jetsTrackRec, jetsTrueCharged, 0, jetR);
-                jetresolutionhistos(jetsFullRec, jetsTrue, 1, jetR);
-                jetresolutionhistos(jetsHcalRec, jetsTrue, 2, jetR);
-                jetresolutionhistos(jetsCaloRec, jetsTrue, 3, jetR);
-                jetresolutionhistos(jetsAllRec, jetsTrue, 4, jetR);
-                jetresolutionhistos(jetsNoCluster,  jetsTrue,  5, jetR);
-                jetresolutionhistos(jetsEmcalRec,  jetsTrue,  6, jetR);
+                if (jetR == jetRForJES) {
+                  jetresolutionhistos(jetsTrackRec, jetsTrueCharged, 0, jetR);
+                  jetresolutionhistos(jetsFullRec, jetsTrue, 1, jetR);
+                  jetresolutionhistos(jetsHcalRec, jetsTrue, 2, jetR);
+                  jetresolutionhistos(jetsCaloRec, jetsTrue, 3, jetR);
+                  jetresolutionhistos(jetsAllRec, jetsTrue, 4, jetR);
+                  jetresolutionhistos(jetsNoCluster,  jetsTrue,  5, jetR);
+                  jetresolutionhistos(jetsEmcalRec,  jetsTrue,  6, jetR);
+                }
               }
             }
             // TString jettype[njettypes] = {"track", "full","hcal","calo","all"};
