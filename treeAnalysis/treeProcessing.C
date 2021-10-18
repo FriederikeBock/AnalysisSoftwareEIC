@@ -21,6 +21,7 @@
 #include <TRandom3.h>
 #include <TVector3.h>
 
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 
@@ -101,6 +102,9 @@ void treeProcessing(
     // Additional setup
     // Jet energy scale + resolution only support one R, so we select it here
     double jetRForJES = 0.5;
+    if (std::find(jetRParameters.begin(), jetRParameters.end(), jetRForJES) == jetRParameters.end()) {
+      std::cout << "Requested R=" << jetRForJES << " for JES/JER, but it's not in the jetRParameters. Adjust one of the settings.\n";
+    }
     // Base setup for jet related observables (defined here since we need to access them everywhere)
     auto eventObservables = EventObservables();
     std::map<std::string, JetObservables> jetObservables;
