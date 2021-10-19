@@ -10,8 +10,6 @@ void energyResolutionCalorimeters(
     Bool_t doFitting          = kTRUE
 ){
 
-  
-  
   gROOT->Reset();
   gROOT->SetStyle("Plain");
   StyleSettingsThesis();
@@ -318,10 +316,10 @@ void energyResolutionCalorimeters(
     histResoEVs1oEhighest[i]     = new TH1F(Form("h_%sreso_1oEhighest", readNames[i].Data()), "", 1000, 0., 4.);
     
     
-    TString tempName = Form("%s/h_RH_Reso_%sE_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
-    if (isComb) tempName = Form("%s/h_RH_ResoComb_%sE_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
+    TString tempName = Form("%s/h_CRH_EReso_%sE_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
+    if (isComb) tempName = Form("%s/h_CRH_EResoComb_%sE_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
 //     cout << tempName << endl;
-    TString tempName3 = Form("%s/h_RH_Reso_%sEhighest_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
+    TString tempName3 = Form("%s/h_CRH_EReso_%sEhighest_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
     if (isComb) tempName3 = tempName;
 //     cout << tempName << endl;
     hist2DResoE[i]    = (TH2D*)inputFile->Get(tempName.Data());
@@ -435,11 +433,12 @@ void energyResolutionCalorimeters(
         histMeanEVsEEta[i][etbin]       = new TH1F(Form("h_%smean_E_Eta_%d", readNames[i].Data(), etbin), "", 401, -0.25, 200.25);
         histResoEVsEEta[i][etbin]       = new TH1F(Form("h_%sreso_E_Eta_%d", readNames[i].Data(), etbin), "", 401, -0.25, 200.25);
         histResoEVs1oEEta[i][etbin]     = new TH1F(Form("h_%sreso_1oE_Eta_%d", readNames[i].Data(), etbin), "", 1000, 0., 4.);
-        TString tempName2 = Form("%s/h_RH_Reso_%sE_Eta_%s_%s_%d",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data(), etbin );
-        if (isComb) tempName2 = Form("%s/h_RH_ResoComb_%sE_Eta_%s_%s_%d",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data(), etbin );
+        TString tempName2 = Form("%s/h_CRH_EReso_%sE_Eta_%s_%s_%d",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data(), etbin );
+        if (isComb) tempName2 = Form("%s/h_CRH_EResoComb_%sE_Eta_%s_%s_%d",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data(), etbin );
 //         cout << tempName2 << endl;
 
         hist2DResoEEta[i][etbin]    = (TH2D*)inputFile->Get(tempName2.Data());
+        if (!hist2DResoEEta[i][etbin]) continue;
         if (hist2DResoEEta[i][etbin]->GetEntries() > 0){
           hist2DResoEEta[i][etbin]->Sumw2();
           for (int ebin = 0; ebin < nEne; ebin++){

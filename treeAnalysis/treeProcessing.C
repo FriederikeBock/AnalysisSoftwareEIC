@@ -8,8 +8,7 @@
 #include "clusterizer.cxx"
 
 #include "jetresolutionhistos.cxx"
-#include "resolutionhistos.cxx"
-#include "extracaloresolutionhistos.cxx"
+#include "caloresolutionhistos.cxx"
 #include "clusterstudies.cxx"
 #include "trackingefficiency.cxx"
 #include "hitstudies.cxx"
@@ -20,7 +19,6 @@
 #include <TSystem.h>
 #include <TChain.h>
 #include <TVector3.h>
-
 
 #include <iostream>
 #include <fstream>
@@ -41,7 +39,8 @@ void treeProcessing(
     unsigned short primaryTrackSource = 0,
     std::string jetAlgorithm    = "anti-kt",
     double jetR                 = 0.5,
-    double tracked_jet_max_pT   = 30
+    double tracked_jet_max_pT   = 30,
+    bool runCaloRes             = true
 ){
     // make output directory
     TString dateForOutput = ReturnDateStr();
@@ -141,7 +140,6 @@ void treeProcessing(
             }
             // if(_mcpart_PDG[imc]==111) cout << "pi0 found (" << _mcpart_ID[imc] << ") with mother: " << _mcpart_PDG[motherid] << " (" <<  _mcpart_ID_parent[imc] << ")" << endl;
         }
-
         if (verbosity > 0){
           for(int imc=0; imc<_nMCPart; imc++){
             std::cout << "MC part: \t" << imc << "\t E = " << _mcpart_E[imc] << "\tEta: " << _mcpart_Eta[imc]<< "\tPhi: " << _mcpart_Phi[imc]<<  std::endl;
@@ -151,6 +149,7 @@ void treeProcessing(
               std::cout << "towers " <<   str_calorimeter[icalo].Data() << "\t" << ReturnMaxTowerCalo(icalo) << std::endl;
           }
         }
+        
         Int_t nTowers[maxcalo] = {_nTowers_FHCAL, _nTowers_FEMC, _nTowers_DRCALO, _nTowers_EEMC, _nTowers_CEMC,
                                   _nTowers_EHCAL, _nTowers_HCALIN, _nTowers_HCALOUT, _nTowers_LFHCAL, _nTowers_EEMCG,
                                   _nTowers_BECAL  };
@@ -230,6 +229,8 @@ void treeProcessing(
                 jetf_all_E.push_back(Etrack);
             }
         }
+        // obtain labels for different track sources
+        prepareMCMatchInfo();
 
 
 
@@ -487,18 +488,20 @@ void treeProcessing(
           if(verbosity>1) cout << "running trackingresolution" << endl;
           trackingresolution();
           if(verbosity>1) cout << "running trackingcomparison" << endl;
-          // trackingcomparison();
+          trackingcomparison();
           if(verbosity>1) cout << "finished tracking studies" << endl;
         }
-        if(verbosity>1) cout << "running clusterstudies" << endl;
-        clusterstudies();
-        if(verbosity>1) std::cout << "running resolutionhistos" << std::endl;
-        resolutionhistos();
-        extracaloresolutionhistos();
-        if(verbosity>1) std::cout << "loop done ... next event" << std::endl;
+        if (runCaloRes){
+          if(verbosity>1) cout << "running clusterstudies" << endl;
+          clusterstudies();
+          if(verbosity>1) std::cout << "running  caloresolutionhistos" << std::endl;
+          caloresolutionhistos();
+          if(verbosity>1) std::cout << "loop done ... next event" << std::endl;
+        }
         if(tracksEnabled) trackmatchingstudies();
 
         clearClusterVectors();
+        clearMCRecMatchVectors();
 
     } // event loop end
     if (_do_jetfinding) {
@@ -513,12 +516,12 @@ void treeProcessing(
     }
     std::cout << "running jetresolutionhistosSave" << std::endl;
     jetresolutionhistosSave();
-    std::cout << "running resolutionhistosSave" << std::endl;
-    resolutionhistosSave();
-    extracaloresolutionhistosSave();
-    std::cout << "running clusterstudiesSave" << std::endl;
-    clusterstudiesSave();
-
+    if (runCaloRes){
+      std::cout << "running caloresolutionhistosSave" << std::endl;
+      caloresolutionhistossave();
+      std::cout << "running clusterstudiesSave" << std::endl;
+      clusterstudiesSave();
+    }
     if(tracksEnabled){
       std::cout << "running trackingefficiencyhistosSave" << std::endl;
       trackingefficiencyhistosSave();

@@ -30,8 +30,6 @@ void analyseTreeForTrackingResolAndPID(
   TRandom3 r3;
   const double c                  = 29.9792458; // cm/ns
   const double sigmat             = 20e-3; // ns
-
-  
   
   // regions: 0 = Backwards (electron going), 1 = central barrel, 2 = forward (hadron going)
   Int_t maxLayer[3]               = {5, 6, 5};

@@ -23,7 +23,7 @@
   const Int_t nResoSt             = 5;
   
   TString nameCuts[nCuts]            = {"N", "L3", "L3F", "LI", "LIF", "BE", "BEF", "AE", "AEF", "T", "LI2", "LI3" };
-  TString nameResoAdd[5]          = {"All", "woT", "wT","LI2", "LI3"};
+  TString nameResoAdd[5]          = {"All", "woT", "wT","LI", "LS"};
   TString nameAddBeta[4]          = {"", "AEMC", "LI3", "LI3AEMC"};
   
   TString labelCuts[12]                 = {"no track cuts", "at least 3 hits", "#leq 3 hits & ( 1^{st} | 2^{nd} layer)", "only tracker", "only tracker & ( 1^{st} | 2^{nd} layer)", "tracker & only LGAD before ECal", "tracker & only LGAD before ECal & ( 1^{st} | 2^{nd} layer)", "tracker & LGAD after ECal", "tracker & only LGAD after ECal & ( 1^{st} | 2^{nd} layer)", "any timing hit", "#geq 2 tracker hits", "#geq 3 tracker hits"  };
@@ -106,6 +106,23 @@
   Size_t markerSizeEta[nEta+1]     = {1.5, 1.4, 1.9, 1.5, 1.8, 1.8, 1.5, 1.5, 1.4, 1.9,
                                  1.5, 1.8, 1.8, 1.5, 1.5, 1.5 };
 
+  const int nPhi = 16;
+  Double_t partPhi[nPhi+1]          = {0.};
+  void SetPhiBins(){
+    for (Int_t iPhi = 0; iPhi < nPhi+1; iPhi++){
+      partPhi[iPhi] = -TMath::Pi() +(2*TMath::Pi())/nPhi*iPhi;
+      cout << partPhi[iPhi] << ", "; 
+    }
+    cout << endl;
+  } 
+  
+  Color_t colorPhi[nPhi+1]         = {kBlue+1, kBlue-6, kViolet+2, kViolet-5, kMagenta-6, kPink-9, kRed+1,  kOrange+7, kOrange, kYellow-6, 
+                                  kGreen+1, kGreen-5, kCyan+1, kCyan+3, kAzure+2,  kGray, kBlack };
+  Style_t markerStylePhi[nPhi+1]   = {24, 25, 27, 28, 30, 42, 46, 24, 25, 27, 
+                                 28, 30, 42, 46, 24, 25, 27};
+  Size_t markerSizePhi[nPhi+1]     = {1.5, 1.4, 1.9, 1.5, 1.8, 1.8, 1.5, 1.5, 1.4, 1.9,
+                                 1.5, 1.8, 1.8, 1.5, 1.5, 1.5, 1.5 };
+                                 
 //   Color_t colorEta[20]         = {kBlue+1, kBlue-6, kViolet+2, kViolet-5, kMagenta+1, kMagenta-6, kPink-5, kPink-9, kRed+1, kRed-7, 
 //                                   kOrange+7, kOrange, kYellow-6, kSpring+5, kGreen+1, kGreen-5, kCyan+1, kCyan+3, kAzure+2, kBlack };
 //   Style_t markerStyleEta[20]   = {24, 25, 27, 28, 30, 42, 46, 24, 25, 27, 
