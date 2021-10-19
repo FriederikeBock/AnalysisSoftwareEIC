@@ -160,6 +160,27 @@ bool IsForwardCalorimeter(int caloID){
   return false;
 }
 
+int GetCaloDirection(int caloID){
+  switch (caloID){
+    case kDRCALO: return 2;
+    case kFHCAL: return 2;
+    case kFEMC: return 2;
+    case kEHCAL: return 0;
+    case kEEMC: return 0;
+    case kHCALIN: return 1;
+    case kHCALOUT: return 1;
+    case kCEMC: return 1;
+    case kEEMCG: return 0;
+    case kLFHCAL: return 2;
+    case kBECAL: return 1;
+    default:
+      cout << "GetCaloDirection: caloID " << caloID << " not defined, returning -1" << endl;
+      return -1;
+  }
+  return -1;
+}
+
+
 float ReturnFwdCalorimeterPosition(int caloID){
   if(IsForwardCalorimeter(caloID)){
     switch (caloID){

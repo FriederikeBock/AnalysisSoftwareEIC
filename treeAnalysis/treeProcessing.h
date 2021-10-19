@@ -161,7 +161,11 @@ float* _track_px                 = new float[_maxNTracks];
 float* _track_py                 = new float[_maxNTracks];
 float* _track_pz                 = new float[_maxNTracks];
 unsigned short* _track_source             = new unsigned short[_maxNTracks];
-
+bool _track_hasTTL[_maxNTracks]          = {0};
+bool _track_hasATTL[_maxNTracks]         = {0};
+int _track_nTTL[_maxNTracks]             = {0};
+bool _track_hasIL[_maxNTracks]           = {0};
+bool _track_hasOL[_maxNTracks]           = {0};
 
 int _nProjections;
 float* _track_ProjTrackID                 = new float[_maxNProjections];
@@ -176,15 +180,17 @@ float* _track_Proj_true_z             = new float[_maxNProjections];
 float* _track_Proj_true_t             = new float[_maxNProjections];
 // MC particles
 int _nMCPart;
-int* _mcpart_ID                  = new int[_maxNMCPart];
-int* _mcpart_ID_parent           = new int[_maxNMCPart];
-int* _mcpart_PDG                 = new int[_maxNMCPart];
-float* _mcpart_E                 = new float[_maxNMCPart];
-float* _mcpart_px                = new float[_maxNMCPart];
-float* _mcpart_py                = new float[_maxNMCPart];
-float* _mcpart_pz                = new float[_maxNMCPart];
+int* _mcpart_ID                   = new int[_maxNMCPart];
+int* _mcpart_ID_parent            = new int[_maxNMCPart];
+int* _mcpart_PDG                  = new int[_maxNMCPart];
+float* _mcpart_E                  = new float[_maxNMCPart];
+float* _mcpart_px                 = new float[_maxNMCPart];
+float* _mcpart_py                 = new float[_maxNMCPart];
+float* _mcpart_pz                 = new float[_maxNMCPart];
 float* _mcpart_Eta                = new float[_maxNMCPart];
 float* _mcpart_Phi                = new float[_maxNMCPart];
+std::vector<int> _mcpart_RecTrackIDs[_maxNMCPart];
+
 
 TRandom3  _fRandom;                                  // random for effi generation
 
