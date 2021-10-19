@@ -49,13 +49,7 @@ void compare_trackingeffi(
   Size_t markerSizeSet[8]     = {1.5, 1.4, 1.6, 1.5, 1.8, 1.8, 1.5, 1.5 };
   
   const Int_t maxNSets        = 10;
-  TString outTrackCuts[3]     = {"", "LI2", "LI3"};
-  TString labelTrackCuts[3]   = {"", "#geq 2 tracker hits", "#geq 3 tracker hits"};
 
-  TString outBetaCuts[2]      = {"", "LI3"};
-  TString labelBetaCuts[2]    = {"", "#geq 3 tracker hits"};
-  
-  
   TH1D* h_effi_rec_pT[maxNSets][nPID][nEta+1]  = {{{NULL}}};
   TH1D* h_effi_rec_MCpT[maxNSets][nPID][nEta+1] = {{{NULL}}};
   TH1D* h_effi_rec_p[maxNSets][nPID][nEta+1]    = {{{NULL}}};
@@ -63,7 +57,7 @@ void compare_trackingeffi(
   TFile* inputFiles[maxNSets]                 = {NULL};
   TString inputFilesNames[maxNSets];
   TString labels[maxNSets];
-  int primaryTrackSource[maxNSets];
+  int primaryTrackSource[maxNSets]            = {0};   
   
   // read folder and name from file
   ifstream in(configInputFiles.Data());
@@ -85,8 +79,9 @@ void compare_trackingeffi(
     inputFiles[iSet]  = new TFile(inputFilesNames[iSet].Data());
     for (Int_t iEta = 0; iEta < nEta+1; iEta++){
       for (Int_t pid = 0; pid < nPID; pid++){
+//           cout << primaryTrackSource[iSet] << endl;
           h_effi_rec_pT[iSet][pid][iEta]     = (TH1D*)inputFiles[iSet]->Get(Form("TrackingEfficiencyProjections/effi%s_pT_%d_%d", partName[pid].Data(), iEta, primaryTrackSource[iSet]));
-          if(!h_effi_rec_pT[iSet][pid][iEta]) cout << Form("TrackingEfficiencyProjections/effi%s_pT_%d_%d not found", partName[pid].Data(), iEta, primaryTrackSource[nSets]) << endl;
+          if(!h_effi_rec_pT[iSet][pid][iEta]) cout << Form("TrackingEfficiencyProjections/effi%s_pT_%d_%d not found", partName[pid].Data(), iEta, primaryTrackSource[iSet]) << endl;
           h_effi_rec_MCpT[iSet][pid][iEta]    = (TH1D*)inputFiles[iSet]->Get(Form("TrackingEfficiencyProjections/effi%s_MCpT_%d_%d", partName[pid].Data(), iEta, primaryTrackSource[iSet]));
           h_effi_rec_p[iSet][pid][iEta]      = (TH1D*)inputFiles[iSet]->Get(Form("TrackingEfficiencyProjections/effi%s_p_%d_%d", partName[pid].Data(), iEta, primaryTrackSource[iSet]));
           h_effi_rec_MCp[iSet][pid][iEta]     = (TH1D*)inputFiles[iSet]->Get(Form("TrackingEfficiencyProjections/effi%s_MCp_%d_%d", partName[pid].Data(), iEta, primaryTrackSource[iSet]));
@@ -108,28 +103,28 @@ void compare_trackingeffi(
     DrawGammaCanvasSettings( cReso, 0.085, 0.025, 0.02, 0.105);
     // cReso->SetLogz();
   
-    TH2F* histoDummyEffiPt   = new TH2F("histoDummyEffiPt","histoDummyEffiPt",1000,0, 20,1000,0.0, 1.25);
+    TH2F* histoDummyEffiPt   = new TH2F("histoDummyEffiPt","histoDummyEffiPt",1000,0, 20,1000,0.0, 1.4);
     SetStyleHistoTH2ForGraphs(histoDummyEffiPt, "#it{p}_{T} (GeV/#it{c})","#varepsilon", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad, 1.15*textSizeSinglePad, 0.9, 0.75);
     histoDummyEffiPt->GetXaxis()->SetNoExponent();
     histoDummyEffiPt->GetYaxis()->SetNdivisions(510,kTRUE);
     histoDummyEffiPt->GetXaxis()->SetMoreLogLabels(kTRUE);
-    TH2F* histoDummyEffiMCPt   = new TH2F("histoDummyEffiMCPt","histoDummyEffiMCPt",1000,0, 20,1000,0.0, 1.25);
+    TH2F* histoDummyEffiMCPt   = new TH2F("histoDummyEffiMCPt","histoDummyEffiMCPt",1000,0, 20,1000,0.0, 1.4);
     SetStyleHistoTH2ForGraphs(histoDummyEffiMCPt, "#it{p}_{T}^{MC} (GeV/#it{c})","#varepsilon", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad, 1.15*textSizeSinglePad, 0.9, 0.75);
     histoDummyEffiMCPt->GetXaxis()->SetNoExponent();
     histoDummyEffiMCPt->GetYaxis()->SetNdivisions(510,kTRUE);
     histoDummyEffiMCPt->GetXaxis()->SetMoreLogLabels(kTRUE);
-    TH2F* histoDummyEffiP   = new TH2F("histoDummyEffiP","histoDummyEffiP",1000,0, 100,1000,0.0, 1.25);
+    TH2F* histoDummyEffiP   = new TH2F("histoDummyEffiP","histoDummyEffiP",1000,0, 100,1000,0.0, 1.4);
     SetStyleHistoTH2ForGraphs(histoDummyEffiP, "#it{p} (GeV/#it{c})","#varepsilon", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad, 1.15*textSizeSinglePad, 0.9, 0.75);
     histoDummyEffiP->GetXaxis()->SetNoExponent();
     histoDummyEffiP->GetYaxis()->SetNdivisions(510,kTRUE);
     histoDummyEffiP->GetXaxis()->SetMoreLogLabels(kTRUE);
-    TH2F* histoDummyEffiMCP   = new TH2F("histoDummyEffiMCP","histoDummyEffiMCP",1000,0, 100,1000,0.0, 1.25);
+    TH2F* histoDummyEffiMCP   = new TH2F("histoDummyEffiMCP","histoDummyEffiMCP",1000,0, 100,1000,0.0, 1.4);
     SetStyleHistoTH2ForGraphs(histoDummyEffiMCP, "#it{p}^{MC} (GeV/#it{c})","#varepsilon", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad, 1.15*textSizeSinglePad, 0.9, 0.75);
     histoDummyEffiMCP->GetXaxis()->SetNoExponent();
     histoDummyEffiMCP->GetYaxis()->SetNdivisions(510,kTRUE);
     histoDummyEffiMCP->GetXaxis()->SetMoreLogLabels(kTRUE);
       
-    TLegend* legendPtResM  = GetAndSetLegend2(0.4, 0.14, 0.6, 0.14+(nSets*textSizeLabelsRel),0.85*textSizeLabelsPixel, 1, "", 43, 0.15);
+    TLegend* legendPtResM  = GetAndSetLegend2(0.6, 0.94-(nSets*textSizeLabelsRel), 0.8, 0.94,0.85*textSizeLabelsPixel, 1, "", 43, 0.15);
     
   
     for (Int_t pid = 0; pid < nPID; pid++){
