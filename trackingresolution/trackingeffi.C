@@ -18,7 +18,6 @@ void trackingeffi(
                             TString suffix          = "pdf",
                             TString addLabel        = "",
                             Int_t trackCuts         = 0
-                            
 ){
 
   gROOT->Reset();
@@ -52,7 +51,7 @@ void trackingeffi(
     nLinesCol++;
   }
 
-  TString outputDir                 = Form("plots/%s/Effi%s",dateForOutput.Data(),addLabel.Data());
+  TString outputDir                 = Form("plots/%s/Effi%s_%d",dateForOutput.Data(),addLabel.Data(),trackCuts);
   gSystem->Exec("mkdir -p "+outputDir);
 
   TString detLabel        = GetTrackerLabel(addLabel);
@@ -102,20 +101,20 @@ void trackingeffi(
     cout << Form("h_%s_MC_pT", partNameET[pid].Data()) << endl;
     h_trackMapMC_eta_MCpT[pid]                  = (TH2F*)inputFile->Get(Form("h_%s_MC_pT", partNameET[pid].Data()));
     h_trackMapMC_eta_MCpT[pid]->Sumw2();
-    cout << Form("h_%s_rec_pT", partNameET[pid].Data()) << endl;
-    h_trackMapRec_eta_pT[pid]                   = (TH2F*)inputFile->Get(Form("h_%s_rec_pT", partNameET[pid].Data()));
+    cout << Form("h_%s_rec_pT_%d", partNameET[pid].Data(),trackCuts) << endl;
+    h_trackMapRec_eta_pT[pid]                   = (TH2F*)inputFile->Get(Form("h_%s_rec_pT_%d", partNameET[pid].Data(),trackCuts));
     h_trackMapRec_eta_pT[pid]->Sumw2();
-    cout << Form("h_%s_rec_truepT", partNameET[pid].Data()) << endl;
-    h_trackMapRec_eta_MCpT[pid]                 = (TH2F*)inputFile->Get(Form("h_%s_rec_truepT", partNameET[pid].Data()));
+    cout << Form("h_%s_rec_truepT_%d", partNameET[pid].Data(),trackCuts) << endl;
+    h_trackMapRec_eta_MCpT[pid]                 = (TH2F*)inputFile->Get(Form("h_%s_rec_truepT_%d", partNameET[pid].Data(),trackCuts));
     h_trackMapRec_eta_MCpT[pid]->Sumw2();
     cout << Form("h_%s_MC_p", partNameET[pid].Data()) << endl;
     h_trackMapMC_eta_MCp[pid]                   = (TH2F*)inputFile->Get(Form("h_%s_MC_p", partNameET[pid].Data()));
     h_trackMapMC_eta_MCp[pid]->Sumw2();
-    cout << Form("h_%s_rec_p", partNameET[pid].Data()) << endl;
-    h_trackMapRec_eta_p[pid]                    = (TH2F*)inputFile->Get(Form("h_%s_rec_p", partNameET[pid].Data()));
+    cout << Form("h_%s_rec_p_%d", partNameET[pid].Data(),trackCuts) << endl;
+    h_trackMapRec_eta_p[pid]                    = (TH2F*)inputFile->Get(Form("h_%s_rec_p_%d", partNameET[pid].Data(),trackCuts));
     h_trackMapRec_eta_p[pid]->Sumw2();
-    cout << Form("h_%s_rec_truep", partNameET[pid].Data()) << endl;
-    h_trackMapRec_eta_MCp[pid]                  = (TH2F*)inputFile->Get(Form("h_%s_rec_truep", partNameET[pid].Data()));
+    cout << Form("h_%s_rec_truep_%d", partNameET[pid].Data(),trackCuts) << endl;
+    h_trackMapRec_eta_MCp[pid]                  = (TH2F*)inputFile->Get(Form("h_%s_rec_truep_%d", partNameET[pid].Data(),trackCuts));
     h_trackMapRec_eta_MCp[pid]->Sumw2();
   }
   
@@ -450,22 +449,22 @@ void trackingeffi(
   directoryTrEffi->cd();
   for (Int_t iEta = 0; iEta < nEta+1; iEta++){
     for (Int_t pid = 0; pid < 6; pid++){
-      h_effi_rec_pT[pid][iEta]->Write(Form("effi%s_pT_%d",partName[pid].Data(), iEta),TObject::kOverwrite);
-      h_effi_rec_MCpT[pid][iEta]->Write(Form("effi%s_MCpT_%d",partName[pid].Data(), iEta),TObject::kOverwrite);
-      h_effi_rec_p[pid][iEta]->Write(Form("effi%s_p_%d",partName[pid].Data(), iEta),TObject::kOverwrite);
-      h_effi_rec_MCp[pid][iEta]->Write(Form("effi%s_MCp_%d",partName[pid].Data(), iEta),TObject::kOverwrite);
-      h_spectra_MC_MCpT[pid][iEta]->Write(Form("spectraMC%s_MCpT_%d",partName[pid].Data(), iEta), TObject::kOverwrite);
-      h_spectra_rec_pT[pid][iEta]->Write(Form("spectraRec%s_pT_%d",partName[pid].Data(), iEta), TObject::kOverwrite);
-      h_spectra_rec_MCpT[pid][iEta]->Write(Form("spectraRec%s_MCpT_%d",partName[pid].Data(), iEta), TObject::kOverwrite); 
-      h_spectra_MC_MCp[pid][iEta]->Write( Form("spectraMC%s_MCp_%d",partName[pid].Data(), iEta), TObject::kOverwrite);
-      h_spectra_rec_p[pid][iEta]->Write( Form("spectraRec%s_p_%d",partName[pid].Data(), iEta), TObject::kOverwrite);
-      h_spectra_rec_MCp[pid][iEta]->Write( Form("spectraRec%s_MCp_%d",partName[pid].Data(), iEta), TObject::kOverwrite);
-      h_spectraReb_MC_MCpT[pid][iEta]->Write( Form("spectraRebMC%s_MCpT_%d", partName[pid].Data(), iEta), TObject::kOverwrite);
-      h_spectraReb_rec_pT[pid][iEta]->Write( Form("spectraRebRec%s_pT_%d",partName[pid].Data(), iEta), TObject::kOverwrite);
-      h_spectraReb_rec_MCpT[pid][iEta]->Write( Form("spectraRebRec%s_MCpT_%d",partName[pid].Data(), iEta), TObject::kOverwrite);      
-      h_spectraReb_MC_MCp[pid][iEta]->Write( Form("spectraRebMC%s_MCp_%d",partName[pid].Data(), iEta), TObject::kOverwrite);
-      h_spectraReb_rec_p[pid][iEta]->Write( Form("spectraRebRec%s_p_%d",partName[pid].Data(), iEta), TObject::kOverwrite);
-      h_spectraReb_rec_MCp[pid][iEta]->Write( Form("spectraRebRec%s_MCp_%d",partName[pid].Data(), iEta), TObject::kOverwrite);
+      h_effi_rec_pT[pid][iEta]->Write(Form("effi%s_pT_%d_%d",partName[pid].Data(), iEta, trackCuts),TObject::kOverwrite);
+      h_effi_rec_MCpT[pid][iEta]->Write(Form("effi%s_MCpT_%d_%d",partName[pid].Data(), iEta, trackCuts),TObject::kOverwrite);
+      h_effi_rec_p[pid][iEta]->Write(Form("effi%s_p_%d_%d",partName[pid].Data(), iEta, trackCuts),TObject::kOverwrite);
+      h_effi_rec_MCp[pid][iEta]->Write(Form("effi%s_MCp_%d_%d",partName[pid].Data(), iEta, trackCuts),TObject::kOverwrite);
+      h_spectra_MC_MCpT[pid][iEta]->Write(Form("spectraMC%s_MCpT_%d_%d",partName[pid].Data(), iEta, trackCuts), TObject::kOverwrite);
+      h_spectra_rec_pT[pid][iEta]->Write(Form("spectraRec%s_pT_%d_%d",partName[pid].Data(), iEta, trackCuts), TObject::kOverwrite);
+      h_spectra_rec_MCpT[pid][iEta]->Write(Form("spectraRec%s_MCpT_%d_%d",partName[pid].Data(), iEta, trackCuts), TObject::kOverwrite); 
+      h_spectra_MC_MCp[pid][iEta]->Write( Form("spectraMC%s_MCp_%d_%d",partName[pid].Data(), iEta, trackCuts), TObject::kOverwrite);
+      h_spectra_rec_p[pid][iEta]->Write( Form("spectraRec%s_p_%d_%d",partName[pid].Data(), iEta, trackCuts), TObject::kOverwrite);
+      h_spectra_rec_MCp[pid][iEta]->Write( Form("spectraRec%s_MCp_%d_%d",partName[pid].Data(), iEta, trackCuts), TObject::kOverwrite);
+      h_spectraReb_MC_MCpT[pid][iEta]->Write( Form("spectraRebMC%s_MCpT_%d_%d", partName[pid].Data(), iEta, trackCuts), TObject::kOverwrite);
+      h_spectraReb_rec_pT[pid][iEta]->Write( Form("spectraRebRec%s_pT_%d_%d",partName[pid].Data(), iEta, trackCuts), TObject::kOverwrite);
+      h_spectraReb_rec_MCpT[pid][iEta]->Write( Form("spectraRebRec%s_MCpT_%d_%d",partName[pid].Data(), iEta, trackCuts), TObject::kOverwrite);      
+      h_spectraReb_MC_MCp[pid][iEta]->Write( Form("spectraRebMC%s_MCp_%d_%d",partName[pid].Data(), iEta, trackCuts), TObject::kOverwrite);
+      h_spectraReb_rec_p[pid][iEta]->Write( Form("spectraRebRec%s_p_%d_%d",partName[pid].Data(), iEta, trackCuts), TObject::kOverwrite);
+      h_spectraReb_rec_MCp[pid][iEta]->Write( Form("spectraRebRec%s_MCp_%d_%d",partName[pid].Data(), iEta, trackCuts), TObject::kOverwrite);
     }
   }
   outputFile->Write();

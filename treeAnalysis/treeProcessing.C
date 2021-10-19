@@ -76,8 +76,8 @@ void treeProcessing(
     SetBranchAddressesGeometryTree(tt_geometry);
     SetGeometryIndices();
 
-    for (Int_t c = 0; c < 11; c++){
-      cout << str_calorimeter[c] << "\t" << caloEnabled[c] << endl;
+    for (Int_t c = 0; c < 12; c++){
+      cout << str_calorimeter[c] << "\t" << caloEnabled[c] << endl; 
     }
 
     Long64_t nEntriesTree                 = tt_event->GetEntries();
@@ -164,6 +164,15 @@ void treeProcessing(
           }
         }
 
+        if(do_reclus && _nTowers_FOCAL && caloEnabled[kFOCAL]){
+            float seed_E_FOCAL = 0.1;
+            float aggregation_E_FOCAL = 0.001;
+            if(kMA<_active_algo){
+                if(verbosity>1) cout << "clusterizing MA for FOCAL" << endl;
+                runclusterizer(kMA, kFOCAL,seed_E_FOCAL, aggregation_E_FOCAL, primaryTrackSource);
+            }
+        } 
+
         if(do_reclus && _nTowers_DRCALO && caloEnabled[kDRCALO]){ //do_V1clusterizerDRCALO
           if(verbosity>1) cout << "clusterizing V1 for DRCALO" << endl;
           runclusterizer(kV1, kDRCALO, seedE[kDRCALO], aggE[kDRCALO], primaryTrackSource);
@@ -175,6 +184,7 @@ void treeProcessing(
         // float* _hits_y[ihit]
         // float* _hits_z[ihit]
         // float* _hits_t[ihit]
+        // float* _hits_edep[ihit]
         // for(Int_t ihit=0; ihit<_nHitsLayers; ihit++){
         //     if(verbosity>1) std::cout << "\tHIT: hit " << ihit << "\tin layer " << _hits_layerID[ihit] << "\twith X = " << _hits_x[ihit] << " cm" << std::endl;
         // }

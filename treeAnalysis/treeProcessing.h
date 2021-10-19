@@ -33,7 +33,8 @@ enum calotype {
   kHCALOUT        = 7,
   kLFHCAL         = 8,
   kEEMCG          = 9,
-  kBECAL          = 10
+  kBECAL          = 10,
+  kFOCAL          = 11
 };
 
 bool caloEnabled[20]      = {0};
@@ -53,6 +54,7 @@ float* _hits_x             = new float[_maxNHits];
 float* _hits_y             = new float[_maxNHits];
 float* _hits_z             = new float[_maxNHits];
 float* _hits_t             = new float[_maxNHits];
+float* _hits_edep          = new float[_maxNHits];
 
 // towers
 int _nTowers_CEMC;
@@ -102,6 +104,13 @@ float* _tower_DRCALO_E            = new float[_maxNTowersDR];
 int* _tower_DRCALO_iEta         = new int[_maxNTowersDR];
 int* _tower_DRCALO_iPhi         = new int[_maxNTowersDR];
 int* _tower_DRCALO_trueID       = new int[_maxNTowersDR];
+
+// towers
+int _nTowers_FOCAL;
+float* _tower_FOCAL_E            = new float[_maxNTowersDR];
+int* _tower_FOCAL_iEta         = new int[_maxNTowersDR];
+int* _tower_FOCAL_iPhi         = new int[_maxNTowersDR];
+int* _tower_FOCAL_trueID       = new int[_maxNTowersDR];
 
 // towers
 int _nTowers_LFHCAL;
@@ -235,6 +244,7 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("hits_y",               _hits_y);
       inputTree->SetBranchAddress("hits_z",               _hits_z);
       inputTree->SetBranchAddress("hits_t",               _hits_t);
+      inputTree->SetBranchAddress("hits_edep",               _hits_edep);
     }
     
     if (inputTree->GetBranchStatus("nTracks") ){
@@ -348,6 +358,15 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("tower_DRCALO_iEta",             _tower_DRCALO_iEta);
       inputTree->SetBranchAddress("tower_DRCALO_iPhi",             _tower_DRCALO_iPhi);
       inputTree->SetBranchAddress("tower_DRCALO_trueID",           _tower_DRCALO_trueID);
+    } 
+    // towers DRCALO
+    if( inputTree->GetBranchStatus("tower_FOCAL_N") ){
+      caloEnabled[kFOCAL] = 1;
+      inputTree->SetBranchAddress("tower_FOCAL_N",                &_nTowers_FOCAL);
+      inputTree->SetBranchAddress("tower_FOCAL_E",                _tower_FOCAL_E);
+      inputTree->SetBranchAddress("tower_FOCAL_iEta",             _tower_FOCAL_iEta);
+      inputTree->SetBranchAddress("tower_FOCAL_iPhi",             _tower_FOCAL_iPhi);
+      inputTree->SetBranchAddress("tower_FOCAL_trueID",           _tower_FOCAL_trueID);
     } 
 
     // towers FHCAL

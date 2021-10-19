@@ -43,14 +43,14 @@ typedef struct {
 //   kEEMCG         = 9,
 //   kBECAL         = 10
 // };
-const int maxcalo = 11;
+const int maxcalo = 12;
 int calogeomindex[maxcalo] = {0};
 
-TString str_calorimeter[maxcalo] = {"FHCAL", "FEMC", "DRCALO", "EEMC", "CEMC", "EHCAL", "HCALIN", "HCALOUT", "LFHCAL", "EEMCG", "BECAL"};
-int _combCalo[maxcalo]           = {kFEMC,  -1,     -1,       -1,      -1,      kEEMC,  kBECAL,   kHCALIN,    kFEMC,    -1,       -1};
-int _combCalo2[maxcalo]          = {-1,     -1,     -1,       -1,      -1,      -1,     -1,       kBECAL,     -1,       -1,       -1};
-int _caloTowersPhi[maxcalo]      = {0,       0,      0,        0,     100,      0,      64,       64,         0,        -1,       128};
-const int _active_calo = 11;
+TString str_calorimeter[maxcalo] = {"FHCAL", "FEMC", "DRCALO", "EEMC", "CEMC", "EHCAL", "HCALIN", "HCALOUT", "LFHCAL", "EEMCG", "BECAL", "FOCAL"};
+int _combCalo[maxcalo]           = {kFEMC,  -1,     -1,       -1,      -1,      kEEMC,  kBECAL,   kHCALIN,    kFEMC,    -1,       -1,       -1};
+int _combCalo2[maxcalo]          = {-1,     -1,     -1,       -1,      -1,      -1,     -1,       kBECAL,     -1,       -1,       -1,       -1};
+int _caloTowersPhi[maxcalo]      = {0,       0,      0,        0,     100,      0,      64,       64,         0,        -1,       128,       0};
+const int _active_calo = 12;
 
 void CheckBarrelCaloVersion (){
   if (caloEnabled[kCEMC]) {
@@ -85,6 +85,7 @@ float _ch_EHCAL_pos_z = 1;
 float _ch_EEMC_pos_z = 1;
 float _ch_EEMCG_pos_z = 1;
 float _ch_LFHCAL_pos_z = 1;
+float _ch_FOCAL_pos_z = 1;
 
 // sorting function for towers
 bool acompare(towersStrct lhs, towersStrct rhs) { return lhs.tower_E > rhs.tower_E; }
@@ -134,6 +135,7 @@ bool IsHCALCalorimeter(int caloID){
     case kEEMCG: return false;
     case kLFHCAL: return true;
     case kBECAL: return false;
+    case kFOCAL: return true;
     default:
       cout << "IsHCALCalorimeter: caloID " << caloID << " not defined, returning false" << endl;
       return false;
@@ -153,6 +155,7 @@ bool IsForwardCalorimeter(int caloID){
     case kEEMCG: return true;
     case kLFHCAL: return true;
     case kBECAL: return false;
+    case kFOCAL: return true;
     default:
       cout << "IsForwardCalorimeter: caloID " << caloID << " not defined, returning false" << endl;
       return false;
@@ -191,6 +194,7 @@ float ReturnFwdCalorimeterPosition(int caloID){
       case kEEMC: return _ch_EEMC_pos_z;
       case kEEMCG: return _ch_EEMCG_pos_z;
       case kLFHCAL: return _ch_LFHCAL_pos_z;
+      case kFOCAL: return _ch_FOCAL_pos_z;
       default:
         cout << "ReturnFwdCalorimeterPosition: caloID " << caloID << " forward position not defined, returning 1" << endl;
         return 1;
@@ -215,6 +219,7 @@ int ReturnCaloFwdBarrelBckw(int caloID){
     case kEEMCG: return 2;
     case kLFHCAL: return 0;
     case kBECAL: return 1;
+    case kFOCAL: return 0;
     default:
       return 1;
   }
@@ -231,6 +236,7 @@ void SetFwdCalorimeterPosition(int caloID, float zposin){
     case kEEMC:_ch_EEMC_pos_z = zpos; break;
     case kEEMCG:_ch_EEMCG_pos_z = zpos; break;
     case kLFHCAL:_ch_LFHCAL_pos_z = zpos; break;
+    case kFOCAL:_ch_FOCAL_pos_z = zpos; break;
     default: break;
   }
 }
@@ -293,6 +299,7 @@ int ReturnMaxTowerCalo(int caloID){
     case kEEMCG: return _nTowers_EEMCG;
     case kLFHCAL: return _nTowers_LFHCAL;
     case kBECAL: return _nTowers_BECAL;
+    case kFOCAL: return _nTowers_FOCAL;
     default:
       cout << "ReturnMaxTowerCalo: caloID " << caloID << " not defined, returning -1" << endl;
       return -1;
@@ -315,6 +322,7 @@ int ReturnProjectionIndexForCalorimeter(int caloID){
     case kEEMCG: return 65;
     case kLFHCAL: return 67;
     case kBECAL: return 66;
+    case kFOCAL: return 85;
     default:
       cout << "ReturnProjectionIndexForCalorimeter: caloID " << caloID << " not defined, returning -1" << endl;
       return -1;
@@ -335,6 +343,7 @@ int ReturnCalorimeterFromProjectionIndex(int projID){
     case 65: return kEEMCG;
     case 67: return kLFHCAL;
     case 66: return kBECAL;
+    case 85: return kFOCAL;
     default:
       // cout << "ReturnCalorimeterFromProjectionIndex: projID " << projID << " not defined, returning -1" << endl;
       return -1;
@@ -352,9 +361,10 @@ float ReturnTrackMatchingWindowForCalo(int caloID){
     case kHCALIN: return 0.1;
     case kHCALOUT: return 0.1;
     case kCEMC: return 0.05;
-    case kEEMCG: return 5;
+    case kEEMCG: return 7;
     case kLFHCAL: return 10;
-    case kBECAL: return 0.05;
+    case kBECAL: return 0.2;
+    case kFOCAL: return 3;
     default:
       cout << "ReturnTrackMatchingWindowForCalo: caloID " << caloID << " not defined, returning -1" << endl;
       return -1;

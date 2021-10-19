@@ -63,6 +63,7 @@ void compare_trackingeffi(
   TFile* inputFiles[maxNSets]                 = {NULL};
   TString inputFilesNames[maxNSets];
   TString labels[maxNSets];
+  int primaryTrackSource[maxNSets];
   
   // read folder and name from file
   ifstream in(configInputFiles.Data());
@@ -70,8 +71,8 @@ void compare_trackingeffi(
   Int_t nSets = 0;
   
   while(!in.eof() ){
-      in >> inputFilesNames[nSets] >> labels[nSets];
-      std::cout << nSets << "\t"<< inputFilesNames[nSets].Data() << "\t"<< labels[nSets].Data() <<std::endl;
+      in >> inputFilesNames[nSets] >> labels[nSets] >> primaryTrackSource[nSets];
+      std::cout << nSets << "\t"<< inputFilesNames[nSets].Data() << "\t"<< labels[nSets].Data() << "\t"<< primaryTrackSource[nSets] <<std::endl;
       labels[nSets].ReplaceAll("_"," ");
       nSets++;
   }
@@ -84,10 +85,11 @@ void compare_trackingeffi(
     inputFiles[iSet]  = new TFile(inputFilesNames[iSet].Data());
     for (Int_t iEta = 0; iEta < nEta+1; iEta++){
       for (Int_t pid = 0; pid < nPID; pid++){
-          h_effi_rec_pT[iSet][pid][iEta]     = (TH1D*)inputFiles[iSet]->Get(Form("TrackingEfficiencyProjections/effi%s_pT_%d", partName[pid].Data(), iEta));
-          h_effi_rec_MCpT[iSet][pid][iEta]    = (TH1D*)inputFiles[iSet]->Get(Form("TrackingEfficiencyProjections/effi%s_MCpT_%d", partName[pid].Data(), iEta));
-          h_effi_rec_p[iSet][pid][iEta]      = (TH1D*)inputFiles[iSet]->Get(Form("TrackingEfficiencyProjections/effi%s_p_%d", partName[pid].Data(), iEta));
-          h_effi_rec_MCp[iSet][pid][iEta]     = (TH1D*)inputFiles[iSet]->Get(Form("TrackingEfficiencyProjections/effi%s_MCp_%d", partName[pid].Data(), iEta));
+          h_effi_rec_pT[iSet][pid][iEta]     = (TH1D*)inputFiles[iSet]->Get(Form("TrackingEfficiencyProjections/effi%s_pT_%d_%d", partName[pid].Data(), iEta, primaryTrackSource[iSet]));
+          if(!h_effi_rec_pT[iSet][pid][iEta]) cout << Form("TrackingEfficiencyProjections/effi%s_pT_%d_%d not found", partName[pid].Data(), iEta, primaryTrackSource[nSets]) << endl;
+          h_effi_rec_MCpT[iSet][pid][iEta]    = (TH1D*)inputFiles[iSet]->Get(Form("TrackingEfficiencyProjections/effi%s_MCpT_%d_%d", partName[pid].Data(), iEta, primaryTrackSource[iSet]));
+          h_effi_rec_p[iSet][pid][iEta]      = (TH1D*)inputFiles[iSet]->Get(Form("TrackingEfficiencyProjections/effi%s_p_%d_%d", partName[pid].Data(), iEta, primaryTrackSource[iSet]));
+          h_effi_rec_MCp[iSet][pid][iEta]     = (TH1D*)inputFiles[iSet]->Get(Form("TrackingEfficiencyProjections/effi%s_MCp_%d_%d", partName[pid].Data(), iEta, primaryTrackSource[iSet]));
       }
     }
   }

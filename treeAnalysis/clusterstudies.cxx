@@ -63,10 +63,6 @@ float* clusters_CLSTD_X         = new float[_maxNclusters];
 float* clusters_CLSTD_Y         = new float[_maxNclusters];
 float* clusters_CLSTD_Z         = new float[_maxNclusters];
 
-TH2F* h_clusterizer_IEtaIPhiMapEvt 	    = new TH2F("h_clusterizer_IEtaIPhiMapEvt", "",  57, -0.5, 56.5,  57, -0.5, 56.5);;
-// TH2F* h_clusterizer_IEtaIPhiMapEvt 	    = new TH2F("h_clusterizer_IEtaIPhiMapEvt", "",  23, 13.5, 36.5,  23, 13.5, 36.5);;
-TCanvas* cReso_clusterizer = new TCanvas("cReso_clusterizer","",0,0,1000,1000);
-
 // ANCHOR main function to be called in event loop
 void clusterstudies(){
   for(int icalo=0;icalo<_active_calo;icalo++){

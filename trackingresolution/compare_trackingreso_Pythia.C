@@ -40,8 +40,11 @@ void compare_trackingreso_Pythia(
     addOut              = "Hist";
     maxBetaSigma        = 0.05;
   }
-
-  TString outputDir                 = Form("plots/%s/Compare%s%s",dateForOutput.Data(), addName.Data(), addOut.Data());
+  TString addLabel        = "";
+  // if (primaryTrackSource == 1) {
+  //   addLabel += "-innerTracks";
+  // }
+  TString outputDir                 = Form("plots/%s/Compare%s%s%s",dateForOutput.Data(), addName.Data(), addOut.Data(),addLabel.Data());
   gSystem->Exec("mkdir -p "+outputDir);
   for (Int_t pid = 0; pid < 6; pid++){
     gSystem->Exec("mkdir -p "+outputDir+"/"+partName[pid]);
@@ -64,8 +67,14 @@ void compare_trackingreso_Pythia(
   Size_t markerSizeSet[8]     = {1.5, 1.4, 1.6, 1.5, 1.8, 1.8, 1.5, 1.5 };
   
   const Int_t maxNSets        = 10;
-  TString outTrackCuts[3]     = {"", "LI2", "LI3"};
+  TString outTrackCutsBase[3]     = {"", "LI2", "LI3"};
+  TString outTrackCuts[maxNSets][3]     = {{""}};
   TString labelTrackCuts[3]   = {"", "#geq 2 tracker hits", "#geq 3 tracker hits"};
+  // if (addLabel.Contains("innerTracks")) {
+  //   labelTrackCuts[0]   = "Inner tracks only.";
+  //   labelTrackCuts[1]   = "Inner tracks only. #geq 2 tracker hits";
+  //   labelTrackCuts[2]   = "Inner tracks only. #geq 3 tracker hits";
+  // }
 
   TString outBetaCuts[2]      = {"", "LI3"};
   TString labelBetaCuts[2]    = {"", "#geq 3 tracker hits"};
@@ -83,6 +92,7 @@ void compare_trackingreso_Pythia(
   TFile* inputFiles[maxNSets]                 = {NULL};
   TString inputFilesNames[maxNSets];
   TString labels[maxNSets];
+  int primaryTrackSource[maxNSets];
   
   // read folder and name from file
   ifstream in(configInputFiles.Data());
@@ -90,9 +100,10 @@ void compare_trackingreso_Pythia(
   Int_t nSets = 0;
   
   while(!in.eof() ){
-      in >> inputFilesNames[nSets] >> labels[nSets];
-      std::cout << nSets << "\t"<< inputFilesNames[nSets].Data() << "\t"<< labels[nSets].Data() <<std::endl;
+      in >> inputFilesNames[nSets] >> labels[nSets] >> primaryTrackSource[nSets];
+      std::cout << nSets << "\t"<< inputFilesNames[nSets].Data() << "\t"<< labels[nSets].Data()<< "\t"<< primaryTrackSource[nSets] <<std::endl;
       labels[nSets].ReplaceAll("_"," ");
+      if(primaryTrackSource[nSets]!=0) labels[nSets] += ", Inner tracks only.";
       nSets++;
   }
   cout<<"=========================="<<endl;
@@ -104,25 +115,29 @@ void compare_trackingreso_Pythia(
     for (Int_t iEta = 0; iEta < nEta+1; iEta++){
       for (Int_t pid = 0; pid < nPID; pid++){
         for (Int_t iT = 0; iT< 3; iT++){
-          h_tracks_mean_pt_reso[iSet][iT][pid][iEta]     = (TH1D*)inputFiles[iSet]->Get(Form("histPtResol%s_%s_%s_%d", outTrackCuts[iT].Data(), partName[pid].Data(), addMean.Data() ,iEta));
-          h_tracks_sigma_pt_reso[iSet][iT][pid][iEta]    = (TH1D*)inputFiles[iSet]->Get(Form("histPtResol%s_%s_%s_%d", outTrackCuts[iT].Data(), partName[pid].Data(), addSigma.Data() ,iEta));
-          h_tracks_mean_p_reso[iSet][iT][pid][iEta]      = (TH1D*)inputFiles[iSet]->Get(Form("histPResol%s_%s_%s_%d", outTrackCuts[iT].Data(), partName[pid].Data(), addMean.Data() ,iEta));
-          h_tracks_sigma_p_reso[iSet][iT][pid][iEta]     = (TH1D*)inputFiles[iSet]->Get(Form("histPResol%s_%s_%s_%d", outTrackCuts[iT].Data(), partName[pid].Data(), addSigma.Data() ,iEta));
+          outTrackCuts[iSet][iT] = outTrackCutsBase[iT];
+          if(primaryTrackSource[iSet]!=0) outTrackCuts[iSet][iT]+= "INNER";
+          // cout << Form("histPtResol%s_%s_%s_%d_%d", outTrackCuts[iT].Data(), partName[pid].Data(), addMean.Data() ,iEta,primaryTrackSource) << endl;
+          h_tracks_mean_pt_reso[iSet][iT][pid][iEta]     = (TH1D*)inputFiles[iSet]->Get(Form("histPtResol%s_%s_%s_%d_%d", outTrackCuts[iSet][iT].Data(), partName[pid].Data(), addMean.Data() ,iEta,primaryTrackSource[iSet]));
+          if(!h_tracks_mean_pt_reso[iSet][iT][pid][iEta]) cout << "not found!" << endl;
+          h_tracks_sigma_pt_reso[iSet][iT][pid][iEta]    = (TH1D*)inputFiles[iSet]->Get(Form("histPtResol%s_%s_%s_%d_%d", outTrackCuts[iSet][iT].Data(), partName[pid].Data(), addSigma.Data() ,iEta,primaryTrackSource[iSet]));
+          h_tracks_mean_p_reso[iSet][iT][pid][iEta]      = (TH1D*)inputFiles[iSet]->Get(Form("histPResol%s_%s_%s_%d_%d", outTrackCuts[iSet][iT].Data(), partName[pid].Data(), addMean.Data() ,iEta,primaryTrackSource[iSet]));
+          h_tracks_sigma_p_reso[iSet][iT][pid][iEta]     = (TH1D*)inputFiles[iSet]->Get(Form("histPResol%s_%s_%s_%d_%d", outTrackCuts[iSet][iT].Data(), partName[pid].Data(), addSigma.Data() ,iEta,primaryTrackSource[iSet]));
         }
         for (Int_t iB = 0; iB< 2; iB++){
-          h_tracks_mean_beta_reso[iSet][iB][pid][iEta]   = (TH1D*)inputFiles[iSet]->Get(Form("histBetaResol%s_%s_%s_%d", outBetaCuts[iB].Data(), partName[pid].Data(), addMean.Data() ,iEta));
-          h_tracks_sigma_beta_reso[iSet][iB][pid][iEta]  = (TH1D*)inputFiles[iSet]->Get(Form("histBetaResol%s_%s_%s_%d", outBetaCuts[iB].Data(), partName[pid].Data(), addSigma.Data() ,iEta));
+          h_tracks_mean_beta_reso[iSet][iB][pid][iEta]   = (TH1D*)inputFiles[iSet]->Get(Form("histBetaResol%s_%s_%s_%d_%d", outBetaCuts[iB].Data(), partName[pid].Data(), addMean.Data() ,iEta,primaryTrackSource[iSet]));
+          h_tracks_sigma_beta_reso[iSet][iB][pid][iEta]  = (TH1D*)inputFiles[iSet]->Get(Form("histBetaResol%s_%s_%s_%d_%d", outBetaCuts[iB].Data(), partName[pid].Data(), addSigma.Data() ,iEta,primaryTrackSource[iSet]));
         }
       }
       for (Int_t iT = 0; iT< 3; iT++){
-        h_tracks_mean_pt_resoEta[iSet][iT][iEta]    = (TH1D*)inputFiles[iSet]->Get(Form("histEtaResol%s_%s_%d", outTrackCuts[iT].Data(), addMean.Data() ,iEta));
-        h_tracks_sigma_pt_resoEta[iSet][iT][iEta]   = (TH1D*)inputFiles[iSet]->Get(Form("histEtaResol%s_%s_%d", outTrackCuts[iT].Data(), addSigma.Data() ,iEta));
-        h_tracks_mean_pt_resoPhi[iSet][iT][iEta]    = (TH1D*)inputFiles[iSet]->Get(Form("histPhiResol%s_%s_%d", outTrackCuts[iT].Data(), addMean.Data() ,iEta));
-        h_tracks_sigma_pt_resoPhi[iSet][iT][iEta]   = (TH1D*)inputFiles[iSet]->Get(Form("histPhiResol%s_%s_%d", outTrackCuts[iT].Data(), addSigma.Data() ,iEta));
+        h_tracks_mean_pt_resoEta[iSet][iT][iEta]    = (TH1D*)inputFiles[iSet]->Get(Form("histEtaResol%s_%s_%d_%d", outTrackCuts[iSet][iT].Data(), addMean.Data() ,iEta,primaryTrackSource[iSet]));
+        h_tracks_sigma_pt_resoEta[iSet][iT][iEta]   = (TH1D*)inputFiles[iSet]->Get(Form("histEtaResol%s_%s_%d_%d", outTrackCuts[iSet][iT].Data(), addSigma.Data() ,iEta,primaryTrackSource[iSet]));
+        h_tracks_mean_pt_resoPhi[iSet][iT][iEta]    = (TH1D*)inputFiles[iSet]->Get(Form("histPhiResol%s_%s_%d_%d", outTrackCuts[iSet][iT].Data(), addMean.Data() ,iEta,primaryTrackSource[iSet]));
+        h_tracks_sigma_pt_resoPhi[iSet][iT][iEta]   = (TH1D*)inputFiles[iSet]->Get(Form("histPhiResol%s_%s_%d_%d", outTrackCuts[iSet][iT].Data(), addSigma.Data() ,iEta,primaryTrackSource[iSet]));
       }
     }
   }
-  
+  cout << __LINE__ << endl;
   for(Int_t iEta=0; iEta<nEta+1;iEta++){
     if (!enablePlot[iEta]) continue;
     // 1D PLOT
@@ -132,7 +147,7 @@ void compare_trackingreso_Pythia(
       etaMin = partEta[iEta];
       etaMax = partEta[iEta+1];
     }
-
+    cout << "iEta: " << iEta << endl;
     TCanvas* cReso = new TCanvas("cReso","",0,0,1100,800);
     DrawGammaCanvasSettings( cReso, 0.11, 0.02, 0.02, 0.105);
     // cReso->SetLogz();
@@ -164,7 +179,7 @@ void compare_trackingreso_Pythia(
           if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
           drawLatexAdd(Form("%s in %1.1f<#eta<%1.1f", partLabel[pid].Data(), etaMin,etaMax),0.95,0.91-nLinesCol*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
           if (labelTrackCuts[iT].CompareTo("") != 0) drawLatexAdd( labelTrackCuts[iT].Data(),0.95,0.91-(nLinesCol+1)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
-        cReso->Print(Form("%s/%s/PtResolution%s_Mean_pT_%d_%d.%s", outputDir.Data(), partName[pid].Data(), outTrackCuts[iT].Data(),  (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
+        cReso->Print(Form("%s/%s/PtResolution%s_Mean_pT_%d_%d.%s", outputDir.Data(), partName[pid].Data(), outTrackCutsBase[iT].Data(),  (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
     
         
         histoDummyPtResSigma->Draw();
@@ -177,7 +192,7 @@ void compare_trackingreso_Pythia(
           if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
           drawLatexAdd(Form("%s in %1.1f<#eta<%1.1f", partLabel[pid].Data(), etaMin,etaMax),0.95,0.91-nLinesCol*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
           if (labelTrackCuts[iT].CompareTo("") != 0) drawLatexAdd( labelTrackCuts[iT].Data(),0.95,0.91-(nLinesCol+1)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
-        cReso->Print(Form("%s/%s/PtResolution%s_Sigma_pT_%d_%d.%s", outputDir.Data(), partName[pid].Data(), outTrackCuts[iT].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
+        cReso->Print(Form("%s/%s/PtResolution%s_Sigma_pT_%d_%d.%s", outputDir.Data(), partName[pid].Data(), outTrackCutsBase[iT].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
       }
     }
 
@@ -209,7 +224,7 @@ void compare_trackingreso_Pythia(
           if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
           drawLatexAdd(Form("%s in %1.1f<#eta<%1.1f", partLabel[pid].Data(), etaMin,etaMax),0.95,0.91-nLinesCol*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
           if (labelTrackCuts[iT].CompareTo("") != 0) drawLatexAdd( labelTrackCuts[iT].Data(),0.95,0.91-(nLinesCol+1)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
-        cReso->Print(Form("%s/%s/PResolution%s_Mean_p_%d_%d.%s", outputDir.Data(), partName[pid].Data(), outTrackCuts[iT].Data(),  (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
+        cReso->Print(Form("%s/%s/PResolution%s_Mean_p_%d_%d.%s", outputDir.Data(), partName[pid].Data(), outTrackCutsBase[iT].Data(),  (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
     
         
         histoDummyPResSigma->Draw();
@@ -222,7 +237,7 @@ void compare_trackingreso_Pythia(
           if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
           drawLatexAdd(Form("%s in %1.1f<#eta<%1.1f", partLabel[pid].Data(), etaMin,etaMax),0.95,0.91-nLinesCol*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
           if (labelTrackCuts[iT].CompareTo("") != 0) drawLatexAdd( labelTrackCuts[iT].Data(),0.95,0.91-(nLinesCol+1)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
-        cReso->Print(Form("%s/%s/PResolution%s_Sigma_p_%d_%d.%s", outputDir.Data(), partName[pid].Data(), outTrackCuts[iT].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
+        cReso->Print(Form("%s/%s/PResolution%s_Sigma_p_%d_%d.%s", outputDir.Data(), partName[pid].Data(), outTrackCutsBase[iT].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
       }
     }
     cReso->SetLogx(kFALSE);
@@ -301,7 +316,7 @@ void compare_trackingreso_Pythia(
         if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.89-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         drawLatexAdd(Form("(h/e)^{#pm} in %1.1f<#eta<%1.1f", etaMin,etaMax),0.95,0.89-nLinesCol*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         if (labelTrackCuts[iT].CompareTo("") != 0) drawLatexAdd( labelTrackCuts[iT].Data(),0.95,0.89-(nLinesCol+1)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
-      cReso->Print(Form("%s/EtaResolution%s_Mean_pT_%d_%d.%s", outputDir.Data(), outTrackCuts[iT].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
+      cReso->Print(Form("%s/EtaResolution%s_Mean_pT_%d_%d.%s", outputDir.Data(), outTrackCutsBase[iT].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
       
       histoDummyEtaResSigma->Draw();
         for(Int_t iSet=0; iSet<nSets;iSet++){
@@ -313,7 +328,7 @@ void compare_trackingreso_Pythia(
         if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.89-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         drawLatexAdd(Form("(h/e)^{#pm} in %1.1f<#eta<%1.1f", etaMin,etaMax),0.95,0.89-nLinesCol*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         if (labelTrackCuts[iT].CompareTo("") != 0) drawLatexAdd( labelTrackCuts[iT].Data(),0.95,0.89-(nLinesCol+1)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
-      cReso->Print(Form("%s/EtaResolution%s_Sigma_pT_%d_%d.%s", outputDir.Data(), outTrackCuts[iT].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
+      cReso->Print(Form("%s/EtaResolution%s_Sigma_pT_%d_%d.%s", outputDir.Data(), outTrackCutsBase[iT].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
     }
     
     DrawGammaCanvasSettings( cReso, 0.11, 0.02, 0.045, 0.105);
@@ -344,7 +359,7 @@ void compare_trackingreso_Pythia(
         if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.89-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         drawLatexAdd(Form("(h/e)^{#pm} in %1.1f<#eta<%1.1f", etaMin,etaMax),0.95,0.89-nLinesCol*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         if (labelTrackCuts[iT].CompareTo("") != 0) drawLatexAdd( labelTrackCuts[iT].Data(),0.95,0.89-(nLinesCol+1)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
-      cReso->Print(Form("%s/PhiResolution%s_Mean_pT_%d_%d.%s", outputDir.Data(), outTrackCuts[iT].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
+      cReso->Print(Form("%s/PhiResolution%s_Mean_pT_%d_%d.%s", outputDir.Data(), outTrackCutsBase[iT].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
       
       histoDummyPhiResSigma->Draw();
         for(Int_t iSet=0; iSet<nSets;iSet++){
@@ -356,7 +371,7 @@ void compare_trackingreso_Pythia(
         if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.89-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         drawLatexAdd(Form("(h/e)^{#pm} in %1.1f<#eta<%1.1f", etaMin,etaMax),0.95,0.89-nLinesCol*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         if (labelTrackCuts[iT].CompareTo("") != 0) drawLatexAdd( labelTrackCuts[iT].Data(),0.95,0.89-(nLinesCol+1)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
-      cReso->Print(Form("%s/PhiResolution%s_Sigma_pT_%d_%d.%s", outputDir.Data(), outTrackCuts[iT].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
+      cReso->Print(Form("%s/PhiResolution%s_Sigma_pT_%d_%d.%s", outputDir.Data(), outTrackCutsBase[iT].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
     }    
   }
 }

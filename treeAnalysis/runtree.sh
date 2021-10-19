@@ -68,7 +68,7 @@ if [ $1 = "newinput_pythia" ]; then
     geometry=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-TTLF-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-ASYM-GEOMETRYTREE-PYTHIA-1x/geometry.root
     root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","NEWINPUT_TMSTUD_PYTHIA",true,false  ,true,true,-1,0,false,0)'
 fi
-
+#valgrind --tool=callgrind 
 
 if [ $1 = "newdet_pythia" ]; then
     input=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-TTLF-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-LFHCAL-GEOMETRYTREE-EEMCH-BECAL-PYTHIA-1/G4EICDetector_eventtree.root
@@ -85,8 +85,100 @@ fi
 
 
 if [ $1 = "newinput_singlep" ]; then
-    input=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-TTLF-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-ASYM-GEOMETRYTREE-SINGLEPIELEC/G4EICDetector_eventtree.root
-    geometry=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-TTLF-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-ASYM-GEOMETRYTREE-SINGLEPIELEC/geometry.root
-    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","NEWINPUT_TMSTUD_SINGLEP",true,false  ,true,true,-1,0,false,0)'
+    input=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-TTLF-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-LFHCAL-GEOMETRYTREE-EEMCH-BECAL-SINGLEPART-EVALEIC-1/G4EICDetector_eventtree.root
+    geometry=/media/nschmidt/local/EIC_running/ModularDetector/Modular_ALLSILICON-TTLF-INNERTRACKING-GEOMETRYTREE-TRACKEVALHITS-LFHCAL-GEOMETRYTREE-EEMCH-BECAL-SINGLEPART-EVALEIC-1/geometry.root
+    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","NEWINPUT_TMSTUD_SINGLEP_NEW",true,false  ,true,true,-1,0,false,0)'
 fi
 
+
+
+
+if [ $1 = "centralsim_singlepion" ]; then
+maxevt=10000
+    input=/media/nschmidt/local/EIC_running/singlePion/eval_00000/DST_General_particleGun_singlePion_merged_eval.root
+    geometry=/media/nschmidt/local/EIC_running/singlePion/eval_00000/geometry2ndCampaign.root
+    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CENTRALSIM_SINGLEPION",true,false  ,true,true,'$maxevt',0,false,0)'
+fi
+
+if [ $1 = "centralsim_singleelectron" ]; then
+maxevt=10000
+    input=/media/nschmidt/local/EIC_running/singleElectron/eval_00000/DST_General_particleGun_singleElectron_merged_eval.root
+    geometry=/media/nschmidt/local/EIC_running/singlePion/eval_00000/geometry2ndCampaign.root
+    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CENTRALSIM_SINGLEELECTRON",true,false  ,true,true,'$maxevt',0,false,0)'
+fi
+
+
+# 7 10 15 20 25 30 50 75 100
+basepath=/media/nschmidt/local/EIC_running/FoCal_TB
+#filled="-Filled"
+#filled="-Layered"
+filled=""
+if [ $1 = "focal_studies" ]; then
+    input=FoCal_TB_FOCAL-STANDALONE-GEOMETRYTREE-BLACKHOLE2$filled-SimplePion
+    #root -x -l -b -q 'treeProcessing.C("'$basepath/$input/G4EICDetector_eventtree.root'","'$basepath/$input/geometry.root'","FOCAL'$filled'-BH2",true,false  ,true,true,-1,0,false,0)'
+
+    input=FoCal_TB_FOCAL-STANDALONE-GEOMETRYTREE-BLACKHOLE2$filled-FCGSI-SimplePion
+    #root -x -l -b -q 'treeProcessing.C("'$basepath/$input/G4EICDetector_eventtree.root'","'$basepath/$input/geometry.root'","FOCAL'$filled'-BH2-FCGSI",true,false  ,true,true,-1,0,false,0)'
+
+    input=FoCal_TB_FOCAL-STANDALONE-GEOMETRYTREE-BLACKHOLE2$filled-FCGSI-SimpleElectron
+    root -x -l -b -q 'treeProcessing.C("'$basepath/$input/G4EICDetector_eventtree.root'","'$basepath/$input/geometry.root'","FOCAL'$filled'-BH2-FCGSI-Electron",true,false  ,true,true,-1,0,false,0)'
+
+    input=FoCal_TB_FOCAL-STANDALONE-GEOMETRYTREE-BLACKHOLE2$filled-FCRotated-SimplePion
+    #root -x -l -b -q 'treeProcessing.C("'$basepath/$input/G4EICDetector_eventtree.root'","'$basepath/$input/geometry.root'","FOCAL'$filled'-BH2-FCRotated",true,false  ,true,true,-1,0,false,0)'
+
+    input=FoCal_TB_FOCAL-STANDALONE-GEOMETRYTREE-BLACKHOLE2$filled-FCTungsten-SimplePion
+    #root -x -l -b -q 'treeProcessing.C("'$basepath/$input/G4EICDetector_eventtree.root'","'$basepath/$input/geometry.root'","FOCAL'$filled'-BH2-FCTungsten",true,false  ,true,true,-1,0,false,0)'
+
+    input=FoCal_TB_FOCAL-STANDALONE-GEOMETRYTREE-BLACKHOLE-SimpleElectron
+    #root -x -l -b -q 'treeProcessing.C("'$basepath/$input/G4EICDetector_eventtree.root'","'$basepath/$input/geometry.root'","FOCAL'$filled'-BH2-Electron",true,false  ,true,true,-1,0,false,0)'
+#fi
+#if [ $1 = "focal_studies_fulldet" ]; then
+    input=FoCal_TB_FOCAL-STANDALONE-GEOMETRYTREE-BLACKHOLE2$filled-FCFullGeo-SimplePion
+    #root -x -l -b -q 'treeProcessing.C("'$basepath/$input/G4EICDetector_eventtree.root'","'$basepath/$input/geometry.root'","FOCAL'$filled'-BH2-FCFullGeo",true,false  ,true,true,-1,0,false,0)'
+
+    input=FoCal_TB_FOCAL-STANDALONE-GEOMETRYTREE-BLACKHOLE2$filled-FCFullGeo-FCTungsten-SimplePion
+    #root -x -l -b -q 'treeProcessing.C("'$basepath/$input/G4EICDetector_eventtree.root'","'$basepath/$input/geometry.root'","FOCAL'$filled'-BH2-FCFullGeo-FCTungsten",true,false  ,true,true,-1,0,false,0)'
+
+
+    input=FoCal_TB_FOCAL-STANDALONE-GEOMETRYTREE-BLACKHOLE2$filled-FCFullGeo-FCTungsten-Lead-SimplePion
+    #root -x -l -b -q 'treeProcessing.C("'$basepath/$input/G4EICDetector_eventtree.root'","'$basepath/$input/geometry.root'","FOCAL'$filled'-BH2-FCFullGeo-FCTungsten-Lead",true,false  ,true,true,-1,0,false,0)'
+#fi
+
+fi
+
+#filled="-Filled"
+filled="-Layered"
+#filled=""
+if [ $1 = "focal_studies_new" ]; then
+    input=FoCal_TB_FOCAL-STANDALONE-GEOMETRYTREE-BLACKHOLE2-Layered-FCFullGeo-FCTungsten-Lead-SimplePionfwd-NEW
+    #root -x -l -b -q 'treeProcessing.C("'$basepath/$input/G4EICDetector_eventtree.root'","'$basepath/$input/geometry.root'","FOCAL'$filled'-BH2-FCFullGeo-FCTungsten-Lead-NEW",true,false  ,true,true,-1,0,false,0)'
+
+    input=FoCal_TB_FOCAL-STANDALONE-GEOMETRYTREE-BLACKHOLE2-Layered-FCFullGeo-FCTungsten-Lead-SimplePion-500GeVonly
+    root -x -l -b -q 'treeProcessing.C("'$basepath/$input/G4EICDetector_eventtree.root'","'$basepath/$input/geometry.root'","FOCAL'$filled'-BH2-FCFullGeo-FCTungsten-Lead-NEW-500G",true,false  ,true,true,-1,0,false,0)'
+
+    input=FoCal_TB_FOCAL-STANDALONE-GEOMETRYTREE-BLACKHOLE2-FCGSI-Rot-SimplePion
+    #root -x -l -b -q 'treeProcessing.C("'$basepath/$input/G4EICDetector_eventtree.root'","'$basepath/$input/geometry.root'","FOCAL-BH2-FCGSI-Rotated",true,false  ,true,true,-1,0,false,0)'
+
+    input=FoCal_TB_FOCAL-STANDALONE-GEOMETRYTREE-BLACKHOLE2-FCGSI-SimplePion
+    #root -x -l -b -q 'treeProcessing.C("'$basepath/$input/G4EICDetector_eventtree.root'","'$basepath/$input/geometry.root'","FOCAL-BH2-FCGSI",true,false  ,true,true,-1,0,false,0)'
+
+    input=FoCal_TB_FOCAL-STANDALONE-GEOMETRYTREE-BLACKHOLE2-FCGSI-Rot-SimpleElectron
+    #root -x -l -b -q 'treeProcessing.C("'$basepath/$input/G4EICDetector_eventtree.root'","'$basepath/$input/geometry.root'","FOCAL-BH2-FCGSI-Rotated-Electron",true,false  ,true,true,-1,0,false,0)'
+
+    input=FoCal_TB_FOCAL-STANDALONE-GEOMETRYTREE-BLACKHOLE2-FCGSI-SimpleElectron
+    #root -x -l -b -q 'treeProcessing.C("'$basepath/$input/G4EICDetector_eventtree.root'","'$basepath/$input/geometry.root'","FOCAL-BH2-FCGSI-Electron",true,false  ,true,true,-1,0,false,0)'
+
+fi
+
+if [ $1 = "focal_studies_new2" ]; then
+filled=""
+    input=FoCal_TB_FOCAL-STANDALONE-GEOMETRYTREE-BLACKHOLE2-FCTB-SimpleElectron-NEW
+    root -x -l -b -q 'treeProcessing.C("'$basepath/$input/G4EICDetector_eventtree.root'","'$basepath/$input/geometry.root'","FOCAL'$filled'-BH2-FCTB-SimpleElectron-NEW",true,false  ,true,true,-1,0,false,0)'
+
+    input=FoCal_TB_FOCAL-STANDALONE-GEOMETRYTREE-BLACKHOLE2-FCTB-FCTungsten-SimplePion-NEW
+    root -x -l -b -q 'treeProcessing.C("'$basepath/$input/G4EICDetector_eventtree.root'","'$basepath/$input/geometry.root'","FOCAL'$filled'-BH2-FCTB-FCTungsten-SimplePion-NEW",true,false  ,true,true,-1,0,false,0)'
+
+    input=FoCal_TB_FOCAL-STANDALONE-GEOMETRYTREE-BLACKHOLE2-FCTB-SimplePion-NEW
+    root -x -l -b -q 'treeProcessing.C("'$basepath/$input/G4EICDetector_eventtree.root'","'$basepath/$input/geometry.root'","FOCAL'$filled'-BH2-FCTB-SimplePion-NEW",true,false  ,true,true,-1,0,false,0)'
+
+fi

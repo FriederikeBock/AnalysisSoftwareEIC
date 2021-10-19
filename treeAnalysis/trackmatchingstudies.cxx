@@ -165,8 +165,8 @@ bool trackmatchingstudies(){
       // }
       for(int icase=0;icase<diffCases_TMStudies;icase++){
         float nbins2Ddelta = isFwd ? 78 : 200;
-        float min2Ddeltahist = isFwd ? -39 : -0.5;
-        float max2Ddeltahist = isFwd ? 39 : 0.5;
+        float min2Ddeltahist = isFwd ? -39 : -0.25;
+        float max2Ddeltahist = isFwd ? 39 : 0.25;
         if(!h_TMstudies_2D_delta_track[icase][icalo][ialgo])h_TMstudies_2D_delta_track[icase][icalo][ialgo] 	= new TH2F(Form("h_TMstudies_%s_2D_delta_track_%s_%s",strCases_TMStudies[icase].Data(),str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nbins2Ddelta, min2Ddeltahist, max2Ddeltahist, nbins2Ddelta, min2Ddeltahist, max2Ddeltahist);
         if(!h_TMstudies_2D_delta_projection[icase][icalo][ialgo])h_TMstudies_2D_delta_projection[icase][icalo][ialgo] 	= new TH2F(Form("h_TMstudies_%s_2D_delta_projection_%s_%s",strCases_TMStudies[icase].Data(),str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nbins2Ddelta, min2Ddeltahist, max2Ddeltahist, nbins2Ddelta, min2Ddeltahist, max2Ddeltahist);
         if(!h_TMstudies_2D_delta_projection_special[icase][icalo][ialgo])h_TMstudies_2D_delta_projection_special[icase][icalo][ialgo] 	= new TH2F(Form("h_TMstudies_%s_2D_delta_projection_special_%s_%s",strCases_TMStudies[icase].Data(),str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nbins2Ddelta, min2Ddeltahist, max2Ddeltahist, nbins2Ddelta, min2Ddeltahist, max2Ddeltahist);
@@ -202,16 +202,16 @@ bool trackmatchingstudies(){
         h_TMstudies_clusSpec[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E);
         if((icalo==kFHCAL && abs(_mcpart_PDG[mcID])==211) || (icalo==kFEMC && abs(_mcpart_PDG[mcID])==11)){
           h_TMstudies_clusSpec_special[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E);
-          for (Int_t et = 0; et<nEta+1; et++){
-            Double_t etaMin = partEta[0];
-            Double_t etaMax = partEta[nEta];
-            if (et < nEta){
-              etaMin = partEta[et];
-              etaMax = partEta[et+1];
-            }
-            if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta>etaMin && (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta<etaMax){
-              h_TMstudies_clusSpec_Eta[icalo][et]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E);
-            }
+        }
+        for (Int_t et = 0; et<nEta+1; et++){
+          Double_t etaMin = partEta[0];
+          Double_t etaMax = partEta[nEta];
+          if (et < nEta){
+            etaMin = partEta[et];
+            etaMax = partEta[et+1];
+          }
+          if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta>etaMin && (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta<etaMax){
+            h_TMstudies_clusSpec_Eta[icalo][et]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E);
           }
         }
         // if(!((_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta>3.0))continue;
@@ -309,21 +309,6 @@ bool trackmatchingstudies(){
           if(abs(delta_1) < matchingwdw){
             if(abs(delta_2) < matchingwdw){
               ismatched_projection = true;
-              h_TMstudies_clusSpec_Matched[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E);
-              if((IsHCALCalorimeter(icalo) && abs(_mcpart_PDG[mcID])==211) || (!IsHCALCalorimeter(icalo) && abs(_mcpart_PDG[mcID])==11)){
-                h_TMstudies_clusSpec_special_Matched[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E);
-                for (Int_t et = 0; et<nEta+1; et++){
-                  Double_t etaMin = partEta[0];
-                  Double_t etaMax = partEta[nEta];
-                  if (et < nEta){
-                    etaMin = partEta[et];
-                    etaMax = partEta[et+1];
-                  }
-                  if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta>etaMin && (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta<etaMax){
-                    h_TMstudies_clusSpec_Matched_Eta[icalo][et]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E);
-                  }
-                }
-              }
             }
           }
           if(abs(delta_1_lgst) < matchingwdw){
@@ -333,6 +318,24 @@ bool trackmatchingstudies(){
           }
         }
         b_TMstudies_2D_projection_filled = true;
+
+        if(ismatched_projection){
+          h_TMstudies_clusSpec_Matched[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E);
+          if((icalo==kFHCAL && abs(_mcpart_PDG[(_clusters_calo[ialgo][icalo].at(largestClusterID)).cluster_trueID])==211) || (icalo==kFEMC && abs(_mcpart_PDG[(_clusters_calo[ialgo][icalo].at(largestClusterID)).cluster_trueID])==11)){
+            h_TMstudies_clusSpec_special_Matched[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E);
+          }
+          for (Int_t et = 0; et<nEta+1; et++){
+            Double_t etaMin = partEta[0];
+            Double_t etaMax = partEta[nEta];
+            if (et < nEta){
+              etaMin = partEta[et];
+              etaMax = partEta[et+1];
+            }
+            if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta>etaMin && (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta<etaMax){
+              h_TMstudies_clusSpec_Matched_Eta[icalo][et]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E);
+            }
+          }
+        }
 
         for(Int_t itrk=0; itrk<_nTracks; itrk++){
           // don't match backward tracks to forward calo and vise versa

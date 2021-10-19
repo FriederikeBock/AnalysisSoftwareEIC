@@ -51,14 +51,14 @@ void trackingreso_Pythia(
     nLinesCol++;
   }
   if (addLabel.Contains("innerTracks")) {
-    writeLabel = "INNER";
+    writeLabel += "INNER";
     labelPlotCuts = "Inner tracks only.";
   }
 
-  TString outputDir                 = Form("plots/%s/%s",dateForOutput.Data(),addLabel.Data());
-  TString outputDirPTRes            = Form("plots/%s/%s/PTRes",dateForOutput.Data(),addLabel.Data());
-  TString outputDirEtaRes           = Form("plots/%s/%s/EtaRes",dateForOutput.Data(),addLabel.Data());
-  TString outputDirPhiRes           = Form("plots/%s/%s/PhiRes",dateForOutput.Data(),addLabel.Data());
+  TString outputDir                 = Form("plots/%s/%s_%d",dateForOutput.Data(),addLabel.Data(),primaryTrackSource);
+  TString outputDirPTRes            = Form("plots/%s/%s_%d/PTRes",dateForOutput.Data(),addLabel.Data(),primaryTrackSource);
+  TString outputDirEtaRes           = Form("plots/%s/%s_%d/EtaRes",dateForOutput.Data(),addLabel.Data(),primaryTrackSource);
+  TString outputDirPhiRes           = Form("plots/%s/%s_%d/PhiRes",dateForOutput.Data(),addLabel.Data(),primaryTrackSource);
   gSystem->Exec("mkdir -p "+outputDir);
   gSystem->Exec("mkdir -p "+outputDirPhiRes);
   gSystem->Exec("mkdir -p "+outputDirPTRes);
@@ -1045,26 +1045,26 @@ void trackingreso_Pythia(
   for (Int_t iEta = 0; iEta < nEta+1; iEta++){
     if (properFit){
       for (Int_t pid = 0; pid < 6; pid++){
-        h_tracks_mean_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_FitMean_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
-        h_tracks_sigma_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_FitSigma_%d",writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
-        h_tracks_mean_p_resoP[pid][iEta]->Write(Form("histPResol%s_%s_FitMean_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
-        h_tracks_sigma_p_resoP[pid][iEta]->Write(Form("histPResol%s_%s_FitSigma_%d",writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
+        h_tracks_mean_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_FitMean_%d_%d", writeLabel.Data(), partName[pid].Data(), iEta, primaryTrackSource),TObject::kOverwrite);
+        h_tracks_sigma_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_FitSigma_%d_%d",writeLabel.Data(), partName[pid].Data(), iEta, primaryTrackSource),TObject::kOverwrite);
+        h_tracks_mean_p_resoP[pid][iEta]->Write(Form("histPResol%s_%s_FitMean_%d_%d", writeLabel.Data(), partName[pid].Data(), iEta, primaryTrackSource),TObject::kOverwrite);
+        h_tracks_sigma_p_resoP[pid][iEta]->Write(Form("histPResol%s_%s_FitSigma_%d_%d",writeLabel.Data(), partName[pid].Data(), iEta, primaryTrackSource),TObject::kOverwrite);
       }
-      h_tracks_mean_pt_resoEta[iEta]->Write(Form("histEtaResol%s_FitMean_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
-      h_tracks_sigma_pt_resoEta[iEta]->Write(Form("histEtaResol%s_FitSigma_%d",writeLabel.Data(), iEta),TObject::kOverwrite);
-      h_tracks_mean_pt_resoPhi[iEta]->Write(Form("histPhiResol%s_FitMean_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
-      h_tracks_sigma_pt_resoPhi[iEta]->Write(Form("histPhiResol%s_FitSigma_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
+      h_tracks_mean_pt_resoEta[iEta]->Write(Form("histEtaResol%s_FitMean_%d_%d", writeLabel.Data(), iEta, primaryTrackSource),TObject::kOverwrite);
+      h_tracks_sigma_pt_resoEta[iEta]->Write(Form("histEtaResol%s_FitSigma_%d_%d",writeLabel.Data(), iEta, primaryTrackSource),TObject::kOverwrite);
+      h_tracks_mean_pt_resoPhi[iEta]->Write(Form("histPhiResol%s_FitMean_%d_%d", writeLabel.Data(), iEta, primaryTrackSource),TObject::kOverwrite);
+      h_tracks_sigma_pt_resoPhi[iEta]->Write(Form("histPhiResol%s_FitSigma_%d_%d", writeLabel.Data(), iEta, primaryTrackSource),TObject::kOverwrite);
     } else {
       for (Int_t pid = 0; pid < nPID; pid++){
-        h_tracks_mean_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_mean_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
-        h_tracks_sigma_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_sigma_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);      
-        h_tracks_mean_p_resoP[pid][iEta]->Write(Form("histPResol%s_%s_mean_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
-        h_tracks_sigma_p_resoP[pid][iEta]->Write(Form("histPResol%s_%s_sigma_%d", writeLabel.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);      
+        h_tracks_mean_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_mean_%d_%d", writeLabel.Data(), partName[pid].Data(), iEta, primaryTrackSource),TObject::kOverwrite);
+        h_tracks_sigma_pt_reso[pid][iEta]->Write(Form("histPtResol%s_%s_sigma_%d_%d", writeLabel.Data(), partName[pid].Data(), iEta, primaryTrackSource),TObject::kOverwrite);      
+        h_tracks_mean_p_resoP[pid][iEta]->Write(Form("histPResol%s_%s_mean_%d_%d", writeLabel.Data(), partName[pid].Data(), iEta, primaryTrackSource),TObject::kOverwrite);
+        h_tracks_sigma_p_resoP[pid][iEta]->Write(Form("histPResol%s_%s_sigma_%d_%d", writeLabel.Data(), partName[pid].Data(), iEta, primaryTrackSource),TObject::kOverwrite);      
       }
-      h_tracks_mean_pt_resoEta[iEta]->Write(Form("histEtaResol%s_mean_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
-      h_tracks_sigma_pt_resoEta[iEta]->Write(Form("histEtaResol%s_sigma_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
-      h_tracks_mean_pt_resoPhi[iEta]->Write(Form("histPhiResol%s_mean_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
-      h_tracks_sigma_pt_resoPhi[iEta]->Write(Form("histPhiResol%s_sigma_%d", writeLabel.Data(), iEta),TObject::kOverwrite);
+      h_tracks_mean_pt_resoEta[iEta]->Write(Form("histEtaResol%s_mean_%d_%d", writeLabel.Data(), iEta, primaryTrackSource),TObject::kOverwrite);
+      h_tracks_sigma_pt_resoEta[iEta]->Write(Form("histEtaResol%s_sigma_%d_%d", writeLabel.Data(), iEta, primaryTrackSource),TObject::kOverwrite);
+      h_tracks_mean_pt_resoPhi[iEta]->Write(Form("histPhiResol%s_mean_%d_%d", writeLabel.Data(), iEta, primaryTrackSource),TObject::kOverwrite);
+      h_tracks_sigma_pt_resoPhi[iEta]->Write(Form("histPhiResol%s_sigma_%d_%d", writeLabel.Data(), iEta, primaryTrackSource),TObject::kOverwrite);
     }
   }
   outputFile->Write();
