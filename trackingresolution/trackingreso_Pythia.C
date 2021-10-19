@@ -30,6 +30,21 @@ void trackingreso_Pythia(
     addLabel                        = addLabel+"-LI3";
     writeLabel                      = "LI3";
     labelPlotCuts                   = "#geq 3 tracker hits";
+  } else if (trackCuts == 3){
+    readTrackClass                  = "LI";
+    addLabel                        = addLabel+"-LI";
+    writeLabel                      = "LI";
+    labelPlotCuts                   = "w/ inner tracker";
+  } else if (trackCuts == 4){
+    readTrackClass                  = "wT";
+    addLabel                        = addLabel+"-wT";
+    writeLabel                      = "wT";
+    labelPlotCuts                   = "w/ TTL";
+  } else if (trackCuts == 5){
+    readTrackClass                  = "woT";
+    addLabel                        = addLabel+"-woT";
+    writeLabel                      = "woT";
+    labelPlotCuts                   = "w/o TTL hit";
   }
 
   for (Int_t eR = 0; eR < 3; eR++) cout << "before: "<< labelEtaRange[eR].Data() << endl;
@@ -49,10 +64,16 @@ void trackingreso_Pythia(
   if (addLabel.Contains("MinQ2_20")) {
     pTHard = "#it{Q}^{2} > 20 GeV^{2}";
     nLinesCol++;
+  } else if (addLabel.Contains("MinQ2_10")) {
+    pTHard = "#it{Q}^{2} > 10 GeV^{2}";
+    nLinesCol++;    
   }
   if (addLabel.Contains("innerTracks")) {
     writeLabel += "INNER";
-    labelPlotCuts = "Inner tracks only.";
+    labelPlotCuts = "Inner tracks only";
+  } else if (addLabel.Contains("siliconTracks")) {
+    writeLabel += "SILICON";
+    labelPlotCuts = "Inner tracks w/o last gas tracker";
   }
 
   TString outputDir                 = Form("plots/%s/%s_%d",dateForOutput.Data(),addLabel.Data(),primaryTrackSource);
@@ -121,7 +142,7 @@ void trackingreso_Pythia(
 
   for (Int_t iEta = 0; iEta < nEta+1; iEta++){
     for (Int_t pid = 0; pid < nPID; pid++){
-      h_tracks_reso[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_tracks_reso_pT_%u_%s_%s_%d", primaryTrackSource, readTrackClass.Data(), partNameET2[pid].Data(), iEta));
+      h_tracks_reso[pid][iEta]  = (TH2F*)inputFile->Get(Form("TrackSource_%d/h_tracks_reso_pT_%u_%s_%s_%d", primaryTrackSource, primaryTrackSource, readTrackClass.Data(), partNameET2[pid].Data(), iEta));
       h_tracks_reso[pid][iEta]->Sumw2();
       h_tracks_mean_pt_reso[pid][iEta] = new TH1D(Form("histPtResol_%s_mean_%d", partName[pid].Data(), iEta), 
                                             ";#it{p}_{T}^{MC} (GeV/#it{c}); #LT (#it{p}_{T}^{rec}-#it{p}_{T}^{MC})/#it{p}_{T}^{MC} #GT",
@@ -130,7 +151,7 @@ void trackingreso_Pythia(
                                               ";#it{p}_{T}^{MC} (GeV/#it{c}); #sigma( (#it{p}_{T}^{rec}-#it{p}_{T}^{MC})/#it{p}_{T}^{MC} )", 
                                               nPt, partPt);
 
-      h_tracks_resoP[pid][iEta]  = (TH2F*)inputFile->Get(Form("h_tracks_reso_p_%u_%s_%s_%d", primaryTrackSource, readTrackClass.Data(), partNameET2[pid].Data(), iEta));
+      h_tracks_resoP[pid][iEta]  = (TH2F*)inputFile->Get(Form("TrackSource_%d/h_tracks_reso_p_%u_%s_%s_%d", primaryTrackSource, primaryTrackSource, readTrackClass.Data(), partNameET2[pid].Data(), iEta));
       h_tracks_resoP[pid][iEta]->Sumw2();
       h_tracks_mean_p_resoP[pid][iEta] = new TH1D(Form("histPResol_%s_mean_%d", partName[pid].Data(), iEta), 
                                             ";#it{p}^{MC} (GeV/#it{c}); #LT (#it{p}^{rec}-#it{p}^{MC})/#it{p}^{MC} #GT",
@@ -140,7 +161,7 @@ void trackingreso_Pythia(
                                               nP, partP);
 
     }
-    h_tracks_resoEta[iEta]  = (TH2F*)inputFile->Get(Form("h_tracks_reso_Eta_pT_%u_%s_%d", primaryTrackSource, readTrackClass.Data(), iEta));
+    h_tracks_resoEta[iEta]  = (TH2F*)inputFile->Get(Form("TrackSource_%d/h_tracks_reso_Eta_pT_%u_%s_%d", primaryTrackSource, primaryTrackSource, readTrackClass.Data(), iEta));
     h_tracks_resoEta[iEta]->Sumw2();
     h_tracks_mean_pt_resoEta[iEta] = new TH1D(Form("histPtResolEta_mean_%d", iEta), 
                                            ";#it{p}_{T}^{MC} (GeV/#it{c}); #LT (#eta^{rec}-#eta^{MC})/#eta^{MC} #GT",
@@ -148,7 +169,7 @@ void trackingreso_Pythia(
     h_tracks_sigma_pt_resoEta[iEta] = new TH1D(Form("histPtResolEta_sigma_%d", iEta), 
                                             ";#it{p}_{T}^{MC} (GeV/#it{c}); #sigma( (#eta^{rec}-#eta^{MC})/#eta^{MC} )", 
                                             nPt, partPt);
-    h_tracks_resoPhi[iEta]  = (TH2F*)inputFile->Get(Form("h_tracks_reso_Phi_pT_%u_%s_%d", primaryTrackSource, readTrackClass.Data(), iEta));
+    h_tracks_resoPhi[iEta]  = (TH2F*)inputFile->Get(Form("TrackSource_%d/h_tracks_reso_Phi_pT_%u_%s_%d", primaryTrackSource, primaryTrackSource, readTrackClass.Data(), iEta));
     h_tracks_resoPhi[iEta]->Sumw2();
     h_tracks_mean_pt_resoPhi[iEta] = new TH1D(Form("histPtResolPhi_mean_%d", iEta), 
                                            ";#it{p}_{T}^{MC} (GeV/#it{c}); #LT (#varphi^{rec}-#varphi^{MC})/#varphi^{MC} #GT",
@@ -160,7 +181,7 @@ void trackingreso_Pythia(
   
   for (Int_t pid = 0; pid < nPID; pid++){
     for (Int_t cut = 0; cut < nCuts; cut++){
-      h_trackMap_eta_pT[pid][cut]   = (TH2F*)inputFile->Get(Form("h_tracks_%u_%s_%s_True_Eta_pT", primaryTrackSource, partNameET2[pid].Data(), nameCuts[cut].Data()));
+      h_trackMap_eta_pT[pid][cut]   = (TH2F*)inputFile->Get(Form("TrackSource_%d/h_tracks_%u_%s_%s_True_Eta_pT", primaryTrackSource, primaryTrackSource, partNameET2[pid].Data(), nameCuts[cut].Data()));
       h_trackMap_eta_pT[pid][cut]->Sumw2();
       if (cut > 0 ){
         h_trackMapRatio_eta_pT[pid][cut-1] = (TH2F*)h_trackMap_eta_pT[pid][cut]->Clone(Form("h_tracksRatio_%s_%s_True_Eta_pT", partName[pid].Data(), nameCuts[cut].Data()));
@@ -173,7 +194,7 @@ void trackingreso_Pythia(
         h_trackMapRatio_eta_pT[pid][cut]->Divide(h_trackMap_eta_pT[pid][9]);
       
       }
-      h_trackMapRec_eta_pT[pid][cut]   = (TH2F*)inputFile->Get(Form("h_tracks_%u_%s_%s_Rec_Eta_pT", primaryTrackSource, partNameET2[pid].Data(), nameCuts[cut].Data()));
+      h_trackMapRec_eta_pT[pid][cut]   = (TH2F*)inputFile->Get(Form("TrackSource_%d/h_tracks_%u_%s_%s_Rec_Eta_pT", primaryTrackSource, primaryTrackSource, partNameET2[pid].Data(), nameCuts[cut].Data()));
       h_trackMapRec_eta_pT[pid][cut]->Sumw2();
       if (cut > 0 ){
         h_trackMapRecRatio_eta_pT[pid][cut-1] = (TH2F*)h_trackMapRec_eta_pT[pid][cut]->Clone(Form("h_tracksRatio_%s_%s_Rec_Eta_pT", partName[pid].Data(), nameCuts[cut].Data()));
@@ -185,7 +206,7 @@ void trackingreso_Pythia(
         h_trackMapRecRatio_eta_pT[pid][cut]->Sumw2();
         h_trackMapRecRatio_eta_pT[pid][cut]->Divide(h_trackMapRec_eta_pT[pid][9]);
       }
-      h_trackMap_eta_p[pid][cut]   = (TH2F*)inputFile->Get(Form("h_tracks_%u_%s_%s_True_Eta_p", primaryTrackSource, partNameET2[pid].Data(), nameCuts[cut].Data()));
+      h_trackMap_eta_p[pid][cut]   = (TH2F*)inputFile->Get(Form("TrackSource_%d/h_tracks_%u_%s_%s_True_Eta_p", primaryTrackSource, primaryTrackSource, partNameET2[pid].Data(), nameCuts[cut].Data()));
       h_trackMap_eta_p[pid][cut]->Sumw2();
       if (cut > 0 ){
         h_trackMapRatio_eta_p[pid][cut-1] = (TH2F*)h_trackMap_eta_p[pid][cut]->Clone(Form("h_tracksRatio_%s_%s_True_Eta_p", partName[pid].Data(), nameCuts[cut].Data()));
@@ -198,7 +219,7 @@ void trackingreso_Pythia(
         h_trackMapRatio_eta_p[pid][cut]->Divide(h_trackMap_eta_p[pid][9]);
         
       }
-      h_trackMapRec_eta_p[pid][cut]   = (TH2F*)inputFile->Get(Form("h_tracks_%u_%s_%s_Rec_Eta_p", primaryTrackSource, partNameET2[pid].Data(), nameCuts[cut].Data()));
+      h_trackMapRec_eta_p[pid][cut]   = (TH2F*)inputFile->Get(Form("TrackSource_%d/h_tracks_%u_%s_%s_Rec_Eta_p", primaryTrackSource, primaryTrackSource, partNameET2[pid].Data(), nameCuts[cut].Data()));
       h_trackMapRec_eta_p[pid][cut]->Sumw2();
       if (cut > 0 ){
         h_trackMapRecRatio_eta_p[pid][cut-1] = (TH2F*)h_trackMapRec_eta_p[pid][cut]->Clone(Form("h_tracksRatio_%s_%s_Rec_Eta_p", partName[pid].Data(), nameCuts[cut].Data()));

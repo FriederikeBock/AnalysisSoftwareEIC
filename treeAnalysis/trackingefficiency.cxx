@@ -87,7 +87,6 @@ void prepareMCMatchInfo(){
         
       _track_hasATTL[itrk]   = (_track_hasATTL[itrk] || HasTimingLayerAfterECal(_track_ProjLayer[iproj]));
 //       if (IsTrackerLayer(_track_ProjLayer[iproj])) nTrL++;
-      
       nCurrProj = iproj;
     }
 
