@@ -40,7 +40,8 @@ void treeProcessing(
     std::string jetAlgorithm    = "anti-kt",
     double jetR                 = 0.5,
     double tracked_jet_max_pT   = 30,
-    bool runCaloRes             = true
+    bool runCaloRes             = true,
+    bool removeTracklets        = true
 ){
     // make output directory
     TString dateForOutput = ReturnDateStr();
@@ -212,13 +213,20 @@ void treeProcessing(
         for(Int_t itrk=0; itrk<_nTracks; itrk++){
             _track_trueID[itrk] = GetCorrectMCArrayEntry(_track_trueID[itrk]);
             // if(verbosity>1) std::cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk] << "\tand X = " << _track_px[itrk] << " cm" << std::endl;
+        }
+        // obtain labels for different track sources
+        prepareMCMatchInfo();
 
-            // Skip tracks that aren't selected.
-            if(_track_source[itrk] != primaryTrackSource) {
-                continue;
-            }
+        if(_do_jetfinding){
+            for(Int_t itrk=0; itrk<_nTracks; itrk++){
+                // Skip tracks that aren't selected.
+                if(_track_source[itrk] != primaryTrackSource) {
+                    continue;
+                }
+                if (removeTracklets && (_track_source[itrk] == 0 && _track_hasIL[itrk])) {
+                  continue;
+                }
 
-            if(_do_jetfinding){
                 TVector3 trackvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
                 float Etrack = TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)+TMath::Power(_track_pz[itrk],2) + TMath::Power(massHypothesis, 2));
                 // create track vector for jet finder
@@ -239,8 +247,6 @@ void treeProcessing(
                 jetf_all_E.push_back(Etrack);
             }
         }
-        // obtain labels for different track sources
-        prepareMCMatchInfo();
 
 
 
