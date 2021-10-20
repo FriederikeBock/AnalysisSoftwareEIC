@@ -103,8 +103,9 @@ if [ $1 == "Fredi" ]; then
   if [ $2 == "compare" ]; then
 #     root -b -x -q -l 'compare_trackingreso_Pythia.C("comparisonTTLLayer.txt","TTLimprovement","pdf",kFALSE)'
 #     root -b -x -q -l 'compare_trackingreso_Pythia.C("comparison2TTLLayer.txt","TTLimprovement2TTL","pdf",kFALSE)'
-    root -b -x -q -l 'compare_trackingreso_Pythia.C("comparisonNTTLLayer.txt","TTLNlayers","pdf",kFALSE)'
-    root -b -x -q -l 'compare_trackingeffi.C("comparisonTTLeffNlayer.txt","TTLimprovementNlayers","pdf")'
+#     root -b -x -q -l 'compare_trackingreso_Pythia.C("comparisonNTTLLayer.txt","TTLNlayers","pdf",kFALSE)'
+    root -b -x -q -l 'compare_trackingreso_Pythia.C("comparisonNTTLLayerslim.txt","TTLNlayers2","pdf",kFALSE)'
+#     root -b -x -q -l 'compare_trackingeffi.C("comparisonTTLeffNlayer.txt","TTLimprovementNlayers","pdf")'
 #     root -b -x -q -l 'compare_trackingeffi.C("comparisonTTLeff.txt","TTLimprovement","pdf")'
 #     root -b -x -q -l 'compare_trackingeffi.C("comparison2TTLeff.txt","TTLimprovement2TTL","pdf")'
     

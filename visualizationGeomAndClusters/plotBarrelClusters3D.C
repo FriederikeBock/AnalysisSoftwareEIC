@@ -291,7 +291,7 @@ void plotBarrelClusters3D(
   
   // fill vector with towers for clusterization above aggregation threshold
   for(int itow=0; itow<(int)_nTowers; itow++){
-    if(_tower_BECAL_E[itow]>aggE){
+    if(_tower_E[itow]>aggE){
       towersStrct tempstructT;
       tempstructT.tower_E       = _tower_E[itow];
       tempstructT.tower_iEta    = _tower_iEta[itow];
