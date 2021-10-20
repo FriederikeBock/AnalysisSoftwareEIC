@@ -451,11 +451,11 @@ bool loadClusterizerInput(
   if (clusterizerEnum != kV1 ){
     if (!_clusters_calo[clusterizerEnum][caloEnum].empty() && caloEnabled[caloEnum])
       return true;
-    else 
+    else
       return false;
   } else {
-    
-    if(caloEnum==kFHCAL){      
+
+    if(caloEnum==kFHCAL){
       if (!_clusters_calo[clusterizerEnum][caloEnum].empty() && caloEnabled[caloEnum]){
         return true;
       } else {
@@ -476,7 +476,7 @@ bool loadClusterizerInput(
             tempstructC.cluster_trueID  = _clusters_FHCAL_trueID[iclus];
             tempstructC.cluster_NtrueID = 0;
             _clusters_calo[clusterizerEnum][caloEnum].push_back(tempstructC);
-          } 
+          }
           return true;
         } else {
           return false;
@@ -503,16 +503,16 @@ bool loadClusterizerInput(
             tempstructC.cluster_trueID  = _clusters_FEMC_trueID[iclus];
             tempstructC.cluster_NtrueID = 0;
             _clusters_calo[clusterizerEnum][caloEnum].push_back(tempstructC);
-          } 
+          }
           return true;
         } else {
           return false;
         }
-      } 
+      }
     } else {
       if (!_clusters_calo[clusterizerEnum][caloEnum].empty() && caloEnabled[caloEnum])
         return true;
-      else 
+      else
         return false;
     }
   }
@@ -560,7 +560,7 @@ float getEnergySmearing( int caloEnum, int algoEnum){
   // return 1.0;
 }
 
-void fillHCalClustersIntoJetFindingInputs( int caloEnum, int clusterizerEnum,  
+void fillHCalClustersIntoJetFindingInputs( int caloEnum, int clusterizerEnum,
   std::vector<float> & jetf_hcal_E, std::vector<float> & jetf_hcal_px, std::vector<float> & jetf_hcal_py, std::vector<float> & jetf_hcal_pz,
   std::vector<float> & jetf_calo_E, std::vector<float> & jetf_calo_px, std::vector<float> & jetf_calo_py, std::vector<float> & jetf_calo_pz,
   std::vector<float> & jetf_all_E, std::vector<float> & jetf_all_px, std::vector<float> & jetf_all_py, std::vector<float> & jetf_all_pz
@@ -589,7 +589,7 @@ void fillHCalClustersIntoJetFindingInputs( int caloEnum, int clusterizerEnum,
 }
 
 void fillECalClustersIntoJetFindingInputs(
-  int caloEnum, int clusterizerEnum,  
+  int caloEnum, int clusterizerEnum,
   std::vector<float> & jetf_emcal_E, std::vector<float> & jetf_emcal_px, std::vector<float> & jetf_emcal_py, std::vector<float> & jetf_emcal_pz,
   std::vector<float> & jetf_calo_E, std::vector<float> & jetf_calo_px, std::vector<float> & jetf_calo_py, std::vector<float> & jetf_calo_pz,
   std::vector<float> & jetf_all_E, std::vector<float> & jetf_all_px, std::vector<float> & jetf_all_py, std::vector<float> & jetf_all_pz,
