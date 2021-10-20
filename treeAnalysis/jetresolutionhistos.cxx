@@ -16,17 +16,17 @@ Int_t verbosityJRH = 1;
 const int njettypes = 7;
 TString jettype[njettypes] = {"track", "full","hcal", "calo","all", "nocluster", "emcal"};
 
-const float min_eta[njettypes] = {-3.5, -3.5, -3.5, -3.5, 0, 1.5, 1.5};  // TODO Save this info as metadata...
-const float max_eta[njettypes] = {3.5, 3.5, 3.5, 3.5, 0, 3.5, 3.5};
+const float min_eta[njettypes] = {-3.5, 0, 1.5, 1.5, 0, 1.5, 1.5};  // TODO Save this info as metadata...
+const float max_eta[njettypes] = {3.5, 0, 3.5, 3.5, 0, 3.5, 3.5};
 
 
 // Edges of detectors; prevent jet finding within R of boundaries
 const int max_detector_sections = 1;
 const int detectors[njettypes] = {1, 0, 1, 1, 0, 1, 1};
 const float detector_eta_boundaries[njettypes][max_detector_sections + 1] = {{-3.5, 3.5},    // Tracking
-                                                                    {-3.5, 3.5},
-                                                                    {-3.5, 3.5},     // HCal
-                                                                    {-3.5, 3.5},     // Calo
+                                                                    {},
+                                                                    {1.5, 3.5},     // HCal
+                                                                    {1.5, 3.5},     // Calo
                                                                     {},
                                                                     {1.5, 3.5},     // Calo
                                                                     {1.5, 3.5}};    // ECal

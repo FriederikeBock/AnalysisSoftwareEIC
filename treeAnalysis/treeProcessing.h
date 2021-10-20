@@ -189,35 +189,20 @@ float* _track_Proj_true_z             = new float[_maxNProjections];
 float* _track_Proj_true_t             = new float[_maxNProjections];
 // MC particles
 int _nMCPart;
-int* _mcpart_ID                  = new int[_maxNMCPart];
-int* _mcpart_ID_parent           = new int[_maxNMCPart];
-int* _mcpart_PDG                 = new int[_maxNMCPart];
-float* _mcpart_E                 = new float[_maxNMCPart];
-float* _mcpart_px                = new float[_maxNMCPart];
-float* _mcpart_py                = new float[_maxNMCPart];
-float* _mcpart_pz                = new float[_maxNMCPart];
-float* _mcpart_Eta               = new float[_maxNMCPart];
-float* _mcpart_Phi               = new float[_maxNMCPart];
-int* _mcpart_BCID                = new int[_maxNMCPart];
+int* _mcpart_ID                   = new int[_maxNMCPart];
+int* _mcpart_ID_parent            = new int[_maxNMCPart];
+int* _mcpart_PDG                  = new int[_maxNMCPart];
+float* _mcpart_E                  = new float[_maxNMCPart];
+float* _mcpart_px                 = new float[_maxNMCPart];
+float* _mcpart_py                 = new float[_maxNMCPart];
+float* _mcpart_pz                 = new float[_maxNMCPart];
+float* _mcpart_Eta                = new float[_maxNMCPart];
+float* _mcpart_Phi                = new float[_maxNMCPart];
 std::vector<int> _mcpart_RecTrackIDs[_maxNMCPart];
 
-// HepMC particles
-int _nHepmcp;
-int _hepmcp_procid;
-float _hepmcp_x1;
-float _hepmcp_x2;
-float _hepmcp_Q2;
-int* _hepmcp_status = new int[_maxNHepmcp];
-int* _hepmcp_PDG = new int[_maxNHepmcp];
-float* _hepmcp_E = new float[_maxNHepmcp];
-float* _hepmcp_px = new float[_maxNHepmcp];
-float* _hepmcp_py = new float[_maxNHepmcp];
-float* _hepmcp_pz = new float[_maxNHepmcp];
-int* _hepmcp_m1 = new int[_maxNHepmcp];
-int* _hepmcp_m2 = new int[_maxNHepmcp];
-int* _hepmcp_BCID = new int[_maxNHepmcp];
 
 TRandom3  _fRandom;                                  // random for effi generation
+
 
 int _calogeom_ID;
 int _calogeom_towers_N;
@@ -261,7 +246,7 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("hits_t",               _hits_t);
       inputTree->SetBranchAddress("hits_edep",               _hits_edep);
     }
-
+    
     if (inputTree->GetBranchStatus("nTracks") ){
       tracksEnabled = 1;
       inputTree->SetBranchAddress("nTracks",              &_nTracks);
@@ -271,7 +256,7 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("tracks_pz",            _track_pz);
       inputTree->SetBranchAddress("tracks_trueID",        _track_trueID);
       inputTree->SetBranchAddress("tracks_source",        _track_source);
-
+      
       inputTree->SetBranchAddress("nProjections",         &_nProjections);
       inputTree->SetBranchAddress("track_ProjTrackID",    _track_ProjTrackID);
       inputTree->SetBranchAddress("track_ProjLayer",      _track_ProjLayer);
@@ -294,7 +279,7 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("tower_EEMC_iEta",             _tower_EEMC_iEta);
       inputTree->SetBranchAddress("tower_EEMC_iPhi",             _tower_EEMC_iPhi);
       inputTree->SetBranchAddress("tower_EEMC_trueID",           _tower_EEMC_trueID);
-    }
+    } 
     // towers EEMCG
     if( inputTree->GetBranchStatus("tower_EEMCG_N") ){
       caloEnabled[kEEMCG] = 1;
@@ -303,7 +288,7 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("tower_EEMCG_iEta",             _tower_EEMCG_iEta);
       inputTree->SetBranchAddress("tower_EEMCG_iPhi",             _tower_EEMCG_iPhi);
       inputTree->SetBranchAddress("tower_EEMCG_trueID",           _tower_EEMCG_trueID);
-    }
+    } 
 
     // towers EHCAL
     if( inputTree->GetBranchStatus("tower_EHCAL_N") ){
@@ -323,7 +308,7 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("tower_HCALIN_iEta",             _tower_HCALIN_iEta);
       inputTree->SetBranchAddress("tower_HCALIN_iPhi",             _tower_HCALIN_iPhi);
       inputTree->SetBranchAddress("tower_HCALIN_trueID",           _tower_HCALIN_trueID);
-    }
+    } 
 
     // towers HCALOUT
     if( inputTree->GetBranchStatus("tower_HCALOUT_N") ){
@@ -333,7 +318,7 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("tower_HCALOUT_iEta",             _tower_HCALOUT_iEta);
       inputTree->SetBranchAddress("tower_HCALOUT_iPhi",             _tower_HCALOUT_iPhi);
       inputTree->SetBranchAddress("tower_HCALOUT_trueID",           _tower_HCALOUT_trueID);
-    }
+    } 
 
     // towers CEMC
     if( inputTree->GetBranchStatus("tower_CEMC_N") ){
@@ -343,7 +328,7 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("tower_CEMC_iEta",             _tower_CEMC_iEta);
       inputTree->SetBranchAddress("tower_CEMC_iPhi",             _tower_CEMC_iPhi);
       inputTree->SetBranchAddress("tower_CEMC_trueID",           _tower_CEMC_trueID);
-    }
+    } 
 
     // towers BECAL
     if( inputTree->GetBranchStatus("tower_BECAL_N") ){
@@ -353,7 +338,7 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("tower_BECAL_iEta",             _tower_BECAL_iEta);
       inputTree->SetBranchAddress("tower_BECAL_iPhi",             _tower_BECAL_iPhi);
       inputTree->SetBranchAddress("tower_BECAL_trueID",           _tower_BECAL_trueID);
-    }
+    } 
 
     // towers LFHCAL
     if( inputTree->GetBranchStatus("tower_LFHCAL_N") ){
@@ -364,7 +349,7 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("tower_LFHCAL_iPhi",             _tower_LFHCAL_iPhi);
       inputTree->SetBranchAddress("tower_LFHCAL_iL",               _tower_LFHCAL_iL);
       inputTree->SetBranchAddress("tower_LFHCAL_trueID",           _tower_LFHCAL_trueID);
-    }
+    } 
     // towers DRCALO
     if( inputTree->GetBranchStatus("tower_DRCALO_N") ){
       caloEnabled[kDRCALO] = 1;
@@ -373,8 +358,8 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("tower_DRCALO_iEta",             _tower_DRCALO_iEta);
       inputTree->SetBranchAddress("tower_DRCALO_iPhi",             _tower_DRCALO_iPhi);
       inputTree->SetBranchAddress("tower_DRCALO_trueID",           _tower_DRCALO_trueID);
-    }
-    // towers FOCAL
+    } 
+    // towers DRCALO
     if( inputTree->GetBranchStatus("tower_FOCAL_N") ){
       caloEnabled[kFOCAL] = 1;
       inputTree->SetBranchAddress("tower_FOCAL_N",                &_nTowers_FOCAL);
@@ -382,7 +367,7 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("tower_FOCAL_iEta",             _tower_FOCAL_iEta);
       inputTree->SetBranchAddress("tower_FOCAL_iPhi",             _tower_FOCAL_iPhi);
       inputTree->SetBranchAddress("tower_FOCAL_trueID",           _tower_FOCAL_trueID);
-    }
+    } 
 
     // towers FHCAL
     if( inputTree->GetBranchStatus("tower_FHCAL_N") ){
@@ -392,7 +377,7 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("tower_FHCAL_iEta",             _tower_FHCAL_iEta);
       inputTree->SetBranchAddress("tower_FHCAL_iPhi",             _tower_FHCAL_iPhi);
       inputTree->SetBranchAddress("tower_FHCAL_trueID",           _tower_FHCAL_trueID);
-    }
+    } 
 
     // towers FEMC
     if( inputTree->GetBranchStatus("tower_FEMC_N") ){
@@ -443,26 +428,8 @@ void SetBranchAddressesTree(TTree* inputTree){
     inputTree->SetBranchAddress("mcpart_px",     _mcpart_px);
     inputTree->SetBranchAddress("mcpart_py",     _mcpart_py);
     inputTree->SetBranchAddress("mcpart_pz",     _mcpart_pz);
-    inputTree->SetBranchAddress("mcpart_BCID",     _mcpart_BCID);
-
-    if (inputTree->GetBranchStatus("nHepmcp") ){
-      inputTree->SetBranchAddress("nHepmcp", &_nHepmcp);
-      inputTree->SetBranchAddress("hepmcp_procid", &_hepmcp_procid);
-      inputTree->SetBranchAddress("hepmcp_x1", &_hepmcp_x1);
-      inputTree->SetBranchAddress("hepmcp_x2", &_hepmcp_x2);
-      inputTree->SetBranchAddress("hepmcp_Q2", &_hepmcp_Q2);
-
-      inputTree->SetBranchAddress("hepmcp_status", _hepmcp_status);
-      inputTree->SetBranchAddress("hepmcp_PDG", _hepmcp_PDG);
-      inputTree->SetBranchAddress("hepmcp_E", _hepmcp_E);
-      inputTree->SetBranchAddress("hepmcp_px", _hepmcp_px);
-      inputTree->SetBranchAddress("hepmcp_py", _hepmcp_py);
-      inputTree->SetBranchAddress("hepmcp_pz", _hepmcp_pz);
-      inputTree->SetBranchAddress("hepmcp_BCID", _hepmcp_BCID);
-      inputTree->SetBranchAddress("hepmcp_m1", _hepmcp_m1);
-      inputTree->SetBranchAddress("hepmcp_m2", _hepmcp_m2);
-    }
 }
+
 
 
 //__________________________________________________________________________________________________________
@@ -519,7 +486,7 @@ TString GetProjectionNameFromIndex(int projindex)
     case 32:    return "BACKWARD_2"; //"LBLVTX_BACKWARD_32";
     case 33:    return "BACKWARD_3"; //"LBLVTX_BACKWARD_33";
     case 34:    return "BACKWARD_4"; //"LBLVTX_BACKWARD_34";
-
+            
     case 40:    return "CENTAL_0"; //"BARREL_0";
     case 41:    return "CENTAL_1"; //"BARREL_1";
     case 42:    return "CENTAL_2"; //"BARREL_2";
@@ -533,7 +500,7 @@ TString GetProjectionNameFromIndex(int projindex)
     case 53:    return "FORWARD_3";
     case 54:    return "FORWARD_4";
     case 55:    return "FORWARD_5";
-
+  
     default:   return "NOTHING";
   }
 }
@@ -549,7 +516,7 @@ Int_t ReturnIndexForwardLayer(Int_t layerID){
       case 0: return 5;
       case 1: return 6;
       case 2: return 7;
-      default: return -1;
+      default: return -1;  
     }
   } else {
     switch (layerID){
@@ -561,7 +528,7 @@ Int_t ReturnIndexForwardLayer(Int_t layerID){
       case 0: return 5;
       case 1: return 6;
       case 2: return 7;
-      default: return -1;
+      default: return -1;  
     }
   }
   return -1;
@@ -569,9 +536,9 @@ Int_t ReturnIndexForwardLayer(Int_t layerID){
 
 Bool_t HasFirstTwoLayers(Int_t layerID){
   if (_is_ALLSILICON){
-    switch (layerID){
-      case 20:
-      case 21:
+    switch (layerID){  
+      case 20: 
+      case 21: 
       case 30:
       case 31:
       case 10:
@@ -581,27 +548,27 @@ Bool_t HasFirstTwoLayers(Int_t layerID){
         return kFALSE;
     }
   } else {
-    switch (layerID){
-      case 50:
-      case 51:
+    switch (layerID){  
+      case 50: 
+      case 51: 
       case 40:
       case 41:
         return kTRUE;
       default:
         return kFALSE;
-    }
+    }    
   }
   return kFALSE;
 }
 
 Bool_t IsTrackerLayer(Int_t layerID){
   if (_is_ALLSILICON){
-    switch (layerID){
-      case 20:
-      case 21:
-      case 22:
-      case 23:
-      case 24:
+    switch (layerID){  
+      case 20: 
+      case 21: 
+      case 22: 
+      case 23: 
+      case 24: 
       case 30:
       case 31:
       case 32:
@@ -618,13 +585,13 @@ Bool_t IsTrackerLayer(Int_t layerID){
         return kFALSE;
     }
   } else {
-    switch (layerID){
-      case 50:
-      case 51:
-      case 52:
-      case 53:
-      case 54:
-      case 55:
+    switch (layerID){  
+      case 50: 
+      case 51: 
+      case 52: 
+      case 53: 
+      case 54: 
+      case 55:   
       case 40:
       case 41:
       case 42:
@@ -634,7 +601,7 @@ Bool_t IsTrackerLayer(Int_t layerID){
         return kTRUE;
       default:
         return kFALSE;
-    }
+    }    
   }
   return kFALSE;
 }

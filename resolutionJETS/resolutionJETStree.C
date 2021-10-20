@@ -18,8 +18,8 @@
 const int njettypes = 5;
 const int nInputs = 1;
 
-const int firstEtaBin[njettypes] = {1, 1, 1, 10, 10};
-const float min_eta[njettypes]   = {-3.5, -3.5, -3.5, 1.5, 1.5};  // TODO Save this info as metadata...
+const int firstEtaBin[njettypes] = {1, 10, 10, 10, 10};
+const float min_eta[njettypes]   = {-3.5, 1.5, 1.5, 1.5, 1.5};  // TODO Save this info as metadata...
 const float max_eta[njettypes]   = {3.5, 3.5, 3.5, 3.5, 3.5};
 
 // Regions to group plots into
@@ -49,8 +49,6 @@ void drawInfo(plottingStyleData style, float x, float y, int jettype, int numExt
 void resolutionJETStree(
     TString suffix              = "pdf",
     TString mainInputFilename   = "treeAnalysis/treeProcessing/output_JRH.root",
-    TString identifier          = "",
-    TString outputFilename      = "treeAnalysis/treeProcessing/output_JRH_post.root",
     bool make_resolution_plots  = true,
     bool do_plot_scale          = true,
     bool make_spectra_plots     = true,
@@ -70,7 +68,7 @@ void resolutionJETStree(
 
   TString dateForOutput                       = ReturnDateStringForOutput();
 
-  TString outputDir 						              = TString::Format("plotsTree/%s/%s",dateForOutput.Data(), identifier.Data());
+  TString outputDir 						                  = Form("plotsTree/%s",dateForOutput.Data());
   gSystem->Exec("mkdir -p "+outputDir+"/Slices");
   gSystem->Exec("mkdir -p "+outputDir+"/EtaResolution");
   gSystem->Exec("mkdir -p "+outputDir+"/EtaScale");
@@ -115,7 +113,7 @@ void resolutionJETStree(
   TH1F*    histo_JER_E[nInputs][njettypes][nEta + eta_regions] = {{{NULL}}};
   TH1F*    histo_JER_pT[nInputs][njettypes][nEta + eta_regions] = {{{NULL}}};
   TH1F*    histo_JER_p[nInputs][njettypes][nEta + eta_regions] = {{{NULL}}};
-
+ 
 
   TH2F*    h2D_jet_EtaReso_E[nInputs][njettypes][nEta + eta_regions] = {{{NULL}}};
   TH1F*    h_EtaReso_Width_E[nInputs][njettypes][nEta + eta_regions] = {{{NULL}}};
@@ -162,7 +160,7 @@ void resolutionJETStree(
   // Load required histograms
   for(int iInp=0;iInp<nInputs;iInp++){
     for(int ijr=0;ijr<njettypes;ijr++){
-
+      
         h2D_jet_EtaReso_Eta[iInp][ijr] = (TH2F*)inputFiles[iInp]->Get(Form("h2D_jet_EtaReso_%s_Eta", style.str_jet_type[ijr].Data()));
         h_EtaReso_Mean_Eta[iInp][ijr]	= new TH1F(Form("h_EtaReso_Mean_%s_Eta", style.str_jet_type[ijr].Data()),"",40,0,4);
         h_EtaReso_Width_Eta[iInp][ijr]	= new TH1F(Form("h_EtaReso_Width_%s_Eta", style.str_jet_type[ijr].Data()),"",40,0,4);
@@ -238,7 +236,7 @@ void resolutionJETStree(
         histo_JER_pT[iInp][ijr][eT]	= new TH1F(Form("h_JER_%s_pT_%d", style.str_jet_type[ijr].Data(), eT),"",40,0,200);
         histo_JER_p[iInp][ijr][eT]	= new TH1F(Form("h_JER_%s_p_%d", style.str_jet_type[ijr].Data(), eT),"",40,0,200);
       }
-      // Combine eta ranges
+      // Combine eta ranges 
       int bin = 0;
       for (int i = 0; i < eta_regions; i++) {
         while (partEta[bin] + 0.05 < eta_regions_boundaries[i + 1]) { // add a little bit to partEta to avoid floating point issues
@@ -341,13 +339,14 @@ void resolutionJETStree(
   }
 
   // Plot scales
+
   if (do_plot_scale) {
     plotResoOrScale(histo_JES_E, TString("E Scale"), TString(Form("%s/JetEnergyScale/JES", outputDir.Data())), style, -1, 0.4, TString("#it{E}^{jet}"), TString("Mean((#it{E}^{rec} - #it{E}^{true}) / #it{E}^{true}))"));  // Plot jet energy scale
     plotResoOrScale(histo_JES_pT, TString("pT Scale"), TString(Form("%s/JetMomentumScale/pTScale", outputDir.Data())), style, -0.6, 0.4, TString("pT^{jet}"), TString("Mean((pT^{rec} - pT^{true}) / pT^{true}))"));  // Plot jet energy scale
     plotResoOrScale(histo_JES_p, TString("p Scale"), TString(Form("%s/JetMomentumScale/pScale", outputDir.Data())), style, -0.8, 0.4, TString("p^{jet}"), TString("#LT(p^{rec} - p^{true}) / p^{true}#GT"));  // Plot jet energy scale
     plotResoOrScale(h_EtaReso_Mean_E, TString("#eta Scale"), TString(Form("%s/EtaScale/EtaScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#eta^{rec} - #eta^{true}))"));  // Plot jet eta scale
     plotResoOrScale(h_PhiReso_Mean_E, TString("#Phi Scale"), TString(Form("%s/PhiScale/PhiScale", outputDir.Data())), style, -0.4, 0.4, TString("#it{E}^{jet}"), TString("Mean((#Phi^{rec} - #Phi^{true}))"));  // Plot jet phi scale
-  }
+}
 
   // Plot resolutions
   if (make_resolution_plots) {
@@ -380,25 +379,6 @@ void resolutionJETStree(
   if (make_efficiency_plots) {
     plotEfficiency(h_matched_count, h_truth_count, style, outputDir);
   }
-
-  TFile outputFile(outputFilename.Data(), "RECREATE");
-  outputFile.cd();
-
-  for(int iInp=0;iInp<nInputs;iInp++){
-    for(int ijr=0;ijr<njettypes;ijr++){
-      for (int i = 0; i < nEta + eta_regions; i++){
-        histo_JES_E[iInp][ijr][i]->Write();
-        histo_JES_p[iInp][ijr][i]->Write();
-        histo_JES_pT[iInp][ijr][i]->Write();
-        histo_JER_E[iInp][ijr][i]->Write();
-        histo_JER_p[iInp][ijr][i]->Write();
-        histo_JER_pT[iInp][ijr][i]->Write();
-      }
-    }
-  }
-
-  outputFile.Close();
-
 }
 
 void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][nEta+eta_regions], TString title, TString outputFormat, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel) {
@@ -415,7 +395,7 @@ void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][nEta+eta_regions], TStr
     scaleHist->GetYaxis()->SetNdivisions(505,true);
     scaleHist->GetXaxis()->SetMoreLogLabels(true);
     DrawGammaLines(0, 109, 0., 0., 1, kGray+2, 7);
-
+    
     // ITERATE OVER JET TYPES
     for(int ijr=0; ijr<njettypes; ijr++){
       if (ijr == 0) {
@@ -428,17 +408,17 @@ void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][nEta+eta_regions], TStr
       TLegend *scaleLegend;
       if (grouped) {
         scaleLegend = GetAndSetLegend2(0.7, 0.95-(eta_regions*textSizeLabelsRel), 1.05, 0.95,textSizeLabelsPixel, 1, "", 43, 0.15);
-      }
+      } 
       else {
         scaleLegend = GetAndSetLegend2(0.7, 0.95-((nEta-firstEtaBin[ijr])*textSizeLabelsRel), 1.05, 0.95,textSizeLabelsPixel, 1, "", 43, 0.15);
       }
-
+        
       // ITERATE OVER ETA RANGES
       int eta_start, eta_end;
       if (grouped){
         eta_start = nEta;
         eta_end = nEta + eta_regions;
-      }
+      } 
       else {
         eta_start = firstEtaBin[ijr];
         eta_end = nEta;
@@ -448,7 +428,7 @@ void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][nEta+eta_regions], TStr
         if (eta == nEta - 1) {
           continue; // Skip 3.5-4 range
         }
-
+        
         if (grouped) {
           DrawGammaSetMarker(scaleData[0][ijr][eta], markerStyleEta[eta-5], markerSizeEta[eta-5], colorEta[eta-5], colorEta[eta-5]);
         }
@@ -469,16 +449,16 @@ void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][nEta+eta_regions], TStr
       drawInfo(style, 0.16, 0.895, ijr);
       scaleHist->Draw("same,axis");
       if (grouped) {
-        canvasJES->Print(Form("%s_%s_grouped.%s", outputFormat.Data(), style.str_jet_type[ijr].Data(), style.format.Data()));
+        canvasJES->Print(Form("%s_%s_grouped.%s", outputFormat.Data(), style.str_jet_type[ijr].Data(), style.format.Data())); 
       }
       else {
-        canvasJES->Print(Form("%s_%s.%s", outputFormat.Data(), style.str_jet_type[ijr].Data(), style.format.Data()));
+        canvasJES->Print(Form("%s_%s.%s", outputFormat.Data(), style.str_jet_type[ijr].Data(), style.format.Data())); 
       }
     }
   }
 }
 
-void plotSpectra(TH3F *spectra[nInputs][njettypes], plottingStyleData style, TString title, TString outputFormat, TH2F *reco[nInputs][njettypes]=nullptr, TH2F *truth[nInputs][njettypes]=nullptr, float textX=0.22, float textY=0.83) {
+void plotSpectra(TH3F *spectra[nInputs][njettypes], plottingStyleData style, TString title, TString outputFormat, TH2F *reco[nInputs][njettypes]=nullptr, TH2F *truth[nInputs][njettypes]=nullptr, float textX=0.22, float textY=0.83) { 
   Double_t textSizeLabelsRel = 58.0 / 1300;
   int canvasWidth = 2000;
   int canvasDivisions = 2;
@@ -520,7 +500,7 @@ void plotSpectra(TH3F *spectra[nInputs][njettypes], plottingStyleData style, TSt
       spectraCanvas->cd(2);
       gPad->SetLogy();
       projectionStack[i] = new THStack();
-      projectionLegend[i] = new TLegend(.62, .75, 0.85, 0.9);
+      projectionLegend[i] = new TLegend(.62, .75, 0.85, 0.9); 
       recoSpectra[i] = projection->ProjectionY(Form("reco_spectra_%s_%s", title.Data(), style.str_jet_type[i].Data()));
       recoSpectra[i]->SetTitle("Reco Matched");
       recoSpectra[i]->SetLineColor(kRed);
@@ -541,13 +521,13 @@ void plotSpectra(TH3F *spectra[nInputs][njettypes], plottingStyleData style, TSt
       SetStyleHistoTHStackForGraphs(projectionStack[i], Form("Jet %s", title.Data()), "Counts",  0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
 
 
-      drawLatexAdd(Form("Matched %s", style.str_jet_type_plot[i].Data()), 0.165, 0.82, 0.056, kFALSE, kFALSE, kFALSE);
+      drawLatexAdd(Form("Matched %s", style.str_jet_type_plot[i].Data()), 0.165, 0.82, 0.056, kFALSE, kFALSE, kFALSE); 
       // projectionStack[i]->SetTitle(Form("Matched %s", style.str_jet_type_plot[i].Data()));
       projectionLegend[i]->SetTextFont(42);
       projectionLegend[i]->Draw();
 
       THStack *fullStack = new THStack();
-      TLegend *fullLegend = new TLegend(.62, .75, 0.85, 0.9);
+      TLegend *fullLegend = new TLegend(.62, .75, 0.85, 0.9); 
       if (reco != nullptr && truth != nullptr) {
         spectraCanvas->cd(3);
         gPad->SetLogy();
@@ -571,7 +551,7 @@ void plotSpectra(TH3F *spectra[nInputs][njettypes], plottingStyleData style, TSt
         fullStack->SetMaximum(fullStack->GetMaximum() * 5);
         fullStack->Draw("hist nostack");
         SetStyleHistoTHStackForGraphs(fullStack, Form("Jet %s", title.Data()), "Counts",  0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
-        drawLatexAdd(Form("All %s", style.str_jet_type_plot[i].Data()), 0.17, 0.82, 0.056, kFALSE, kFALSE, kFALSE);
+        drawLatexAdd(Form("All %s", style.str_jet_type_plot[i].Data()), 0.17, 0.82, 0.056, kFALSE, kFALSE, kFALSE); 
         // fullStack->SetTitle(Form("All %s", style.str_jet_type_plot[i].Data()));
         fullLegend->SetTextFont(42);
         fullLegend->Draw();
@@ -653,10 +633,10 @@ void plotSlices (TH2F *spectra[nInputs][njettypes][nEta+eta_regions], plottingSt
         THStack *sliceStack = new THStack();  // stack slices
         TLegend *legendJES3;
         if (grouped) {
-          legendJES3 = GetAndSetLegend2(0.70, 1.0-(eta_regions*textSizeLabelsRel), 0.90, 1.0-(1*textSizeLabelsRel),1.1*textSizeLabelsPixel, 1, "", 43, 0.15);
-        }
+          legendJES3 = GetAndSetLegend2(0.70, 1.0-(eta_regions*textSizeLabelsRel), 0.90, 1.0-(1*textSizeLabelsRel),1.1*textSizeLabelsPixel, 1, "", 43, 0.15);  
+        } 
         else {
-          legendJES3 = GetAndSetLegend2(0.70, 1.0-((ijr==0?13:4)*textSizeLabelsRel), 0.90, 1.0-(1*textSizeLabelsRel),1.1*textSizeLabelsPixel, 1, "", 43, 0.15);
+          legendJES3 = GetAndSetLegend2(0.70, 1.0-((ijr==0?13:4)*textSizeLabelsRel), 0.90, 1.0-(1*textSizeLabelsRel),1.1*textSizeLabelsPixel, 1, "", 43, 0.15);  
         }
         for(Int_t eT = eta_start; eT < eta_end; eT++){  // loop over eta ranges
           jesSlices[0][ijr][eT][iEbin]->Sumw2();
@@ -681,7 +661,7 @@ void plotSlices (TH2F *spectra[nInputs][njettypes][nEta+eta_regions], plottingSt
           if (grouped) {
             legendJES3->AddEntry( jesSlices[0][ijr][eT][iEbin],Form("%1.1f < #it{#eta}_{jet} < %1.1f",eta_regions_boundaries[eT-nEta],eta_regions_boundaries[eT-nEta+1]),"l");
           }
-          else {
+          else { 
             legendJES3->AddEntry( jesSlices[0][ijr][eT][iEbin],Form("%1.1f < #it{#eta}_{jet} < %1.1f",partEta[eT],partEta[eT+1]),"l");
           }
         }
@@ -690,7 +670,7 @@ void plotSlices (TH2F *spectra[nInputs][njettypes][nEta+eta_regions], plottingSt
           legendJES3->SetY1(1.0-(filled*textSizeLabelsRel));
           legendJES3->Draw();
           sliceStack->SetMaximum(max * 1.4);
-          SetStyleHistoTHStackForGraphs(sliceStack, xLabel.Data(), "Normalized Distribution", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
+          SetStyleHistoTHStackForGraphs(sliceStack, xLabel.Data(), "Normalized Distribution", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1); 
           TString info[1] = {Form("%1.1f < %s_{jet} < %1.1f %s", spacing * iEbin + offset, symbol.Data(), spacing * (iEbin + 1) + offset, units.Data())};  // Add eta info to plot
           drawInfo(style, 0.16, 0.92, ijr, 1, info);
           if (grouped) {
