@@ -41,7 +41,7 @@ void treeProcessing(
     double jetR                 = 0.5,
     double tracked_jet_max_pT   = 30,
     bool runCaloRes             = true,
-    bool removeTracklets        = true
+    bool removeTracklets        = false
 ){
     // make output directory
     TString dateForOutput = ReturnDateStr();
