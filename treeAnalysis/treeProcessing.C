@@ -32,6 +32,7 @@ void treeProcessing(
     TString inFile              = "",
     TString inFileGeometry      = "geometry.root",
     TString addOutputName       = "",
+    std::string baseOutputDir   = ".",
     bool do_reclus              = true,
     bool do_jetfinding          = false,
     // Double_t maxNEvent = 1e5,
@@ -45,8 +46,7 @@ void treeProcessing(
     std::string jetAlgorithm    = "anti-kt",
     std::vector<double> jetRParameters = {0.3, 0.5, 0.8, 1.0},
     double tracked_jet_max_pT   = 30,
-    bool runCaloRes             = true,
-    std::string baseOutputDir = "."
+    bool runCaloRes             = true
 ){
     // make output directory
     TString dateForOutput = ReturnDateStr();
