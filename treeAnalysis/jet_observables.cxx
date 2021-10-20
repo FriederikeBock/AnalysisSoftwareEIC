@@ -269,21 +269,30 @@ void fillJetObservables(JetObservables & observables, const std::vector<fastjet:
 {
     // Setup
     bool eA = observables.is_eA();
-    // NOTE: The cross section isn't available in the current test production, so set to 1 if not available.
-    // TODO: Grab last value for xsec to get best determination...
-    double weight = _cross_section ? _cross_section : 1;
+    // Cross section for weighting
+    // NOTE: The cross section somtimes isn't available in the productions, so set to 1 if not available.
+    // NOTE: Even when available, we should be taking the last cross section to get the smallest error. But this isn't
+    //       yet trivial to access. So keep it as 1 for now.
+    //double weight = _cross_section ? _cross_section : 1;
+    double weight = 1;
     if (eA) {
-        // TODO: Fully implement finding struck quark...
-        int struckQuarkFlavor = 1;
+        unsigned int struckQuarkIndexHepMC = findHepMCIndexOfStruckQuark();
+        int struckQuarkFlavor = _hepmcp_PDG[struckQuarkIndexHepMC];
         //std::cout << "x=" << kinematics.x << ", y=" << kinematics.y << ", Q2=" << kinematics.Q2 << "\n";
         if (kinematics.x > -1 && kinematics.x < 2) {
-            weight *= observables.pdf->xfxQ(struckQuarkFlavor, kinematics.x, std::sqrt(kinematics.Q2)) / kinematics.x;
+            weight *= (observables.pdf->xfxQ(struckQuarkFlavor, kinematics.x, std::sqrt(kinematics.Q2)) / kinematics.x);
         }
     }
     for (auto & j : jets) {
         // Acceptance
         //if (std::abs(j.eta()) > (4 - jetR)) {
         if (std::abs(j.eta()) > 4) {
+            continue;
+        }
+
+        // Require at least two constituents
+        // This is based on John's Centauro studies, which suggests that requiring two constituents will remove many beam jets
+        if (j.constituents().size() < 2) {
             continue;
         }
 
