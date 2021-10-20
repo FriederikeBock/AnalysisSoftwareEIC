@@ -4,6 +4,15 @@
   * author: Raymond Ehlers <raymond.ehlers@cern.ch>, ORNL
   */
 
+#include <map>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+#include <TH1D.h>
+
+#include <LHAPDF/LHAPDF.h>
+
 enum class EtaRegion_t {
     forward,
     midRapidity,
@@ -63,7 +72,7 @@ struct EventObservables {
     }
 };
 
-std::string GetIdentifier(const double jetR, const JetType_t jetType, const RegionSpec & region, std::string name, std::string tag = "") {
+std::string GetIdentifier(const double jetR, const JetType_t jetType, const RegionSpec & region, std::string name, bool eA = false, std::string tag = "") {
     // Jet R
     std::string identifier = "jetR";
     identifier += jetR < 1.0 ? "0" : "";
@@ -78,41 +87,50 @@ std::string GetIdentifier(const double jetR, const JetType_t jetType, const Regi
     identifier += "_" + region.name;
     // Name
     identifier += "_" + name;
+    if (eA) {
+        identifier += "_eA";
+    }
+    else {
+        identifier += "_ep";
+    }
     return identifier;
 }
 
 struct JetObservables {
     JetType_t jetType;
+    std::string nPDFName = "";
     std::string tag = "";
     std::map<std::string, TH1D> spectra{};
     std::map<std::string, TH2D> angularity{};
     std::map<std::string, TH2D> jetHadronDPhi{};
     std::vector<TH1D> backwardHadrons{};
+    std::unique_ptr<LHAPDF::PDF> pdf{};
     bool initialized{false};
 
-    JetObservables(JetType_t _jetType):
+    JetObservables(JetType_t _jetType, const std::string & _nPDFName = "", const std::string & _tag = ""):
         jetType(_jetType),
-        tag(""),
-        spectra{},
-        angularity{},
-        jetHadronDPhi{},
-        backwardHadrons{},
-        initialized{false}
-    {}
-
-    JetObservables(JetType_t _jetType, const std::string & _tag):
-        jetType(_jetType),
+        nPDFName{_nPDFName},
         tag(_tag),
         spectra{},
         angularity{},
         jetHadronDPhi{},
         backwardHadrons{},
+        pdf{},
         initialized{false}
     {}
+
+    bool is_eA() { return nPDFName != "ep"; }
 
     void Init(std::vector<double> jetRParameters)
     {
         // Setup
+        bool eA = is_eA();
+        if (eA) {
+            gSystem->Load("libLHAPDF");
+            //this->pdf = std::make_unique<LHAPDF::PDF>(LHAPDF::mkPDF("EPPS16nlo_CT14nlo_Au197"));
+            // We get the raw pointer for LHAPDF, so we want to encapsulate it in the unique_ptr
+            this->pdf.reset(LHAPDF::mkPDF(nPDFName));
+        }
         std::string identifier = "";
         // Log base 10 bins for angularity
         // From https://root-forum.cern.ch/t/how-to-define-a-log10-binning/11393
@@ -134,62 +152,70 @@ struct JetObservables {
             //for (auto && [region, info] : regions) {
             for (auto & v : regions) {
                 // E spectra
-                identifier = GetIdentifier(R, jetType, v.second, "spectra_E", tag);
+                identifier = GetIdentifier(R, jetType, v.second, "spectra_E", eA, tag);
                 spectra[identifier] = TH1D(identifier.c_str(), identifier.c_str(), 150, 0, 150);
                 spectra[identifier].Sumw2();
                 // p spectra
-                identifier = GetIdentifier(R, jetType, v.second, "spectra_p", tag);
+                identifier = GetIdentifier(R, jetType, v.second, "spectra_p", eA, tag);
                 spectra[identifier] = TH1D(identifier.c_str(), identifier.c_str(), 150, 0, 150);
                 spectra[identifier].Sumw2();
 
                 // pt spectra
-                identifier = GetIdentifier(R, jetType, v.second, "spectra_pt", tag);
+                identifier = GetIdentifier(R, jetType, v.second, "spectra_pt", eA, tag);
                 spectra[identifier] = TH1D(identifier.c_str(), identifier.c_str(), 150, 0, 150);
                 spectra[identifier].Sumw2();
 
                 // Angularity
                 // a = 0 (mass)
                 // As a function of E
-                identifier = GetIdentifier(R, jetType, v.second, "angularity_a_0_E", tag);
+                identifier = GetIdentifier(R, jetType, v.second, "angularity_a_0_E", eA, tag);
                 angularity[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, nLogBins, logBins.data());
                 angularity[identifier].Sumw2();
                 // As a function of p
-                identifier = GetIdentifier(R, jetType, v.second, "angularity_a_0_p", tag);
+                identifier = GetIdentifier(R, jetType, v.second, "angularity_a_0_p", eA, tag);
                 angularity[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, nLogBins, logBins.data());
                 angularity[identifier].Sumw2();
                 // a = 1 (girth)
                 // As a function of E
-                identifier = GetIdentifier(R, jetType, v.second, "angularity_a_1_E", tag);
+                identifier = GetIdentifier(R, jetType, v.second, "angularity_a_1_E", eA, tag);
                 angularity[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, nLogBins, logBins.data());
                 angularity[identifier].Sumw2();
                 // As a function of p
-                identifier = GetIdentifier(R, jetType, v.second, "angularity_a_1_p", tag);
+                identifier = GetIdentifier(R, jetType, v.second, "angularity_a_1_p", eA, tag);
                 angularity[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, nLogBins, logBins.data());
                 angularity[identifier].Sumw2();
 
                 // Jet-hadron as function of E
-                identifier = GetIdentifier(R, jetType, v.second, "jet_hadron_E", tag);
+                identifier = GetIdentifier(R, jetType, v.second, "jet_hadron_E", eA, tag);
                 jetHadronDPhi[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, 72, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
                 jetHadronDPhi[identifier].Sumw2();
 
                 // Jet-hadron as function of p
-                identifier = GetIdentifier(R, jetType, v.second, "jet_hadron_p", tag);
+                identifier = GetIdentifier(R, jetType, v.second, "jet_hadron_p", eA, tag);
                 jetHadronDPhi[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, 72, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
                 jetHadronDPhi[identifier].Sumw2();
             }
         }
         std::string name = "nBackwardHadrons";
         name += "_" + jetTypes.at(jetType);
-        name += "_" + tag;
+        if (tag != "") {
+            name += "_" + tag;
+        }
+        name += eA ? "_eA" : "_ep";
         backwardHadrons.emplace_back(TH1D(name.c_str(), name.c_str(), 100, 0, 100));
         backwardHadrons.back().Sumw2();
         initialized = true;
     }
 
-    void Write(std::string outputDir, std::string openOption = "UPDATE")
+    void Write(const std::string & outputDir, const std::string & openOption = "UPDATE")
     {
         // define output file
-        std::shared_ptr<TFile> fileOutput = std::make_shared<TFile>(TString::Format("%s/output_JetObservables.root", outputDir.c_str()), openOption.c_str());
+        std::string outputFilename = outputDir + "/output_JetObservables";
+        if (is_eA()) {
+            outputFilename += "_" + nPDFName;
+        }
+        outputFilename += ".root";
+        std::shared_ptr<TFile> fileOutput = std::make_shared<TFile>(outputFilename.c_str(), openOption.c_str());
         //for (auto && [_, h] : spectra) {
         // Spectra
         for (auto & h : this->spectra) {
@@ -210,7 +236,7 @@ struct JetObservables {
 /**
   * Fill event level distributions
   */
-void fillEventObservables(EventObservables & eventObservables, unsigned short primaryTrackSource)
+DISKinematics fillEventObservables(EventObservables & eventObservables, unsigned short primaryTrackSource)
 {
     // NOTE: The cross section isn't available in the current test production, so set to 1 if not available.
     double cross_section = _cross_section ? _cross_section : 1;
@@ -226,35 +252,59 @@ void fillEventObservables(EventObservables & eventObservables, unsigned short pr
         // Fill the hist.
         eventObservables.Q2Measured.Fill(disKinematics.Q2, cross_section);
         eventObservables.Q2Measured.Fill(disKinematics.Q2, cross_section);
+
+        return disKinematics;
     }
     catch (std::runtime_error & e) {
         //std::cout << e.what() << ". Continuing\n";
-        return;
+        return DISKinematics{};
     }
 }
 
 /**
   * Fill jet spectra.
   */
-void fillJetObservables(JetObservables & observables, const std::vector<fastjet::PseudoJet> & jets, double jetR)
+//void fillJetObservables(JetObservables & observables, const std::vector<fastjet::PseudoJet> & jets, double jetR)
+void fillJetObservables(JetObservables & observables, const std::vector<fastjet::PseudoJet> & jets, double jetR, DISKinematics & kinematics)
 {
-    // NOTE: The cross section isn't available in the current test production, so set to 1 if not available.
-    // TODO: Grab last value for xsec to get best determination...
-    double cross_section = _cross_section ? _cross_section : 1;
+    // Setup
+    bool eA = observables.is_eA();
+    // Cross section for weighting
+    // NOTE: The cross section somtimes isn't available in the productions, so set to 1 if not available.
+    // NOTE: Even when available, we should be taking the last cross section to get the smallest error. But this isn't
+    //       yet trivial to access. So keep it as 1 for now.
+    //double weight = _cross_section ? _cross_section : 1;
+    double weight = 1;
+    if (eA) {
+        unsigned int struckQuarkIndexHepMC = findHepMCIndexOfStruckQuark();
+        int struckQuarkFlavor = _hepmcp_PDG[struckQuarkIndexHepMC];
+        //std::cout << "x=" << kinematics.x << ", y=" << kinematics.y << ", Q2=" << kinematics.Q2 << "\n";
+        if (kinematics.x > -1 && kinematics.x < 2) {
+            weight *= (observables.pdf->xfxQ(struckQuarkFlavor, kinematics.x, std::sqrt(kinematics.Q2)) / kinematics.x);
+        }
+    }
     for (auto & j : jets) {
         // Acceptance
-        if (std::abs(j.eta()) > (4 - jetR)) {
+        //if (std::abs(j.eta()) > (4 - jetR)) {
+        if (std::abs(j.eta()) > 4) {
+            continue;
+        }
+
+        // Require at least two constituents
+        // This is based on John's Centauro studies, which suggests that requiring two constituents will remove many beam jets
+        if (j.constituents().size() < 2) {
             continue;
         }
 
         auto region = findRegion(j.eta());
         // Check fiducial acceptnace for the region. If outside, then continue
-        if (j.eta() > (region.etaMax - jetR) || j.eta() > (region.etaMin + jetR)) {
+        // Skip for now, since I'm not sure it makes sense in the way that it does for HI collisions
+        /*if (j.eta() > (region.etaMax - jetR) || j.eta() > (region.etaMin + jetR)) {
             continue;
-        }
-        observables.spectra[GetIdentifier(jetR, observables.jetType, region, "spectra_E", observables.tag)].Fill(j.e(), cross_section);
-        observables.spectra[GetIdentifier(jetR, observables.jetType, region, "spectra_p", observables.tag)].Fill(j.modp(), cross_section);
-        observables.spectra[GetIdentifier(jetR, observables.jetType, region, "spectra_pt", observables.tag)].Fill(j.perp(), cross_section);
+        }*/
+        observables.spectra[GetIdentifier(jetR, observables.jetType, region, "spectra_E", eA, observables.tag)].Fill(j.e(), weight);
+        observables.spectra[GetIdentifier(jetR, observables.jetType, region, "spectra_p", eA, observables.tag)].Fill(j.modp(), weight);
+        observables.spectra[GetIdentifier(jetR, observables.jetType, region, "spectra_pt", eA, observables.tag)].Fill(j.perp(), weight);
 
         double angularity_a_0 = 0;
         double angularity_a_1 = 0;
@@ -265,13 +315,13 @@ void fillJetObservables(JetObservables & observables, const std::vector<fastjet:
 
             // Jet-hadron correlations
             // TODO: Use all hadrons, not just constituents. Duh...
-            observables.jetHadronDPhi[GetIdentifier(jetR, observables.jetType, region, "jet_hadron_E", observables.tag)].Fill(j.e(), j.delta_phi_to(constituent), cross_section);
-            observables.jetHadronDPhi[GetIdentifier(jetR, observables.jetType, region, "jet_hadron_p", observables.tag)].Fill(j.modp(), j.delta_phi_to(constituent), cross_section);
+            observables.jetHadronDPhi[GetIdentifier(jetR, observables.jetType, region, "jet_hadron_E", eA, observables.tag)].Fill(j.e(), j.delta_phi_to(constituent), weight);
+            observables.jetHadronDPhi[GetIdentifier(jetR, observables.jetType, region, "jet_hadron_p", eA, observables.tag)].Fill(j.modp(), j.delta_phi_to(constituent), weight);
         }
-        observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_0_E", observables.tag)].Fill(j.e(), angularity_a_0 / j.pt(), cross_section);
-        observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_0_p", observables.tag)].Fill(j.modp(), angularity_a_0 / j.pt(), cross_section);
-        observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_1_E", observables.tag)].Fill(j.e(), angularity_a_1 / j.pt(), cross_section);
-        observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_1_p", observables.tag)].Fill(j.modp(), angularity_a_1 / j.pt(), cross_section);
+        observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_0_E", eA, observables.tag)].Fill(j.e(), angularity_a_0 / j.pt(), weight);
+        observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_0_p", eA, observables.tag)].Fill(j.modp(), angularity_a_0 / j.pt(), weight);
+        observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_1_E", eA, observables.tag)].Fill(j.e(), angularity_a_1 / j.pt(), weight);
+        observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_1_p", eA, observables.tag)].Fill(j.modp(), angularity_a_1 / j.pt(), weight);
     }
 }
 
