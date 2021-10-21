@@ -27,20 +27,17 @@ void treeProcessing(
     TString inFile              = "",
     TString inFileGeometry      = "geometry.root",
     TString addOutputName       = "",
+    Double_t maxNEvent          = -1,
     bool do_reclus              = true,
     bool do_jetfinding          = false,
-    // Double_t maxNEvent = 1e5,
-    bool hasTiming              = true,
-    bool isALLSILICON           = true,
-    Double_t maxNEvent          = -1,
-    Int_t verbosity             = 0,
+    bool runCaloRes             = true,
     bool doCalibration          = false,
+    Int_t verbosity             = 0,
     // Defaults to tracking from all layers.
     unsigned short primaryTrackSource = 0,
     std::string jetAlgorithm    = "anti-kt",
     double jetR                 = 0.5,
     double tracked_jet_max_pT   = 30,
-    bool runCaloRes             = true,
     bool removeTracklets        = false
 ){
     // make output directory
@@ -87,8 +84,6 @@ void treeProcessing(
         nEntriesTree = maxNEvent;
         std::cout << "Will only analyze first " << maxNEvent << " events in the tree..." << std::endl;
     }
-    _do_TimingStudies         = hasTiming;
-    _is_ALLSILICON            = isALLSILICON;
     _doClusterECalibration    = doCalibration;
     if(_doClusterECalibration){
         std::cout << "clusters will be energy-corrected and subsequently smeared to meet testbeam constant term!" << std::endl;

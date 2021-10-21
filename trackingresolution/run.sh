@@ -53,8 +53,9 @@ if [ $1 == "Fredi" ]; then
 #     root -b -x -l -q 'treeProcessing.C("LYSO-1TTL-muRwellRes-pythia8.txt","'$geometryfile'","LYSO-1TTL-muRwellRes-pythia8-TRonly",false,false,true,false,-1,0,false,0,"anti-kt",0.5,30,false)'
 #     root -b -x -l -q 'treeProcessing.C("LYSO-1TTL-nomRes-pythia8Q2.txt","'$geometryfile'","LYSO-1TTL-nomRes-pythia8Q2-TRonly",false,false,true,false,-1,0,false,0,"anti-kt",0.5,30,false)'
 #     root -b -x -l -q 'treeProcessing.C("LYSO-1TTL-nomRes-pythia8.txt","'$geometryfile'","LYSO-1TTL-nomRes-pythia8-TRonly",false,false,true,false,-1,0,false,0,"anti-kt",0.5,30,false)'
-#     root -b -x -l -q 'treeProcessing.C("TTL-def_HFJetsQ100.txt","'$geometryfile'","2TTL-nomRes-pythia8Q100-TRonly",false,false,true,false,1e5,0,false,0,"anti-kt",0.5,30,false)'
-    root -b -x -l -q 'treeProcessing.C("TTL-def_HFJetsQ1-100.txt","'$geometryfile'","2TTL-nomRes-pythia8Q1-100-TRonly",false,false,true,false,1e5,0,false,0,"anti-kt",0.5,30,false)'
+    root -b -x -l -q 'treeProcessing.C("TTL-def_HFJetsQ100.txt","'$geometryfile'","2TTL-nomRes-pythia8Q100-TRonly",-1,false,false,false,false,0,0,"anti-kt",0.5,30,false)'
+    root -b -x -l -q 'treeProcessing.C("TTL-def_HFJetsQ1-100.txt","'$geometryfile'","2TTL-nomRes-pythia8Q1-100-TRonly",-1,false,false,false,false,0,0,"anti-kt",0.5,30,false)'
+    
     cd ../trackingresolution/
   fi
   if [ $2 == "extract" ]; then
