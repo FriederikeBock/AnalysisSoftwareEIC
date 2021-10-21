@@ -65,15 +65,15 @@ void prepareMCMatchInfo(){
   for(Int_t itrk=0; itrk<(Int_t)_nTracks; itrk++){
     if (verbosityTRKEFF > 2) cout << "processing track: " << itrk << endl;
     if (_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].size() > 0){
-      if (verbosityTRKEFF > 2) 
-        cout << "adding rec track: \t" << itrk << "\t track source: " << _track_source[itrk] << " MC: "<< (int)_track_trueID[itrk] << endl; 
-    } else { 
-      if (verbosityTRKEFF > 2) 
-        cout << "found rec track: \t" << itrk << "\t track source: " << _track_source[itrk] << " MC: "<< (int)_track_trueID[itrk] << endl; 
+      if (verbosityTRKEFF > 2)
+        cout << "adding rec track: \t" << itrk << "\t track source: " << _track_source[itrk] << " MC: "<< (int)_track_trueID[itrk] << endl;
+    } else {
+      if (verbosityTRKEFF > 2)
+        cout << "found rec track: \t" << itrk << "\t track source: " << _track_source[itrk] << " MC: "<< (int)_track_trueID[itrk] << endl;
     }
     _mcpart_RecTrackIDs[(int)_track_trueID[itrk]].push_back(itrk);
   }
-  Int_t nCurrProj = 0; 
+  Int_t nCurrProj = 0;
   for(Int_t itrk=0; itrk<_nTracks; itrk++){
     if (verbosityTRKEFF > 2) cout << "current track: " << itrk <<endl;
     unsigned short trackSource = _track_source[itrk];
@@ -84,7 +84,7 @@ void prepareMCMatchInfo(){
       _track_hasTTL[itrk]     = (_track_hasTTL[itrk] || HasTimingLayer(_track_ProjLayer[iproj]));
       if (HasTimingLayer(_track_ProjLayer[iproj])) _track_nTTL[itrk]++;
       if (verbosityTRKEFF > 2) cout << "timing layer count: " << _track_nTTL[itrk] << endl;
-        
+
       _track_hasATTL[itrk]   = (_track_hasATTL[itrk] || HasTimingLayerAfterECal(_track_ProjLayer[iproj]));
 //       if (IsTrackerLayer(_track_ProjLayer[iproj])) nTrL++;
       nCurrProj = iproj;
@@ -94,7 +94,7 @@ void prepareMCMatchInfo(){
       _track_hasOL[itrk] = (_track_hasOL[itrk] || true);
     if (trackSource == 2 )
       _track_hasIL[itrk]   = (_track_hasIL[itrk] || true);
-      
+
     if ((int)_track_trueID[itrk] < 0) continue;
     if (_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].size() > 1){
       if (verbosityTRKEFF > 2) cout << "identified multiple tracks for: " << (int)_track_trueID[itrk] << " current track id: " << itrk << endl;
@@ -109,7 +109,7 @@ void prepareMCMatchInfo(){
       if (verbosityTRKEFF > 2) cout << "only one track found for: " << (int)_track_trueID[itrk] << "\t source: " << trackSource<< endl;
     }
 
-  
+
   }
 }
 
@@ -230,7 +230,7 @@ void trackingresolution(){
     for (unsigned int iTrkSource = 0; iTrkSource < nTrackSources; iTrkSource++) {
       for (Int_t ipart = 0; ipart < nPart_TRKEFF+1; ipart++){
         for (Int_t k = 0; k < nCuts; k++){
-//           std::cout << ipart << "\t" << str_TRKEFF_mcparticles[ipart].Data() << "\t" << k << "\t" << nameCuts[k].Data()  << "\t" 
+//           std::cout << ipart << "\t" << str_TRKEFF_mcparticles[ipart].Data() << "\t" << k << "\t" << nameCuts[k].Data()  << "\t"
 //                     << Form("h_tracks_%s_%s_True_Eta_pT", str_TRKEFF_mcparticles[ipart].Data(), nameCuts[k].Data()) ;
 
           h_tracksTrue_Eta_pT[iTrkSource][ipart][k]         = new TH2F(Form("h_tracks_%u_%s_%s_True_Eta_pT", iTrkSource, str_TRKEFF_mcparticles[ipart].Data(), nameCuts[k].Data() ), "; #it{p}_{T,MC} (GeV/c); #eta_{MC}", 200, 0, 20, 200, -4, 4.);
@@ -250,11 +250,11 @@ void trackingresolution(){
 
         for (Int_t i = 0; i< nResoSt; i++){
           for (Int_t ipart = 0; ipart < nPart_TRKEFF+1; ipart++){
-            h_tracks_reso_pT[iTrkSource][i][et][ipart]     = new TH2F(Form("h_tracks_reso_pT_%u_%s_%s_%d", iTrkSource, nameResoAdd[i].Data(), str_TRKEFF_mcparticles[ipart].Data(),et), 
-                                                  Form("%1.1f < #eta < %1.1f; #it{p}_{T,MC} (GeV/c); (#it{p}_{T,rec}-#it{p}_{T,MC})/#it{p}_{T,MC}",etaMin, etaMax), 
+            h_tracks_reso_pT[iTrkSource][i][et][ipart]     = new TH2F(Form("h_tracks_reso_pT_%u_%s_%s_%d", iTrkSource, nameResoAdd[i].Data(), str_TRKEFF_mcparticles[ipart].Data(),et),
+                                                  Form("%1.1f < #eta < %1.1f; #it{p}_{T,MC} (GeV/c); (#it{p}_{T,rec}-#it{p}_{T,MC})/#it{p}_{T,MC}",etaMin, etaMax),
                                                   200, 0, 20, 250, -0.5, 0.5);
-            h_tracks_reso_p[iTrkSource][i][et][ipart]         = new TH2F(Form("h_tracks_reso_p_%u_%s_%s_%d", iTrkSource, nameResoAdd[i].Data(), str_TRKEFF_mcparticles[ipart].Data(),et), 
-                                                    Form("%1.1f < #eta < %1.1f; #it{p}_{MC} (GeV/c); (#it{p}_{rec}-#it{p}_{MC})/#it{p}_{MC}", etaMin, etaMax), 
+            h_tracks_reso_p[iTrkSource][i][et][ipart]         = new TH2F(Form("h_tracks_reso_p_%u_%s_%s_%d", iTrkSource, nameResoAdd[i].Data(), str_TRKEFF_mcparticles[ipart].Data(),et),
+                                                    Form("%1.1f < #eta < %1.1f; #it{p}_{MC} (GeV/c); (#it{p}_{rec}-#it{p}_{MC})/#it{p}_{MC}", etaMin, etaMax),
                                                     nBinsP, binningP, 250, -0.5, 0.5);
           }
           h_tracks_resoEta_pT[iTrkSource][i][et]     = new TH2F(Form("h_tracks_reso_Eta_pT_%u_%s_%d", iTrkSource, nameResoAdd[i].Data(),et), Form("%1.1f < #eta < %1.1f; #it{p}_{T,MC} (GeV/c); (#eta_{rec}-#eta_{MC})/#eta_{MC}",
@@ -281,7 +281,7 @@ void trackingresolution(){
   // =======================================================================
   // ******************* filling resolution histos *************************
   // =======================================================================
-  Int_t nCurrProj = 0; 
+  Int_t nCurrProj = 0;
   for(Int_t itrk=0; itrk<_nTracks; itrk++){
     TVector3 recpartvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
     TVector3 mcpartvec(_mcpart_px[(int)_track_trueID[itrk]],_mcpart_py[(int)_track_trueID[itrk]],_mcpart_pz[(int)_track_trueID[itrk]]);
@@ -295,18 +295,18 @@ void trackingresolution(){
     float pmom      = recpartvec.Mag();
     float truepmom  = mcpartvec.Mag();
     unsigned short trackSource = _track_source[itrk];
-    
+
     Int_t parIdx = 5;
     if(abs(_mcpart_PDG[(int)_track_trueID[itrk]]) == 11)   parIdx = 0;
     if(abs(_mcpart_PDG[(int)_track_trueID[itrk]]) == 211)  parIdx = 1;
-    if(abs(_mcpart_PDG[(int)_track_trueID[itrk]]) == 2212) parIdx = 2;          
+    if(abs(_mcpart_PDG[(int)_track_trueID[itrk]]) == 2212) parIdx = 2;
     if(abs(_mcpart_PDG[(int)_track_trueID[itrk]]) == 321)  parIdx = 3;
     if(abs(_mcpart_PDG[(int)_track_trueID[itrk]]) == 13)   parIdx = 4;
-    
+
     TParticlePDG *part = TDatabasePDG::Instance()->GetParticle(abs(_mcpart_PDG[(int)_track_trueID[itrk]]));
     Double_t mass = part->Mass();
     float trueE     = TMath::Sqrt(truepmom*truepmom+mass*mass);
-    
+
     Bool_t hasTL      = _track_hasTTL[itrk];
     Bool_t hasTLAE    = _track_hasATTL[itrk];
     Bool_t hasFTrL    = _track_hasIL[itrk];
@@ -314,22 +314,22 @@ void trackingresolution(){
     Int_t nTrL        = 0;
     Int_t nTL         = _track_nTTL[itrk];
     Int_t nTrT        = 0;
-    
+
     for(Int_t iproj=nCurrProj; iproj<_nProjections; iproj++){
 //       hasFTrL   = (hasFTrL || HasFirstTwoLayers(_track_ProjLayer[iproj]));
 //       hasTrL    = (hasTrL || IsTrackerLayer(_track_ProjLayer[iproj]));
-      if (IsTrackerLayer(_track_ProjLayer[iproj])) nTrL++;      
+      if (IsTrackerLayer(_track_ProjLayer[iproj])) nTrL++;
       nCurrProj = iproj;
     }
     nTrT = nTrL + nTL;
     if (verbosityTRKEFF > 2) cout << "\t summary: TL " << hasTL << "\t outer TL " << hasTLAE << "\t TL hits "<< nTL << "\t tr " << hasTrL << "\t tr silicon " << hasFTrL << "\t tr hits " << nTrL << "\t tot: " << nTrT << endl;
-      
+
 
     // determine eta bin
     Int_t et = 0;
     while (partEta[et+1] < trueeta && et < nEta) et++;
-    
-    
+
+
     h_tracks_reso_pT[trackSource][0][et][parIdx]->Fill(truept,(pt-truept)/truept);
     h_tracks_reso_p[trackSource][0][et][parIdx]->Fill(truepmom,(pmom-truepmom)/truepmom);
     h_tracks_resoEta_pT[trackSource][0][et]->Fill(truept,(receta-trueeta));
@@ -341,25 +341,25 @@ void trackingresolution(){
       h_tracks_resoPhi_pT[trackSource][2][et]->Fill(truept,(recphi-truephi));
     } else {
       h_tracks_reso_pT[trackSource][1][et][parIdx]->Fill(truept,(pt-truept)/truept);
-      h_tracks_reso_p[trackSource][1][et][parIdx]->Fill(truepmom,(pmom-truepmom)/truepmom);        
+      h_tracks_reso_p[trackSource][1][et][parIdx]->Fill(truepmom,(pmom-truepmom)/truepmom);
       h_tracks_resoEta_pT[trackSource][1][et]->Fill(truept,(receta-trueeta));
       h_tracks_resoPhi_pT[trackSource][1][et]->Fill(truept,(recphi-truephi));
     }
 //     if (nTrL >= 2){
     if (hasTrL){
       h_tracks_reso_pT[trackSource][3][et][parIdx]->Fill(truept,(pt-truept)/truept);
-      h_tracks_reso_p[trackSource][3][et][parIdx]->Fill(truepmom,(pmom-truepmom)/truepmom);        
+      h_tracks_reso_p[trackSource][3][et][parIdx]->Fill(truepmom,(pmom-truepmom)/truepmom);
       h_tracks_resoEta_pT[trackSource][3][et]->Fill(truept,(receta-trueeta));
       h_tracks_resoPhi_pT[trackSource][3][et]->Fill(truept,(recphi-truephi));
     }
 //     if (nTrL >= 3){
     if (hasFTrL){
       h_tracks_reso_pT[trackSource][4][et][parIdx]->Fill(truept,(pt-truept)/truept);
-      h_tracks_reso_p[trackSource][4][et][parIdx]->Fill(truepmom,(pmom-truepmom)/truepmom);        
+      h_tracks_reso_p[trackSource][4][et][parIdx]->Fill(truepmom,(pmom-truepmom)/truepmom);
       h_tracks_resoEta_pT[trackSource][4][et]->Fill(truept,(receta-trueeta));
       h_tracks_resoPhi_pT[trackSource][4][et]->Fill(truept,(recphi-truephi));
     }
-        
+
     // all tracks "N"
     h_tracksTrue_Eta_pT[trackSource][parIdx][0]->Fill(truept, trueeta);
     h_tracksRec_Eta_pT[trackSource][parIdx][0]->Fill(pt, receta);
@@ -372,7 +372,7 @@ void trackingresolution(){
       h_tracksTrue_Eta_p[trackSource][parIdx][1]->Fill(truepmom, trueeta);
       h_tracksRec_Eta_p[trackSource][parIdx][1]->Fill(pmom, receta);
       // at least 3 layers & inner most tracking layer fw
-      if (hasFTrL){ 
+      if (hasFTrL){
         h_tracksTrue_Eta_pT[trackSource][parIdx][2]->Fill(truept, trueeta);
         h_tracksRec_Eta_pT[trackSource][parIdx][2]->Fill(pt, receta);
         h_tracksTrue_Eta_p[trackSource][parIdx][2]->Fill(truepmom, trueeta);
@@ -400,28 +400,28 @@ void trackingresolution(){
       h_tracksTrue_Eta_p[trackSource][parIdx][5]->Fill(truepmom, trueeta);
       h_tracksRec_Eta_p[trackSource][parIdx][5]->Fill(pmom, receta);
       // timing layer hit before ECal but not after & inner most tracking layer fw
-      if (hasFTrL){ 
+      if (hasFTrL){
         h_tracksTrue_Eta_pT[trackSource][parIdx][6]->Fill(truept, trueeta);
         h_tracksRec_Eta_pT[trackSource][parIdx][6]->Fill(pt, receta);
         h_tracksTrue_Eta_p[trackSource][parIdx][6]->Fill(truepmom, trueeta);
         h_tracksRec_Eta_p[trackSource][parIdx][6]->Fill(pmom, receta);
-      }        
+      }
     }
-    // timing layer hit after ECal 
+    // timing layer hit after ECal
     if (hasTLAE){
       h_tracksTrue_Eta_pT[trackSource][parIdx][7]->Fill(truept, trueeta);
       h_tracksRec_Eta_pT[trackSource][parIdx][7]->Fill(pt, receta);
       h_tracksTrue_Eta_p[trackSource][parIdx][7]->Fill(truepmom, trueeta);
       h_tracksRec_Eta_p[trackSource][parIdx][7]->Fill(pmom, receta);
       // timing layer hit after ECal & inner most tracking layer fw
-      if (hasFTrL){ 
+      if (hasFTrL){
         h_tracksTrue_Eta_pT[trackSource][parIdx][8]->Fill(truept, trueeta);
         h_tracksRec_Eta_pT[trackSource][parIdx][8]->Fill(pt, receta);
         h_tracksTrue_Eta_p[trackSource][parIdx][8]->Fill(truepmom, trueeta);
         h_tracksRec_Eta_p[trackSource][parIdx][8]->Fill(pmom, receta);
-      }        
+      }
     }
-  
+
     if (nTL > 0){
       h_tracksTrue_Eta_pT[trackSource][parIdx][9]->Fill(truept, trueeta);
       h_tracksRec_Eta_pT[trackSource][parIdx][9]->Fill(pt, receta);
@@ -439,7 +439,7 @@ void trackingresolution(){
       h_tracksRec_Eta_pT[trackSource][parIdx][11]->Fill(pt, receta);
       h_tracksTrue_Eta_p[trackSource][parIdx][11]->Fill(truepmom, trueeta);
       h_tracksRec_Eta_p[trackSource][parIdx][11]->Fill(pmom, receta);
-    }  
+    }
   }
 }
 
@@ -457,7 +457,7 @@ void trackingcomparison() {
     for (unsigned int iOuterTrkSource = 0; iOuterTrkSource < nTrackSources; ++iOuterTrkSource) {
       for (unsigned int iInnerTrkSource = 0; iInnerTrkSource < nTrackSources; ++iInnerTrkSource) {
         if (iOuterTrkSource >= iInnerTrkSource) { continue; }
-        h_trackingComparison_p_eta[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_p_eta_%u_%u", iOuterTrkSource, iOuterTrkSource), TString::Format(";p (GeV/c);#eta_{%s} - #eta_{%s}", trackMap[iOuterTrkSource].c_str(), trackMap[iInnerTrkSource].c_str()), nBinsP, binningP, 500, -0.2, 0.2);
+        h_trackingComparison_p_eta[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_p_eta_%u_%u", iOuterTrkSource, iInnerTrkSource), TString::Format(";p (GeV/c);#eta_{%s} - #eta_{%s}", trackMap[iOuterTrkSource].c_str(), trackMap[iInnerTrkSource].c_str()), nBinsP, binningP, 500, -0.2, 0.2);
         h_trackingComparison_p_phi[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_p_phi_%u_%u", iOuterTrkSource, iInnerTrkSource), TString::Format(";p (GeV/c);#varphi_{%s} - #varphi_{%s}", trackMap[iOuterTrkSource].c_str(), trackMap[iInnerTrkSource].c_str()), nBinsP, binningP, 500, -0.2, 0.2);
         h_trackingComparison_p_pt[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_p_pt_%u_%u", iOuterTrkSource, iInnerTrkSource), TString::Format(";p (GeV/c);p_{T,%s} - p_{T,%s} (GeV/c)", trackMap[iOuterTrkSource].c_str(), trackMap[iInnerTrkSource].c_str()), nBinsP, binningP, 500, -0.5, 0.5);
         h_trackingComparison_eta_p[iOuterTrkSource][iInnerTrkSource] = new TH2F(TString::Format("h_trackingComparison_eta_p_%u_%u", iOuterTrkSource, iInnerTrkSource), TString::Format(";#eta;p_{%s} - p_{%s} (GeV/c)", trackMap[iOuterTrkSource].c_str(), trackMap[iInnerTrkSource].c_str()), nEta, partEta, 500, -0.5, 0.5);
@@ -478,7 +478,7 @@ void trackingcomparison() {
         int iInnerTrk = _mcpart_RecTrackIDs[(int)_track_trueID[iOuterTrk]].at(rtr);
         int iInnerTrkSource = _track_source[iInnerTrk];
         if ( _track_source[iOuterTrk] >= iInnerTrkSource ) continue;
-        
+
         TVector3 outerVec(_track_px[iOuterTrk], _track_py[iOuterTrk], _track_pz[iOuterTrk]);
         TVector3 innerVec(_track_px[iInnerTrk], _track_py[iInnerTrk], _track_pz[iInnerTrk]);
         if (verbosityTRKEFF > 3) cout <<"O source: " << iOuterTrkSource<< " I: " <<  iInnerTrk<< " source I: " << iInnerTrkSource << " eta diff: " << outerVec.Eta() - innerVec.Eta() << " pt diff " << outerVec.Pt() - innerVec.Pt() << endl;
@@ -489,7 +489,7 @@ void trackingcomparison() {
         h_trackingComparison_eta_phi[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.Eta(), outerVec.Phi() - innerVec.Phi());
         h_trackingComparison_eta_pt[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.Eta(), outerVec.Pt() - innerVec.Pt());
       }
-    } 
+    }
   }
 }
 
@@ -706,7 +706,7 @@ void clearMCRecMatchVectors(){
       _mcpart_RecTrackIDs[imc].resize(0);
     }
   }
-  
+
   for(Int_t itrk=0; itrk<_nTracks; itrk++){
     _track_hasTTL[itrk]  = 0;
     _track_hasATTL[itrk] = 0;
