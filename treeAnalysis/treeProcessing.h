@@ -170,11 +170,12 @@ float* _track_px                 = new float[_maxNTracks];
 float* _track_py                 = new float[_maxNTracks];
 float* _track_pz                 = new float[_maxNTracks];
 unsigned short* _track_source             = new unsigned short[_maxNTracks];
-bool _track_hasTTL[_maxNTracks]          = {0};
-bool _track_hasATTL[_maxNTracks]         = {0};
-int _track_nTTL[_maxNTracks]             = {0};
-bool _track_hasIL[_maxNTracks]           = {0};
-bool _track_hasOL[_maxNTracks]           = {0};
+// Initializes all elements to 0
+std::array<bool, _maxNTracks> _track_hasTTL{{}};
+std::array<bool, _maxNTracks> _track_hasATTL{{}};
+std::array<int, _maxNTracks> _track_nTTL{{}};
+std::array<bool, _maxNTracks> _track_hasIL{{}};
+std::array<bool, _maxNTracks> _track_hasOL{{}};
 
 int _nProjections;
 float* _track_ProjTrackID                 = new float[_maxNProjections];
@@ -198,7 +199,7 @@ float* _mcpart_py                 = new float[_maxNMCPart];
 float* _mcpart_pz                 = new float[_maxNMCPart];
 float* _mcpart_Eta                = new float[_maxNMCPart];
 float* _mcpart_Phi                = new float[_maxNMCPart];
-std::vector<int> _mcpart_RecTrackIDs[_maxNMCPart];
+std::array<std::vector<int>, _maxNMCPart> _mcpart_RecTrackIDs;
 
 
 TRandom3  _fRandom;                                  // random for effi generation
