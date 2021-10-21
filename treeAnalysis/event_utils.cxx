@@ -172,8 +172,29 @@ DISKinematics KinematicsUsingTrueInfo(DirectKinematicsOptions_t option, unsigned
         unsigned int part_outgoingElectronIndex = findPartLevelIndexOfOutgoingElectron();
         if (_mcpart_BCID[part_outgoingElectronIndex] != _hepmcp_BCID[hepmc_outgoingElectronIndex]) {
             std::cout << "WARNING: BCID mismatch for outgoing electron index, meaning different electrons were found at particle level and in HepMC. Check this out...\n";
+            std::cout << "part level index: " << part_outgoingElectronIndex
+                      << "\nhepmc index: " << hepmc_outgoingElectronIndex << "\n";
             std::cout << "mcpart BCID: " << _mcpart_BCID[part_outgoingElectronIndex]
                     << "\nhepmc BCID: " << _hepmcp_BCID[hepmc_outgoingElectronIndex] << "\n";
+            // Print particles to help with debugging:
+            std::cout << "Particles\n";
+            for(Int_t i=0; i<_nMCPart; i++){
+                std::cout << i << "-> id=" << _mcpart_PDG[i] << ", barcode=" << _mcpart_BCID[i] << ", px=" << _mcpart_px[i]
+                          << ", py=" << _mcpart_py[i]
+                          << ", pz=" << _mcpart_pz[i]
+                          << ", E=" << _mcpart_E[i]
+                          << "\n";
+            }
+            std::cout << "HepMC\n";
+            for (unsigned int i = 0; i < _nHepmcp; ++i) {
+                std::cout << i << "-> id=" << _hepmcp_PDG[i] << ", barcode=" << _hepmcp_BCID[i] << ", px=" << _hepmcp_px[i]
+                          << ", py=" << _hepmcp_py[i]
+                          << ", pz=" << _hepmcp_pz[i]
+                          << ", E=" << _hepmcp_E[i]
+                          << ", status=" << _hepmcp_status[i]
+                          << "\n";
+            }
+            std::cout << "End particles" << std::endl;
         }
     }
 
