@@ -19,6 +19,17 @@ struct DISKinematics {
     double Q2{-1};
 };
 
+enum KinematicsErrors_t {
+    kInvalid_x = 0,
+    kInvalidOption,
+    kIncomingProtonNotFound,
+    kIncomingElectronNotFound,
+    kStruckQuarkNotFound,
+    kPartLevelElectronNotFound,
+    kRecoElectronNotFound,
+    kSuccess,
+};
+
 constexpr unsigned int STARTING_INDEX = 1e6;
 
 /**
@@ -172,17 +183,6 @@ DISKinematics CalculateKinematicsFromFourVectors(const ROOT::Math::PxPyPzEVector
 
     return DISKinematics{x, y, q2};
 }
-
-enum KinematicsErrors_t {
-    kInvalid_x = 0,
-    kInvalidOption,
-    kIncomingProtonNotFound,
-    kIncomingElectronNotFound,
-    kStruckQuarkNotFound,
-    kPartLevelElectronNotFound,
-    kRecoElectronNotFound,
-    kSuccess,
-};
 
 enum DirectKinematicsOptions_t {
     kHepMCStored = 0,
