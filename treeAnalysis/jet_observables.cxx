@@ -249,8 +249,13 @@ DISKinematics fillEventObservables(EventObservables & eventObservables, const DI
 /**
   * Fill jet spectra.
   */
-//void fillJetObservables(JetObservables & observables, const std::vector<fastjet::PseudoJet> & jets, double jetR)
-void fillJetObservables(JetObservables & observables, const std::vector<fastjet::PseudoJet> & jets, double jetR, DISKinematics & kinematics)
+void fillJetObservables(JetObservables & observables,
+                        const std::vector<fastjet::PseudoJet> & jets, double jetR,
+                        DISKinematics & kinematics,
+                        const std::vector<float> particles_E,
+                        const std::vector<float> particles_px,
+                        const std::vector<float> particles_py,
+                        const std::vector<float> particles_pz)
 {
     // Setup
     bool eA = observables.is_eA();
@@ -298,15 +303,19 @@ void fillJetObservables(JetObservables & observables, const std::vector<fastjet:
             angularity_a_0 += (constituent.pt() * std::pow(j.delta_R(constituent), 2-0));
             angularity_a_1 += (constituent.pt() * std::pow(j.delta_R(constituent), 2-1));
 
-            // Jet-hadron correlations
-            // TODO: Use all hadrons, not just constituents. Duh...
-            observables.jetHadronDPhi[GetIdentifier(jetR, observables.jetType, region, "jet_hadron_E", eA, observables.tag)].Fill(j.e(), j.delta_phi_to(constituent), weight);
-            observables.jetHadronDPhi[GetIdentifier(jetR, observables.jetType, region, "jet_hadron_p", eA, observables.tag)].Fill(j.modp(), j.delta_phi_to(constituent), weight);
         }
         observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_0_E", eA, observables.tag)].Fill(j.e(), angularity_a_0 / j.pt(), weight);
         observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_0_p", eA, observables.tag)].Fill(j.modp(), angularity_a_0 / j.pt(), weight);
         observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_1_E", eA, observables.tag)].Fill(j.e(), angularity_a_1 / j.pt(), weight);
         observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_1_p", eA, observables.tag)].Fill(j.modp(), angularity_a_1 / j.pt(), weight);
+
+        // Jet-hadron correlations
+        // Separate loop because it uses all hadrons, not just constituents
+        for (std::size_t i = 0; i < particles_E.size(); ++i) {
+            fastjet::PseudoJet part(particles_px[i], particles_py[i], particles_pz[i], particles_E[i]);
+            observables.jetHadronDPhi[GetIdentifier(jetR, observables.jetType, region, "jet_hadron_E", eA, observables.tag)].Fill(j.e(), j.delta_phi_to(part), weight);
+            observables.jetHadronDPhi[GetIdentifier(jetR, observables.jetType, region, "jet_hadron_p", eA, observables.tag)].Fill(j.modp(), j.delta_phi_to(part), weight);
+        }
     }
 }
 
