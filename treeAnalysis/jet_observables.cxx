@@ -236,29 +236,14 @@ struct JetObservables {
 /**
   * Fill event level distributions
   */
-DISKinematics fillEventObservables(EventObservables & eventObservables, unsigned short primaryTrackSource)
+DISKinematics fillEventObservables(EventObservables & eventObservables, const DISKinematics & measuredKinematics)
 {
     // NOTE: The cross section isn't available in the current test production, so set to 1 if not available.
     double cross_section = _cross_section ? _cross_section : 1;
-    // TODO: Enable and replace the hard code below when available
-    /*double incomingElectronEnergy = _hepmc_part_E[0];
-    double incomingProtonEnergy = _hepmc_part_E[1];*/
-    double incomingElectronEnergy = 10;
-    double incomingProtonEnergy = 250;
-    // Calculate the kinmeatics using J-B
-    try {
-        auto disKinematics = JBKinematics(primaryTrackSource, incomingElectronEnergy, incomingProtonEnergy);
 
-        // Fill the hist.
-        eventObservables.Q2Measured.Fill(disKinematics.Q2, cross_section);
-        eventObservables.Q2Measured.Fill(disKinematics.Q2, cross_section);
-
-        return disKinematics;
-    }
-    catch (std::runtime_error & e) {
-        //std::cout << e.what() << ". Continuing\n";
-        return DISKinematics{};
-    }
+    // Fill the hist.
+    eventObservables.Q2Measured.Fill(measuredKinematics.Q2, cross_section);
+    eventObservables.Q2Measured.Fill(measuredKinematics.Q2, cross_section);
 }
 
 /**
