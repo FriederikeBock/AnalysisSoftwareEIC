@@ -7,7 +7,14 @@
 #       since this alternative seems to work
 #currentDir=$(realpath $(dirname "$0"))
 # From: https://stackoverflow.com/a/9107028/12907985
-currentDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -z "${BASH_SOURCE}" ]]; then
+    # zsh
+    currentDir="$(dirname $(realpath "$(readlink -f "$0")"))"
+else
+    # bash
+    currentDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fi
+echo "Loading cpp externals from: ${currentDir}"
 
 # LHAPDF is directly installed in ${currentDir}/install
 # Keep the fastjet install separate so we can switch more easily between alibuild fastjet and standalone fastjet
