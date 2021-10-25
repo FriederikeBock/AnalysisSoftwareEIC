@@ -19,6 +19,7 @@ struct DISKinematics {
     double Q2{-1};
 };
 
+constexpr unsigned int STARTING_INDEX = 1e6;
 
 /**
   * Find the index of the incoming proton in the HepMC truth particles.
@@ -30,13 +31,17 @@ struct DISKinematics {
   */
 unsigned int findHepMCIndexOfIncomingProton()
 {
-    unsigned int index = 1e6;
+    unsigned int index = STARTING_INDEX;
     for (unsigned int i = 0; i < _nHepmcp; ++i) {
         // Take the first proton, which should be the incoming proton.
         if (_hepmcp_PDG[i] == 2212) {
             index = i;
             break;
         }
+    }
+    // Validation
+    if (index == STARTING_INDEX) {
+        throw KinematicsErrors_t::kIncomingProtonNotFound;
     }
     return index;
 }
@@ -51,13 +56,17 @@ unsigned int findHepMCIndexOfIncomingProton()
   */
 unsigned int findHepMCIndexOfIncomingElectron()
 {
-    unsigned int index = 1e6;
+    unsigned int index = STARTING_INDEX;
     for (unsigned int i = 0; i < _nHepmcp; ++i) {
         // Take the first electron, which should be the incoming electron.
         if (_hepmcp_PDG[i] == 11) {
             index = i;
             break;
         }
+    }
+    // Validation
+    if (index == STARTING_INDEX) {
+        throw KinematicsErrors_t::kIncomingElectronNotFound;
     }
     return index;
 }
@@ -69,7 +78,7 @@ unsigned int findHepMCIndexOfIncomingElectron()
   */
 unsigned int findHepMCIndexOfStruckQuark()
 {
-    unsigned int index = 1e6;
+    unsigned int index = STARTING_INDEX;
     for (unsigned int i = 0; i < _nHepmcp; ++i) {
         // We'll take any struck quark (ie. PDG code under 9)
         if (std::abs(_hepmcp_PDG[i]) < 9) {
@@ -77,12 +86,16 @@ unsigned int findHepMCIndexOfStruckQuark()
             break;
         }
     }
+    // Validation
+    if (index == STARTING_INDEX) {
+        throw KinematicsErrors_t::kStruckQuarkNotFound;
+    }
     return index;
 }
 
 unsigned int findHepMCIndexOfOutgoingElectron()
 {
-    unsigned int index = 1e6;
+    unsigned int index = STARTING_INDEX;
     // We'll take the first final state (==1) electron. Since it follows the pythia event record,
     // it seems like this is highly likely to be the final state electron.
     for (unsigned int i = 0; i < _nHepmcp; ++i) {
@@ -91,12 +104,16 @@ unsigned int findHepMCIndexOfOutgoingElectron()
             break;
         }
     }
+    // Validation
+    if (index == STARTING_INDEX) {
+        throw KinematicsErrors_t::kPartLevelElectronNotFound;
+    }
     return index;
 }
 
 unsigned int findPartLevelIndexOfOutgoingElectron()
 {
-    unsigned int index = 1e6;
+    unsigned int index = STARTING_INDEX;
     int barcode = 1e6;
     for (unsigned int i = 0; i < _nMCPart; ++i) {
         if (_mcpart_PDG[i] != 11) {
@@ -110,7 +127,10 @@ unsigned int findPartLevelIndexOfOutgoingElectron()
             barcode = _mcpart_BCID[i];
         }
     }
-
+    // Validation
+    if (index == STARTING_INDEX) {
+        throw KinematicsErrors_t::kPartLevelElectronNotFound;
+    }
     return index;
 }
 
@@ -123,7 +143,7 @@ unsigned int findPartLevelIndexOfOutgoingElectron()
  */
 unsigned int findDetLevelIndexOfOutgoingElectron(unsigned int partLevelIndex, unsigned int primaryTrackSource)
 {
-    unsigned int index = 1e6;
+    unsigned int index = STARTING_INDEX;
     for (unsigned int i = 0; i < static_cast<unsigned int>(_nTracks); ++i) {
         if (_track_source[i] != primaryTrackSource) {
             continue;
@@ -134,6 +154,10 @@ unsigned int findDetLevelIndexOfOutgoingElectron(unsigned int partLevelIndex, un
         if (_track_trueID[i] == partLevelIndex) {
             index = i;
         }
+    }
+    // Validation
+    if (index == STARTING_INDEX) {
+        throw KinematicsErrors_t::kRecoElectronNotFound;
     }
     return index;
 }
@@ -152,6 +176,10 @@ DISKinematics CalculateKinematicsFromFourVectors(const ROOT::Math::PxPyPzEVector
 enum KinematicsErrors_t {
     kInvalid_x = 0,
     kInvalidOption,
+    kIncomingProtonNotFound,
+    kIncomingElectronNotFound,
+    kStruckQuarkNotFound,
+    kPartLevelElectronNotFound,
     kRecoElectronNotFound,
     kSuccess,
 };
@@ -350,29 +378,12 @@ DISKinematics KinematicsUsingTrueInfo(DirectKinematicsOptions_t option, unsigned
   *
   * Implemented using https://wiki.bnl.gov/eic/index.php/DIS_Kinematics
   */
-DISKinematics JBKinematics(unsigned short primaryTrackSource, double incomingElectronEnergy, double incomingHadronEnergy, double hadronMassHypothesis = 0.139)
+DISKinematics JBKinematics(unsigned short primaryTrackSource = 0, double hadronMassHypothesis = 0.139)
 {
-    // NOTE: We need electron ID here. Since we're don't yet have that available as of 16 June 2021, we use the true PID info.
-    // NOTE: 1e6 is a sentinel value.
-    unsigned int electronID = 1e6;
-    double electronPt = -1e6;
-    for (unsigned int i = 0; i < (unsigned int)_nTracks; ++i) {
-        if (_track_source[i] != primaryTrackSource) {
-            continue;
-        }
-        if (_mcpart_PDG[static_cast<int>(_track_trueID[i])] == 11) {
-            // If it's an electron, take the highest pt one.
-            // TODO: Update this when the electron PID is addressed.
-            double pt = std::sqrt(std::pow(_track_px[i], 2) + std::pow(_track_py[i], 2));
-            if (pt > electronPt) {
-                electronID = i;
-                electronPt = pt;
-            }
-        }
-    }
-    if (electronID == 1e6) {
-        throw std::runtime_error("Unable to find scattered electron!");
-    }
+    const unsigned int electronID = findDetLevelIndexOfOutgoingElectron(
+        findPartLevelIndexOfOutgoingElectron(), primaryTrackSource
+    );
+    const double electronPt = std::sqrt(std::pow(_track_px[electronID], 2) + std::pow(_track_py[electronID], 2));
 
     // Loop over the final state hadrons to determine the kinematics.
     double px_h = 0;
@@ -394,6 +405,10 @@ DISKinematics JBKinematics(unsigned short primaryTrackSource, double incomingEle
     }
 
     // TODO: Add calorimeter towers.
+
+    // Calculate kinematics
+    double incomingElectronEnergy = _hepmcp_E[findHepMCIndexOfIncomingElectron()];
+    double incomingHadronEnergy = _hepmcp_E[findHepMCIndexOfIncomingProton()];
 
     double sqrts = 4 * incomingElectronEnergy * incomingHadronEnergy;
 
