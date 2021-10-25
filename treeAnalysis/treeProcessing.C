@@ -52,10 +52,10 @@ void treeProcessing(
     Int_t verbosity             = 0,
     // Defaults to tracking from all layers.
     unsigned short primaryTrackSource = 0,
+    bool removeTracklets        = false,
     std::string jetAlgorithm    = "anti-kt",
     std::vector<double> jetRParameters = {0.3, 0.5, 0.8, 1.0},
-    double tracked_jet_max_pT   = 30,
-    bool removeTracklets        = false
+    double tracked_jet_max_pT   = 30
 ){
     // make output directory
     TString dateForOutput = ReturnDateStr();
@@ -486,17 +486,29 @@ void treeProcessing(
                     nocluster_E.push_back(_tower_FEMC_E[i]);
                 }
             }
+            // Kinematics at various levels
             // Event level
-            auto kinematics = fillEventObservables(eventObservables, primaryTrackSource);
-            auto hepmcCalculatedStored = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kHepMCStored, primaryTrackSource, verbosity);
-            auto hepmcCalculatedKinematcs = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kHepMCCalculated, primaryTrackSource, verbosity);
-            auto partLevelCalculatedKinematcs = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kPartLevel, primaryTrackSource, verbosity);
+            auto hepmcStoredKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kHepMCStored, primaryTrackSource, verbosity);
+            auto hepmcCalculatedKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kHepMCCalculated, primaryTrackSource, verbosity);
+            auto partLevelCalculatedKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kPartLevel, primaryTrackSource, verbosity);
+            DISKinematics detLevelCalculatedKinematics;
+            DISKinematics jbKinematics;
             try {
-              auto detLevelCalculatedKinematcs = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kDetLevel, primaryTrackSource, verbosity);
+              // Using detector level quantities
+              detLevelCalculatedKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kDetLevel, primaryTrackSource, verbosity);
+              // Detector level JB kinematics
+              jbKinematics = JBKinematics(primaryTrackSource);
             }
             catch (KinematicsErrors_t e) {
               std::cout << "Reco level kinematics error: " << e << ". Skipping...\n";
             }
+
+            // Event and hadron level observables
+            fillEventObservables(eventObservables, jbKinematics);
+            fillHadronObservables(jetObservables.at("true_ep"));
+
+            // Select the kinematics to use going forward
+            auto kinematics = hepmcStoredKinematics;
 
             bool skipJetFindingDueToKinematics = false;
             if (kinematics.x < 0 || kinematics.x > 1) {
@@ -555,14 +567,17 @@ void treeProcessing(
                     continue;
                   }
                   std::string fullLabel = (pdfLabel != "") ? ("_" + pdfLabel) : "";
-                  fillJetObservables(jetObservables.at("true" + fullLabel), std::get<1>(jetsTrue), jetR, kinematics);
-                  fillJetObservables(jetObservables.at("true_charged" + fullLabel), std::get<1>(jetsTrueCharged), jetR, kinematics);
-                  fillJetObservables(jetObservables.at("charged" + fullLabel), std::get<1>(jetsTrackRec), jetR, kinematics);
-                  fillJetObservables(jetObservables.at("calo" + fullLabel), std::get<1>(jetsCaloRec), jetR, kinematics);
-                  fillJetObservables(jetObservables.at("full" + fullLabel), std::get<1>(jetsFullRec), jetR, kinematics);
+                  fillJetObservables(jetObservables.at("true" + fullLabel), std::get<1>(jetsTrue), jetR, kinematics,
+                                     jetf_truth_E, jetf_truth_px, jetf_truth_py, jetf_truth_pz);
+                  fillJetObservables(jetObservables.at("true_charged" + fullLabel), std::get<1>(jetsTrueCharged), jetR, kinematics,
+                                     jetf_truthcharged_E, jetf_truthcharged_px, jetf_truthcharged_py, jetf_truthcharged_pz);
+                  fillJetObservables(jetObservables.at("charged" + fullLabel), std::get<1>(jetsTrackRec), jetR, kinematics,
+                                     jetf_track_E, jetf_track_px, jetf_track_py, jetf_track_pz);
+                  fillJetObservables(jetObservables.at("calo" + fullLabel), std::get<1>(jetsCaloRec), jetR, kinematics,
+                                     jetf_calo_E, jetf_calo_px, jetf_calo_py, jetf_calo_pz);
+                  fillJetObservables(jetObservables.at("full" + fullLabel), std::get<1>(jetsFullRec), jetR, kinematics,
+                                     jetf_full_E, jetf_full_px, jetf_full_py, jetf_full_pz);
                 }
-
-                fillHadronObservables(jetObservables.at("true_ep"));
 
                 if (jetR == jetRForJES) {
                   jetresolutionhistos(jetsTrackRec, jetsTrueCharged, 0, jetR);
