@@ -54,6 +54,10 @@ const std::map<JetType_t, std::string> jetTypes = {
     {JetType_t::full, "full"},
 };
 
+const std::map<std::string, std::string> nPDFToProtonPDF = {
+    {"EPPS16nlo_CT14nlo_Au197", "CT14nlo"}
+};
+
 struct EventObservables {
     bool initialized = false;
     TH1D Q2Measured = TH1D("q2Measured", "q2Measured", 200, 0, 200);
@@ -104,7 +108,8 @@ struct JetObservables {
     std::map<std::string, TH2D> angularity{};
     std::map<std::string, TH2D> jetHadronDPhi{};
     std::vector<TH1D> backwardHadrons{};
-    std::unique_ptr<LHAPDF::PDF> pdf{};
+    std::unique_ptr<LHAPDF::PDF> nPDF{};
+    std::unique_ptr<LHAPDF::PDF> protonPDF{};
     bool initialized{false};
 
     JetObservables(JetType_t _jetType, const std::string & _nPDFName = "", const std::string & _tag = ""):
@@ -115,7 +120,8 @@ struct JetObservables {
         angularity{},
         jetHadronDPhi{},
         backwardHadrons{},
-        pdf{},
+        nPDF{},
+        protonPDF{},
         initialized{false}
     {}
 
@@ -129,7 +135,8 @@ struct JetObservables {
             gSystem->Load("libLHAPDF");
             //this->pdf = std::make_unique<LHAPDF::PDF>(LHAPDF::mkPDF("EPPS16nlo_CT14nlo_Au197"));
             // We get the raw pointer for LHAPDF, so we want to encapsulate it in the unique_ptr
-            this->pdf.reset(LHAPDF::mkPDF(nPDFName));
+            this->nPDF.reset(LHAPDF::mkPDF(this->nPDFName));
+            this->protonPDF.reset(LHAPDF::mkPDF(nPDFToProtonPDF.at(this->nPDFName)));
         }
         std::string identifier = "";
         // Log base 10 bins for angularity
@@ -236,10 +243,15 @@ struct JetObservables {
 /**
   * Fill event level distributions
   */
-DISKinematics fillEventObservables(EventObservables & eventObservables, const DISKinematics & measuredKinematics)
+void fillEventObservables(EventObservables & eventObservables, const DISKinematics & measuredKinematics)
 {
     // NOTE: The cross section isn't available in the current test production, so set to 1 if not available.
     double cross_section = _cross_section ? _cross_section : 1;
+
+    if (measuredKinematics.x < 0 || measuredKinematics.x > 1) {
+        // Return early - the kinematics are invalid, so there's nothing to be done.
+        return;
+    }
 
     // Fill the hist.
     eventObservables.Q2Measured.Fill(measuredKinematics.Q2, cross_section);
@@ -266,11 +278,24 @@ void fillJetObservables(JetObservables & observables,
     //double weight = _cross_section ? _cross_section : 1;
     double weight = 1;
     if (eA) {
+        //std::cout << "x=" << kinematics.x << ", y=" << kinematics.y << ", Q2=" << kinematics.Q2 << "\n";
         unsigned int struckQuarkIndexHepMC = findHepMCIndexOfStruckQuark();
         int struckQuarkFlavor = _hepmcp_PDG[struckQuarkIndexHepMC];
-        //std::cout << "x=" << kinematics.x << ", y=" << kinematics.y << ", Q2=" << kinematics.Q2 << "\n";
-        if (kinematics.x > -1 && kinematics.x < 2) {
-            weight *= (observables.pdf->xfxQ(struckQuarkFlavor, kinematics.x, std::sqrt(kinematics.Q2)) / kinematics.x);
+
+        // We want to reweight by the nPDF effects, so we reweight by nPDF / protonPDF
+        // NOTE: In this case, we don't need to scale by 1/x because it will cancel in the weight ratio
+        if (kinematics.x > -1 && kinematics.x <= 1) {
+            double weightNPDF = observables.nPDF->xfxQ2(struckQuarkFlavor, kinematics.x, kinematics.Q2);
+            double weightPDF = observables.protonPDF->xfxQ2(struckQuarkFlavor, kinematics.x, kinematics.Q2);
+            weight *= (weightNPDF / weightPDF);
+            //std::cout << "struck quark flavor=" << struckQuarkFlavor
+            //          << ", weightNPDF (xf)=" << weightNPDF
+            //          << ", weightNDPF / x=" << weightNPDF / kinematics.x
+            //          << ", weightNDPF / weightPDF =" << weightNPDF / weightPDF
+            //          << ", weight=" << weight
+            //          << ", x=" << kinematics.x
+            //          << ", Q2=" << kinematics.Q2
+            //          << "\n";
         }
     }
     for (auto & j : jets) {
@@ -302,7 +327,6 @@ void fillJetObservables(JetObservables & observables,
             // Angularity
             angularity_a_0 += (constituent.pt() * std::pow(j.delta_R(constituent), 2-0));
             angularity_a_1 += (constituent.pt() * std::pow(j.delta_R(constituent), 2-1));
-
         }
         observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_0_E", eA, observables.tag)].Fill(j.e(), angularity_a_0 / j.pt(), weight);
         observables.angularity[GetIdentifier(jetR, observables.jetType, region, "angularity_a_0_p", eA, observables.tag)].Fill(j.modp(), angularity_a_0 / j.pt(), weight);
