@@ -27,9 +27,9 @@ struct RegionSpec {
 
 // Yeah, this is global. It's not great, but so it goes.
 const std::map<EtaRegion_t, RegionSpec> regions = {
-    {EtaRegion_t::forward, RegionSpec{1.5, 4.0, "forward"}},
+    {EtaRegion_t::forward, RegionSpec{1.5, 3.5, "forward"}},
     {EtaRegion_t::midRapidity, RegionSpec{-1.5, 1.5, "mid_rapidity"}},
-    {EtaRegion_t::backward, RegionSpec{-4.0, -1.5, "backward"}},
+    {EtaRegion_t::backward, RegionSpec{-3.5, -1.5, "backward"}},
 };
 
 RegionSpec findRegion(double eta) {
@@ -270,8 +270,8 @@ void fillJetObservables(JetObservables & observables, const std::vector<fastjet:
     }
     for (auto & j : jets) {
         // Acceptance
-        //if (std::abs(j.eta()) > (4 - jetR)) {
-        if (std::abs(j.eta()) > 4) {
+        // Fiducial jet cut
+        if (std::abs(j.eta()) > (3.5 - jetR)) {
             continue;
         }
 
