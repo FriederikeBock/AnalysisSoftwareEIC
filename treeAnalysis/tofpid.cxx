@@ -53,19 +53,23 @@ void tofpidhistos(){
     bHistTOFCreated = true;
   }
   
-   for(int imc=0; imc<_nMCPart; imc++){
-    TVector3 mcpartvec(_mcpart_px[imc],_mcpart_py[imc],_mcpart_pz[imc]);
-    float trueeta = _mcpart_Eta[imc];
-    float truept  = mcpartvec.Pt();
-    float truep   = mcpartvec.Mag();
-
-    if (verbosityTRKEFF) cout << "\tMCID " << imc << "\tPDG: " << _mcpart_PDG[imc] << "\tpT: " << TMath::Sqrt(TMath::Power(_mcpart_px[imc],2)+TMath::Power(_mcpart_py[imc],2)) << "\tEta " << trueeta << endl;
-    for(int ipart=0;ipart<nPart_TRKEFF;ipart++){
-      // MC
-      if(!h_particle_MC_pT[ipart]) h_particle_MC_pT[ipart] 	= new TH2F(Form("h_%s_MC_pT",str_TRKEFF_mcparticles[ipart].Data()), "", 60, 0,30,80, -4.0,4.0);
-      if(!h_particle_MC_p[ipart]) h_particle_MC_p[ipart] 	= new TH2F(Form("h_%s_MC_p",str_TRKEFF_mcparticles[ipart].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
-      if(!h_particle_MC_E[ipart]) h_particle_MC_E[ipart] 	= new TH2F(Form("h_%s_MC_E",str_TRKEFF_mcparticles[ipart].Data()), "", nBinsP, binningP, 80, -4.0,4.0);
-      // Rec
- 
+    
+  for(Int_t itrk=0; itrk<(Int_t)_nTracks; itrk++){
+    unsigned short trackSource = _track_source[itrk];
+    TVector3 recpartvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
+    TVector3 mcpartvec(_mcpart_px[(int)_track_trueID[itrk]],_mcpart_py[(int)_track_trueID[itrk]],_mcpart_pz[(int)_track_trueID[itrk]]);
+    // cout << itrk << endl;
+    float receta = recpartvec.Eta();
+    float trueeta = mcpartvec.Eta();
+    if (verbosityTRKEFF) cout << "\tTRKTRUEID " << (int)_track_trueID[itrk] << "\tPDG: " << _mcpart_PDG[(int)_track_trueID[itrk]] << "\tpT: " <<   TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)) << "\tEta " << receta << endl;
+    float pt = recpartvec.Pt();
+    float truept = mcpartvec.Pt();
+    float pmom = recpartvec.Mag();
+    float truepmom = mcpartvec.Mag();
+    TParticlePDG *part = TDatabasePDG::Instance()->GetParticle(abs(_mcpart_PDG[(int)_track_trueID[itrk]]));
+    Double_t mass = part->Mass();
+    float trueE     = TMath::Sqrt(truepmom*truepmom+mass*mass);
+    
+  }
   
 }

@@ -60,6 +60,22 @@ void energyResolutionCalorimeters(
     sqrtETerm[1]  = 3;
     linTerm[0]    = 1;
     linTerm[1]    = 3;
+  } else if (caloName.CompareTo("EEMC-wMat") == 0){
+    detLabel  = "EEMC, w/ mat. infront";
+    caloNameRead = "EEMC";
+    minEtaMax = -4;
+    maxEtaMax = -1.7;
+    isEMCal   = 1;
+    maxResoPer  = 12.5;
+    maxFitRes1oE  = 1.45;
+    minFitRes1oE  = 1/TMath::Sqrt(20.);
+    maxFitResE    = 20;
+    minFitResE    = 0.2;
+    exEtabin      = 2;
+    sqrtETerm[0]  = 2;
+    sqrtETerm[1]  = 3;
+    linTerm[0]    = 1;
+    linTerm[1]    = 3;
   } else if (caloName.CompareTo("FEMC") == 0){
     detLabel  = "FEMC (PHENIX re-use)";
     minEtaMax = 1.1;
@@ -72,8 +88,34 @@ void energyResolutionCalorimeters(
     linTerm[0]    = 1;
     linTerm[1]    = 3;
     maxFitMeanE   = 20;
+  } else if (caloName.CompareTo("FEMC-wMat") == 0){
+    detLabel  = "FEMC, w/ mat. infront";
+    caloNameRead = "FEMC";
+    minEtaMax = 1.1;
+    maxEtaMax = 4;
+    isEMCal   = 1;
+    maxResoPer  = 20.5;
+    exEtabin      = 11;
+    sqrtETerm[0]  = 7;
+    sqrtETerm[1]  = 10;
+    linTerm[0]    = 1;
+    linTerm[1]    = 3;
+    maxFitMeanE   = 20;
   } else if (caloName.CompareTo("BECAL") == 0){
     detLabel  = "BECAL (Sci-glass)";
+    minEtaMax = -1.8;
+    maxEtaMax = 1.3;
+    isEMCal   = 1;
+    maxResoPer  = 17.5;
+
+    exEtabin      = 7;
+    sqrtETerm[0]  = 7;
+    sqrtETerm[1]  = 10;
+    linTerm[0]    = 1;
+    linTerm[1]    = 3;
+  } else if (caloName.CompareTo("BECAL-wMat") == 0){
+    detLabel  = "BECAL, w/ mat. infront";
+    caloNameRead = "BECAL";
     minEtaMax = -1.8;
     maxEtaMax = 1.3;
     isEMCal   = 1;
@@ -318,12 +360,13 @@ void energyResolutionCalorimeters(
     
     TString tempName = Form("%s/h_CRH_EReso_%sE_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
     if (isComb) tempName = Form("%s/h_CRH_EResoComb_%sE_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
-//     cout << tempName << endl;
+    cout << tempName << endl;
     TString tempName3 = Form("%s/h_CRH_EReso_%sEhighest_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
     if (isComb) tempName3 = tempName;
-//     cout << tempName << endl;
-    hist2DResoE[i]    = (TH2D*)inputFile->Get(tempName.Data());
-    hist2DResoEhighest[i]    = (TH2D*)inputFile->Get(tempName3.Data());
+    cout << tempName3 << endl;
+    hist2DResoE[i]            = (TH2D*)inputFile->Get(tempName.Data());
+    hist2DResoEhighest[i]     = (TH2D*)inputFile->Get(tempName3.Data());
+    if (!hist2DResoE[i]) continue;
     if (hist2DResoE[i]->GetEntries() > 0){
       hist2DResoE[i]->Sumw2();
       hist2DResoEhighest[i]->Sumw2();

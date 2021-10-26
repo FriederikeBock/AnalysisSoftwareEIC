@@ -459,13 +459,12 @@ void ResetLayerIndexForward(){
 TString GetProjectionNameFromIndex(int projindex)
 {
   switch (projindex){
+    // timing layers
     case 0:     return "FTTL_0";
     case 1:     return "FTTL_1";
     case 2:     return "FTTL_2";
     case 3:     return "ETTL_0";
     case 4:     return "ETTL_1";
-    case 5:    return "FHCAL";
-    case 6:    return "FEMC";
     case 7:     return "CTTL_0";
     case 8:     return "CTTL_1";
     // LBL central barrel
@@ -487,21 +486,74 @@ TString GetProjectionNameFromIndex(int projindex)
     case 32:    return "BACKWARD_2"; //"LBLVTX_BACKWARD_32";
     case 33:    return "BACKWARD_3"; //"LBLVTX_BACKWARD_33";
     case 34:    return "BACKWARD_4"; //"LBLVTX_BACKWARD_34";
-            
-    case 40:    return "CENTAL_0"; //"BARREL_0";
-    case 41:    return "CENTAL_1"; //"BARREL_1";
-    case 42:    return "CENTAL_2"; //"BARREL_2";
-    case 43:    return "CENTAL_3"; //"BARREL_3";
-    case 44:    return "CENTAL_4"; //"BARREL_4";
-    case 45:    return "CENTAL_5"; //"BARREL_5";
-
-    case 50:    return "FORWARD_0";
-    case 51:    return "FORWARD_1";
-    case 52:    return "FORWARD_2";
-    case 53:    return "FORWARD_3";
-    case 54:    return "FORWARD_4";
-    case 55:    return "FORWARD_5";
   
+    // old BARREL tracker
+    case 40:    return "BARREL_0"; //"BARREL_0";
+    case 41:    return "BARREL_1"; //"BARREL_1";
+    case 42:    return "BARREL_2"; //"BARREL_2";
+    case 43:    return "BARREL_3"; //"BARREL_3";
+    case 44:    return "BARREL_4"; //"BARREL_4";
+    case 45:    return "BARREL_5"; //"BARREL_5";
+    // FST 
+    case 50:    return "FST_0";
+    case 51:    return "FST_1";
+    case 52:    return "FST_2";
+    case 53:    return "FST_3";
+    case 54:    return "FST_4";
+    case 55:    return "FST_5";
+    // EFST
+    case 100:    return "EFST_0";
+    case 101:    return "EFST_1";
+    case 102:    return "EFST_2";
+    case 103:    return "EFST_3";
+    case 104:    return "EFST_4";
+    case 105:    return "EFST_5";
+    // new BARREL tracker
+    case 150:    return "BARR_0"; 
+    case 151:    return "BARR_1"; 
+    case 152:    return "BARR_2"; 
+    case 153:    return "BARR_3"; 
+    case 154:    return "BARR_4"; 
+    case 160:    return "BARR"; 
+    // SVTX
+    case 155:    return "SVTX_0"; 
+    case 156:    return "SVTX_1"; 
+    case 157:    return "SVTX_2"; 
+    case 158:    return "SVTX_3"; 
+    case 159:    return "SVTX_4"; 
+    case 161:    return "SVTX"; 
+    // mu RWells
+    case 110:    return "RWELL_1"; 
+    case 111:    return "RWELL_1"; 
+    case 112:    return "RWELL_1"; 
+    
+    // forward GEMS
+    case 120:    return "FGEM_0"; 
+    case 121:    return "FGEM_1"; 
+    // backward GEMS
+    case 130:    return "EGEM_0"; 
+    case 131:    return "EGEM_1"; 
+    
+    // calorimeters
+    case 5:    return "FHCAL";
+    case 6:    return "FEMC";
+    case 60:   return "EHCAL";
+    case 61:   return "EEMC";
+    case 62:   return "HCALIN";
+    case 63:   return "HCALOUT";
+    case 64:   return "CEMC";
+    case 65:   return "EEMC_glass_0";
+    case 66:   return "BECAL";
+    case 67:   return "LFHCAL";
+    case 140:  return "LFHCAL_0";
+    case 141:  return "LFHCAL_1";
+    case 142:  return "LFHCAL_2";
+    case 143:  return "LFHCAL_3";
+    case 144:  return "LFHCAL_4";
+    case 145:  return "LFHCAL_5";
+    case 146:  return "LFHCAL_6";
+    case 147:  return "LFHCAL_7";
+    
     default:   return "NOTHING";
   }
 }
@@ -550,10 +602,16 @@ Bool_t HasFirstTwoLayers(Int_t layerID){
     }
   } else {
     switch (layerID){  
-      case 50: 
-      case 51: 
-      case 40:
-      case 41:
+      case 50:  // FST_0
+      case 51:  // FST_1
+      case 100: // EFST_0
+      case 101: // EFST_1
+      case 154: // SVTX_0
+      case 155: // SVTX_1
+      case 156: // SVTX_2
+      case 161: // SVTX
+      case 40:  // BARREL_0
+      case 41:  // BARREL_1
         return kTRUE;
       default:
         return kFALSE;
@@ -587,18 +645,47 @@ Bool_t IsTrackerLayer(Int_t layerID){
     }
   } else {
     switch (layerID){  
+      // FST
       case 50: 
       case 51: 
       case 52: 
       case 53: 
       case 54: 
       case 55:   
-      case 40:
-      case 41:
-      case 42:
-      case 43:
-      case 44:
-      case 45:
+      // BARR by layer
+      case 150:
+      case 151:
+      case 152:
+      case 153:
+      case 154:
+      // SVTX by layer
+      case 155:
+      case 156:
+      case 157:
+      case 158:
+      case 159:
+      // BARR
+      case 160:
+      // SVTX
+      case 161:
+      // EFST
+      case 100:
+      case 101:
+      case 102:
+      case 103:
+      case 104:
+      case 105:
+      case 106:
+      // RWELL
+      case 110:
+      case 111:
+      case 112:
+      // FGEM
+      case 120:
+      case 121:
+      // EGEM
+      case 130:
+      case 131:
         return kTRUE;
       default:
         return kFALSE;
@@ -616,17 +703,6 @@ Bool_t HasTimingLayer(Int_t layerID){
     case 3:
     case 4:
     case 7:
-    case 8:
-      return kTRUE;
-    default:
-      return kFALSE;
-  }
-  return kFALSE;
-}
-
-Bool_t HasTimingLayerAfterECal(Int_t layerID){
-  switch (layerID){
-    case 2:
     case 8:
       return kTRUE;
     default:

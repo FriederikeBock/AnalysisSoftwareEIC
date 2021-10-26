@@ -72,6 +72,19 @@ if [ $1 == "Fredi" ]; then
 #     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/LYSO-1TTL-nomRes-pythia8Q2-TRonly/output_TRKRS.root","pdf","1TTLnomResMinQ2_10",false,5,0)'
 #     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/LYSO-1TTL-nomRes-pythia8Q2-TRonly/output_TRKRS.root","pdf","1TTLnomResMinQ2_10",false,0,1)'
 
+#     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/LYSO-1TTL-muRwellRes-pythia8Q2-TRonly/output_TRKRS.root","pdf","1TTLmuRWellResMinQ2_10",true,0,0)'
+#     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/LYSO-1TTL-muRwellRes-pythia8Q2-TRonly/output_TRKRS.root","pdf","1TTLmuRWellResMinQ2_10",true,3,0)'
+#     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/LYSO-1TTL-muRwellRes-pythia8Q2-TRonly/output_TRKRS.root","pdf","1TTLmuRWellResMinQ2_10",true,4,0)'
+#     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/LYSO-1TTL-muRwellRes-pythia8Q2-TRonly/output_TRKRS.root","pdf","1TTLmuRWellResMinQ2_10",true,5,0)'
+#     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/LYSO-1TTL-muRwellRes-pythia8Q2-TRonly/output_TRKRS.root","pdf","1TTLmuRWellResMinQ2_10",true,0,1)'
+#     
+#     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/LYSO-1TTL-nomRes-pythia8Q2-TRonly/output_TRKRS.root","pdf","1TTLnomResMinQ2_10",true,0,0)'
+#     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/LYSO-1TTL-nomRes-pythia8Q2-TRonly/output_TRKRS.root","pdf","1TTLnomResMinQ2_10",true,3,0)'
+#     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/LYSO-1TTL-nomRes-pythia8Q2-TRonly/output_TRKRS.root","pdf","1TTLnomResMinQ2_10",true,4,0)'
+#     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/LYSO-1TTL-nomRes-pythia8Q2-TRonly/output_TRKRS.root","pdf","1TTLnomResMinQ2_10",true,5,0)'
+#     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/LYSO-1TTL-nomRes-pythia8Q2-TRonly/output_TRKRS.root","pdf","1TTLnomResMinQ2_10",true,0,1)'
+
+
 #     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/2TTL-nomRes-pythia8Q100-TRonly/output_TRKRS.root","pdf","2TTLnomResMinQ2_10",false,0,0)'
 #     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/2TTL-nomRes-pythia8Q100-TRonly/output_TRKRS.root","pdf","2TTLnomResMinQ2_10",false,3,0)'
 #     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/2TTL-nomRes-pythia8Q100-TRonly/output_TRKRS.root","pdf","2TTLnomResMinQ2_10",false,4,0)'
@@ -83,7 +96,13 @@ if [ $1 == "Fredi" ]; then
     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/2TTL-nomRes-pythia8Q1-100-TRonly/output_TRKRS.root","pdf","2TTLnomResMinQ2_1-100",false,4,0)'
     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/2TTL-nomRes-pythia8Q1-100-TRonly/output_TRKRS.root","pdf","2TTLnomResMinQ2_1-100",false,5,0)'
     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/2TTL-nomRes-pythia8Q1-100-TRonly/output_TRKRS.root","pdf","2TTLnomResMinQ2_1-100",false,0,1)'
-   
+
+#     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/2TTL-nomRes-pythia8Q1-100-TRonly/output_TRKRS.root","pdf","2TTLnomResMinQ2_1-100",true,0,0)'
+#     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/2TTL-nomRes-pythia8Q1-100-TRonly/output_TRKRS.root","pdf","2TTLnomResMinQ2_1-100",true,3,0)'
+#     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/2TTL-nomRes-pythia8Q1-100-TRonly/output_TRKRS.root","pdf","2TTLnomResMinQ2_1-100",true,4,0)'
+#     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/2TTL-nomRes-pythia8Q1-100-TRonly/output_TRKRS.root","pdf","2TTLnomResMinQ2_1-100",true,5,0)'
+#     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/2TTL-nomRes-pythia8Q1-100-TRonly/output_TRKRS.root","pdf","2TTLnomResMinQ2_1-100",true,0,1)'
+    
   fi
   if  [ $2 == "effi" ]; then
     basepath=/home/fbock/EIC/Analysis/2ndSimulationCampaign/treeAnalysis/treeProcessing
@@ -93,9 +112,9 @@ if [ $1 == "Fredi" ]; then
 #     root -x -l -q -b 'trackingeffi.C("'$basepath'/LYSO-1TTL-nomRes-pythia8Q2-TRonly/output_TRKEFF.root","pdf","1TTLnomResMinQ2_10",0)'
 #     root -x -l -q -b 'trackingeffi.C("'$basepath'/LYSO-1TTL-nomRes-pythia8Q2-TRonly/output_TRKEFF.root","pdf","1TTLnomResMinQ2_10",1)'
 #     root -x -l -q -b 'trackingeffi.C("'$basepath'/LYSO-1TTL-nomRes-pythia8Q2-TRonly/output_TRKEFF.root","pdf","1TTLnomResMinQ2_10",2)'
-#     root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_10",0)'
-#     root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_10",1)'
-#     root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_10",2)'
+    root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_10",0)'
+    root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_10",1)'
+    root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_10",2)'
     root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q1-100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_1-100",0)'
     root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q1-100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_1-100",1)'
     root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q1-100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_1-100",2)'
@@ -105,7 +124,14 @@ if [ $1 == "Fredi" ]; then
 #     root -b -x -q -l 'compare_trackingreso_Pythia.C("comparisonTTLLayer.txt","TTLimprovement","pdf",kFALSE)'
 #     root -b -x -q -l 'compare_trackingreso_Pythia.C("comparison2TTLLayer.txt","TTLimprovement2TTL","pdf",kFALSE)'
 #     root -b -x -q -l 'compare_trackingreso_Pythia.C("comparisonNTTLLayer.txt","TTLNlayers","pdf",kFALSE)'
-    root -b -x -q -l 'compare_trackingreso_Pythia.C("comparisonNTTLLayerslim.txt","TTLNlayers2","pdf",kFALSE)'
+#     root -b -x -q -l 'compare_trackingreso_Pythia.C("comparisonNTTLLayerslim.txt","TTLNlayers2","pdf",kFALSE)'
+
+    #fit
+    root -b -x -q -l 'compare_trackingreso_Pythia.C("comparison2TTLLayer.txt","TTLimprovement2TTL","pdf",kTRUE)'
+    root -b -x -q -l 'compare_trackingreso_Pythia.C("comparisonNTTLLayer.txt","TTLNlayers","pdf",kTRUE)'
+    root -b -x -q -l 'compare_trackingreso_Pythia.C("comparisonNTTLLayerslim.txt","TTLNlayers2","pdf",kTRUE)'
+
+    
 #     root -b -x -q -l 'compare_trackingeffi.C("comparisonTTLeffNlayer.txt","TTLimprovementNlayers","pdf")'
 #     root -b -x -q -l 'compare_trackingeffi.C("comparisonTTLeff.txt","TTLimprovement","pdf")'
 #     root -b -x -q -l 'compare_trackingeffi.C("comparison2TTLeff.txt","TTLimprovement2TTL","pdf")'

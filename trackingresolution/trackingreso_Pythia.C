@@ -77,9 +77,10 @@ void trackingreso_Pythia(
   }
 
   TString outputDir                 = Form("plots/%s/%s_%d",dateForOutput.Data(),addLabel.Data(),primaryTrackSource);
-  TString outputDirPTRes            = Form("plots/%s/%s_%d/PTRes",dateForOutput.Data(),addLabel.Data(),primaryTrackSource);
-  TString outputDirEtaRes           = Form("plots/%s/%s_%d/EtaRes",dateForOutput.Data(),addLabel.Data(),primaryTrackSource);
-  TString outputDirPhiRes           = Form("plots/%s/%s_%d/PhiRes",dateForOutput.Data(),addLabel.Data(),primaryTrackSource);
+  if (properFit)outputDir = outputDir+"-Fit";
+  TString outputDirPTRes            = Form("%s/PTRes",outputDir.Data());
+  TString outputDirEtaRes           = Form("%s/EtaRes",outputDir.Data());
+  TString outputDirPhiRes           = Form("%s/PhiRes",outputDir.Data());
   gSystem->Exec("mkdir -p "+outputDir);
   gSystem->Exec("mkdir -p "+outputDirPhiRes);
   gSystem->Exec("mkdir -p "+outputDirPTRes);

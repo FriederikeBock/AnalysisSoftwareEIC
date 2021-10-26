@@ -84,8 +84,6 @@ void prepareMCMatchInfo(){
       _track_hasTTL[itrk]     = (_track_hasTTL[itrk] || HasTimingLayer(_track_ProjLayer[iproj]));
       if (HasTimingLayer(_track_ProjLayer[iproj])) _track_nTTL[itrk]++;
       if (verbosityTRKEFF > 2) cout << "timing layer count: " << _track_nTTL[itrk] << endl;
-
-      _track_hasATTL[itrk]   = (_track_hasATTL[itrk] || HasTimingLayerAfterECal(_track_ProjLayer[iproj]));
 //       if (IsTrackerLayer(_track_ProjLayer[iproj])) nTrL++;
       nCurrProj = iproj;
     }
@@ -308,7 +306,6 @@ void trackingresolution(){
     float trueE     = TMath::Sqrt(truepmom*truepmom+mass*mass);
 
     Bool_t hasTL      = _track_hasTTL[itrk];
-    Bool_t hasTLAE    = _track_hasATTL[itrk];
     Bool_t hasFTrL    = _track_hasIL[itrk];
     Bool_t hasTrL     = _track_hasOL[itrk];
     Int_t nTrL        = 0;
@@ -322,7 +319,7 @@ void trackingresolution(){
       nCurrProj = iproj;
     }
     nTrT = nTrL + nTL;
-    if (verbosityTRKEFF > 2) cout << "\t summary: TL " << hasTL << "\t outer TL " << hasTLAE << "\t TL hits "<< nTL << "\t tr " << hasTrL << "\t tr silicon " << hasFTrL << "\t tr hits " << nTrL << "\t tot: " << nTrT << endl;
+    if (verbosityTRKEFF > 2) cout << "\t summary: TL " << hasTL  << "\t TL hits "<< nTL << "\t tr " << hasTrL << "\t tr silicon " << hasFTrL << "\t tr hits " << nTrL << "\t tot: " << nTrT << endl;
 
 
     // determine eta bin
@@ -393,34 +390,34 @@ void trackingresolution(){
         h_tracksRec_Eta_p[trackSource][parIdx][4]->Fill(pmom, receta);
       }
     }
-    // timing layer hit before ECal but not after
-    if (hasTL && !hasTLAE){
-      h_tracksTrue_Eta_pT[trackSource][parIdx][5]->Fill(truept, trueeta);
-      h_tracksRec_Eta_pT[trackSource][parIdx][5]->Fill(pt, receta);
-      h_tracksTrue_Eta_p[trackSource][parIdx][5]->Fill(truepmom, trueeta);
-      h_tracksRec_Eta_p[trackSource][parIdx][5]->Fill(pmom, receta);
-      // timing layer hit before ECal but not after & inner most tracking layer fw
-      if (hasFTrL){
-        h_tracksTrue_Eta_pT[trackSource][parIdx][6]->Fill(truept, trueeta);
-        h_tracksRec_Eta_pT[trackSource][parIdx][6]->Fill(pt, receta);
-        h_tracksTrue_Eta_p[trackSource][parIdx][6]->Fill(truepmom, trueeta);
-        h_tracksRec_Eta_p[trackSource][parIdx][6]->Fill(pmom, receta);
-      }
-    }
-    // timing layer hit after ECal
-    if (hasTLAE){
-      h_tracksTrue_Eta_pT[trackSource][parIdx][7]->Fill(truept, trueeta);
-      h_tracksRec_Eta_pT[trackSource][parIdx][7]->Fill(pt, receta);
-      h_tracksTrue_Eta_p[trackSource][parIdx][7]->Fill(truepmom, trueeta);
-      h_tracksRec_Eta_p[trackSource][parIdx][7]->Fill(pmom, receta);
-      // timing layer hit after ECal & inner most tracking layer fw
-      if (hasFTrL){
-        h_tracksTrue_Eta_pT[trackSource][parIdx][8]->Fill(truept, trueeta);
-        h_tracksRec_Eta_pT[trackSource][parIdx][8]->Fill(pt, receta);
-        h_tracksTrue_Eta_p[trackSource][parIdx][8]->Fill(truepmom, trueeta);
-        h_tracksRec_Eta_p[trackSource][parIdx][8]->Fill(pmom, receta);
-      }
-    }
+//     // timing layer hit before ECal but not after
+//     if (hasTL && !hasTLAE){
+//       h_tracksTrue_Eta_pT[trackSource][parIdx][5]->Fill(truept, trueeta);
+//       h_tracksRec_Eta_pT[trackSource][parIdx][5]->Fill(pt, receta);
+//       h_tracksTrue_Eta_p[trackSource][parIdx][5]->Fill(truepmom, trueeta);
+//       h_tracksRec_Eta_p[trackSource][parIdx][5]->Fill(pmom, receta);
+//       // timing layer hit before ECal but not after & inner most tracking layer fw
+//       if (hasFTrL){
+//         h_tracksTrue_Eta_pT[trackSource][parIdx][6]->Fill(truept, trueeta);
+//         h_tracksRec_Eta_pT[trackSource][parIdx][6]->Fill(pt, receta);
+//         h_tracksTrue_Eta_p[trackSource][parIdx][6]->Fill(truepmom, trueeta);
+//         h_tracksRec_Eta_p[trackSource][parIdx][6]->Fill(pmom, receta);
+//       }
+//     }
+//     // timing layer hit after ECal
+//     if (hasTLAE){
+//       h_tracksTrue_Eta_pT[trackSource][parIdx][7]->Fill(truept, trueeta);
+//       h_tracksRec_Eta_pT[trackSource][parIdx][7]->Fill(pt, receta);
+//       h_tracksTrue_Eta_p[trackSource][parIdx][7]->Fill(truepmom, trueeta);
+//       h_tracksRec_Eta_p[trackSource][parIdx][7]->Fill(pmom, receta);
+//       // timing layer hit after ECal & inner most tracking layer fw
+//       if (hasFTrL){
+//         h_tracksTrue_Eta_pT[trackSource][parIdx][8]->Fill(truept, trueeta);
+//         h_tracksRec_Eta_pT[trackSource][parIdx][8]->Fill(pt, receta);
+//         h_tracksTrue_Eta_p[trackSource][parIdx][8]->Fill(truepmom, trueeta);
+//         h_tracksRec_Eta_p[trackSource][parIdx][8]->Fill(pmom, receta);
+//       }
+//     }
 
     if (nTL > 0){
       h_tracksTrue_Eta_pT[trackSource][parIdx][9]->Fill(truept, trueeta);
@@ -709,7 +706,6 @@ void clearMCRecMatchVectors(){
 
   for(Int_t itrk=0; itrk<_nTracks; itrk++){
     _track_hasTTL[itrk]  = 0;
-    _track_hasATTL[itrk] = 0;
     _track_nTTL[itrk]  = 0;
     _track_hasIL[itrk]   = 0;
     _track_hasOL[itrk]   = 0;

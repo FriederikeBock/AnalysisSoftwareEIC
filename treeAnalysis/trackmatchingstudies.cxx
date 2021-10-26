@@ -182,7 +182,7 @@ bool trackmatchingstudies(){
 
       if(!loadClusterizerInput( ialgo, icalo)) continue;
 
-      int projectionlayer = ReturnProjectionIndexForCalorimeter(icalo);
+      int projectionlayer = ReturnProjectionIndexForCalorimeter(icalo, true);
       float zHC = isFwd ? ReturnFwdCalorimeterPosition(icalo) : 1;
       float matchingwdw = ReturnTrackMatchingWindowForCalo(icalo);
 
@@ -280,9 +280,9 @@ bool trackmatchingstudies(){
           if(!isFwd && projphi==0 && projeta==0) continue;
           // this condition is called only once to fill 2D histograms with all projections
           if(!b_TMstudies_2D_projection_filled){
-            if(ReturnCalorimeterFromProjectionIndex(_track_ProjLayer[iproj])!=-1){
-              h_TMstudies_2D_projection[ReturnCalorimeterFromProjectionIndex(_track_ProjLayer[iproj])]->Fill(isFwd ? _track_Proj_x[iproj] : projeta,isFwd ? _track_Proj_y[iproj] : projphi);
-            }
+//             if(ReturnCalorimeterFromProjectionIndex(_track_ProjLayer[iproj])!=-1){
+              h_TMstudies_2D_projection[icalo]->Fill(isFwd ? _track_Proj_x[iproj] : projeta,isFwd ? _track_Proj_y[iproj] : projphi);
+//             }
           }
           // if a cluster is found at x,y=0 (inside the beampipe), then something went wrong
           if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_X==0 && (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Y==0) continue;

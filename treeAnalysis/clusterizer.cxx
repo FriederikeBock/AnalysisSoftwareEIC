@@ -48,7 +48,7 @@ vector<int> isClusterMatched(  clustersStrct tempcluster,
   bool isFwd = IsForwardCalorimeter(caloEnum);
 
   if(useProjection){
-    int projectionlayer = ReturnProjectionIndexForCalorimeter(caloEnum);
+    int projectionlayer = ReturnProjectionIndexForCalorimeter(caloEnum, true);    // use the projections to the last TTL layers
     if(projectionlayer==-1) return matching_trackIDs;
     for(Int_t iproj=0; iproj<_nProjections; iproj++){
       // check for correct projection layer
@@ -703,10 +703,6 @@ void runclusterizer(
       if(verbosityCLS>1) cout << clusterizerEnum << "\t" << nclusters << "\tcluster with E = " << tempstructC.cluster_E << "\tEta: " << tempstructC.cluster_Eta<< "\tPhi: " << tempstructC.cluster_Phi
                               << "\tX: " << tempstructC.cluster_X<< "\tY: " << tempstructC.cluster_Y<< "\tZ: " << tempstructC.cluster_Z<< "\tntowers: " << tempstructC.cluster_NTowers 
                               << "\ttrueID: " << tempstructC.cluster_trueID << endl;
-      // remove clusterized towers
-      if(!(clusterizerEnum==kV3) && !(clusterizerEnum==kMA) && !(clusterizerEnum==kV1)){
-        input_towers.erase(input_towers.begin());
-      }
 
       // apply calibration if desired
       if(_doClusterECalibration){

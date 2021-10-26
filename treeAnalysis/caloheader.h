@@ -309,23 +309,43 @@ int ReturnMaxTowerCalo(int caloID){
 
 
 
-int ReturnProjectionIndexForCalorimeter(int caloID){
-  switch (caloID){
-    case kDRCALO: return 1;
-    case kFHCAL: return 5;
-    case kFEMC: return 6;
-    case kEHCAL: return 60;
-    case kEEMC: return 61;
-    case kHCALIN: return 62;
-    case kHCALOUT: return 63;
-    case kCEMC: return 64;
-    case kEEMCG: return 65;
-    case kLFHCAL: return 67;
-    case kBECAL: return 66;
-    case kFOCAL: return 85;
-    default:
-      cout << "ReturnProjectionIndexForCalorimeter: caloID " << caloID << " not defined, returning -1" << endl;
-      return -1;
+int ReturnProjectionIndexForCalorimeter(int caloID,  bool alternate){
+  if (!alternate){
+    switch (caloID){
+      case kDRCALO: return 1;
+      case kFHCAL: return 5;
+      case kFEMC: return 6;
+      case kEHCAL: return 60;
+      case kEEMC: return 61;
+      case kHCALIN: return 62;
+      case kHCALOUT: return 63;
+      case kCEMC: return 64;
+      case kEEMCG: return 65;
+      case kLFHCAL: return 67;
+      case kBECAL: return 66;
+      case kFOCAL: return 85;
+      default:
+        cout << "ReturnProjectionIndexForCalorimeter: caloID " << caloID << " not defined, returning -1" << endl;
+        return -1;
+    }
+  } else {
+    switch (caloID){
+      case kDRCALO: return 1;
+      case kFHCAL: return 1;
+      case kFEMC: return 1;
+      case kEHCAL: return 4;
+      case kEEMC: return 4;
+      case kHCALIN: return 8;
+      case kHCALOUT: return 8;
+      case kCEMC: return 8;
+      case kEEMCG: return 4;
+      case kLFHCAL: return 1;
+      case kBECAL: return 8;
+      default:
+        cout << "ReturnProjectionIndexForCalorimeter: caloID " << caloID << " not defined, returning -1" << endl;
+        return -1;
+    }
+    
   }
   return -1;
 }
