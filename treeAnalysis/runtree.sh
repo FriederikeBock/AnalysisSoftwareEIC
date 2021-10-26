@@ -102,14 +102,18 @@ fi
 
 if [ $1 = "centralsim_singleelectron" ]; then
 maxevt=10000
-    input="/Users/ins/Downloads/singleElec_merged/DST_General_particleGun_singleElectron_merged_eval.root"
-    geometry="/Users/ins/Downloads/singleElec_merged/geometry2ndCampaign.root"
+    input="/media/nschmidt/local/EIC_running/singleElectron/eval_00000/DST_General_particleGun_singleElectron_merged_eval.root"
+    geometry="/media/nschmidt/local/EIC_running/singleElectron/eval_00000/geometry2ndCampaign.root"
+    #input="/Users/ins/Downloads/singleElec_merged/DST_General_particleGun_singleElectron_merged_eval.root"
+    #geometry="/Users/ins/Downloads/singleElec_merged/geometry2ndCampaign.root"
     root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CENTRALSIM_SINGLEELECTRON",'$maxevt',true,false  ,true,false,0)'
 fi
 if [ $1 = "centralsim_singleelectron_compiled" ]; then
 maxevt=10000
-    input="/Users/ins/Downloads/singleElec_merged/DST_General_particleGun_singleElectron_merged_eval.root"
-    geometry="/Users/ins/Downloads/singleElec_merged/geometry2ndCampaign.root"
+    input="/media/nschmidt/local/EIC_running/singleElectron/eval_00000/DST_General_particleGun_singleElectron_merged_eval.root"
+    geometry="/media/nschmidt/local/EIC_running/singleElectron/eval_00000/geometry2ndCampaign.root"
+    #input="/Users/ins/Downloads/singleElec_merged/DST_General_particleGun_singleElectron_merged_eval.root"
+    #geometry="/Users/ins/Downloads/singleElec_merged/geometry2ndCampaign.root"
     #UBUNTU:
     #g++ treeProcessing.C -I$(root-config --incdir) `/media/nschmidt/local/alice/sw/linuxmint19_x86-64/fastjet/v3.2.1_1.024-alice3-1/bin/fastjet-config --cxxflags --libs --plugins` -I/media/nschmidt/local/alice/sw/linuxmint19_x86-64/fastjet/v3.2.1_1.024-alice3-1/include $(root-config --libs --evelibs --glibs) -lMinuit -lCGAL -lgmp -g -o "treeProcessing1"
     #OSX

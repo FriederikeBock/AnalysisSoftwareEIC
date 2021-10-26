@@ -113,9 +113,8 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
 
 
 const int _maxNtowers1D = 200;
-const int _maxNtowersL = 20;
+const int _maxNtowersL = 10;
 TVector3 caloPositionArray[maxcalo][_maxNtowers1D/*iEta*/][_maxNtowers1D/*iPhi*/][_maxNtowersL/*iL*/];
-
 void SetGeometryIndices(){
   Long64_t nEntriesTree                 = tt_geometry->GetEntries();
   for (int ireset=0; ireset<maxcalo;ireset++) {
@@ -129,6 +128,7 @@ void SetGeometryIndices(){
       caloPositionArray[_calogeom_ID][_calogeom_towers_iEta[itow]][_calogeom_towers_iPhi[itow]][_calogeom_towers_iL[itow]] = TVector3(_calogeom_towers_x[itow],_calogeom_towers_y[itow],_calogeom_towers_z[itow]);
     }
   }
+  
 }
 
 bool IsHCALCalorimeter(int caloID){
@@ -255,41 +255,9 @@ float* EtaPhiFromIndices(int ieta,int iphi,float energy = 0, int caloSelect = 0)
 
 // ANCHOR function to return a TVector3 for the tower position based on iEta and iPhi indices
 TVector3 TowerPositionVectorFromIndicesGeometry(int i_Eta,int i_Phi, int i_L, int caloSelect = 0){
-  // float xpos = -10000;
-  // float ypos = -10000;
-  // float zpos = -10000;
-
-  // if(calogeomindex[caloSelect]==-1) std::cout << "calorimeter not found in geometry!" << std::endl;
-  // tt_geometry->GetEntry(calogeomindex[caloSelect]);
-  // if (caloSelect == kLFHCAL){
-  //   for (Long64_t itow=0; itow<_calogeom_towers_N;itow++) {
-  //     if(_calogeom_towers_iEta[itow]==i_Eta){
-  //       if(_calogeom_towers_iPhi[itow]==i_Phi){
-  //         if(_calogeom_towers_iL[itow]==i_L){
-  //           xpos = _calogeom_towers_x[itow];
-  //           ypos = _calogeom_towers_y[itow];
-  //           zpos = _calogeom_towers_z[itow];
-  //         }
-  //       }
-  //     }
-  //   }
-  // } else {
-  //   for (Long64_t itow=0; itow<_calogeom_towers_N;itow++) {
-  //     if(_calogeom_towers_iEta[itow]==i_Eta){
-  //       if(_calogeom_towers_iPhi[itow]==i_Phi){
-  //         xpos = _calogeom_towers_x[itow];
-  //         ypos = _calogeom_towers_y[itow];
-  //         zpos = _calogeom_towers_z[itow];
-  //       }
-  //     }
-  //   }
-  // }
-
-  TVector3 twrPositionVec = caloPositionArray[caloSelect][i_Eta][i_Phi][i_L];
-
-//   if(xpos==-10000 || ypos==-10000 || zpos==-10000){
-//     std::cout << "something is terribly wrong in your geometry: x="<<xpos<<"\ty="<<ypos<<"\tz="<<zpos<<std::endl;
-//   }
+  TVector3 twrPositionVec = caloPositionArray[caloSelect][i_Eta][i_Phi][caloSelect == kLFHCAL ? i_L : -1];
+  // cout << caloSelect << "\t" << i_Eta<< "\t" << i_Phi<< "\t" << i_L << endl;
+  // cout << "\tvec: " << twrPositionVec.x() << "\t" << twrPositionVec.y()<< "\t" << twrPositionVec.z() << endl;
   if(IsForwardCalorimeter(caloSelect) && twrPositionVec.z()!=-10000){
     if(ReturnFwdCalorimeterPosition(caloSelect)==1){
       SetFwdCalorimeterPosition(caloSelect, twrPositionVec.z());
@@ -297,49 +265,6 @@ TVector3 TowerPositionVectorFromIndicesGeometry(int i_Eta,int i_Phi, int i_L, in
   }
   return twrPositionVec;
 }
-
-// // ANCHOR function to return a TVector3 for the tower position based on iEta and iPhi indices
-// TVector3 TowerPositionVectorFromIndicesGeometry(int i_Eta,int i_Phi, int i_L, int caloSelect = 0){
-//   float xpos = -10000;
-//   float ypos = -10000;
-//   float zpos = -10000;
-
-//   if(calogeomindex[caloSelect]==-1) std::cout << "calorimeter not found in geometry!" << std::endl;
-//   tt_geometry->GetEntry(calogeomindex[caloSelect]);
-//   if (caloSelect == kLFHCAL){
-//     for (Long64_t itow=0; itow<_calogeom_towers_N;itow++) {
-//       if(_calogeom_towers_iEta[itow]==i_Eta){
-//         if(_calogeom_towers_iPhi[itow]==i_Phi){
-//           if(_calogeom_towers_iL[itow]==i_L){
-//             xpos = _calogeom_towers_x[itow];
-//             ypos = _calogeom_towers_y[itow];
-//             zpos = _calogeom_towers_z[itow];
-//           }
-//         }
-//       }
-//     }
-//   } else {
-//     for (Long64_t itow=0; itow<_calogeom_towers_N;itow++) {
-//       if(_calogeom_towers_iEta[itow]==i_Eta){
-//         if(_calogeom_towers_iPhi[itow]==i_Phi){
-//           xpos = _calogeom_towers_x[itow];
-//           ypos = _calogeom_towers_y[itow];
-//           zpos = _calogeom_towers_z[itow];
-//         }
-//       }
-//     }
-//   }
-// //   if(xpos==-10000 || ypos==-10000 || zpos==-10000){
-// //     std::cout << "something is terribly wrong in your geometry: x="<<xpos<<"\ty="<<ypos<<"\tz="<<zpos<<std::endl;
-// //   }
-//   if(IsForwardCalorimeter(caloSelect) && zpos!=-10000){
-//     if(ReturnFwdCalorimeterPosition(caloSelect)==1){
-//       SetFwdCalorimeterPosition(caloSelect, zpos);
-//     }
-//   }
-//   TVector3 twrPositionVec(xpos,ypos,zpos);
-//   return twrPositionVec;
-// }
 
 int ReturnMaxTowerCalo(int caloID){
   switch (caloID){

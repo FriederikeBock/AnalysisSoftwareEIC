@@ -697,7 +697,7 @@ void trackingcomparisonhistosSave() {
 
 void clearMCRecMatchVectors(){
   if (verbosityTRKEFF > 2) std::cout << "clearing MC vectors" << std::endl;
-  for(int imc=0; imc<_maxNMCPart; imc++){
+  for(int imc=0; imc<_nMCPart; imc++){
     if (_mcpart_RecTrackIDs[imc].size() > 0){
       _mcpart_RecTrackIDs[imc].clear();
       _mcpart_RecTrackIDs[imc].resize(0);
