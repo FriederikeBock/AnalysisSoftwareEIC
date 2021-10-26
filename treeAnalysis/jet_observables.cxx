@@ -279,7 +279,14 @@ void fillJetObservables(JetObservables & observables,
     double weight = 1;
     if (eA) {
         //std::cout << "x=" << kinematics.x << ", y=" << kinematics.y << ", Q2=" << kinematics.Q2 << "\n";
-        unsigned int struckQuarkIndexHepMC = findHepMCIndexOfStruckQuark();
+        unsigned int struckQuarkIndexHepMC = -100;
+        try {
+            struckQuarkIndexHepMC = findHepMCIndexOfStruckQuark();
+        }
+        catch (KinematicsErrors_t & e) {
+            std::cout << "Unable to find struck quark. Returning...\n";
+            return;
+        }
         int struckQuarkFlavor = _hepmcp_PDG[struckQuarkIndexHepMC];
 
         // We want to reweight by the nPDF effects, so we reweight by nPDF / protonPDF
@@ -287,7 +294,27 @@ void fillJetObservables(JetObservables & observables,
         if (kinematics.x > -1 && kinematics.x <= 1) {
             double weightNPDF = observables.nPDF->xfxQ2(struckQuarkFlavor, kinematics.x, kinematics.Q2);
             double weightPDF = observables.protonPDF->xfxQ2(struckQuarkFlavor, kinematics.x, kinematics.Q2);
-            weight *= (weightNPDF / weightPDF);
+            double ratio = weightNPDF / weightPDF;
+            if (std::isfinite(ratio)) {
+                weight *= (weightNPDF / weightPDF);
+            }
+            else {
+                std::cout << "WARNING: Non finite value for weight, not modifying: weightNPDF=" << weightNPDF
+                          << ", weightPDF=" << weightPDF
+                          << ", ratio=" << ratio
+                          << "\n";
+                std::cout << "struck quark flavor=" << struckQuarkFlavor
+                          << ", weightNPDF (xf)=" << weightNPDF
+                          << ", weightNDPF / x=" << weightNPDF / kinematics.x
+                          << ", weightNDPF / weightPDF =" << weightNPDF / weightPDF
+                          << ", weight=" << weight
+                          << ", x=" << kinematics.x
+                          << ", Q2=" << kinematics.Q2
+                          << "\n";
+
+                // Print particles to help with debugging:
+                printParticles();
+            }
             //std::cout << "struck quark flavor=" << struckQuarkFlavor
             //          << ", weightNPDF (xf)=" << weightNPDF
             //          << ", weightNDPF / x=" << weightNPDF / kinematics.x
