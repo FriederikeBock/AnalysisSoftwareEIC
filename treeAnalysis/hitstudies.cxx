@@ -1,6 +1,6 @@
 
 // ANCHOR debug output verbosity
-Int_t verbosityHITS = 3;
+Int_t verbosityHITS = 0;
 
 // ANCHOR create histograms globally
 // TString str_TRKEFF_mcparticles[5] = {"electron", "cpion", "proton", "ckaon", "muon"};
