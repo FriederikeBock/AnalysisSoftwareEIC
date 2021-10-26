@@ -97,14 +97,19 @@ if [ $1 = "centralsim_singlepion" ]; then
 maxevt=10000
     input=/media/nschmidt/local/EIC_running/singlePion/eval_00000/DST_General_particleGun_singlePion_merged_eval.root
     geometry=/media/nschmidt/local/EIC_running/singlePion/eval_00000/geometry2ndCampaign.root
-    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CENTRALSIM_SINGLEPION",true,false  ,true,true,'$maxevt',0,false,0)'
+    #root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CENTRALSIM_SINGLEPION",true,false  ,true,true,'$maxevt',0,false,0)'
 fi
 
 if [ $1 = "centralsim_singleelectron" ]; then
 maxevt=10000
     input=/media/nschmidt/local/EIC_running/singleElectron/eval_00000/DST_General_particleGun_singleElectron_merged_eval.root
     geometry=/media/nschmidt/local/EIC_running/singlePion/eval_00000/geometry2ndCampaign.root
-    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CENTRALSIM_SINGLEELECTRON",true,false  ,true,true,'$maxevt',0,false,0)'
+    #root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CENTRALSIM_SINGLEELECTRON",'$maxevt',true,false  ,true,false,0)'
+
+    #g++ "treeProcessing.C" -I$(root-config --incdir) -I/media/nschmidt/local/alice/sw/linuxmint19_x86-64/fastjet/v3.2.1_1.024-alice3-1/include $(root-config --libs --evelibs --glibs) -lMinuit -fsanitize=address -g -o "treeProcessing.o"
+    g++ "treeProcessing.C" -I$(root-config --incdir) `/media/nschmidt/local/alice/sw/linuxmint19_x86-64/fastjet/v3.2.1_1.024-alice3-1/bin/fastjet-config --cxxflags --libs --plugins` -I/media/nschmidt/local/alice/sw/linuxmint19_x86-64/fastjet/v3.2.1_1.024-alice3-1/include $(root-config --libs --evelibs --glibs) -lMinuit -g -o "treeProcessing.o"
+    #treeProcessing.o $input $geometry CENTRALSIM_SINGLEELECTRON $maxevt true false true false 0
+
 fi
 
 

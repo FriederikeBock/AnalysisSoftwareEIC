@@ -1,3 +1,13 @@
+
+#include <TROOT.h>
+#include <TString.h>
+#include <TSystem.h>
+#include <TChain.h>
+#include <TMath.h>
+#include <TVector3.h>
+#include <iostream>
+#include <fstream>
+
 #include "../common/binningheader.h"
 #include "../common/plottingheader.h"
 #include "treeProcessing.h"
@@ -14,14 +24,8 @@
 #include "hitstudies.cxx"
 #include "trackmatchingstudies.cxx"
 
-#include <TROOT.h>
-#include <TString.h>
-#include <TSystem.h>
-#include <TChain.h>
-#include <TVector3.h>
 
-#include <iostream>
-#include <fstream>
+
 
 void treeProcessing(
     TString inFile              = "",
@@ -68,14 +72,14 @@ void treeProcessing(
 
     // // load geometry tree
     tt_geometry =  (TTree *) (new TFile(inFileGeometry.Data(), "READ"))->Get("geometry_tree");
-    if(!tt_geometry){ cout << "geometry tree not found... returning!"<< endl; return;}
+    if(!tt_geometry){ std::cout << "geometry tree not found... returning!"<< std::endl; return;}
     // load all branches (see header)
     SetBranchAddressesTree(tt_event);
     SetBranchAddressesGeometryTree(tt_geometry);
     SetGeometryIndices();
 
     for (Int_t c = 0; c < 12; c++){
-      cout << str_calorimeter[c] << "\t" << caloEnabled[c] << endl; 
+      std::cout << str_calorimeter[c] << "\t" << caloEnabled[c] << std::endl; 
     }
 
     Long64_t nEntriesTree                 = tt_event->GetEntries();
@@ -154,7 +158,7 @@ void treeProcessing(
         for (int cal = 0; cal < maxcalo; cal++){
           if(do_reclus && nTowers[cal] > 0 && caloEnabled[cal]){
             for (int algo = 0; algo < _active_algo; algo++){
-              if(verbosity>1) cout << "clusterizing " << str_clusterizer[algo].Data() <<  " for " << str_calorimeter[cal].Data() << endl;
+              if(verbosity>1) std::cout << "clusterizing " << str_clusterizer[algo].Data() <<  " for " << str_calorimeter[cal].Data() << std::endl;
               runclusterizer(algo, cal, seedE[cal], aggE[cal], primaryTrackSource);
             }
           }
@@ -164,16 +168,16 @@ void treeProcessing(
             float seed_E_FOCAL = 0.1;
             float aggregation_E_FOCAL = 0.001;
             if(kMA<_active_algo){
-                if(verbosity>1) cout << "clusterizing MA for FOCAL" << endl;
+                if(verbosity>1) std::cout << "clusterizing MA for FOCAL" << std::endl;
                 runclusterizer(kMA, kFOCAL,seed_E_FOCAL, aggregation_E_FOCAL, primaryTrackSource);
             }
         } 
 
         if(do_reclus && _nTowers_DRCALO && caloEnabled[kDRCALO]){ //do_V1clusterizerDRCALO
-          if(verbosity>1) cout << "clusterizing V1 for DRCALO" << endl;
+          if(verbosity>1) std::cout << "clusterizing V1 for DRCALO" << std::endl;
           runclusterizer(kV1, kDRCALO, seedE[kDRCALO], aggE[kDRCALO], primaryTrackSource);
         }
-        if((do_reclus) && verbosity>1) cout << "done with clusterization!" << endl;
+        if((do_reclus) && verbosity>1) std::cout << "done with clusterization!" << std::endl;
 
         // ANCHOR Hits loop variables:
         // float* _hits_x[ihit]
@@ -264,7 +268,7 @@ void treeProcessing(
 
         for (Int_t icalo = 0; icalo < maxcalo; icalo++){
           for (Int_t ialgo = 0; ialgo < maxAlgo; ialgo++){
-            if (loadClusterizerInput(ialgo, icalo) && verbosity>2) std::cout << str_calorimeter[icalo].Data() << "\t" << ialgo << endl;
+            if (loadClusterizerInput(ialgo, icalo) && verbosity>2) std::cout << str_calorimeter[icalo].Data() << "\t" << ialgo << std::endl;
           }
         }
 
@@ -494,16 +498,16 @@ void treeProcessing(
             // TString jettype[njettypes] = {"track", "full","hcal","calo","all"};
         }
         if(tracksEnabled){
-          if(verbosity>1) cout << "running trackingefficiency" << endl;
+          if(verbosity>1) std::cout << "running trackingefficiency" << std::endl;
           trackingefficiency();
-          if(verbosity>1) cout << "running trackingresolution" << endl;
+          if(verbosity>1) std::cout << "running trackingresolution" << std::endl;
           trackingresolution();
-          if(verbosity>1) cout << "running trackingcomparison" << endl;
+          if(verbosity>1) std::cout << "running trackingcomparison" << std::endl;
           trackingcomparison();
-          if(verbosity>1) cout << "finished tracking studies" << endl;
+          if(verbosity>1) std::cout << "finished tracking studies" << std::endl;
         }
         if (runCaloRes){
-          if(verbosity>1) cout << "running clusterstudies" << endl;
+          if(verbosity>1) std::cout << "running clusterstudies" << std::endl;
           clusterstudies();
           if(verbosity>1) std::cout << "running  caloresolutionhistos" << std::endl;
           caloresolutionhistos();
@@ -556,4 +560,99 @@ void treeProcessing(
     std::cout << "running clusterizerSave" << std::endl;
     clusterizerSave();
     std::cout << "all done :)" << std::endl;
+}
+
+
+
+// MAIN FUNCTION for non-ROOT compilation (prototype)
+int main( int argc, char* argv[] )
+{
+
+    // Default arguments for treeProcessing
+    TString inFile              = "";
+    TString inFileGeometry      = "geometry.root";
+    TString addOutputName       = "";
+    Double_t maxNEvent          = -1;
+    bool do_reclus              = true;
+    bool do_jetfinding          = false;
+    bool runCaloRes             = true;
+    bool doCalibration          = false;
+    Int_t verbosity             = 0;
+    // Defaults to tracking from all layers.
+    unsigned short primaryTrackSource = 0;
+    std::string jetAlgorithm    = "anti-kt";
+    double jetR                 = 0.5;
+    double tracked_jet_max_pT   = 30;
+    bool removeTracklets        = false;
+
+    // Import main call arguments
+        TString import;
+        if( argc >  1 ) inFile                 = argv[1];
+        if( argc >  2 ) inFileGeometry                  = argv[2];
+        if( argc >  3 ) addOutputName          = argv[3];
+        if( argc >  4 ) { // numberOfBins
+            std::istringstream sstr(argv[4]);
+            sstr >> maxNEvent;
+        }
+        if( argc >  5 ) { // UseTHnSparse
+            import = argv[5];
+            if( import.EqualTo("kTRUE") || import.EqualTo("true") )  do_reclus = kTRUE;
+            if( import.EqualTo("kFALSE") || import.EqualTo("false") )  do_reclus = kFALSE;
+        }
+        if( argc >  6 ) { // UseTHnSparse
+            import = argv[6];
+            if( import.EqualTo("kTRUE") || import.EqualTo("true") )  do_jetfinding = kTRUE;
+            if( import.EqualTo("kFALSE") || import.EqualTo("false") )  do_jetfinding = kFALSE;
+        }
+        if( argc >  7 ) { // UseTHnSparse
+            import = argv[7];
+            if( import.EqualTo("kTRUE") || import.EqualTo("true") )  runCaloRes = kTRUE;
+            if( import.EqualTo("kFALSE") || import.EqualTo("false") )  runCaloRes = kFALSE;
+        }
+        if( argc >  8 ) { // UseTHnSparse
+            import = argv[8];
+            if( import.EqualTo("kTRUE") || import.EqualTo("true") )  doCalibration = kTRUE;
+            if( import.EqualTo("kFALSE") || import.EqualTo("false") )  doCalibration = kFALSE;
+        }
+        if( argc >  9 ) {
+          std::istringstream sstr(argv[9]);
+          sstr >> verbosity;
+        }
+        if( argc > 10 ) {
+          std::istringstream sstr(argv[10]);
+          sstr >> primaryTrackSource;
+        }
+        if( argc > 11 ) jetAlgorithm = argv[11];
+        if( argc > 12 ) { // numberOfBins
+            std::stringstream sstr(argv[12]);
+            sstr >> jetR;
+        } if( argc > 13 ) { // numberOfBins
+            std::stringstream sstr(argv[13]);
+            sstr >> tracked_jet_max_pT;
+        } if( argc > 14 ) { // UseTHnSparse
+            import = argv[14];
+            if( import.EqualTo("kTRUE") || import.EqualTo("true") )  removeTracklets = kTRUE;
+            if( import.EqualTo("kFALSE") || import.EqualTo("false") )  removeTracklets = kFALSE;
+        }
+    return 0;
+
+    // Function call ExtractSignalV2
+        treeProcessing(
+            inFile,
+            inFileGeometry,
+            addOutputName,
+            maxNEvent,
+            do_reclus,
+            do_jetfinding,
+            runCaloRes,
+            doCalibration,
+            verbosity,
+            primaryTrackSource,
+            jetAlgorithm,
+            jetR,
+            tracked_jet_max_pT,
+            removeTracklets
+        );
+
+
 }

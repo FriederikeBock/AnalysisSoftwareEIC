@@ -49,7 +49,7 @@ void caloresolutionhistos(){
   for(int icalo=0;icalo<_active_calo;icalo++){
     if (!caloEnabled[icalo]) continue;
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
-      if(verbosityCRH) cout << "Calo-type: " << icalo << "\t Algorithm: " << ialgo << endl;
+      if(verbosityCRH) std::cout << "Calo-type: " << icalo << "\t Algorithm: " << ialgo << std::endl;
       if(!loadClusterizerInput( ialgo, icalo )) continue;
       
       std::sort(_clusters_calo[ialgo][icalo].begin(), _clusters_calo[ialgo][icalo].end(), &acompareCl);
@@ -98,8 +98,8 @@ void caloresolutionhistos(){
       }
       
       for(Int_t iclus=0; iclus<(Int_t)_clusters_calo[ialgo][icalo].size(); iclus++){
-        // if(verbosityCRH>1) cout << "\tFHCAL: cluster " << iclus << "\twith E = " << _clusters_FHCAL_E[iclus] << " GeV" << endl;
-        // if(verbosityCRH>1) cout << "\tFHCAL: cluster MC ID " << _clusters_FHCAL_trueID[iclus] << endl;
+        // if(verbosityCRH>1) std::cout << "\tFHCAL: cluster " << iclus << "\twith E = " << _clusters_FHCAL_E[iclus] << " GeV" << std::endl;
+        // if(verbosityCRH>1) std::cout << "\tFHCAL: cluster MC ID " << _clusters_FHCAL_trueID[iclus] << std::endl;
 
         // cluster should have at least 2 towers
         if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_NTowers<2) continue;
@@ -118,7 +118,7 @@ void caloresolutionhistos(){
         }
         
         // find true MC particle for given cluster
-        // if(verbosityCRH>1) cout << "\tfound MC:  particle " << mcID << "\twith E = " << _mcpart_E[mcID] << " GeV" << endl;
+        // if(verbosityCRH>1) std::cout << "\tfound MC:  particle " << mcID << "\twith E = " << _mcpart_E[mcID] << " GeV" << std::endl;
         // ========== Energy resolutions ================================================
         float energyRes = (_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/_mcpart_E[mcID];
         // res E vs MC E
@@ -253,13 +253,13 @@ void caloresolutionhistos(){
         if (!(b1stCalo || b2ndCalo)) continue;
           
         if (verbosityCRH){
-          cout << "Calo-type: " << icalo << "\t Algorithm: " << ialgo ;
+          std::cout << "Calo-type: " << icalo << "\t Algorithm: " << ialgo ;
           if (b1stCalo)
-            cout  << " with ECal: "<< _combCalo[icalo] ;
+            std::cout  << " with ECal: "<< _combCalo[icalo] ;
           if (b2ndCalo)
-            cout << " and 2nd calo: " <<  _combCalo2[icalo] << endl;
+            std::cout << " and 2nd calo: " <<  _combCalo2[icalo] << std::endl;
           else 
-            cout << endl;
+            std::cout << std::endl;
         }
         int nbinsERes = 400;
         if(icalo==kFHCAL || icalo==kLFHCAL || icalo==kEEMC || icalo==kBECAL || icalo==kFEMC ) 
@@ -295,9 +295,9 @@ void caloresolutionhistos(){
       
         if (!(highestECl > -1 || highestECl2 > -1 || highestECl3 > -1)) continue;
         if(verbosityCRH>1){
-          if (bRefCalo) cout << "cluster: " << icalo << "\t i:" << highestECl<<"\t" << (_clusters_calo[ialgo][icalo].at(highestECl)).cluster_E << endl;
-          if (b1stCalo) cout << "cluster 1: " << _combCalo[icalo] << "\t i:" << highestECl2<<"\t" << (_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E << endl;
-          if (b2ndCalo) cout << "cluster 2" << _combCalo2[icalo] << "\t i:" << highestECl3<<"\t" << (_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E << endl;
+          if (bRefCalo) std::cout << "cluster: " << icalo << "\t i:" << highestECl<<"\t" << (_clusters_calo[ialgo][icalo].at(highestECl)).cluster_E << std::endl;
+          if (b1stCalo) std::cout << "cluster 1: " << _combCalo[icalo] << "\t i:" << highestECl2<<"\t" << (_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E << std::endl;
+          if (b2ndCalo) std::cout << "cluster 2" << _combCalo2[icalo] << "\t i:" << highestECl3<<"\t" << (_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E << std::endl;
         }
 
         float clustereta                  = 0;
@@ -345,7 +345,7 @@ void caloresolutionhistos(){
             }
           }
         }
-        // if(verbosityCRH>1) cout << "\tfound MC:  particle " << currMCID << "\twith E = " << _mcpart_E[currMCID] << " GeV" << endl;
+        // if(verbosityCRH>1) std::cout << "\tfound MC:  particle " << currMCID << "\twith E = " << _mcpart_E[currMCID] << " GeV" << std::endl;
         if ( highestECl3 > -1){
           if((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_NTowers>1 ){
             if ((bRefCalo || b1stCalo) && currMCID != -999999 ){

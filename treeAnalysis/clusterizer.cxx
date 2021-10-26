@@ -17,7 +17,7 @@ bool _doClusterECalibration = true;
 // TODO at some point we might want E/p
 //**************************************************************************************************************
 //**************************************************************************************************************
-vector<int> isClusterMatched(  clustersStrct tempcluster, 
+std::vector<int> isClusterMatched(  clustersStrct tempcluster, 
                         int caloEnum, 
                         int clusterizerEnum, 
                         unsigned short primaryTrackSource, 
@@ -39,7 +39,7 @@ vector<int> isClusterMatched(  clustersStrct tempcluster,
     }
   }
 
-  vector<int> matching_trackIDs;
+  std::vector<int> matching_trackIDs;
 
   // in case the cluster position is 0,0 -> no matching to be done
   if(tempcluster.cluster_X==0 && tempcluster.cluster_Y==0) return matching_trackIDs;
@@ -260,7 +260,7 @@ std::vector<towersStrct> readTowersForCalo( int caloEnum, float aggE, float esca
       }
     }
   } else {
-    cout << "Incorrect calorimeter selected! Enum " << caloEnum << " not defined!" << endl;
+    std::cout << "Incorrect calorimeter selected! Enum " << caloEnum << " not defined!" << std::endl;
   }
   return input_towers_temp;
 }
@@ -677,7 +677,7 @@ void runclusterizer(
       } else if (clusterizerEnum==kMA){  
         tempstructC = findMACluster(seedE, caloEnum, input_towers, cluster_towers, clslabels);
       } else {
-        cout << "incorrect clusterizer selected! Enum " << clusterizerEnum << " not defined!" << endl;
+        std::cout << "incorrect clusterizer selected! Enum " << clusterizerEnum << " not defined!" << std::endl;
         return;
       }
 
@@ -700,9 +700,9 @@ void runclusterizer(
       } else {
         tempstructC.cluster_isMatched = false;
       }
-      if(verbosityCLS>1) cout << clusterizerEnum << "\t" << nclusters << "\tcluster with E = " << tempstructC.cluster_E << "\tEta: " << tempstructC.cluster_Eta<< "\tPhi: " << tempstructC.cluster_Phi
+      if(verbosityCLS>1) std::cout << clusterizerEnum << "\t" << nclusters << "\tcluster with E = " << tempstructC.cluster_E << "\tEta: " << tempstructC.cluster_Eta<< "\tPhi: " << tempstructC.cluster_Phi
                               << "\tX: " << tempstructC.cluster_X<< "\tY: " << tempstructC.cluster_Y<< "\tZ: " << tempstructC.cluster_Z<< "\tntowers: " << tempstructC.cluster_NTowers 
-                              << "\ttrueID: " << tempstructC.cluster_trueID << endl;
+                              << "\ttrueID: " << tempstructC.cluster_trueID << std::endl;
 
       // apply calibration if desired
       if(_doClusterECalibration){

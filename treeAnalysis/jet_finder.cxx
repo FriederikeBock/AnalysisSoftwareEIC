@@ -4,9 +4,9 @@
 #include <vector>
 #include <iostream>
 
+#include <fastjet/PseudoJet.hh>
 #include <fastjet/ClusterSequenceArea.hh>
 #include <fastjet/JetDefinition.hh>
-#include <fastjet/PseudoJet.hh>
 #include <fastjet/AreaDefinition.hh>
 #include <fastjet/GhostedAreaSpec.hh>
 
@@ -95,10 +95,10 @@ std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea>, std::vector<fastjet::P
   */
 void printJets(const std::vector<fastjet::PseudoJet> & jets) {
     for (std::size_t i = 0; i < jets.size(); i++) {
-        std::cout << "jet " << i << ": "<< jets[i].pt() << " " << jets[i].rap() << " " << jets[i].phi() << endl;
+        std::cout << "jet " << i << ": "<< jets[i].pt() << " " << jets[i].rap() << " " << jets[i].phi() << std::endl;
         // vector<fastjet::PseudoJet> constituents = jets[i].constituents();
         // for (std::size_t j = 0; j < constituents.size(); j++) {
-        //     std::cout << "    constituent " << j << "'s pt: " << constituents[j].pt() << endl;
+        //     std::cout << "    constituent " << j << "'s pt: " << constituents[j].pt() << std::endl;
         // }
     }
 }

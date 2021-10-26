@@ -111,9 +111,9 @@
   void SetPhiBins(){
     for (Int_t iPhi = 0; iPhi < nPhi+1; iPhi++){
       partPhi[iPhi] = -TMath::Pi() +(2*TMath::Pi())/nPhi*iPhi;
-      cout << partPhi[iPhi] << ", "; 
+      std::cout << partPhi[iPhi] << ", "; 
     }
-    cout << endl;
+    std::cout << std::endl;
   } 
   
   Color_t colorPhi[nPhi+1]         = {kBlue+1, kBlue-6, kViolet+2, kViolet-5, kMagenta-6, kPink-9, kRed+1,  kOrange+7, kOrange, kYellow-6, 
