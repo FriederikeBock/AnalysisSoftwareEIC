@@ -1,6 +1,6 @@
 
 // ANCHOR debug output verbosity
-Int_t verbosityHITS = 3;
+Int_t verbosityHITS = 0;
 
 // ANCHOR create histograms globally
 // TString str_TRKEFF_mcparticles[5] = {"electron", "cpion", "proton", "ckaon", "muon"};
@@ -39,7 +39,7 @@ void hitstudies(unsigned short primaryTrackSource){
   int ihitslayer[10] = {0};
   for(Int_t ihit=0; ihit<_nHitsLayers; ihit++){
     if(verbosityHITS>1) 
-      cout << "\tHIT: hit " << ihit << "\tin layer " << _hits_layerID[ihit] << "\twith X = " << _hits_x[ihit] << " cm" << endl;
+      std::cout << "\tHIT: hit " << ihit << "\tin layer " << _hits_layerID[ihit] << "\twith X = " << _hits_x[ihit] << " cm" << std::endl;
 
     TVector3 hitvec(_hits_x[ihit],_hits_y[ihit],_hits_z[ihit]);
     float hiteta = hitvec.Eta();
@@ -48,7 +48,7 @@ void hitstudies(unsigned short primaryTrackSource){
     Int_t histIndex = ReturnIndexForwardLayer(_hits_layerID[ihit]);
     if (histIndex == -1) continue;
     ihitslayer[histIndex]++;
-    if(verbosityHITS>1) cout << "layer index: \t" << histIndex << "\t" << _hits_layerID[ihit] << endl;
+    if(verbosityHITS>1) std::cout << "layer index: \t" << histIndex << "\t" << _hits_layerID[ihit] << std::endl;
     if( histIndex<_maxProjectionLayers){
       h_hits_layer_xy[histIndex]->Fill(_hits_x[ihit],_hits_y[ihit]);
       h_hits_layer_etaphi[histIndex]->Fill(hiteta,hitphi);
@@ -76,7 +76,7 @@ void hitstudies(unsigned short primaryTrackSource){
 //     if(_track_Proj_x[iproj]==0 && _track_Proj_y[iproj]==0) continue;
     if(_track_Proj_t[iproj]==0.) continue;
     if(verbosityHITS>1) 
-      cout << "\tProjection: proj " << iproj << "\tin layer " << _track_ProjLayer[iproj] << "\twith X = " << _track_Proj_x[iproj] << " cm" << endl;
+      std::cout << "\tProjection: proj " << iproj << "\tin layer " << _track_ProjLayer[iproj] << "\twith X = " << _track_Proj_x[iproj] << " cm" << std::endl;
     TVector3 projvec(_track_Proj_x[iproj],_track_Proj_y[iproj],_track_Proj_z[iproj]);
     float projeta = projvec.Eta();
     float projphi = (projvec.Phi()<0 ? projvec.Phi()+TMath::Pi() : projvec.Phi()-TMath::Pi());

@@ -63,27 +63,27 @@ bool initTrackingComparionHists = false;
 // **********************************************************************************************
 void prepareMCMatchInfo(){
   for(Int_t itrk=0; itrk<(Int_t)_nTracks; itrk++){
-    if (verbosityTRKEFF > 2) cout << "processing track: " << itrk << endl;
+    if (verbosityTRKEFF > 2) std::cout << "processing track: " << itrk << std::endl;
     if (_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].size() > 0){
       if (verbosityTRKEFF > 2)
-        cout << "adding rec track: \t" << itrk << "\t track source: " << _track_source[itrk] << " MC: "<< (int)_track_trueID[itrk] << endl;
+        std::cout << "adding rec track: \t" << itrk << "\t track source: " << _track_source[itrk] << " MC: "<< (int)_track_trueID[itrk] << std::endl;
     } else {
       if (verbosityTRKEFF > 2)
-        cout << "found rec track: \t" << itrk << "\t track source: " << _track_source[itrk] << " MC: "<< (int)_track_trueID[itrk] << endl;
+        std::cout << "found rec track: \t" << itrk << "\t track source: " << _track_source[itrk] << " MC: "<< (int)_track_trueID[itrk] << std::endl;
     }
     _mcpart_RecTrackIDs[(int)_track_trueID[itrk]].push_back(itrk);
   }
   Int_t nCurrProj = 0;
   for(Int_t itrk=0; itrk<_nTracks; itrk++){
-    if (verbosityTRKEFF > 2) cout << "current track: " << itrk <<endl;
+    if (verbosityTRKEFF > 2) std::cout << "current track: " << itrk <<std::endl;
     unsigned short trackSource = _track_source[itrk];
     for(Int_t iproj=nCurrProj; iproj<_nProjections; iproj++){
       if (itrk != _track_ProjTrackID[iproj]) continue;
       if(_track_Proj_t[iproj]==0.) continue;
-      if (verbosityTRKEFF > 2) cout << "\t prjection layer: "<< _track_ProjLayer[iproj] << "\t" << _track_Proj_x[iproj] << "\t" << _track_Proj_y[iproj] << "\t" << _track_Proj_z[iproj] << endl;
+      if (verbosityTRKEFF > 2) std::cout << "\t prjection layer: "<< _track_ProjLayer[iproj] << "\t" << _track_Proj_x[iproj] << "\t" << _track_Proj_y[iproj] << "\t" << _track_Proj_z[iproj] << std::endl;
       _track_hasTTL[itrk]     = (_track_hasTTL[itrk] || HasTimingLayer(_track_ProjLayer[iproj]));
       if (HasTimingLayer(_track_ProjLayer[iproj])) _track_nTTL[itrk]++;
-      if (verbosityTRKEFF > 2) cout << "timing layer count: " << _track_nTTL[itrk] << endl;
+      if (verbosityTRKEFF > 2) std::cout << "timing layer count: " << _track_nTTL[itrk] << std::endl;
 //       if (IsTrackerLayer(_track_ProjLayer[iproj])) nTrL++;
       nCurrProj = iproj;
     }
@@ -95,16 +95,16 @@ void prepareMCMatchInfo(){
 
     if ((int)_track_trueID[itrk] < 0) continue;
     if (_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].size() > 1){
-      if (verbosityTRKEFF > 2) cout << "identified multiple tracks for: " << (int)_track_trueID[itrk] << " current track id: " << itrk << endl;
+      if (verbosityTRKEFF > 2) std::cout << "identified multiple tracks for: " << (int)_track_trueID[itrk] << " current track id: " << itrk << std::endl;
       for (int rtr = 0; rtr < _mcpart_RecTrackIDs[(int)_track_trueID[itrk]].size(); rtr++){
-        if (verbosityTRKEFF > 2) cout << rtr << "\t MC id " << _mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr) << "\t track source\t " << _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] << endl;
+        if (verbosityTRKEFF > 2) std::cout << rtr << "\t MC id " << _mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr) << "\t track source\t " << _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] << std::endl;
         if ( _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] > trackSource &&  _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] == 1 )
           _track_hasOL[itrk] = (_track_hasOL[itrk] || true);
         if ( _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] > trackSource  &&  _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] == 2 )
           _track_hasIL[itrk]   = (_track_hasIL[itrk] || true);
       }
     } else {
-      if (verbosityTRKEFF > 2) cout << "only one track found for: " << (int)_track_trueID[itrk] << "\t source: " << trackSource<< endl;
+      if (verbosityTRKEFF > 2) std::cout << "only one track found for: " << (int)_track_trueID[itrk] << "\t source: " << trackSource<< std::endl;
     }
 
 
@@ -115,7 +115,7 @@ void prepareMCMatchInfo(){
 // **************************** tracking efficiency processing **********************************
 // **********************************************************************************************
 void trackingefficiency(){
-  // cout << "new evt" << endl;
+  // std::cout << "new evt" << std::endl;
   // Setup hists if necessary
   for (unsigned int iTrkSource = 0; iTrkSource < nTrackSources; iTrkSource++) {
     if (!h_chargedpart_rec_pT[iTrkSource]) {
@@ -141,7 +141,7 @@ void trackingefficiency(){
     float truept  = mcpartvec.Pt();
     float truep   = mcpartvec.Mag();
 
-    if (verbosityTRKEFF) cout << "\tMCID " << imc << "\tiMC id: " << _mcpart_ID[imc] << "\tPDG: " << _mcpart_PDG[imc] << "\tpT: " << TMath::Sqrt(TMath::Power(_mcpart_px[imc],2)+TMath::Power(_mcpart_py[imc],2)) << "\tEta " << trueeta << endl;
+    if (verbosityTRKEFF) std::cout << "\tMCID " << imc << "\tiMC id: " << _mcpart_ID[imc] << "\tPDG: " << _mcpart_PDG[imc] << "\tpT: " << TMath::Sqrt(TMath::Power(_mcpart_px[imc],2)+TMath::Power(_mcpart_py[imc],2)) << "\tEta " << trueeta << std::endl;
     for(int ipart=0;ipart<nPart_TRKEFF;ipart++){
       // MC
       if(!h_particle_MC_pT[ipart]) h_particle_MC_pT[ipart] 	= new TH2F(Form("h_%s_MC_pT",str_TRKEFF_mcparticles[ipart].Data()), "", 60, 0,30,80, -4.0,4.0);
@@ -187,10 +187,10 @@ void trackingefficiency(){
     unsigned short trackSource = _track_source[itrk];
     TVector3 recpartvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
     TVector3 mcpartvec(_mcpart_px[(int)_track_trueID[itrk]],_mcpart_py[(int)_track_trueID[itrk]],_mcpart_pz[(int)_track_trueID[itrk]]);
-    // cout << itrk << endl;
+    // std::cout << itrk << std::endl;
     float receta = recpartvec.Eta();
     float trueeta = mcpartvec.Eta();
-    if (verbosityTRKEFF) cout << "\tTRKTRUEID " << (int)_track_trueID[itrk] << "\tPDG: " << _mcpart_PDG[(int)_track_trueID[itrk]] << "\tpT: " <<   TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)) << "\tEta " << receta << endl;
+    if (verbosityTRKEFF) std::cout << "\tTRKTRUEID " << (int)_track_trueID[itrk] << "\tPDG: " << _mcpart_PDG[(int)_track_trueID[itrk]] << "\tpT: " <<   TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)) << "\tEta " << receta << std::endl;
     float pt = recpartvec.Pt();
     float truept = mcpartvec.Pt();
     float pmom = recpartvec.Mag();
@@ -287,7 +287,7 @@ void trackingresolution(){
     float trueeta   = mcpartvec.Eta();
     float recphi    = recpartvec.Phi();
     float truephi   = mcpartvec.Phi();
-    if (verbosityTRKEFF > 2) cout << "\tTRKTRUEID " << (int)_track_trueID[itrk] << "\tPDG: " << _mcpart_PDG[(int)_track_trueID[itrk]] << "\tpT: " <<   TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)) << "\tEta " << receta << endl;
+    if (verbosityTRKEFF > 2) std::cout << "\tTRKTRUEID " << (int)_track_trueID[itrk] << "\tPDG: " << _mcpart_PDG[(int)_track_trueID[itrk]] << "\tpT: " <<   TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)) << "\tEta " << receta << std::endl;
     float pt        = recpartvec.Pt();
     float truept    = mcpartvec.Pt();
     float pmom      = recpartvec.Mag();
@@ -319,7 +319,7 @@ void trackingresolution(){
       nCurrProj = iproj;
     }
     nTrT = nTrL + nTL;
-    if (verbosityTRKEFF > 2) cout << "\t summary: TL " << hasTL  << "\t TL hits "<< nTL << "\t tr " << hasTrL << "\t tr silicon " << hasFTrL << "\t tr hits " << nTrL << "\t tot: " << nTrT << endl;
+    if (verbosityTRKEFF > 2) std::cout << "\t summary: TL " << hasTL  << "\t TL hits "<< nTL << "\t tr " << hasTrL << "\t tr silicon " << hasFTrL << "\t tr hits " << nTrL << "\t tot: " << nTrT << std::endl;
 
 
     // determine eta bin
@@ -444,7 +444,7 @@ void trackingresolution(){
 // ************************ compare tracking from different sources *****************************
 // **********************************************************************************************
 void trackingcomparison() {
-  if (verbosityTRKEFF > 3) cout << "start comparison" << endl;
+  if (verbosityTRKEFF > 3) std::cout << "start comparison" << std::endl;
   std::map<unsigned int, std::string> trackMap = {
     {0, "all"},
     {1, "inner"},
@@ -468,7 +468,7 @@ void trackingcomparison() {
   // First, iterate once over track sources and track index
   for (unsigned int iOuterTrk = 0; iOuterTrk < (unsigned int)_nTracks; ++iOuterTrk) {
     int iOuterTrkSource = _track_source[iOuterTrk];
-    if (verbosityTRKEFF > 3)cout << "outer track: "<< iOuterTrk << endl;
+    if (verbosityTRKEFF > 3)std::cout << "outer track: "<< iOuterTrk << std::endl;
     if ((int)_track_trueID[iOuterTrk] < 0) continue;
     if (_mcpart_RecTrackIDs[(int)_track_trueID[iOuterTrk]].size() > 1){
       for (int rtr = 0; rtr < _mcpart_RecTrackIDs[(int)_track_trueID[iOuterTrk]].size(); rtr++){
@@ -478,7 +478,7 @@ void trackingcomparison() {
 
         TVector3 outerVec(_track_px[iOuterTrk], _track_py[iOuterTrk], _track_pz[iOuterTrk]);
         TVector3 innerVec(_track_px[iInnerTrk], _track_py[iInnerTrk], _track_pz[iInnerTrk]);
-        if (verbosityTRKEFF > 3) cout <<"O source: " << iOuterTrkSource<< " I: " <<  iInnerTrk<< " source I: " << iInnerTrkSource << " eta diff: " << outerVec.Eta() - innerVec.Eta() << " pt diff " << outerVec.Pt() - innerVec.Pt() << endl;
+        if (verbosityTRKEFF > 3) std::cout <<"O source: " << iOuterTrkSource<< " I: " <<  iInnerTrk<< " source I: " << iInnerTrkSource << " eta diff: " << outerVec.Eta() - innerVec.Eta() << " pt diff " << outerVec.Pt() - innerVec.Pt() << std::endl;
         h_trackingComparison_p_eta[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.Mag(), outerVec.Eta() - innerVec.Eta());
         h_trackingComparison_p_phi[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.Mag(), outerVec.Phi() - innerVec.Phi());
         h_trackingComparison_p_pt[iOuterTrkSource][iInnerTrkSource]->Fill(outerVec.Mag(), outerVec.Pt() - innerVec.Pt());
@@ -594,7 +594,7 @@ void trackingresolutionhistosSave(){
           if(h_tracksTrue_Eta_p[iTrkSource][nPart_TRKEFF][k]) h_tracksTrue_Eta_p[iTrkSource][nPart_TRKEFF][k]->Sumw2();
           if(h_tracksRec_Eta_p[iTrkSource][nPart_TRKEFF][k]) h_tracksRec_Eta_p[iTrkSource][nPart_TRKEFF][k]->Sumw2();
         }
-//         if (k == 0) cout << id << "\t" << h_tracksTrue_Eta_pT[nPart_TRKEFF][k]->GetEntries() << "\t" << h_tracksTrue_Eta_pT[id][k]->GetEntries() << endl;
+//         if (k == 0) std::cout << id << "\t" << h_tracksTrue_Eta_pT[nPart_TRKEFF][k]->GetEntries() << "\t" << h_tracksTrue_Eta_pT[id][k]->GetEntries() << std::endl;
         if(h_tracksTrue_Eta_pT[iTrkSource][nPart_TRKEFF][k]) h_tracksTrue_Eta_pT[iTrkSource][nPart_TRKEFF][k]->Add(h_tracksTrue_Eta_pT[iTrkSource][id][k]);
         if(h_tracksRec_Eta_pT[iTrkSource][nPart_TRKEFF][k]) h_tracksRec_Eta_pT[iTrkSource][nPart_TRKEFF][k]->Add(h_tracksRec_Eta_pT[iTrkSource][id][k]);
         if(h_tracksTrue_Eta_p[iTrkSource][nPart_TRKEFF][k]) h_tracksTrue_Eta_p[iTrkSource][nPart_TRKEFF][k]->Add(h_tracksTrue_Eta_p[iTrkSource][id][k]);
@@ -696,8 +696,8 @@ void trackingcomparisonhistosSave() {
 
 
 void clearMCRecMatchVectors(){
-  if (verbosityTRKEFF > 2) cout << "clearing MC vectors" << endl;
-  for(int imc=0; imc<_maxNMCPart; imc++){
+  if (verbosityTRKEFF > 2) std::cout << "clearing MC vectors" << std::endl;
+  for(int imc=0; imc<_nMCPart; imc++){
     if (_mcpart_RecTrackIDs[imc].size() > 0){
       _mcpart_RecTrackIDs[imc].clear();
       _mcpart_RecTrackIDs[imc].resize(0);
