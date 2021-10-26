@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iostream>
 
 #include <Math/Vector3D.h>
 #include <Math/Vector4D.h>
@@ -10,6 +11,28 @@
   *
   * \author Raymond Ehlers <raymond.ehlers@cern.ch>, ORNL
   */
+
+ void printParticles()
+ {
+    std::cout << "Particles\n";
+    for(unsigned int i=0; i<_nMCPart; ++i) {
+        std::cout << i << "-> id=" << _mcpart_PDG[i] << ", barcode=" << _mcpart_BCID[i] << ", px=" << _mcpart_px[i]
+                << ", py=" << _mcpart_py[i]
+                << ", pz=" << _mcpart_pz[i]
+                << ", E=" << _mcpart_E[i]
+                << "\n";
+    }
+    std::cout << "HepMC\n";
+    for (unsigned int i = 0; i < _nHepmcp; ++i) {
+        std::cout << i << "-> id=" << _hepmcp_PDG[i] << ", barcode=" << _hepmcp_BCID[i] << ", px=" << _hepmcp_px[i]
+                << ", py=" << _hepmcp_py[i]
+                << ", pz=" << _hepmcp_pz[i]
+                << ", E=" << _hepmcp_E[i]
+                << ", status=" << _hepmcp_status[i]
+                << "\n";
+    }
+    std::cout << "End particles" << std::endl;
+ }
 
 struct DISKinematics {
     DISKinematics() = default;
@@ -191,7 +214,7 @@ enum DirectKinematicsOptions_t {
     kDetLevel,
 };
 
-DISKinematics KinematicsUsingTrueInfo(DirectKinematicsOptions_t option, unsigned int primaryTrackSource = 0, unsigned int verbosity = 0)
+DISKinematics KinematicsUsingTrueInfo(DirectKinematicsOptions_t option, unsigned int primaryTrackSource = 0, bool isPythia6 = false, bool isPythia8 = false, unsigned int verbosity = 0)
 {
     // Cross check. This seems the most relevant place, so we'll look here
     // NOTE: Scoped so it doesn't mess with anything else.
@@ -205,24 +228,7 @@ DISKinematics KinematicsUsingTrueInfo(DirectKinematicsOptions_t option, unsigned
             std::cout << "mcpart BCID: " << _mcpart_BCID[part_outgoingElectronIndex]
                     << "\nhepmc BCID: " << _hepmcp_BCID[hepmc_outgoingElectronIndex] << "\n";
             // Print particles to help with debugging:
-            std::cout << "Particles\n";
-            for(Int_t i=0; i<_nMCPart; i++){
-                std::cout << i << "-> id=" << _mcpart_PDG[i] << ", barcode=" << _mcpart_BCID[i] << ", px=" << _mcpart_px[i]
-                          << ", py=" << _mcpart_py[i]
-                          << ", pz=" << _mcpart_pz[i]
-                          << ", E=" << _mcpart_E[i]
-                          << "\n";
-            }
-            std::cout << "HepMC\n";
-            for (unsigned int i = 0; i < _nHepmcp; ++i) {
-                std::cout << i << "-> id=" << _hepmcp_PDG[i] << ", barcode=" << _hepmcp_BCID[i] << ", px=" << _hepmcp_px[i]
-                          << ", py=" << _hepmcp_py[i]
-                          << ", pz=" << _hepmcp_pz[i]
-                          << ", E=" << _hepmcp_E[i]
-                          << ", status=" << _hepmcp_status[i]
-                          << "\n";
-            }
-            std::cout << "End particles" << std::endl;
+            printParticles();
         }
     }
 
@@ -277,9 +283,30 @@ DISKinematics KinematicsUsingTrueInfo(DirectKinematicsOptions_t option, unsigned
             auto virtualPhoton = hepmc_incomingElectron - hepmc_outgoingElectron;
             double q2 = -virtualPhoton.mag2();
 
+            // Take the stored values, corrected as required for the different production quirks
+            // These two values are taken by convention, and then are adpated as required.
+            double xStored = _hepmcp_x1;
+            double q2Stored = _hepmcp_Q2;
+            // Pythia6:
+            // - Stores the quark x in x2, so we swap it here.
+            // - Properly stores q2 in hepMC.
+            if (isPythia6) {
+                xStored = _hepmcp_x2;
+            }
+            // Pythia8:
+            // - Stores the quark x in x1.
+            // - Stores Q, not Q2, in the hepMC, so we correct it here.
+            //   Note that this Q2 still tends to be smaller than the other calculated Q2, perhaps because
+            //   the stored Q2 is from the renormalization scale (?) rather than the factorization scale (?)
+            if (isPythia8) {
+                q2Stored = q2Stored * q2Stored;
+            }
+            //std::cout << "Calculated q2=" << q2 << ", stored=" << q2Stored << "\n";
+            //std::cout << "stored x1=" << _hepmcp_x1 << ", stored x2=" << _hepmcp_x2 << ", xStored=" << xStored << "\n";
+
             // Here, we only have to calculate y, and then we return stored values for the rest.
             double y = (hepmc_incomingProton.Dot(virtualPhoton)) / (hepmc_incomingProton.Dot(hepmc_incomingElectron));
-            returnKinematics = DISKinematics{_hepmcp_x1, y, _hepmcp_Q2};
+            returnKinematics = DISKinematics{xStored, y, q2Stored};
             // NOTE: Intentionally no newline so it blends with the line printout.
             if (verbosity > 1) { std::cout << "Stored HepMC "; }
         }
