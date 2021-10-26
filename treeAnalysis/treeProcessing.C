@@ -65,10 +65,15 @@ void treeProcessing(
     if(do_jetfinding) _do_jetfinding = true;
 
     // load tree
+    // NOTE: This relies on pythia6 or pythia8 being in the filename + path, but that seems to be a reasonable assumption
+    bool isPythia6 = false;
+    bool isPythia8 = false;
     TChain *const tt_event = new TChain("event_tree");
     if (inFile.EndsWith(".root")) {                     // are we loading a single root tree?
         std::cout << "loading a single root file" << std::endl;
         tt_event->AddFile(inFile);
+        isPythia6 = inFile.Contains("pythia6");
+        isPythia8 = inFile.Contains("pythia8");
     }
     else {                                              // or are we loading a bunch?
         std::cout << "loading a list of files at " << inFile << std::endl;
@@ -77,6 +82,8 @@ void treeProcessing(
 
         while (std::getline(files, filePath)) {
             std::cout << filePath << "\n";
+            if (filePath.find("pythia6") != std::string::npos) { isPythia6 = true; }
+            if (filePath.find("pythia8") != std::string::npos) { isPythia8 = true; }
             tt_event->AddFile(filePath.c_str());
         }
         files.close();
@@ -101,6 +108,9 @@ void treeProcessing(
         nEntriesTree = maxNEvent;
         std::cout << "Will only analyze first " << maxNEvent << " events in the tree..." << std::endl;
     }
+    std::cout << std::boolalpha
+              << "Analyzing pythia6? " << isPythia6 << "\n"
+              << "Analyzing pythia8? " << isPythia8 << "\n";
     _doClusterECalibration    = doCalibration;
     if(_doClusterECalibration){
         std::cout << "clusters will be energy-corrected and subsequently smeared to meet testbeam constant term!" << std::endl;
@@ -260,7 +270,11 @@ void treeProcessing(
                 //          << ", trueID=" << _track_trueID[itrk]
                 //          << "\n";
                 // create track vector for jet finder
-                float track_pT = Etrack / cosh(trackvec.Eta());
+                float track_pT = Etrack / std::cosh(trackvec.Eta());
+                // Cut on the max pt if in the central barrel
+                // Require barrel tracks in 0.050 < pt < 30, and other tracks to have p > 0.050
+                //if ((std::abs(trackvec.Eta()) < 1.5 && track_pT < tracked_jet_max_pT && track_pT > 0.050) ||
+                //    (std::abs(trackvec.Eta()) > 1.5 && trackvec.Mag() > 0.050)) {
                 if (track_pT < tracked_jet_max_pT) {
                     jetf_track_px.push_back(_track_px[itrk]);
                     jetf_track_py.push_back(_track_py[itrk]);
@@ -485,14 +499,14 @@ void treeProcessing(
             }
             // Kinematics at various levels
             // Event level
-            auto hepmcStoredKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kHepMCStored, primaryTrackSource, verbosity);
-            auto hepmcCalculatedKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kHepMCCalculated, primaryTrackSource, verbosity);
-            auto partLevelCalculatedKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kPartLevel, primaryTrackSource, verbosity);
+            auto hepmcStoredKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kHepMCStored, primaryTrackSource, isPythia6, isPythia8, verbosity);
+            auto hepmcCalculatedKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kHepMCCalculated, primaryTrackSource, isPythia6, isPythia8, verbosity);
+            auto partLevelCalculatedKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kPartLevel, primaryTrackSource, isPythia6, isPythia8, verbosity);
             DISKinematics detLevelCalculatedKinematics;
             DISKinematics jbKinematics;
             try {
               // Using detector level quantities
-              detLevelCalculatedKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kDetLevel, primaryTrackSource, verbosity);
+              detLevelCalculatedKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kDetLevel, primaryTrackSource, isPythia6, isPythia8, verbosity);
               // Detector level JB kinematics
               jbKinematics = JBKinematics(primaryTrackSource);
             }
@@ -505,7 +519,7 @@ void treeProcessing(
             fillHadronObservables(jetObservables.at("true_ep"));
 
             // Select the kinematics to use going forward
-            auto kinematics = hepmcStoredKinematics;
+            auto kinematics = hepmcCalculatedKinematics;
 
             bool skipJetFindingDueToKinematics = false;
             if (kinematics.x < 0 || kinematics.x > 1) {
