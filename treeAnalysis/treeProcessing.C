@@ -634,7 +634,6 @@ int main( int argc, char* argv[] )
             if( import.EqualTo("kTRUE") || import.EqualTo("true") )  removeTracklets = kTRUE;
             if( import.EqualTo("kFALSE") || import.EqualTo("false") )  removeTracklets = kFALSE;
         }
-    return 0;
 
     // Function call ExtractSignalV2
         treeProcessing(
@@ -653,6 +652,7 @@ int main( int argc, char* argv[] )
             tracked_jet_max_pT,
             removeTracklets
         );
+    return 0;
 
 
 }
