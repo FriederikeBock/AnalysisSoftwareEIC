@@ -182,6 +182,14 @@ void treeProcessing(
         }
         if((do_reclus) && verbosity>1) std::cout << "done with clusterization!" << std::endl;
 
+
+        for(Int_t itrk=0; itrk<_nTracks; itrk++){
+            _track_trueID[itrk] = GetCorrectMCArrayEntry(_track_trueID[itrk]);
+            // if(verbosity>1) std::cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk] << "\tand X = " << _track_px[itrk] << " cm" << std::endl;
+        }
+        // obtain labels for different track sources
+        prepareMCMatchInfo();
+
         // ANCHOR Hits loop variables:
         // float* _hits_x[ihit]
         // float* _hits_y[ihit]
@@ -193,7 +201,8 @@ void treeProcessing(
         // }
         if(tracksEnabled) hitstudies(primaryTrackSource);
 
-        // ANCHOR Track loop variables:
+        
+                // ANCHOR Track loop variables:
         // float* _track_ID[itrk]
         // float* _track_trueID[itrk]
         // float* _track_px[itrk]
@@ -212,13 +221,6 @@ void treeProcessing(
         std::vector<float> jetf_all_pz;
         std::vector<float> jetf_all_E;
         double massHypothesis = 0.139;
-        for(Int_t itrk=0; itrk<_nTracks; itrk++){
-            _track_trueID[itrk] = GetCorrectMCArrayEntry(_track_trueID[itrk]);
-            // if(verbosity>1) std::cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk] << "\tand X = " << _track_px[itrk] << " cm" << std::endl;
-        }
-        // obtain labels for different track sources
-        prepareMCMatchInfo();
-
         if(_do_jetfinding){
             for(Int_t itrk=0; itrk<_nTracks; itrk++){
                 // Skip tracks that aren't selected.

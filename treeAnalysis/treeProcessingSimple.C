@@ -24,15 +24,15 @@
 #include <fstream>
 
 void treeProcessingSimple(
-    TString inFile              = "",
-    TString inFileGeometry      = "geometry.root",
-    TString addOutputName       = "",
-    Double_t maxNEvent          = -1,
-    bool do_reclus              = true,
-    bool doCalibration          = false,
-    Int_t verbosity             = 0,
+    TString inFile              = "",                 //
+    TString inFileGeometry      = "geometry.root",    //
+    TString addOutputName       = "",                 //
+    Double_t maxNEvent          = -1,                 //
+    bool do_reclus              = true,               //
+    bool doCalibration          = false,              //  
+    Int_t verbosity             = 0,                  //
     // Defaults to tracking from all layers.
-    unsigned short primaryTrackSource = 0
+    unsigned short primaryTrackSource = 0             //
 ){
     // make output directory
     TString dateForOutput = ReturnDateStr();
@@ -171,12 +171,12 @@ void treeProcessingSimple(
       trackmatchingstudiesSave();
     }
     
-      // *****************************************************************************************************************
-      // *****************************************************************************************************************
-      // **********************   PUT your save functions HERE ***********************************************************
-      // *****************************************************************************************************************
-      // *****************************************************************************************************************
-  
+    // *****************************************************************************************************************
+    // *****************************************************************************************************************
+    // **********************   PUT your save functions HERE ***********************************************************
+    // *****************************************************************************************************************
+    // *****************************************************************************************************************
+
     
     std::cout << "running clusterizerSave" << std::endl;
     clusterizerSave();

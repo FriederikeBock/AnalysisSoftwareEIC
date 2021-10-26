@@ -19,6 +19,7 @@ const int _maxNTracks = 200;
 const int _maxNProjections = 2000;
 const int _maxNMCPart = 100000;
 const int _maxNHepmcp = 1000;
+int verbosityBASE = 3;
 
 float _nEventsTree;
 
@@ -170,10 +171,11 @@ float* _track_px                 = new float[_maxNTracks];
 float* _track_py                 = new float[_maxNTracks];
 float* _track_pz                 = new float[_maxNTracks];
 unsigned short* _track_source             = new unsigned short[_maxNTracks];
+std::array<std::vector<int>, _maxNTracks> _track_RefProjID;
 // Initializes all elements to 0
 std::array<bool, _maxNTracks> _track_hasTTL{{}};
-std::array<bool, _maxNTracks> _track_hasATTL{{}};
 std::array<int, _maxNTracks> _track_nTTL{{}};
+std::array<int, _maxNTracks> _track_nTrL{{}};
 std::array<bool, _maxNTracks> _track_hasIL{{}};
 std::array<bool, _maxNTracks> _track_hasOL{{}};
 
@@ -188,6 +190,7 @@ float* _track_Proj_true_x             = new float[_maxNProjections];
 float* _track_Proj_true_y             = new float[_maxNProjections];
 float* _track_Proj_true_z             = new float[_maxNProjections];
 float* _track_Proj_true_t             = new float[_maxNProjections];
+std::array<int, _maxNProjections> _track_Proj_Clas{{}};
 // MC particles
 int _nMCPart;
 int* _mcpart_ID                   = new int[_maxNMCPart];
@@ -446,7 +449,8 @@ TString ReturnDateStr(){
 bool _do_TimingStudies        = false;
 bool _is_ALLSILICON           = false;
 const int _maxProjectionLayers    = 8;
-Int_t layerIndexForward[9]  =  {20, 21, 22, 23, 24, 0, 1, 2, -1};
+Int_t layerIndexForward[9]  =  {20, 21, 22, 23, 24, 0, 1, 10, 11, 12, };
+
 void ResetLayerIndexForward(){
   if (!_is_ALLSILICON){
     layerIndexForward[0]  = 50;
@@ -694,6 +698,49 @@ Bool_t IsTrackerLayer(Int_t layerID){
   return kFALSE;
 }
 
+Bool_t IsCaloProjection(Int_t layerID){
+  switch (layerID){  
+    case 5: 
+    case 6: 
+    case 60: 
+    case 61: 
+    case 62: 
+    case 63:
+    case 64:
+    case 65:
+    case 66:
+    case 67:
+    case 140:
+    case 141:
+    case 142:
+    case 143:
+    case 144:
+    case 145:
+    case 146:
+    case 147:
+      return kTRUE;
+    default:
+      return kFALSE;
+  }
+  return kFALSE;
+}
+
+Bool_t IsFarForwardProjection(Int_t layerID){
+  switch (layerID){  
+    case 70: 
+    case 71: 
+    case 72: 
+    case 73: 
+    case 74: 
+    case 90:
+    case 91:
+    case 92:
+      return kTRUE;
+    default:
+      return kFALSE;
+  }
+  return kFALSE;
+}
 
 Bool_t HasTimingLayer(Int_t layerID){
   switch (layerID){
@@ -711,6 +758,9 @@ Bool_t HasTimingLayer(Int_t layerID){
   return kFALSE;
 }
 
+// **********************************************************************************************
+// ****************** resetting of MC references  ***********************************************
+// **********************************************************************************************
 int GetCorrectMCArrayEntry(float objectTrueID){
   for(Int_t imc=0; imc<_nMCPart; imc++){
     if(objectTrueID==_mcpart_ID[imc]){
@@ -719,3 +769,104 @@ int GetCorrectMCArrayEntry(float objectTrueID){
   }
   return -1;
 }
+
+
+// **********************************************************************************************
+// ****************** create vectors for matching diff rec tracks to MC part ********************
+// **********************************************************************************************
+void prepareMCMatchInfo(){
+  for(Int_t itrk=0; itrk<(Int_t)_nTracks; itrk++){
+    if (verbosityBASE > 2) std::cout << "processing track: " << itrk << std::endl;
+    if (_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].size() > 0){
+      if (verbosityBASE > 3)
+        std::cout << "adding rec track: \t" << itrk << "\t track source: " << _track_source[itrk] << " MC: "<< (int)_track_trueID[itrk] << std::endl;
+    } else {
+      if (verbosityBASE > 3)
+        std::cout << "found rec track: \t" << itrk << "\t track source: " << _track_source[itrk] << " MC: "<< (int)_track_trueID[itrk] << std::endl;
+    }
+    _mcpart_RecTrackIDs[(int)_track_trueID[itrk]].push_back(itrk);
+  }
+  Int_t nCurrProj = 0;
+  for(Int_t itrk=0; itrk<_nTracks; itrk++){
+    if (verbosityBASE > 2) std::cout << "current track: " << itrk <<std::endl;
+    unsigned short trackSource = _track_source[itrk];
+    for(Int_t iproj=nCurrProj; iproj<_nProjections; iproj++){
+      if (itrk != _track_ProjTrackID[iproj]) continue;
+      if(_track_Proj_t[iproj]< 2.e-20) continue;
+      double projectionR = TMath::Sqrt(_track_Proj_x[iproj]*_track_Proj_x[iproj]+_track_Proj_y[iproj]*_track_Proj_y[iproj]); 
+      if (verbosityBASE > 2) std::cout << iproj << "\t projection layer: "<< _track_ProjLayer[iproj] << "\t t: " << _track_Proj_t[iproj] 
+                                            << "\t x: " << _track_Proj_x[iproj] << "\t y: " << _track_Proj_y[iproj] << "\t z: " << _track_Proj_z[iproj] << "\t r: " << projectionR << std::endl;
+      _track_hasTTL[itrk]     = (_track_hasTTL[itrk] || HasTimingLayer(_track_ProjLayer[iproj]));
+      if (HasTimingLayer(_track_ProjLayer[iproj])){
+        _track_nTTL[itrk]++;
+        _track_Proj_Clas[iproj] = 2;      
+      }
+      if (verbosityBASE > 3) std::cout << "timing layer count: " << _track_nTTL[itrk] << std::endl;
+      if (IsTrackerLayer(_track_ProjLayer[iproj])){
+        _track_nTrL[itrk]++;
+        _track_Proj_Clas[iproj] = 1;
+      }
+      if (HasFirstTwoLayers(_track_ProjLayer[iproj])){
+        _track_Proj_Clas[iproj] = 4;
+      }
+      if (IsCaloProjection(_track_ProjLayer[iproj])){
+        _track_Proj_Clas[iproj] = 5;
+      }
+      if (IsFarForwardProjection(_track_ProjLayer[iproj])){
+        _track_Proj_Clas[iproj] = 6;
+      }
+      _track_RefProjID[itrk].push_back(iproj);
+      nCurrProj = iproj;
+    }
+
+    if (trackSource == 1 )
+      _track_hasOL[itrk] = (_track_hasOL[itrk] || true);
+    if (trackSource == 2 )
+      _track_hasIL[itrk]   = (_track_hasIL[itrk] || true);
+
+    if ((int)_track_trueID[itrk] < 0) continue;
+    if (_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].size() > 1){
+      if (verbosityBASE > 2) std::cout << "identified multiple tracks for: " << (int)_track_trueID[itrk] << " current track id: " << itrk << std::endl;
+      for (int rtr = 0; rtr < _mcpart_RecTrackIDs[(int)_track_trueID[itrk]].size(); rtr++){
+        if (verbosityBASE > 3) std::cout << rtr << "\t MC id " << _mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr) << "\t track source\t " << _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] << std::endl;
+        if ( _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] > trackSource &&  _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] == 1 )
+          _track_hasOL[itrk] = (_track_hasOL[itrk] || true);
+        if ( _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] > trackSource  &&  _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] == 2 )
+          _track_hasIL[itrk]   = (_track_hasIL[itrk] || true);
+      }
+    } else {
+      if (verbosityBASE > 2) std::cout << "only one track found for: " << (int)_track_trueID[itrk] << "\t source: " << trackSource<< std::endl;
+    }
+    if (verbosityBASE > 2) std::cout << "found: " << _track_RefProjID[itrk].size() << "\t projections " << std::endl;
+    
+  }
+}
+
+// **********************************************************************************************
+// ****************** cleanup vectors for matching diff rec tracks to MC part ********************
+// **********************************************************************************************
+void clearMCRecMatchVectors(){
+  if (verbosityBASE > 2) std::cout << "clearing MC vectors" << std::endl;
+  for(int imc=0; imc<_nMCPart+2 && imc < _maxNMCPart; imc++){
+    if (_mcpart_RecTrackIDs[imc].size() > 0){
+      _mcpart_RecTrackIDs[imc].clear();
+      _mcpart_RecTrackIDs[imc].resize(0);
+    }
+  }
+
+  for(Int_t itrk=0; itrk<_nTracks; itrk++){
+    _track_hasTTL[itrk]   = 0;
+    _track_nTTL[itrk]     = 0;
+    _track_nTrL[itrk]     = 0;
+    _track_hasIL[itrk]    = 0;
+    _track_hasOL[itrk]    = 0;
+    if (_track_RefProjID[itrk].size() > 0){
+      _track_RefProjID[itrk].clear();
+      _track_RefProjID[itrk].resize(0);
+    }
+  }
+  for (Int_t iproj=0; iproj<_nProjections; iproj++){
+    _track_Proj_Clas[iproj] = 0;
+  }
+}
+

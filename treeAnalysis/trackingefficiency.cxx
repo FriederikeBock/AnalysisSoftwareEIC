@@ -59,59 +59,6 @@ TH2F* h_trackingComparison_eta_pt[nTrackSources][nTrackSources] = {{nullptr}};
 bool initTrackingComparionHists = false;
 
 // **********************************************************************************************
-// ****************** create vectors for matching diff rec tracks to MC part ********************
-// **********************************************************************************************
-void prepareMCMatchInfo(){
-  for(Int_t itrk=0; itrk<(Int_t)_nTracks; itrk++){
-    if (verbosityTRKEFF > 2) std::cout << "processing track: " << itrk << std::endl;
-    if (_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].size() > 0){
-      if (verbosityTRKEFF > 2)
-        std::cout << "adding rec track: \t" << itrk << "\t track source: " << _track_source[itrk] << " MC: "<< (int)_track_trueID[itrk] << std::endl;
-    } else {
-      if (verbosityTRKEFF > 2)
-        std::cout << "found rec track: \t" << itrk << "\t track source: " << _track_source[itrk] << " MC: "<< (int)_track_trueID[itrk] << std::endl;
-    }
-    _mcpart_RecTrackIDs[(int)_track_trueID[itrk]].push_back(itrk);
-  }
-  Int_t nCurrProj = 0;
-  for(Int_t itrk=0; itrk<_nTracks; itrk++){
-    if (verbosityTRKEFF > 2) std::cout << "current track: " << itrk <<std::endl;
-    unsigned short trackSource = _track_source[itrk];
-    for(Int_t iproj=nCurrProj; iproj<_nProjections; iproj++){
-      if (itrk != _track_ProjTrackID[iproj]) continue;
-      if(_track_Proj_t[iproj]==0.) continue;
-      if (verbosityTRKEFF > 2) std::cout << "\t prjection layer: "<< _track_ProjLayer[iproj] << "\t" << _track_Proj_x[iproj] << "\t" << _track_Proj_y[iproj] << "\t" << _track_Proj_z[iproj] << std::endl;
-      _track_hasTTL[itrk]     = (_track_hasTTL[itrk] || HasTimingLayer(_track_ProjLayer[iproj]));
-      if (HasTimingLayer(_track_ProjLayer[iproj])) _track_nTTL[itrk]++;
-      if (verbosityTRKEFF > 2) std::cout << "timing layer count: " << _track_nTTL[itrk] << std::endl;
-//       if (IsTrackerLayer(_track_ProjLayer[iproj])) nTrL++;
-      nCurrProj = iproj;
-    }
-
-    if (trackSource == 1 )
-      _track_hasOL[itrk] = (_track_hasOL[itrk] || true);
-    if (trackSource == 2 )
-      _track_hasIL[itrk]   = (_track_hasIL[itrk] || true);
-
-    if ((int)_track_trueID[itrk] < 0) continue;
-    if (_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].size() > 1){
-      if (verbosityTRKEFF > 2) std::cout << "identified multiple tracks for: " << (int)_track_trueID[itrk] << " current track id: " << itrk << std::endl;
-      for (int rtr = 0; rtr < _mcpart_RecTrackIDs[(int)_track_trueID[itrk]].size(); rtr++){
-        if (verbosityTRKEFF > 2) std::cout << rtr << "\t MC id " << _mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr) << "\t track source\t " << _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] << std::endl;
-        if ( _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] > trackSource &&  _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] == 1 )
-          _track_hasOL[itrk] = (_track_hasOL[itrk] || true);
-        if ( _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] > trackSource  &&  _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] == 2 )
-          _track_hasIL[itrk]   = (_track_hasIL[itrk] || true);
-      }
-    } else {
-      if (verbosityTRKEFF > 2) std::cout << "only one track found for: " << (int)_track_trueID[itrk] << "\t source: " << trackSource<< std::endl;
-    }
-
-
-  }
-}
-
-// **********************************************************************************************
 // **************************** tracking efficiency processing **********************************
 // **********************************************************************************************
 void trackingefficiency(){
@@ -692,22 +639,4 @@ void trackingcomparisonhistosSave() {
   // write output file
   fileOutput->Write();
   fileOutput->Close();
-}
-
-
-void clearMCRecMatchVectors(){
-  if (verbosityTRKEFF > 2) std::cout << "clearing MC vectors" << std::endl;
-  for(int imc=0; imc<_nMCPart; imc++){
-    if (_mcpart_RecTrackIDs[imc].size() > 0){
-      _mcpart_RecTrackIDs[imc].clear();
-      _mcpart_RecTrackIDs[imc].resize(0);
-    }
-  }
-
-  for(Int_t itrk=0; itrk<_nTracks; itrk++){
-    _track_hasTTL[itrk]  = 0;
-    _track_nTTL[itrk]  = 0;
-    _track_hasIL[itrk]   = 0;
-    _track_hasOL[itrk]   = 0;
-  }
 }

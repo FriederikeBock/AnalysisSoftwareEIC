@@ -1,6 +1,6 @@
 
 // ANCHOR debug output verbosity
-Int_t verbosityHITS = 0;
+Int_t verbosityHITS =3;
 
 // ANCHOR create histograms globally
 // TString str_TRKEFF_mcparticles[5] = {"electron", "cpion", "proton", "ckaon", "muon"};
@@ -20,6 +20,10 @@ TH2F*  h_fwdtracks_vs_clusters[_active_calo] 	= {NULL};
 
 // ANCHOR main function to be called in event loop
 void hitstudies(unsigned short primaryTrackSource){
+  
+  // *****************************************************************************************************
+  // ********************** Create histograms ************************************************************
+  // *****************************************************************************************************
   for(int il=0;il<_maxProjectionLayers;il++){
     if(!h_hits_layer_xy[il])h_hits_layer_xy[il] = new TH2F(Form("h_hits_layer_xy_%s", GetProjectionNameFromIndex(layerIndexForward[il]).Data()), "", 300, -200,200,300, -200,200);
     if(!h_hits_layer_etaphi[il])h_hits_layer_etaphi[il]  	= new TH2F(Form("h_hits_layer_etaphi_%s", GetProjectionNameFromIndex(layerIndexForward[il]).Data()), "", 300, 1 , 4,300, -TMath::Pi(),TMath::Pi());
@@ -27,13 +31,15 @@ void hitstudies(unsigned short primaryTrackSource){
     if(!h_trackProj_layer_etaphi[il])h_trackProj_layer_etaphi[il] 	= new TH2F(Form("h_trackProj_layer_etaphi_%s", GetProjectionNameFromIndex(layerIndexForward[il]).Data()), "", 300, 1 , 4,300, -TMath::Pi(),TMath::Pi());
 
     if(!h_hitslayer_vs_tracks[il])h_hitslayer_vs_tracks[il] 	= new TH2F(Form("h_hitslayer_vs_tracks_%s", GetProjectionNameFromIndex(layerIndexForward[il]).Data()), "", 100, 0 , 100,100, 0 , 100);
-    for(int icalo=0;icalo<_active_calo;icalo++){
-      if(!h_hitslayer_vs_clusters[il][icalo])h_hitslayer_vs_clusters[il][icalo] 	= new TH2F(Form("h_hitslayer_vs_clusters_%s_%s", GetProjectionNameFromIndex(layerIndexForward[il]).Data(),str_calorimeter[icalo].Data()), "", 100, 0 , 100,30, 0 , 30);
-      if(!h_hitslayer_vs_towers[il][icalo])h_hitslayer_vs_towers[il][icalo] 	= new TH2F(Form("h_hitslayer_vs_towers_%s_%s", GetProjectionNameFromIndex(layerIndexForward[il]).Data(),str_calorimeter[icalo].Data()), "", 100, 0 , 100,300, 0 , 300);
-      if(!h_fwdtracks_vs_clusters[icalo])h_fwdtracks_vs_clusters[icalo] 	= new TH2F(Form("h_fwdtracks_vs_clusters_%s",str_calorimeter[icalo].Data()), "", 100, 0 , 100,30, 0 , 30);
+    if (IsCaloProjection(il)){
+      for(int icalo=0;icalo<_active_calo;icalo++){
+        if (!caloEnabled[icalo]) continue;
+        if(!h_hitslayer_vs_clusters[il][icalo])h_hitslayer_vs_clusters[il][icalo] 	= new TH2F(Form("h_hitslayer_vs_clusters_%s_%s", GetProjectionNameFromIndex(layerIndexForward[il]).Data(),str_calorimeter[icalo].Data()), "", 100, 0 , 100,30, 0 , 30);
+        if(!h_hitslayer_vs_towers[il][icalo])h_hitslayer_vs_towers[il][icalo] 	= new TH2F(Form("h_hitslayer_vs_towers_%s_%s", GetProjectionNameFromIndex(layerIndexForward[il]).Data(),str_calorimeter[icalo].Data()), "", 100, 0 , 100,300, 0 , 300);
+        if(!h_fwdtracks_vs_clusters[icalo])h_fwdtracks_vs_clusters[icalo] 	= new TH2F(Form("h_fwdtracks_vs_clusters_%s",str_calorimeter[icalo].Data()), "", 100, 0 , 100,30, 0 , 30);
 
+      }
     }
-
   }
   // ANCHOR Hits
   int ihitslayer[10] = {0};
@@ -65,18 +71,20 @@ void hitstudies(unsigned short primaryTrackSource){
   }
   for(int il=0;il<_maxProjectionLayers;il++){
     h_hitslayer_vs_tracks[il]->Fill(ihitslayer[il],itracksfwd);
-    for(int icalo=0;icalo<_active_calo;icalo++){
-      h_hitslayer_vs_clusters[il][icalo]->Fill(ihitslayer[il], _clusters_calo[kMA][icalo].size() );
-      h_hitslayer_vs_towers[il][icalo]->Fill(ihitslayer[il], ReturnMaxTowerCalo(icalo));
+    if (_track_Proj_Clas[il] == 5){
+      for(int icalo=0;icalo<_active_calo;icalo++){
+        h_hitslayer_vs_clusters[il][icalo]->Fill(ihitslayer[il], _clusters_calo[kMA][icalo].size() );
+        h_hitslayer_vs_towers[il][icalo]->Fill(ihitslayer[il], ReturnMaxTowerCalo(icalo));
+      }
     }
   }
 
   // ANCHOR Track projections
   for(Int_t iproj=0; iproj<_nProjections; iproj++){
 //     if(_track_Proj_x[iproj]==0 && _track_Proj_y[iproj]==0) continue;
-    if(_track_Proj_t[iproj]==0.) continue;
+    if(_track_Proj_t[iproj]< 2e-20) continue;
     if(verbosityHITS>1) 
-      std::cout << "\tProjection: proj " << iproj << "\tin layer " << _track_ProjLayer[iproj] << "\twith X = " << _track_Proj_x[iproj] << " cm" << std::endl;
+      std::cout << "\tProjection: proj " << iproj << "\tin layer " << _track_ProjLayer[iproj] << "\t t = " << _track_Proj_t[iproj] << " ps" << "\t X = " << _track_Proj_x[iproj] << " cm" << "\t Y = " << _track_Proj_y[iproj] << " cm" << "\t Z = " << _track_Proj_z[iproj] << " cm"<< std::endl;
     TVector3 projvec(_track_Proj_x[iproj],_track_Proj_y[iproj],_track_Proj_z[iproj]);
     float projeta = projvec.Eta();
     float projphi = (projvec.Phi()<0 ? projvec.Phi()+TMath::Pi() : projvec.Phi()-TMath::Pi());
