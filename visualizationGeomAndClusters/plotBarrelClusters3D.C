@@ -1,30 +1,12 @@
 #include <algorithm>
 #include "../common/plottingheader.h"
 #include "../treeAnalysis/treeProcessing.h"
+#include "../treeAnalysis/clusterizer.cxx"
 #define NELEMS(arr) (sizeof(arr)/sizeof(arr[0]))
 #include "TColor.h"
 #include <TChain.h>
 #include <TVector3.h>
 #include <vector>
-
-typedef struct {
-  float tower_E;
-  int   tower_iEta;
-  int   tower_iPhi;
-} towersStrct;
-
-typedef struct {
-  float cluster_E;
-  float cluster_seed;
-  float cluster_Eta;
-  float cluster_Phi;
-  float cluster_Z;
-  float cluster_X;
-  float cluster_Y;
-  float cluster_M02;
-  float cluster_M20;
-  int cluster_NTowers;
-} clusterStrct;
 
 typedef struct {
   float tower_Eta;
@@ -36,29 +18,11 @@ typedef struct {
   float tower_theta;
 } geomStrct;
 
-// sorting function for towers
-bool acompare(towersStrct lhs, towersStrct rhs) { return lhs.tower_E > rhs.tower_E; }
-
-const int maxcalo = 11;
-int calogeomindex[maxcalo] = {0};
-
-void SetGeometryIndices(){
-  Long64_t nEntriesTree                 = tt_geometry->GetEntries();
-  for (int ireset=0; ireset<maxcalo;ireset++) {
-    calogeomindex[ireset] = -1;
-  }
-  for (Long64_t i=0; i<nEntriesTree;i++) {
-    tt_geometry->GetEntry(i);
-    calogeomindex[_calogeom_ID] = i;
-  }
-}
-
 float GetZ(float eta, float X, float Y, float Z){ // X,Y,Z - center bin
   float theta = 2 * TMath::ATan( TMath::Exp(-eta) );
   float R = TMath::Sqrt( X*X + Y*Y + Z*Z);
   return R * TMath::Cos(theta);
 }
-
 
 void plotBarrelClusters3D(
     TString nameFile          = "/home/ewa/alice/EIC/G4EICDetector_eventtree.root",
@@ -68,6 +32,7 @@ void plotBarrelClusters3D(
     double energy             = -1.0,
     int plotEvent             = 0,
     int caloID                = 6,     // 6 - HCAL in, 7 - HCAL out, 10 - BECAL
+    int clusterizerEnum       = 0,
     TString addName           = ""           
 ){
   //dimensions
@@ -287,7 +252,7 @@ void plotBarrelClusters3D(
   std::vector<towersStrct> input_towers;
   // vector of towers within the currently found cluster
   std::vector<towersStrct> cluster_towers;
-  std::vector<clusterStrct> rec_clusters;
+  std::vector<clustersStrct> rec_clusters;
   
   // fill vector with towers for clusterization above aggregation threshold
   for(int itow=0; itow<(int)_nTowers; itow++){
@@ -303,70 +268,36 @@ void plotBarrelClusters3D(
 
   // sort vector in descending energy order
   std::sort(input_towers.begin(), input_towers.end(), &acompare);
+  std::vector<int> clslabels;
   while (!input_towers.empty()) {
     cluster_towers.clear();
-    clusterStrct tempstructC;
-    tempstructC.cluster_E       = 0;
-    tempstructC.cluster_seed    = 0;
-    tempstructC.cluster_Eta     = -1000;
-    tempstructC.cluster_Phi     = -1000;
-    tempstructC.cluster_Z       = -1000;
-    tempstructC.cluster_X       = -1000;
-    tempstructC.cluster_Y       = -1000;
-    tempstructC.cluster_M02     = -1000;
-    tempstructC.cluster_M20     = -1000;
-    tempstructC.cluster_NTowers = 0;
+    clslabels.clear();
 
-    // always start with highest energetic tower
+    clustersStrct tempstructC;
+
     if(input_towers.at(0).tower_E > seedE){
-      if (verbosity) std::cout << "new cluster" << std::endl;
-      // fill seed cell information into current cluster
-      tempstructC.cluster_E       = input_towers.at(0).tower_E;
-      tempstructC.cluster_seed    = tempstructC.cluster_E;
-      tempstructC.cluster_NTowers = 1;
-      cluster_towers.push_back(input_towers.at(0));
-      if (verbosity) std::cout << "seed: "<<  input_towers.at(0).tower_iEta << "\t" << input_towers.at(0).tower_iPhi << "\t E:"<< tempstructC.cluster_E << std::endl;
-      
 
-      // remove seed tower from sample
-      input_towers.erase(input_towers.begin());
-      for (int tit = 0; tit < (int)cluster_towers.size(); tit++){
-        // Now go recursively to all neighbours and add them to the cluster if they fulfill the conditions
-        int refC = 0;
-        int iEtaTwr = cluster_towers.at(tit).tower_iEta;
-        int iPhiTwr = cluster_towers.at(tit).tower_iPhi;
-        for (int ait = 0; ait < (int)input_towers.size(); ait++){
-          int iEtaTwrAgg = input_towers.at(ait).tower_iEta;
-          int iPhiTwrAgg = input_towers.at(ait).tower_iPhi;
-          
-          if (iPhiTwr < 10 && iPhiTwrAgg > towersy-10){
-            iPhiTwrAgg= iPhiTwrAgg-towersy;
-          }
-          if (iPhiTwr > towersy-10 && iPhiTwrAgg < 10){
-            iPhiTwr= iPhiTwr-towersy;
-          }
-
-          // first condition asks for V3-like neighbors, while second condition also checks diagonally attached towers
-          int deltaPhi  = TMath::Abs(iPhiTwrAgg-iPhiTwr) ;
-          int deltaEta  = TMath::Abs(iEtaTwrAgg-iEtaTwr) ;
-          bool neighbor = (deltaPhi+deltaEta == 1);
-          bool corner2D = deltaPhi == 1 && deltaEta == 1;
-          if(neighbor || corner2D ){
-            // only aggregate towers with lower energy than current tower
-//             if(input_towers.at(ait).tower_E >= (cluster_towers.at(tit).tower_E + (aggE/10.))) continue;
-            tempstructC.cluster_E+=input_towers.at(ait).tower_E;
-            tempstructC.cluster_NTowers++;
-            cluster_towers.push_back(input_towers.at(ait));
-            if (verbosity) std::cout  << "aggregated: "<< iEtaTwrAgg << "\t" << iPhiTwrAgg << "\t E:" << input_towers.at(ait).tower_E 
-                                      << "\t reference: "<< refC << "\t"<< iEtaTwr << "\t" << iPhiTwr 
-                                      << "\t cond.: \t"<< neighbor << "\t" << corner2D << "\t  diffs: " << deltaEta << "\t" << deltaPhi << std::endl;
-            input_towers.erase(input_towers.begin()+ait);
-            ait--;
-            refC++;
-          }
-        }
+      if(clusterizerEnum==kC3){
+        tempstructC = findCircularCluster(3, seedE, caloID, input_towers, cluster_towers, clslabels);
+      } else if (clusterizerEnum==kC5){
+        tempstructC = findCircularCluster(5, seedE, caloID, input_towers, cluster_towers, clslabels);
+      } else if (clusterizerEnum==k3x3){
+        tempstructC = findSquareCluster(3, seedE, caloID, input_towers, cluster_towers, clslabels);
+      } else if (clusterizerEnum==k5x5){
+        tempstructC = findSquareCluster(5, seedE, caloID, input_towers, cluster_towers, clslabels);
+      } else if (clusterizerEnum==kV1){  
+        tempstructC = findV1Cluster(seedE, caloID, input_towers, cluster_towers, clslabels);
+      } else if (clusterizerEnum==kV3){  
+        tempstructC = findV3Cluster(seedE, caloID, input_towers, cluster_towers, clslabels);
+      } else if (clusterizerEnum==kMA){  
+        tempstructC = findMACluster(seedE, caloID, input_towers, cluster_towers, clslabels);
+      } else {
+        std::cout << "incorrect clusterizer selected! Enum " << clusterizerEnum << " not defined!" << std::endl;
+        return;
       }
+
       cout << "filling hist for cluster: "  << nclusters << "\t E: " << tempstructC.cluster_E << "\t seed E: " << tempstructC.cluster_seed<<  endl;
+
       for (int tic = 0; tic < (int)cluster_towers.size(); tic++){
         int iEtaTwr = cluster_towers.at(tic).tower_iEta;
         int iPhiTwr = cluster_towers.at(tic).tower_iPhi;
@@ -377,6 +308,7 @@ void plotBarrelClusters3D(
         h_CylindricalMapEvt_Cl[nclusters]->Fill(tmpPhi,tmpZ,eTwr);
         h_IEtaIPhiMapEvt_Cl[nclusters]->Fill(iEtaTwr, iPhiTwr, eTwr);
       }
+      
       rec_clusters.push_back(tempstructC);
 
       nclusters++;
