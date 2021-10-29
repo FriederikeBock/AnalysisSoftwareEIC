@@ -309,6 +309,96 @@ void SetStyleHistoTH3ForGraphs( TH3* histo,
   
 }
 
+
+    //__________________________________________________________________________________________________________
+    void ReturnCorrectValuesForCanvasScaling(   Int_t sizeX,
+                                                Int_t sizeY,
+                                                Int_t nCols,
+                                                Int_t nRows,
+                                                Double_t leftMargin,
+                                                Double_t rightMargin,
+                                                Double_t upperMargin,
+                                                Double_t lowerMargin,
+                                                Double_t* arrayBoundariesX,
+                                                Double_t* arrayBoundariesY,
+                                                Double_t* relativeMarginsX,
+                                                Double_t* relativeMarginsY,
+                                                Bool_t verbose = kTRUE){
+        Int_t realsizeX             = sizeX- (Int_t)(sizeX*leftMargin)- (Int_t)(sizeX*rightMargin);
+        Int_t realsizeY             = sizeY- (Int_t)(sizeY*upperMargin)- (Int_t)(sizeY*lowerMargin);
+
+        Int_t nPixelsLeftColumn     = (Int_t)(sizeX*leftMargin);
+        Int_t nPixelsRightColumn    = (Int_t)(sizeX*rightMargin);
+        Int_t nPixelsUpperColumn    = (Int_t)(sizeY*upperMargin);
+        Int_t nPixelsLowerColumn    = (Int_t)(sizeY*lowerMargin);
+
+        Int_t nPixelsSinglePlotX    = (Int_t) (realsizeX/nCols);
+        Int_t nPixelsSinglePlotY    = (Int_t) (realsizeY/nRows);
+        if(verbose){
+            cout << realsizeX << "\t" << nPixelsSinglePlotX << endl;
+            cout << realsizeY << "\t" << nPixelsSinglePlotY << endl;
+            cout << nPixelsLeftColumn << "\t" << nPixelsRightColumn  << "\t" << nPixelsLowerColumn << "\t" << nPixelsUpperColumn << endl;
+        }
+        Int_t pixel = 0;
+        if(verbose)cout << "boundaries X" << endl;
+        for (Int_t i = 0; i < nCols+1; i++){
+            if (i == 0){
+                arrayBoundariesX[i] = 0.;
+                pixel = pixel+nPixelsLeftColumn+nPixelsSinglePlotX;
+            } else if (i == nCols){
+                arrayBoundariesX[i] = 1.;
+                pixel = pixel+nPixelsRightColumn;
+            } else {
+                arrayBoundariesX[i] = (Double_t)pixel/sizeX;
+                pixel = pixel+nPixelsSinglePlotX;
+            }
+            if(verbose)cout << i << "\t" << arrayBoundariesX[i] << "\t" << pixel<<endl;
+        }
+
+        if(verbose)cout << "boundaries Y" << endl;
+        pixel = sizeY;
+        for (Int_t i = 0; i < nRows+1; i++){
+            if (i == 0){
+                arrayBoundariesY[i] = 1.;
+                pixel = pixel-nPixelsUpperColumn-nPixelsSinglePlotY;
+            } else if (i == nRows){
+                arrayBoundariesY[i] = 0.;
+                pixel = pixel-nPixelsLowerColumn;
+            } else {
+                arrayBoundariesY[i] = (Double_t)pixel/sizeY;
+                pixel = pixel-nPixelsSinglePlotY;
+            }
+            if(verbose)cout << i << "\t" << arrayBoundariesY[i] <<"\t" << pixel<<endl;
+        }
+
+        relativeMarginsX[0]         = (Double_t)nPixelsLeftColumn/(nPixelsLeftColumn+nPixelsSinglePlotX);
+        relativeMarginsX[1]         = 0;
+        relativeMarginsX[2]         = (Double_t)nPixelsRightColumn/(nPixelsRightColumn+nPixelsSinglePlotX);;
+
+        relativeMarginsY[0]         = (Double_t)nPixelsUpperColumn/(nPixelsUpperColumn+nPixelsSinglePlotY);
+        relativeMarginsY[1]         = 0;
+        relativeMarginsY[2]         = (Double_t)nPixelsLowerColumn/(nPixelsLowerColumn+nPixelsSinglePlotY);;
+
+        return;
+    }
+
+    //__________________________________________________________________________________________________________
+    void DrawGammaPadSettings( TPad* pad1,
+                            Double_t leftMargin,
+                            Double_t rightMargin,
+                            Double_t topMargin,
+                            Double_t bottomMargin){
+        pad1->SetFillColor(0);
+        pad1->GetFrame()->SetFillColor(0);
+        pad1->SetBorderMode(0);
+        pad1->SetLeftMargin(leftMargin);
+        pad1->SetBottomMargin(bottomMargin);
+        pad1->SetRightMargin(rightMargin);
+        pad1->SetTopMargin(topMargin);
+        pad1->SetTickx();
+        pad1->SetTicky();
+    }
+
   //__________________________________________________________________________________________________________
 void SetStyleHistoTH1ForGraphs( TH1* histo,
                                 TString XTitle,

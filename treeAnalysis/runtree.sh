@@ -101,7 +101,7 @@ maxevt=10000
 fi
 
 if [ $1 = "centralsim_singleelectron" ]; then
-maxevt=10000
+maxevt=-1
     input="/media/nschmidt/local/EIC_running/singleElectron/eval_00000/DST_General_particleGun_singleElectron_merged_eval.root"
     geometry="/media/nschmidt/local/EIC_running/singleElectron/eval_00000/geometry2ndCampaign.root"
     #input="/Users/ins/Downloads/singleElec_merged/DST_General_particleGun_singleElectron_merged_eval.root"
@@ -115,15 +115,54 @@ maxevt=10000
     #input="/Users/ins/Downloads/singleElec_merged/DST_General_particleGun_singleElectron_merged_eval.root"
     #geometry="/Users/ins/Downloads/singleElec_merged/geometry2ndCampaign.root"
     #UBUNTU:
-    #g++ treeProcessing.C -I$(root-config --incdir) `/media/nschmidt/local/alice/sw/linuxmint19_x86-64/fastjet/v3.2.1_1.024-alice3-1/bin/fastjet-config --cxxflags --libs --plugins` -I/media/nschmidt/local/alice/sw/linuxmint19_x86-64/fastjet/v3.2.1_1.024-alice3-1/include $(root-config --libs --evelibs --glibs) -lMinuit -lCGAL -lgmp -g -o "treeProcessing1"
+    g++ treeProcessing.C -I$(root-config --incdir) `/media/nschmidt/local/alice/sw/linuxmint19_x86-64/fastjet/v3.2.1_1.024-alice3-1/bin/fastjet-config --cxxflags --libs --plugins` -I/media/nschmidt/local/alice/sw/linuxmint19_x86-64/fastjet/v3.2.1_1.024-alice3-1/include $(root-config --libs --evelibs --glibs) -lMinuit -lCGAL -lgmp -g -o "treeProcessing1"
     #OSX
-    g++ treeProcessing.C -I$(root-config --incdir) `/Users/ins/alice/sw/osx_x86-64/fastjet/v3.3.3_1.042-alice1-local1/bin/fastjet-config --cxxflags --libs --plugins` -I/Users/ins/alice/sw/osx_x86-64/fastjet/v3.3.3_1.042-alice1-local1/include $(root-config --libs --evelibs --glibs) -std=c++11 -lMinuit -lCGAL -lgmp -g -o "treeProcessing1"
-    ./treeProcessing1 $input $geometry CENTRALSIM_SINGLEELECTRON $maxevt true false true false 0
+    #g++ treeProcessing.C -I$(root-config --incdir) `/Users/ins/alice/sw/osx_x86-64/fastjet/v3.3.3_1.042-alice1-local1/bin/fastjet-config --cxxflags --libs --plugins` -I/Users/ins/alice/sw/osx_x86-64/fastjet/v3.3.3_1.042-alice1-local1/include $(root-config --libs --evelibs --glibs) -std=c++11 -lMinuit -lCGAL -lgmp -g -o "treeProcessing1"
+    ./treeProcessing1 $input $geometry CENTRALSIM_SINGLEELECTRON $maxevt true false false false 0
 
 fi
 # to find leaks  
 #  -fsanitize=address
 # /Users/ins/alice/sw/osx_x86-64/ROOT/v6-24-06-local1/include/ROOT/RConfig.hxx:50:5: error: "Pass `-std=c++11` as compiler argument."
+
+
+if [ $1 = "centralsim_pythia_TTL8" ]; then
+maxevt=10000
+    input="/media/nschmidt/SSD/simulationOutputEIC/ECCESimulations/output_TTLGEO_8_HITS_Jets_pythia8_ep-10x100-q2-100.root"
+    geometry="/media/nschmidt/local/EIC_running/singleElectron/eval_00000/geometry2ndCampaign.root"
+    #input="/Users/ins/Downloads/singleElec_merged/DST_General_particleGun_singleElectron_merged_eval.root"
+    #geometry="/Users/ins/Downloads/singleElec_merged/geometry2ndCampaign.root"
+    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CENTRALSIM_PYTHIA_TTL8",'$maxevt',true,false  ,false,false,0)'
+fi
+
+
+
+if [ $1 = "calibration" ]; then
+    maxevt=-1
+    input=/media/nschmidt/local/EIC_running/ECCE/ECCE_STANDALONE_BECAL_FEMC_EEMCH_SimpleElectron/mergedECALS_Electron.root
+    geometry=/media/nschmidt/local/EIC_running/ECCE/ECCE_STANDALONE_BECAL_FEMC_EEMCH_SimpleElectron/geometry.root
+    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CALIBRATION_ECAL_ELECTRON",'$maxevt',true,false  ,true,true,0)'
+
+    input=/media/nschmidt/local/EIC_running/ECCE/ECCE_STANDALONE_FWDLCALO_BARCALO_BCKCALO_SimplePion/mergedECALS_Electron.root
+    geometry=/media/nschmidt/local/EIC_running/ECCE/ECCE_STANDALONE_FWDLCALO_BARCALO_BCKCALO_SimplePion/geometry.root
+    #root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CALIBRATION_CALO_PION",'$maxevt',true,false  ,true,false,0)'
+
+    input=/media/nschmidt/local/EIC_running/ECCE/ECCE_STANDALONE_LFHCAL_EHCAL_HCALINOUT_SimplePion/mergedECALS_Electron.root
+    geometry=/media/nschmidt/local/EIC_running/ECCE/ECCE_STANDALONE_LFHCAL_EHCAL_HCALINOUT_SimplePion/geometry.root
+    #root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CALIBRATION_HCAL_PION",'$maxevt',true,false  ,true,false,0)'
+fi
+
+
+
+
+if [ $1 = "pi0_sim_TTL7" ]; then
+maxevt=-1
+    input="/media/nschmidt/local/EIC_running/ECCE/ECCE_TTLGEO_7_add_HITS_pi0_SimplePiZero/mergedECCE.root"
+    geometry="/media/nschmidt/local/EIC_running/ECCE/ECCE_TTLGEO_7_add_HITS_pi0_SimplePiZero/geometry.root"
+    #input="/Users/ins/Downloads/singleElec_merged/DST_General_particleGun_singleElectron_merged_eval.root"
+    #geometry="/Users/ins/Downloads/singleElec_merged/geometry2ndCampaign.root"
+    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","Pi0SIM_TTL8",'$maxevt',true,false  ,false,true,0)'
+fi
 
 
 # 7 10 15 20 25 30 50 75 100
