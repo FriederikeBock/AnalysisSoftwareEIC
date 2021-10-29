@@ -1,3 +1,6 @@
+#ifndef BINNINGHEADER_H
+#define BINNINGHEADER_H
+
 #include <TString.h>
 
   const Int_t nBinsP              = 148;
@@ -155,3 +158,4 @@
                                           };
   Style_t markerStyleClus[nClus]    = {46, 20, 24, 25, 27, 28, 30 };
   Size_t markerSizeClus[nClus]      = {1.5, 1.4, 1.5, 1.9, 1.6, 1.8, 1.5};
+#endif

@@ -149,8 +149,11 @@ void treeProcessingSimple(
           }
         }
 
+        
         // simple TM validation
         if(tracksEnabled) trackmatchingstudies();
+        // simple cluster output QA
+        clusterstudies();
 
         // *****************************************************************************************************************
         // *****************************************************************************************************************
@@ -170,7 +173,9 @@ void treeProcessingSimple(
       std::cout << "running trackmatchingstudiesSave" << std::endl;
       trackmatchingstudiesSave();
     }
-    
+    std::cout << "running clusterstudiesSave" << std::endl;
+    clusterstudiesSave();
+
     // *****************************************************************************************************************
     // *****************************************************************************************************************
     // **********************   PUT your save functions HERE ***********************************************************

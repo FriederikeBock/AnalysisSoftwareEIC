@@ -24,6 +24,7 @@
 #include <TGraphErrors.h>
 #include <TGaxis.h>
 #include <TLegend.h>
+#include <TFrame.h>
 
 //__________________________________________________________________________________________________________
 TString ReturnDateStringForOutput(){

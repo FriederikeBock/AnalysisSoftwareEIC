@@ -418,7 +418,7 @@ void trackingcomparison() {
     if (verbosityTRKEFF > 3)std::cout << "outer track: "<< iOuterTrk << std::endl;
     if ((int)_track_trueID[iOuterTrk] < 0) continue;
     if (_mcpart_RecTrackIDs[(int)_track_trueID[iOuterTrk]].size() > 1){
-      for (int rtr = 0; rtr < _mcpart_RecTrackIDs[(int)_track_trueID[iOuterTrk]].size(); rtr++){
+      for (int rtr = 0; rtr < (int)_mcpart_RecTrackIDs[(int)_track_trueID[iOuterTrk]].size(); rtr++){
         int iInnerTrk = _mcpart_RecTrackIDs[(int)_track_trueID[iOuterTrk]].at(rtr);
         int iInnerTrkSource = _track_source[iInnerTrk];
         if ( _track_source[iOuterTrk] >= iInnerTrkSource ) continue;

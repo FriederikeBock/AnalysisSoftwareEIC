@@ -921,7 +921,7 @@ void prepareMCMatchInfo(){
     if ((int)_track_trueID[itrk] < 0) continue;
     if (_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].size() > 1){
       if (verbosityBASE > 2) std::cout << "identified multiple tracks for: " << (int)_track_trueID[itrk] << " current track id: " << itrk << std::endl;
-      for (int rtr = 0; rtr < _mcpart_RecTrackIDs[(int)_track_trueID[itrk]].size(); rtr++){
+      for (int rtr = 0; rtr < (int)_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].size(); rtr++){
         if (verbosityBASE > 3) std::cout << rtr << "\t MC id " << _mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr) << "\t track source\t " << _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] << std::endl;
         if ( _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] > trackSource &&  _track_source[_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].at(rtr)] == 1 )
           _track_hasOL[itrk] = (_track_hasOL[itrk] || true);

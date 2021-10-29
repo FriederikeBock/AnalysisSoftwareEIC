@@ -1,3 +1,6 @@
+#ifndef CALOHEADER_H
+#define CALOHEADER_H
+
 // ANCHOR basic struct for towers in clusterizer
 typedef struct {
   float tower_E;
@@ -89,6 +92,7 @@ float _ch_FOCAL_pos_z = 1;
 
 // sorting function for towers
 bool acompare(towersStrct lhs, towersStrct rhs) { return lhs.tower_E > rhs.tower_E; }
+bool acompareTrueID(towersStrct lhs, towersStrct rhs) { return lhs.tower_trueID > rhs.tower_trueID; }
 bool acompareCl(clustersStrct lhs, clustersStrct rhs) { return lhs.cluster_E > rhs.cluster_E; }
 
 void setINTClusterArrayToZero(int* &arrayinput){
@@ -617,3 +621,5 @@ void fillECalClustersIntoJetFindingInputs(
       }
   }
 }
+
+#endif
