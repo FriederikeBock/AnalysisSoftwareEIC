@@ -500,15 +500,15 @@ void treeProcessing(
             jetresolutionhistos(jetsEmcalRec,  jetsTrue,  6, jetR);
             // TString jettype[njettypes] = {"track", "full","hcal","calo","all"};
         }
-        // if(tracksEnabled){
-        //   if(verbosity>1) std::cout << "running trackingefficiency" << std::endl;
-        //   trackingefficiency();
-        //   if(verbosity>1) std::cout << "running trackingresolution" << std::endl;
-        //   trackingresolution();
-        //   if(verbosity>1) std::cout << "running trackingcomparison" << std::endl;
-        //   trackingcomparison();
-        //   if(verbosity>1) std::cout << "finished tracking studies" << std::endl;
-        // }
+        if(tracksEnabled){
+          if(verbosity>1) std::cout << "running trackingefficiency" << std::endl;
+          trackingefficiency();
+          if(verbosity>1) std::cout << "running trackingresolution" << std::endl;
+          trackingresolution();
+          if(verbosity>1) std::cout << "running trackingcomparison" << std::endl;
+          trackingcomparison();
+          if(verbosity>1) std::cout << "finished tracking studies" << std::endl;
+        }
         if (runPi0Reco){
           pi0studies();
         }
@@ -519,7 +519,7 @@ void treeProcessing(
           caloresolutionhistos();
           if(verbosity>1) std::cout << "loop done ... next event" << std::endl;
         }
-        // if(tracksEnabled) trackmatchingstudies();
+        if(tracksEnabled) trackmatchingstudies();
 
         clearClusterVectors();
         clearMCRecMatchVectors();
