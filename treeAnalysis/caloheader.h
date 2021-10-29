@@ -315,12 +315,12 @@ int ReturnProjectionIndexForCalorimeter(int caloID,  bool alternate){
       case kFEMC: return 1;
       case kEHCAL: return 4;
       case kEEMC: return 4;
-      case kHCALIN: return 8;
-      case kHCALOUT: return 8;
-      case kCEMC: return 8;
+      case kHCALIN: return 7;
+      case kHCALOUT: return 7;
+      case kCEMC: return 7;
       case kEEMCG: return 4;
       case kLFHCAL: return 1;
-      case kBECAL: return 8;
+      case kBECAL: return 7;
       default:
         std::cout << "ReturnProjectionIndexForCalorimeter: caloID " << caloID << " not defined, returning -1" << std::endl;
         return -1;
@@ -363,7 +363,7 @@ float ReturnTrackMatchingWindowForCalo(int caloID){
     case kCEMC: return 0.05;
     case kEEMCG: return 7;
     case kLFHCAL: return 10;
-    case kBECAL: return 0.2;
+    case kBECAL: return 0.05;
     case kFOCAL: return 3;
     default:
       std::cout << "ReturnTrackMatchingWindowForCalo: caloID " << caloID << " not defined, returning -1" << std::endl;

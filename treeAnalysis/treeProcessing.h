@@ -19,7 +19,7 @@ const int _maxNTracks = 200;
 const int _maxNProjections = 2000;
 const int _maxNMCPart = 100000;
 const int _maxNHepmcp = 1000;
-int verbosityBASE = 3;
+int verbosityBASE = 2;
 
 float _nEventsTree;
 
@@ -448,18 +448,25 @@ TString ReturnDateStr(){
 
 bool _do_TimingStudies        = false;
 bool _is_ALLSILICON           = false;
-const int _maxProjectionLayers    = 8;
-Int_t layerIndexForward[9]  =  {20, 21, 22, 23, 24, 0, 1, 10, 11, 12, };
+const int _maxProjectionLayers    = 32;
+Int_t layerIndexHist[32]  =  { 0, 1, 2, 3, 4, 7,        // TTLs
+                                 50, 51, 52, 53, 54,      // FST
+                                 100, 101, 102, 103,      // EFST
+                                 155, 156, 157, 150, 151, // SVTX & BARR
+                                 110, 111, 112, 120, 130,  // mu RWell 
+                                 6, 60, 61, 62, 63, 66, 67 // calo's 
+};
 
-void ResetLayerIndexForward(){
-  if (!_is_ALLSILICON){
-    layerIndexForward[0]  = 50;
-    layerIndexForward[1]  = 51;
-    layerIndexForward[2]  = 52;
-    layerIndexForward[3]  = 53;
-    layerIndexForward[4]  = 54;
-  }
-}
+// void ResetLayerIndexForward(){
+//   if (!_is_ALLSILICON){
+//     layerIndexHist[0]  = 50;
+//     layerIndexHist[1]  = 51;
+//     layerIndexHist[2]  = 52;
+//     layerIndexHist[3]  = 53;
+//     layerIndexHist[4]  = 54;
+//   }
+// }
+
 TString GetProjectionNameFromIndex(int projindex)
 {
   switch (projindex){
@@ -527,9 +534,9 @@ TString GetProjectionNameFromIndex(int projindex)
     case 159:    return "SVTX_4"; 
     case 161:    return "SVTX"; 
     // mu RWells
-    case 110:    return "RWELL_1"; 
+    case 110:    return "RWELL_0"; 
     case 111:    return "RWELL_1"; 
-    case 112:    return "RWELL_1"; 
+    case 112:    return "RWELL_2"; 
     
     // forward GEMS
     case 120:    return "FGEM_0"; 
@@ -562,34 +569,116 @@ TString GetProjectionNameFromIndex(int projindex)
   }
 }
 
+Int_t GetRegionFromIndex(int projindex)
+{
+  switch (projindex){
+    // timing layers
+    case 0:     return 2; // "FTTL_0";
+    case 1:     return 2; //"FTTL_1";
+    case 2:     return 2; //"FTTL_2";
+    case 3:     return 0; // "ETTL_0";
+    case 4:     return 0; // "ETTL_1";
+    case 7:     return 1; // "CTTL_0";
+    case 8:     return 1; // "CTTL_1";
+    // LBL central barrel
+    case 10:    return 1; // "CENTAL_0"; //"LBLVTX_CENTRAL_10";
+    case 11:    return 1; // "CENTAL_1"; //"LBLVTX_CENTRAL_11";
+    case 12:    return 1; // "CENTAL_2"; //"LBLVTX_CENTRAL_12";
+    case 13:    return 1; // "CENTAL_3"; //"LBLVTX_CENTRAL_13";
+    case 14:    return 1; // "CENTAL_4"; //"LBLVTX_CENTRAL_14";
+    case 15:    return 1; // "CENTAL_5"; //"LBLVTX_CENTRAL_15";
+    // LBL forward barrel
+    case 20:    return 2; //"FORWARD_0"; // "LBLVTX_FORWARD_20"
+    case 21:    return 2; //"FORWARD_1"; // "LBLVTX_FORWARD_21"
+    case 22:    return 2; //"FORWARD_2"; // "LBLVTX_FORWARD_22"
+    case 23:    return 2; //"FORWARD_3"; // "LBLVTX_FORWARD_23"
+    case 24:    return 2; //"FORWARD_4"; // "LBLVTX_FORWARD_24"
+    // LBL backward barrel
+    case 30:    return 0; //"BACKWARD_0"; //"LBLVTX_BACKWARD_30";
+    case 31:    return 0; //"BACKWARD_1"; //"LBLVTX_BACKWARD_31";
+    case 32:    return 0; //"BACKWARD_2"; //"LBLVTX_BACKWARD_32";
+    case 33:    return 0; //"BACKWARD_3"; //"LBLVTX_BACKWARD_33";
+    case 34:    return 0; //"BACKWARD_4"; //"LBLVTX_BACKWARD_34";
+  
+    // old BARREL tracker
+    case 40:    return 1; // "BARREL_0"; //"BARREL_0";
+    case 41:    return 1; // "BARREL_1"; //"BARREL_1";
+    case 42:    return 1; // "BARREL_2"; //"BARREL_2";
+    case 43:    return 1; // "BARREL_3"; //"BARREL_3";
+    case 44:    return 1; // "BARREL_4"; //"BARREL_4";
+    case 45:    return 1; // "BARREL_5"; //"BARREL_5";
+    // FST 
+    case 50:    return 2; // "FST_0";
+    case 51:    return 2; // "FST_1";
+    case 52:    return 2; // "FST_2";
+    case 53:    return 2; // "FST_3";
+    case 54:    return 2; // "FST_4";
+    case 55:    return 2; // "FST_5";
+    // EFST
+    case 100:    return 0; // "EFST_0";
+    case 101:    return 0; // "EFST_1";
+    case 102:    return 0; // "EFST_2";
+    case 103:    return 0; // "EFST_3";
+    case 104:    return 0; // "EFST_4";
+    case 105:    return 0; // "EFST_5";
+    // new BARREL tracker
+    case 150:    return 1; // "BARR_0"; 
+    case 151:    return 1; // "BARR_1"; 
+    case 152:    return 1; // "BARR_2"; 
+    case 153:    return 1; // "BARR_3"; 
+    case 154:    return 1; // "BARR_4"; 
+    case 160:    return 1; // "BARR"; 
+    // SVTX
+    case 155:    return 1; // "SVTX_0"; 
+    case 156:    return 1; // "SVTX_1"; 
+    case 157:    return 1; // "SVTX_2"; 
+    case 158:    return 1; // "SVTX_3"; 
+    case 159:    return 1; // "SVTX_4"; 
+    case 161:    return 1; // "SVTX"; 
+    // mu RWells
+    case 110:    return 1; // "RWELL_1"; 
+    case 111:    return 1; // "RWELL_1"; 
+    case 112:    return 1; // "RWELL_1"; 
+    
+    // forward GEMS
+    case 120:    return 2; // "FGEM_0"; 
+    case 121:    return 2; // "FGEM_1"; 
+    // backward GEMS
+    case 130:    return 0; // "EGEM_0"; 
+    case 131:    return 0; // "EGEM_1"; 
+    
+    // calorimeters
+    case 5:    return 2; // "FHCAL";
+    case 6:    return 2; // "FEMC";
+    case 60:   return 0; // "EHCAL";
+    case 61:   return 0; // "EEMC";
+    case 62:   return 1; // "HCALIN";
+    case 63:   return 1; // "HCALOUT";
+    case 64:   return 1; // "CEMC";
+    case 65:   return 0; // "EEMC_glass_0";
+    case 66:   return 1; // "BECAL";
+    case 67:   return 2; // "LFHCAL";
+    case 140:  return 2; // "LFHCAL_0";
+    case 141:  return 2; // "LFHCAL_1";
+    case 142:  return 2; // "LFHCAL_2";
+    case 143:  return 2; // "LFHCAL_3";
+    case 144:  return 2; // "LFHCAL_4";
+    case 145:  return 2; // "LFHCAL_5";
+    case 146:  return 2; // "LFHCAL_6";
+    case 147:  return 2; // "LFHCAL_7";
+    
+    default:   return 0;
+  }
+}
+
 Int_t ReturnIndexForwardLayer(Int_t layerID){
-  if (_is_ALLSILICON){
-    switch (layerID){
-      case 20: return 0;
-      case 21: return 1;
-      case 22: return 2;
-      case 23: return 3;
-      case 24: return 4;
-      case 0: return 5;
-      case 1: return 6;
-      case 2: return 7;
-      default: return -1;  
-    }
-  } else {
-    switch (layerID){
-      case 50: return 0;
-      case 51: return 1;
-      case 52: return 2;
-      case 53: return 3;
-      case 54: return 4;
-      case 0: return 5;
-      case 1: return 6;
-      case 2: return 7;
-      default: return -1;  
-    }
+  for (Int_t i = 0; i < _maxProjectionLayers; i++){
+    if (layerIndexHist[i] == layerID)
+      return i;
   }
   return -1;
 }
+
 
 Bool_t HasFirstTwoLayers(Int_t layerID){
   if (_is_ALLSILICON){
@@ -776,7 +865,7 @@ int GetCorrectMCArrayEntry(float objectTrueID){
 // **********************************************************************************************
 void prepareMCMatchInfo(){
   for(Int_t itrk=0; itrk<(Int_t)_nTracks; itrk++){
-    if (verbosityBASE > 2) std::cout << "processing track: " << itrk << std::endl;
+    if (verbosityBASE > 3) std::cout << "processing track: " << itrk << std::endl;
     if (_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].size() > 0){
       if (verbosityBASE > 3)
         std::cout << "adding rec track: \t" << itrk << "\t track source: " << _track_source[itrk] << " MC: "<< (int)_track_trueID[itrk] << std::endl;
@@ -791,9 +880,14 @@ void prepareMCMatchInfo(){
     if (verbosityBASE > 2) std::cout << "current track: " << itrk <<std::endl;
     unsigned short trackSource = _track_source[itrk];
     for(Int_t iproj=nCurrProj; iproj<_nProjections; iproj++){
-      if (itrk != _track_ProjTrackID[iproj]) continue;
-      if(_track_Proj_t[iproj]< 2.e-20) continue;
-      double projectionR = TMath::Sqrt(_track_Proj_x[iproj]*_track_Proj_x[iproj]+_track_Proj_y[iproj]*_track_Proj_y[iproj]); 
+      if (itrk != _track_ProjTrackID[iproj])
+        continue;
+      double projectionR = TMath::Sqrt(_track_Proj_x[iproj]*_track_Proj_x[iproj]+_track_Proj_y[iproj]*_track_Proj_y[iproj]);       if(TMath::Abs(_track_Proj_t[iproj])< 2.e-20){
+        if (verbosityBASE > 5) std::cout << iproj << "\t projection layer: "<< _track_ProjLayer[iproj] << "\t t: " << _track_Proj_t[iproj] 
+                                            << "\t x: " << _track_Proj_x[iproj] << "\t y: " << _track_Proj_y[iproj] << "\t z: " << _track_Proj_z[iproj] << "\t r: " << projectionR << std::endl;
+
+        continue;
+      }
       if (verbosityBASE > 2) std::cout << iproj << "\t projection layer: "<< _track_ProjLayer[iproj] << "\t t: " << _track_Proj_t[iproj] 
                                             << "\t x: " << _track_Proj_x[iproj] << "\t y: " << _track_Proj_y[iproj] << "\t z: " << _track_Proj_z[iproj] << "\t r: " << projectionR << std::endl;
       _track_hasTTL[itrk]     = (_track_hasTTL[itrk] || HasTimingLayer(_track_ProjLayer[iproj]));

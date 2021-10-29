@@ -26,7 +26,9 @@
   TString nameResoAdd[5]          = {"All", "woT", "wT","LI", "LS"};
   TString nameAddBeta[4]          = {"", "AEMC", "LI3", "LI3AEMC"};
   
-  TString labelCuts[12]                 = {"no track cuts", "at least 3 hits", "#leq 3 hits & ( 1^{st} | 2^{nd} layer)", "only tracker", "only tracker & ( 1^{st} | 2^{nd} layer)", "tracker & only LGAD before ECal", "tracker & only LGAD before ECal & ( 1^{st} | 2^{nd} layer)", "tracker & LGAD after ECal", "tracker & only LGAD after ECal & ( 1^{st} | 2^{nd} layer)", "any timing hit", "#geq 2 tracker hits", "#geq 3 tracker hits"  };
+  TString labelCuts[12]           = { "no track cuts", "at least 3 hits", "#leq 3 hits & ( 1^{st} | 2^{nd} layer)", "only tracker", "only tracker & ( 1^{st} | 2^{nd} layer)", 
+                                      "tracker & only LGAD before ECal", "tracker & only LGAD before ECal & ( 1^{st} | 2^{nd} layer)", "tracker & LGAD after ECal", "tracker & only LGAD after ECal & ( 1^{st} | 2^{nd} layer)", "any timing hit", 
+                                      "#geq 2 tracker hits", "#geq 3 tracker hits"  };
 
   TString partName[6]             = {"All", "Electron", "Muon", "Pion", "Kaon", "Proton" };
   TString partLabel[6]            = {"(h/e)^{#pm}",  "e^{#pm}", "#mu^{#pm}", "#pi^{#pm}", "K^{#pm}", "p/#bar{p}"};
@@ -139,9 +141,9 @@
   Int_t maxEtaBin[3]           = {4, 8, 13};
   Int_t maxNEtaBins[3]         = {4, 5,  4};
     
-  Int_t minEtaBinFull[3]       = {1, 4,  9};
-  Int_t maxEtaBinFull[3]       = {5, 8, 13};
-  Int_t maxNEtaBinsFull[3]     = {5, 5,  5};
+  Int_t minEtaBinFull[3]       = {0, 4,  9};
+  Int_t maxEtaBinFull[3]       = {5, 8, 14};
+  Int_t maxNEtaBinsFull[3]     = {6, 5,  6};
 
   const Int_t nClus            = 7;
   TString nameClus[nClus]      = {"MA", "V1", "V3", "3x3", "5x5", "C3", "C5" };

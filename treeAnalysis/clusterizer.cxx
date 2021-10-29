@@ -56,6 +56,7 @@ std::vector<int> isClusterMatched(  clustersStrct tempcluster,
       if(_track_ProjLayer[iproj]!=projectionlayer) continue;
       // bad timing = bad projection
       if(_track_Proj_t[iproj]<-9000) continue;
+      if (_track_source[(int)_track_ProjTrackID[iproj]] != primaryTrackSource) { continue; }
       // no projection should end up on the beampipe
       if(isFwd && _track_Proj_x[iproj]==0 && _track_Proj_y[iproj]==0) continue;
 
