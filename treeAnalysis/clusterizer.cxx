@@ -1,4 +1,5 @@
 #include <algorithm>
+#include "caloheader.h"
 // ANCHOR debug output verbosity
 int verbosityCLS = 0;
 
