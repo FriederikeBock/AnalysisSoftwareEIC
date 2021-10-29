@@ -23,6 +23,7 @@
 #include "trackingefficiency.cxx"
 #include "hitstudies.cxx"
 #include "trackmatchingstudies.cxx"
+#include "pi0studies.cxx"
 
 
 
@@ -51,6 +52,8 @@ void treeProcessing(
     gSystem->Exec("mkdir -p "+outputDir + "/etaphi");
 
     if(do_jetfinding) _do_jetfinding = true;
+
+    bool runPi0Reco = true;
 
     // load tree
     TChain *const tt_event = new TChain("event_tree");
@@ -497,14 +500,17 @@ void treeProcessing(
             jetresolutionhistos(jetsEmcalRec,  jetsTrue,  6, jetR);
             // TString jettype[njettypes] = {"track", "full","hcal","calo","all"};
         }
-        if(tracksEnabled){
-          if(verbosity>1) std::cout << "running trackingefficiency" << std::endl;
-          trackingefficiency();
-          if(verbosity>1) std::cout << "running trackingresolution" << std::endl;
-          trackingresolution();
-          if(verbosity>1) std::cout << "running trackingcomparison" << std::endl;
-          trackingcomparison();
-          if(verbosity>1) std::cout << "finished tracking studies" << std::endl;
+        // if(tracksEnabled){
+        //   if(verbosity>1) std::cout << "running trackingefficiency" << std::endl;
+        //   trackingefficiency();
+        //   if(verbosity>1) std::cout << "running trackingresolution" << std::endl;
+        //   trackingresolution();
+        //   if(verbosity>1) std::cout << "running trackingcomparison" << std::endl;
+        //   trackingcomparison();
+        //   if(verbosity>1) std::cout << "finished tracking studies" << std::endl;
+        // }
+        if (runPi0Reco){
+          pi0studies();
         }
         if (runCaloRes){
           if(verbosity>1) std::cout << "running clusterstudies" << std::endl;
@@ -513,7 +519,7 @@ void treeProcessing(
           caloresolutionhistos();
           if(verbosity>1) std::cout << "loop done ... next event" << std::endl;
         }
-        if(tracksEnabled) trackmatchingstudies();
+        // if(tracksEnabled) trackmatchingstudies();
 
         clearClusterVectors();
         clearMCRecMatchVectors();
@@ -552,6 +558,9 @@ void treeProcessing(
     if(tracksEnabled){
       std::cout << "running hitstudiesSave" << std::endl;
       hitstudiesSave();
+    }
+    if(runPi0Reco){
+      pi0studiesSave();
     }
     if(tracksEnabled) {
       std::cout << "running trackmatchingstudiesSave" << std::endl;
