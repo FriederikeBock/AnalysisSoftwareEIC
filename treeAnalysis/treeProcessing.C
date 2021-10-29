@@ -703,6 +703,7 @@ int main( int argc, char* argv[] )
     TString inFile              = "";
     TString inFileGeometry      = "geometry.root";
     TString addOutputName       = "";
+    std::string baseOutputDir   = ".";
     Double_t maxNEvent          = -1;
     bool do_reclus              = true;
     bool do_jetfinding          = false;
@@ -712,7 +713,7 @@ int main( int argc, char* argv[] )
     // Defaults to tracking from all layers.
     unsigned short primaryTrackSource = 0;
     std::string jetAlgorithm    = "anti-kt";
-    double jetR                 = 0.5;
+    std::vector<double> jetRParameters = {0.3, 0.5, 0.8, 1.0};
     double tracked_jet_max_pT   = 30;
     bool removeTracklets        = false;
 
@@ -756,7 +757,7 @@ int main( int argc, char* argv[] )
         if( argc > 11 ) jetAlgorithm = argv[11];
         if( argc > 12 ) { // numberOfBins
             std::stringstream sstr(argv[12]);
-            sstr >> jetR;
+            //sstr >> jetR;
         } if( argc > 13 ) { // numberOfBins
             std::stringstream sstr(argv[13]);
             sstr >> tracked_jet_max_pT;
@@ -767,23 +768,23 @@ int main( int argc, char* argv[] )
         }
 
     // Function call ExtractSignalV2
-        treeProcessing(
-            inFile,
-            inFileGeometry,
-            addOutputName,
-            maxNEvent,
-            do_reclus,
-            do_jetfinding,
-            runCaloRes,
-            doCalibration,
-            verbosity,
-            primaryTrackSource,
-            jetAlgorithm,
-            jetR,
-            tracked_jet_max_pT,
-            removeTracklets
-        );
+    treeProcessing(
+        inFile,
+        inFileGeometry,
+        addOutputName,
+        baseOutputDir,
+        maxNEvent,
+        do_reclus,
+        do_jetfinding,
+        runCaloRes,
+        doCalibration,
+        verbosity,
+        primaryTrackSource,
+        removeTracklets,
+        jetAlgorithm,
+        jetRParameters,
+        tracked_jet_max_pT
+    );
+
     return 0;
-
-
 }
