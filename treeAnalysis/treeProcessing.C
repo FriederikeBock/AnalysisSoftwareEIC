@@ -127,7 +127,10 @@ void treeProcessing(
     // Base setup for jet related observables (defined here since we need to access them everywhere)
     auto eventObservables = EventObservables();
     std::map<std::string, JetObservables> jetObservables;
+    // And PDF related settings
     std::vector<std::string> nPDFNames = {"ep", "EPPS16nlo_CT14nlo_Au197"};
+    bool useNPDFVariations = true;
+    auto pdfs = createPDFContainers(nPDFNames, useNPDFVariations);
     TRandom3 eASelector(0);
     if (_do_jetfinding) {
       // Create jet level observables
@@ -146,9 +149,10 @@ void treeProcessing(
 
       // Jet level
       for (auto && [k, v] : jetObservables) {
-        v.Init(jetRParameters);
+        v.Init(jetRParameters, pdfs);
       }
     }
+    std::cout << "About to start event loop" << std::endl;
 
     _nEventsTree=0;
     // main event loop
