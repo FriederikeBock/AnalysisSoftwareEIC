@@ -224,11 +224,11 @@ struct JetObservables {
                         // jet p vs Q2
                         // p spectra
                         identifier = GetIdentifier(R, jetType, v.second, "spectra_p_Q2", eA, i, tag);
-                        spectra2D[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, 100, 0, 1000);
+                        spectra2D[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, 200, 0, 1000);
                         spectra2D[identifier].Sumw2();
                         // pt spectra
                         identifier = GetIdentifier(R, jetType, v.second, "spectra_pt_Q2", eA, i, tag);
-                        spectra2D[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, 100, 0, 1000);
+                        spectra2D[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, 200, 0, 1000);
                         spectra2D[identifier].Sumw2();
                         // jet p vs x
                         // p spectra
@@ -262,12 +262,12 @@ struct JetObservables {
 
                         // Jet-hadron as function of E
                         identifier = GetIdentifier(R, jetType, v.second, "jet_hadron_E", eA, i, tag);
-                        jetHadronDPhi[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, 72, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
+                        jetHadronDPhi[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, 72, -1.0 * TMath::Pi(), TMath::Pi());
                         jetHadronDPhi[identifier].Sumw2();
 
                         // Jet-hadron as function of p
                         identifier = GetIdentifier(R, jetType, v.second, "jet_hadron_p", eA, i, tag);
-                        jetHadronDPhi[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, 72, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
+                        jetHadronDPhi[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, 72, -1.0 * TMath::Pi(), TMath::Pi());
                         jetHadronDPhi[identifier].Sumw2();
                     }
                 }
