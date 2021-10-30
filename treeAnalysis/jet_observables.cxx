@@ -151,6 +151,7 @@ struct JetObservables {
     std::string nPDFName = "";
     std::string tag = "";
     std::map<std::string, TH1D> spectra{};
+    std::map<std::string, TH2D> spectra2D{};
     std::map<std::string, TH2D> angularity{};
     std::map<std::string, TH2D> jetHadronDPhi{};
     std::vector<TH1D> backwardHadrons{};
@@ -162,6 +163,7 @@ struct JetObservables {
         nPDFName{_nPDFName},
         tag(_tag),
         spectra{},
+        spectra2D{},
         angularity{},
         jetHadronDPhi{},
         backwardHadrons{},
@@ -175,30 +177,13 @@ struct JetObservables {
     {
         // Setup
         bool eA = is_eA();
+        // Setup pdfs if needed
         unsigned int nVariations = 1;
-        std::cout << "Before pdfContainer assignment for " << jetTypes.at(jetType) << ", pdf name: " << nPDFName << std::endl;
         if (eA) {
-            std::cout << "Assigning to pdfContainer" << std::endl;
             this->pdfContainer = pdfContainers.at(this->nPDFName);
             nVariations = this->pdfContainer->nPDF.size();
-            std::cout << "Done with assignment" << std::endl;
         }
-        std::cout << "After pdfContaerin assignment" << std::endl;
-        //if (eA) {
-        //    gSystem->Load("libLHAPDF");
-        //    //this->pdf = std::make_unique<LHAPDF::PDF>(LHAPDF::mkPDF("EPPS16nlo_CT14nlo_Au197"));
-        //    auto npdfInfo = nuclearPDFInfo.at(this->nPDFName);
-        //    if (this->useNPDFVariations) {
-        //        nVariations = npdfInfo.nVariations;
-        //    };
-        //    this->nPDF.resize(nVariations);
-        //    for (unsigned int i = 0; i < nVariations; ++i) {
-        //        // We get the raw pointer for LHAPDF, so we want to encapsulate it in the unique_ptr
-        //        this->nPDF.at(i).reset(LHAPDF::mkPDF(this->nPDFName, i));
-        //    }
-        //    // We also need the proton PDF for reference
-        //    this->protonPDF.reset(LHAPDF::mkPDF(npdfInfo.protonPDF));
-        //}
+
         std::string identifier = "";
         // Log base 10 bins for angularity
         // From https://root-forum.cern.ch/t/how-to-define-a-log10-binning/11393
@@ -215,7 +200,7 @@ struct JetObservables {
         }
         //std::cout << "\n";
         //std::cout << "size: " << logBins.size() << "\n";
-        // Add types of jets, jet R. Make a string
+        // Add types of jets, jet R, etc to make an identifier
         for (unsigned int i = 0; i < nVariations; ++i) {
             for (auto R : jetRParameters) {
                 //for (auto && [region, info] : regions) {
@@ -228,7 +213,6 @@ struct JetObservables {
                     identifier = GetIdentifier(R, jetType, v.second, "spectra_p", eA, i, tag);
                     spectra[identifier] = TH1D(identifier.c_str(), identifier.c_str(), 150, 0, 150);
                     spectra[identifier].Sumw2();
-
                     // pt spectra
                     identifier = GetIdentifier(R, jetType, v.second, "spectra_pt", eA, i, tag);
                     spectra[identifier] = TH1D(identifier.c_str(), identifier.c_str(), 150, 0, 150);
@@ -237,7 +221,24 @@ struct JetObservables {
                     // Save on huge memory costs by avoiding the variations for observables where we're
                     // not as interested at the moment
                     if (i == 0) {
-                        // TODO: p vs x, Q2
+                        // jet p vs Q2
+                        // p spectra
+                        identifier = GetIdentifier(R, jetType, v.second, "spectra_p_Q2", eA, i, tag);
+                        spectra2D[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, 100, 0, 1000);
+                        spectra2D[identifier].Sumw2();
+                        // pt spectra
+                        identifier = GetIdentifier(R, jetType, v.second, "spectra_pt_Q2", eA, i, tag);
+                        spectra2D[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, 100, 0, 1000);
+                        spectra2D[identifier].Sumw2();
+                        // jet p vs x
+                        // p spectra
+                        identifier = GetIdentifier(R, jetType, v.second, "spectra_p_x", eA, i, tag);
+                        spectra2D[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, nLogBins, logBins.data());
+                        spectra2D[identifier].Sumw2();
+                        // pt spectra
+                        identifier = GetIdentifier(R, jetType, v.second, "spectra_pt_x", eA, i, tag);
+                        spectra2D[identifier] = TH2D(identifier.c_str(), identifier.c_str(), 150, 0, 150, nLogBins, logBins.data());
+                        spectra2D[identifier].Sumw2();
 
                         // Angularity
                         // a = 0 (mass)
@@ -296,6 +297,9 @@ struct JetObservables {
         //for (auto && [_, h] : spectra) {
         // Spectra
         for (auto & h : this->spectra) {
+            h.second.Write();
+        }
+        for (auto & h : this->spectra2D) {
             h.second.Write();
         }
         // Angularity
@@ -434,6 +438,14 @@ void fillJetObservables(JetObservables & observables,
             // Save on huge memory costs by avoiding the variations for observables where we're
             // not as interested at the moment
             if (i == 0) {
+                // 2D spectra
+                // spectra vs Q2
+                observables.spectra2D[GetIdentifier(jetR, observables.jetType, region, "spectra_p_Q2", eA, i, observables.tag)].Fill(j.modp(), kinematics.Q2, weight);
+                observables.spectra2D[GetIdentifier(jetR, observables.jetType, region, "spectra_pt_Q2", eA, i, observables.tag)].Fill(j.perp(), kinematics.Q2, weight);
+                // spectra vs x
+                observables.spectra2D[GetIdentifier(jetR, observables.jetType, region, "spectra_p_x", eA, i, observables.tag)].Fill(j.modp(), kinematics.x, weight);
+                observables.spectra2D[GetIdentifier(jetR, observables.jetType, region, "spectra_pt_x", eA, i, observables.tag)].Fill(j.perp(), kinematics.x, weight);
+
                 double angularity_a_0 = 0;
                 double angularity_a_1 = 0;
                 for (auto constituent : j.constituents()) {
