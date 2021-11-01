@@ -329,7 +329,6 @@ void fillEventObservables(EventObservables & eventObservables, const DISKinemati
 
     // Fill the hist.
     eventObservables.Q2Measured.Fill(measuredKinematics.Q2, cross_section);
-    eventObservables.Q2Measured.Fill(measuredKinematics.Q2, cross_section);
 }
 
 /**
@@ -407,7 +406,7 @@ void fillJetObservables(JetObservables & observables,
                     double weightNPDF = observables.pdfContainer->nPDF.at(i)->xfxQ2(struckQuarkFlavor, kinematics.x, kinematics.Q2);
                     double ratio = weightNPDF / weightPDF;
                     if (std::isfinite(ratio)) {
-                        weight *= (weightNPDF / weightPDF);
+                        weight *= ratio;
                     }
                     else {
                         std::cout << "WARNING: Non finite value for weight, not modifying: weightNPDF=" << weightNPDF
