@@ -5,7 +5,8 @@ int verbosityCLS = 0;
 
 // ANCHOR define global variables
 float aggregation_margin_V3 = 0.03;
-float aggregation_margin_MA = 0.03;
+//                                       FHCAL   FEMC    DRCALO  EEMC   CEMC   EHCAL HCALIN  HCALOUT LFHCAL  EEMCG BECAL
+float aggregation_margin_MA[maxcalo] = { 0.05,   0.03,   0.03,   0.075, 0.05,  0.1,  0.1,    0.1,    0.03,   0.05,  0.03   };
 
 TH2F*  h_clusterizer_nonagg_towers[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_matched_2D_delta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
@@ -600,7 +601,7 @@ clustersStrct findMACluster(
 
           // only aggregate towers with lower energy than current tower
           if(caloEnum != kLFHCAL){
-            if(input_towers_temp.at(ait).tower_E >= (cluster_towers_temp.at(tit).tower_E + aggregation_margin_MA)) continue;
+            if(input_towers_temp.at(ait).tower_E >= (cluster_towers_temp.at(tit).tower_E + aggregation_margin_MA[caloEnum])) continue;
           } 
           tempstructC.cluster_E+=input_towers_temp.at(ait).tower_E;
           tempstructC.cluster_NTowers++;
