@@ -264,7 +264,7 @@ void treeProcessing(
                 if(_track_source[itrk] != primaryTrackSource) {
                     continue;
                 }
-                if (removeTracklets && (_track_source[itrk] == 0 && _track_hasIL[itrk])) {
+                if (removeTracklets && (_track_source[itrk] == 0 && _track_hasIL[itrk] == false)) {
                   continue;
                 }
 
