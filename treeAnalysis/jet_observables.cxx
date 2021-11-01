@@ -348,8 +348,8 @@ void fillJetObservables(JetObservables & observables,
     // NOTE: The cross section somtimes isn't available in the productions, so set to 1 if not available.
     // NOTE: Even when available, we should be taking the last cross section to get the smallest error. But this isn't
     //       yet trivial to access. So keep it as 1 for now.
-    //double baseWeight = _cross_section ? _cross_section : 1;
-    double baseWeight = 1;
+    //const double baseWeight = _cross_section ? _cross_section : 1;
+    const double baseWeight = 1;
 
     // Setup information needed for evaluating the nPDF and protonPDF
     unsigned int struckQuarkIndexHepMC = -100;
@@ -369,7 +369,7 @@ void fillJetObservables(JetObservables & observables,
         nVariations = observables.pdfContainer->nPDF.size();
         // Can only evaluator if the x is physically plausible
         if (kinematics.x > -1 && kinematics.x <= 1) {
-            double weightPDF = observables.pdfContainer->protonPDF->xfxQ2(struckQuarkFlavor, kinematics.x, kinematics.Q2);
+            weightPDF = observables.pdfContainer->protonPDF->xfxQ2(struckQuarkFlavor, kinematics.x, kinematics.Q2);
         }
     }
 
