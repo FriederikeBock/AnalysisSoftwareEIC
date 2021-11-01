@@ -506,11 +506,17 @@ void treeProcessing(
             }
             // Kinematics at various levels
             // Event level
-            auto hepmcStoredKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kHepMCStored, primaryTrackSource, isPythia6, isPythia8, verbosity);
-            auto hepmcCalculatedKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kHepMCCalculated, primaryTrackSource, isPythia6, isPythia8, verbosity);
-            auto partLevelCalculatedKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kPartLevel, primaryTrackSource, isPythia6, isPythia8, verbosity);
+            DISKinematics hepmcStoredKinematics, hepmcCalculatedKinematics, partLevelCalculatedKinematics;
             DISKinematics detLevelCalculatedKinematics;
             DISKinematics jbKinematics;
+            try {
+              hepmcStoredKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kHepMCStored, primaryTrackSource, isPythia6, isPythia8, verbosity);
+              hepmcCalculatedKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kHepMCCalculated, primaryTrackSource, isPythia6, isPythia8, verbosity);
+              partLevelCalculatedKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kPartLevel, primaryTrackSource, isPythia6, isPythia8, verbosity);
+            }
+            catch (KinematicsErrors_t e) {
+              std::cout << "True level kinematics failed with error: " << e << ". Skipping...\n";
+            }
             try {
               // Using detector level quantities
               detLevelCalculatedKinematics = KinematicsUsingTrueInfo(DirectKinematicsOptions_t::kDetLevel, primaryTrackSource, isPythia6, isPythia8, verbosity);
