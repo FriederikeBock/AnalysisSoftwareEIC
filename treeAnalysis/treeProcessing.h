@@ -38,6 +38,12 @@ enum calotype {
   kFOCAL          = 11
 };
 
+typedef struct {
+  float eta_Calo;
+  float phi_Calo;
+} projStrct;
+
+
 bool caloEnabled[20]      = {0};
 bool tracksEnabled        = 0;
 bool vertexEnabled        = 0;
@@ -203,7 +209,8 @@ float* _mcpart_pz                 = new float[_maxNMCPart];
 float* _mcpart_Eta                = new float[_maxNMCPart];
 float* _mcpart_Phi                = new float[_maxNMCPart];
 std::array<std::vector<int>, _maxNMCPart> _mcpart_RecTrackIDs;
-
+std::array<std::vector<projStrct>, _maxNMCPart> _mcpart_EcalProjs;
+std::array<std::vector<projStrct>, _maxNMCPart> _mcpart_HcalProjs;
 
 TRandom3  _fRandom;                                  // random for effi generation
 
@@ -790,7 +797,7 @@ Bool_t IsTrackerLayer(Int_t layerID){
 Bool_t IsCaloProjection(Int_t layerID){
   switch (layerID){  
     case 5: 
-    case 6: 
+    case 6:
     case 60: 
     case 61: 
     case 62: 
@@ -810,6 +817,64 @@ Bool_t IsCaloProjection(Int_t layerID){
       return kTRUE;
     default:
       return kFALSE;
+  }
+  return kFALSE;
+}
+
+Bool_t IsECalProjection(Int_t layerID, bool alternate = false){
+  if (!alternate){
+    switch (layerID){  
+      case 6: 
+      case 61: 
+      case 64:
+      case 65:
+      case 66:
+        return kTRUE;
+      default:
+        return kFALSE;
+    }
+  } else {
+    switch (layerID){      
+      case 0:     
+      case 3:     
+      case 7:     
+        return kTRUE;
+      default:
+        return kFALSE;
+    }
+  }
+  return kFALSE;
+}
+
+Bool_t IsHCalProjection(Int_t layerID, bool alternate = false){
+  if (!alternate){
+    switch (layerID){  
+      case 5: 
+      case 60: 
+      case 62:
+      case 63:
+      case 67:
+      case 140:
+      case 141:
+      case 142:
+      case 143:
+      case 144:
+      case 145:
+      case 146:
+      case 147:
+          return kTRUE;
+      default:
+        return kFALSE;
+    }
+  } else {
+    switch (layerID){      
+      case 0:     
+      case 3:     
+      case 7:     
+        return kTRUE;
+      default:
+        return kFALSE;
+    }
   }
   return kFALSE;
 }
@@ -910,7 +975,16 @@ void prepareMCMatchInfo(){
         _track_Proj_Clas[iproj] = 6;
       }
       _track_RefProjID[itrk].push_back(iproj);
-      nCurrProj = iproj;
+      
+      projStrct tempProj;
+      if ( (IsECalProjection(_track_ProjLayer[iproj],true) || IsHCalProjection(_track_ProjLayer[iproj],true)) && trackSource == 0 ){
+        TVector3 projvec(_track_Proj_true_x[iproj],_track_Proj_true_y[iproj],_track_Proj_true_z[iproj]);
+        tempProj.eta_Calo = projvec.Eta();
+        tempProj.phi_Calo = projvec.Phi();
+        _mcpart_EcalProjs[(int)_track_trueID[itrk]].push_back(tempProj);
+        _mcpart_HcalProjs[(int)_track_trueID[itrk]].push_back(tempProj);
+      }
+      nCurrProj = iproj;      
     }
 
     if (trackSource == 1 )
@@ -945,6 +1019,14 @@ void clearMCRecMatchVectors(){
     if (_mcpart_RecTrackIDs[imc].size() > 0){
       _mcpart_RecTrackIDs[imc].clear();
       _mcpart_RecTrackIDs[imc].resize(0);
+    }
+    if (_mcpart_EcalProjs[imc].size() > 0){
+       _mcpart_EcalProjs[imc].clear();
+      _mcpart_EcalProjs[imc].resize(0);
+    }
+    if (_mcpart_HcalProjs[imc].size() > 0){
+       _mcpart_HcalProjs[imc].clear();
+      _mcpart_HcalProjs[imc].resize(0);
     }
   }
 

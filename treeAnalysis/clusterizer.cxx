@@ -502,9 +502,7 @@ clustersStrct findV3Cluster(
     
     // remove seed tower from sample
     input_towers_temp.erase(input_towers_temp.begin());    
-    for (int tit = 0; tit < (int)input_towers_temp.size(); tit++){
-      // remove seed tower from sample
-      input_towers_temp.erase(input_towers_temp.begin());
+    for (int tit = 0; tit < (int)cluster_towers_temp.size(); tit++){
       // Now go recursively to the next 4 neighbours and add them to the cluster if they fulfill the conditions
       int iEtaTwr = cluster_towers_temp.at(tit).tower_iEta;
       int iPhiTwr = cluster_towers_temp.at(tit).tower_iPhi;
@@ -635,10 +633,13 @@ void runclusterizer(
   float aggE,                         // what is the minimum energy of a cell in the clusters
   unsigned short primaryTrackSource   // which track source are you matching the cluster to
 ){
+  
+  if (caloEnum == kLFHCAL && clusterizerEnum > 0) return;
   int nclusters = 0;
   for(int icalo=0;icalo<_active_calo;icalo++){
     if (!caloEnabled[icalo]) continue;
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
+      if (icalo == kLFHCAL && ialgo > 0) continue;
       if(!h_clusterizer_nonagg_towers[icalo][ialgo])h_clusterizer_nonagg_towers[icalo][ialgo] 	= new TH2F(Form("h_clusterizer_nonagg_towers%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 50,0,50,120,0,0.6);
 
     }
@@ -658,6 +659,7 @@ void runclusterizer(
   // sort vector in descending energy order
   std::sort(input_towers.begin(), input_towers.end(), &acompare);
   std::vector<int> clslabels;
+  if (verbosityCLS > 3) std::cout<< "running :" << str_clusterizer[clusterizerEnum].Data() << std::endl;
   while (!input_towers.empty()) {
     cluster_towers.clear();
     clslabels.clear();
@@ -665,6 +667,7 @@ void runclusterizer(
     clustersStrct tempstructC;
     // always start with highest energetic tower
     if(input_towers.at(0).tower_E > seedE){
+      if (verbosityCLS > 3) std::cout<< "seed: " << input_towers.at(0).tower_E << "\t" << input_towers.at(0).tower_iEta <<  "\t" << input_towers.at(0).tower_iPhi<< std::endl;
       if(clusterizerEnum==kC3){
         tempstructC = findCircularCluster(3, seedE, caloEnum, input_towers, cluster_towers, clslabels);
       } else if (clusterizerEnum==kC5){
@@ -717,12 +720,16 @@ void runclusterizer(
       
       nclusters++;
     } else {
+      if (verbosityCLS > 3) std::cout<< "remaing: "<< (int)input_towers.size() << " largest:" << input_towers.at(0).tower_E << "\t" << input_towers.at(0).tower_iEta <<  "\t" << input_towers.at(0).tower_iPhi<< std::endl;
       for (int ait = 0; ait < (int)input_towers.size(); ait++){
+        if (verbosityCLS > 3) std::cout<< input_towers.at(ait).tower_E << "\t" << input_towers.at(ait).tower_iEta <<  "\t" << input_towers.at(ait).tower_iPhi<< std::endl;
         h_clusterizer_nonagg_towers[caloEnum][clusterizerEnum]->Fill(input_towers.size(),input_towers.at(ait).tower_E);
       }
       input_towers.clear();
     }
   }
+  if (verbosityCLS > 3) std::cout<< "finished this event for " << str_clusterizer[clusterizerEnum].Data() << std::endl;
+  return; 
 }
 
 //**************************************************************************************************************

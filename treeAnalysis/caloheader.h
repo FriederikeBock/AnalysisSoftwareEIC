@@ -78,6 +78,7 @@ float aggE[maxcalo]   = {0.1,   0.005, 0.05,  0.01, 0.1,  0.1,  0.05,   0.1,    
 
 // TString str_clusterizer[7] = {"V1", "V3", "3x3", "5x5", "C3", "C5", "MA"};
 TString str_clusterizer[7] = {"MA", "V3", "V1", "5x5", "C5", "C3", "3x3"};
+// TString str_clusterizer[7] = {"V3", "V3", "V1", "5x5", "C5", "C3", "3x3"};
 const int maxAlgo = 7;
 const int _active_algo = 1;
 
@@ -526,18 +527,18 @@ float getCalibrationValue(float clusterE, int caloEnum, int algoEnum){
     if(algoEnum==kMA){
       return 0.9;
     } else {
-      return 1.0;
+      return 0.9;
     }
   } else if(caloEnum == kBECAL){
     if(algoEnum==kMA){
       return 0.9;//0.93-0.0053*clusterE;
     } else {
-      return 1.0;
+      return 0.9;
     }
   } else if(caloEnum == kFEMC){
     return 1.0;
   } else {
-    return 1.0;
+    return 0.9;
   }
   return 1.0;
 }

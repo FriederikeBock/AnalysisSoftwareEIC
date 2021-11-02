@@ -80,8 +80,8 @@ void clusterstudies(){
       if (!caloEnabled[icalo]) continue;
       for(int ialgo=0;ialgo<_active_algo;ialgo++){
         Int_t caloDir           = GetCaloDirection(icalo);
-        Float_t minEtaCurCalo   = partEta[minEtaBinFull[caloDir]];
-        Float_t maxEtaCurCalo   = partEta[maxEtaBinFull[caloDir]+1];
+        Float_t minEtaCurCalo   = partEtaCalo[minEtaBinCalo[caloDir]];
+        Float_t maxEtaCurCalo   = partEtaCalo[maxEtaBinCalo[caloDir]];
         Int_t nBinsEta          = (Int_t)(TMath::Abs(minEtaCurCalo-maxEtaCurCalo)*10);
         
         int maxNTowers  = 100;
@@ -137,12 +137,12 @@ void clusterstudies(){
             h_clusterizer_clsspecSE_matched_particle_E_eta[icalo][ialgo][iPDG]    = new TH2F(Form("h_clusterizer_clsspecSE_matched_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, nBinsEta, minEtaCurCalo,maxEtaCurCalo);
             h_clusterizer_clsspecSEMC_matched_particle_E_eta[icalo][ialgo][iPDG]  = new TH2F(Form("h_clusterizer_clsspecSEMC_matched_particle_E_eta_%s_%s_%s",str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, nBinsEta, minEtaCurCalo,maxEtaCurCalo);
             
-            for (Int_t et = minEtaBinFull[caloDir]; et<maxEtaBinFull[caloDir]+1; et++){
-              Double_t etaMin = partEta[0];
-              Double_t etaMax = partEta[nEta];
+            for (Int_t et = minEtaBinCalo[caloDir]; et<maxEtaBinCalo[caloDir]; et++){
+              Double_t etaMin = partEtaCalo[0];
+              Double_t etaMax = partEtaCalo[nEta];
               if (et < nEta){
-                etaMin = partEta[et];
-                etaMax = partEta[et+1];
+                etaMin = partEtaCalo[et];
+                etaMax = partEtaCalo[et+1];
               }
               h_clusterizer_clsspec_matched_particle_E_EoverP[icalo][ialgo][iPDG][et]      = new TH2F(Form("h_clusterizer_clsspec_matched_particle_Eta_%1.1f_%1.1f_E_EoverP_%s_%s_%s",etaMin,etaMax,str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, 200, 0, 2 );
               h_clusterizer_clsspecMC_matched_particle_E_EoverP[icalo][ialgo][iPDG][et]    = new TH2F(Form("h_clusterizer_clsspecMC_matched_particle_Eta_%1.1f_%1.1f_E_EoverP_%s_%s_%s",etaMin,etaMax,str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data(),str_CS_mcparticles[iPDG].Data()), "", nBinsP, binningP, 200, 0, 2 );
@@ -212,7 +212,7 @@ void clusterstudies(){
         
         // determine eta bin
         Int_t et = 0;
-        while (partEta[et+1] < etaCurrMC && et < nEta) et++;
+        while (partEtaCalo[et+1] < etaCurrMC && et < nEta) et++;
 
         Double_t trackP = 0;
         if ((_clusters_calo[ialgo][icalo].at(iclus)).cluster_isMatched){
@@ -433,7 +433,7 @@ void clusterstudiesSave(){
         if(h_clusterizer_clsspecMC_matched_particle_E_eta[icalo][ialgo][iPDG]) h_clusterizer_clsspecMC_matched_particle_E_eta[icalo][ialgo][iPDG]->Write();
         if(h_clusterizer_clsspecSE_matched_particle_E_eta[icalo][ialgo][iPDG])h_clusterizer_clsspecSE_matched_particle_E_eta[icalo][ialgo][iPDG]->Write();
         if(h_clusterizer_clsspecSEMC_matched_particle_E_eta[icalo][ialgo][iPDG]) h_clusterizer_clsspecSEMC_matched_particle_E_eta[icalo][ialgo][iPDG]->Write();
-        for (Int_t et = minEtaBinFull[caloDir]; et<maxEtaBinFull[caloDir]+1; et++){
+        for (Int_t et = minEtaBinCalo[caloDir]; et<maxEtaBinCalo[caloDir]; et++){
           if(h_clusterizer_clsspec_matched_particle_E_EoverP[icalo][ialgo][iPDG][et])h_clusterizer_clsspec_matched_particle_E_EoverP[icalo][ialgo][iPDG][et]->Write();
           if(h_clusterizer_clsspecMC_matched_particle_E_EoverP[icalo][ialgo][iPDG][et])h_clusterizer_clsspecMC_matched_particle_E_EoverP[icalo][ialgo][iPDG][et]->Write();
           if(h_clusterizer_clsspecSE_matched_particle_E_EoverP[icalo][ialgo][iPDG][et])h_clusterizer_clsspecSE_matched_particle_E_EoverP[icalo][ialgo][iPDG][et]->Write();

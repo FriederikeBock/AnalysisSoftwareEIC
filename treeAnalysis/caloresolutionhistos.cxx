@@ -1,10 +1,11 @@
 
 // ANCHOR debug output verbosity
 Int_t verbosityCRH = 0;
-
 const int particleSpRes = 7;
 TString addNameRes[particleSpRes]   = {"gamma_", "electron_", "pion_", "proton_", "kaon_", "neutron_" ,""};
 int pdgCodeRes[particleSpRes]       = {22, 11, 211, 2212, 321, 2112, -1};
+
+
 
 // ANCHOR create histograms globally
 // ========================== energy resol ======================================
@@ -64,8 +65,9 @@ void caloresolutionhistos(){
       }
       
       Int_t caloDir           = GetCaloDirection(icalo);
-      Float_t minEtaCurCalo   = partEta[minEtaBinFull[caloDir]];
-      Float_t maxEtaCurCalo   = partEta[maxEtaBinFull[caloDir]+1];
+      Float_t minEtaCurCalo   = partEtaCalo[minEtaBinCalo[caloDir]];
+      Float_t maxEtaCurCalo   = partEtaCalo[maxEtaBinCalo[caloDir]];
+//       std::cout << "direction: " << caloDir << "\t" << minEtaCurCalo << "\t < \t" << maxEtaCurCalo << std::endl;
       
       for(Int_t sp = 0; sp< particleSpRes; sp++){
         if(!h_CRH_EReso_E[sp][icalo][ialgo]) h_CRH_EReso_E[sp][icalo][ialgo]              = new TH2F(Form("h_CRH_EReso_%sE_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
@@ -77,7 +79,8 @@ void caloresolutionhistos(){
         if(!h_CRH_EResoCalib_Erec[sp][icalo][ialgo])h_CRH_EResoCalib_Erec[sp][icalo][ialgo] = new TH2F(Form("h_CRH_EResoCalib_%sErec_%s_%s", addNameRes[sp].Data(),  str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
         if(!h_CRH_EResoCalibSmear_Erec[sp][icalo][ialgo])h_CRH_EResoCalibSmear_Erec[sp][icalo][ialgo] = new TH2F(Form("h_CRH_EResoCalibSmear_%sErec_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
       
-        for (Int_t eT = minEtaBinFull[caloDir]; eT < maxEtaBinFull[caloDir]+1; eT++){
+        for (Int_t eT = minEtaBinCalo[caloDir]; eT < maxEtaBinCalo[caloDir]; eT++){
+//           std::cout << eT << "\t" << partEtaCalo[eT] << "\t < eta < \t" << partEtaCalo[eT+1] << std::endl;
           if(!h_CRH_EReso_E_Eta[sp][icalo][ialgo][eT])h_CRH_EReso_E_Eta[sp][icalo][ialgo][eT] 	= new TH2F(Form("h_CRH_EReso_%sE_Eta_%s_%s_%d", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data(), eT), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
         }
         
@@ -93,8 +96,6 @@ void caloresolutionhistos(){
         if(!h_CRH_PhiReso_Phirec[sp][icalo][ialgo])h_CRH_PhiReso_Phirec[sp][icalo][ialgo]           = new TH2F(Form("h_CRH_PhiReso_%sPhirec_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 100,-TMath::Pi(), TMath::Pi(), nbinsPhiRes, -1, 1);
         if(!h_CRH_PhiReso_E_Phi[sp][icalo][ialgo])h_CRH_PhiReso_E_Phi[sp][icalo][ialgo]             = new TH3F(Form("h_CRH_PhiReso_%sE_Phi_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, 100,-TMath::Pi(), TMath::Pi(), nbinsPhiRes, -1, 1);
         if(!h_CRH_PhiReso_Ereco_Phi[sp][icalo][ialgo])h_CRH_PhiReso_Ereco_Phi[sp][icalo][ialgo] 	      = new TH3F(Form("h_CRH_PhiReso_%sEreco_Phi_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, 100,-TMath::Pi(), TMath::Pi(), nbinsPhiRes, -1, 1);
-       
-        
       }
       
       for(Int_t iclus=0; iclus<(Int_t)_clusters_calo[ialgo][icalo].size(); iclus++){
@@ -117,6 +118,18 @@ void caloresolutionhistos(){
           nTry++;  
         }
         
+        float mcEta = _mcpart_Eta[mcID];
+        float mcPhi = _mcpart_Phi[mcID];
+        if (_mcpart_EcalProjs[mcID].size() > 0 && !IsHCALCalorimeter(icalo)){
+//           cout << "found projection: " << _mcpart_EcalProjs[mcID].at(0).eta_Calo << "\t" << _mcpart_EcalProjs[mcID].at(0).phi_Calo << endl;
+            mcEta = _mcpart_EcalProjs[mcID].at(0).eta_Calo;
+            mcPhi = _mcpart_EcalProjs[mcID].at(0).phi_Calo;
+        }
+        if (_mcpart_HcalProjs[mcID].size() > 0 && IsHCALCalorimeter(icalo)){
+//           cout << "found projection: " << _mcpart_EcalProjs[mcID].at(0).eta_Calo << "\t" << _mcpart_EcalProjs[mcID].at(0).phi_Calo << endl;
+            mcEta = _mcpart_HcalProjs[mcID].at(0).eta_Calo;
+            mcPhi = _mcpart_HcalProjs[mcID].at(0).phi_Calo;
+        }
         // find true MC particle for given cluster
         // if(verbosityCRH>1) std::cout << "\tfound MC:  particle " << mcID << "\twith E = " << _mcpart_E[mcID] << " GeV" << std::endl;
         // ========== Energy resolutions ================================================
@@ -152,16 +165,16 @@ void caloresolutionhistos(){
           h_CRH_EResoCalibSmear_Erec[pClass][icalo][ialgo]->Fill(clusterE_calo,(clusterE_calo*getEnergySmearing(icalo,ialgo))/_mcpart_E[mcID]);
         // find eta bin
         Int_t et = 0;
-        while ( ( (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta > partEta[et+1] ) && ( et < nEta )) et++;
+        while ( ( (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta > partEtaCalo[et+1] ) && ( et < nEta )) et++;
         // res E vs MC E in eta slices
-        if(et >= minEtaBinFull[caloDir] && et < maxEtaBinFull[caloDir]+1) {
+        if(et >= minEtaBinCalo[caloDir] && et < maxEtaBinCalo[caloDir]) {
           h_CRH_EReso_E_Eta[particleSpRes-1][icalo][ialgo][et]->Fill(_mcpart_E[mcID],energyRes);
           if (pClass != -1) 
             h_CRH_EReso_E_Eta[pClass][icalo][ialgo][et]->Fill(_mcpart_E[mcID],energyRes);
         }
 
         //====== Eta resolutions =====================================================//                
-        float etadiff = ((_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta-_mcpart_Eta[mcID]);
+        float etadiff = ((_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta-mcEta);
         // res Eta vs MC eta
         h_CRH_EtaReso_Eta[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_Eta[mcID], etadiff);
         if (pClass != -1) 
@@ -189,9 +202,7 @@ void caloresolutionhistos(){
                                                               (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta,
                                                               etadiff);
         //====== Phi resolutions =====================================================//
-        float phiRecS = (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Phi + TMath::Pi();   // shift rec phi by pi
-        float phiMCS  = _mcpart_Phi[mcID] + TMath::Pi();                                      // shift 
-        float phidiff = (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Phi-_mcpart_Phi[mcID];
+        float phidiff = (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Phi-mcPhi;
         if (phidiff >= TMath::Pi()) phidiff = phidiff-2*TMath::Pi();
         if (phidiff <= -TMath::Pi()) phidiff = phidiff+2*TMath::Pi();
         
@@ -274,7 +285,7 @@ void caloresolutionhistos(){
           if(!h_CRH_EResoCombCalib_E[sp][icalo][ialgo])h_CRH_EResoCombCalib_E[sp][icalo][ialgo]      = new TH2F(Form("h_CRH_EResoCombCalib_%sE_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
           if(!h_CRH_EResoCombCalib_Erec[sp][icalo][ialgo])h_CRH_EResoCombCalib_Erec[sp][icalo][ialgo] = new TH2F(Form("h_CRH_EResoCombCalib_%sErec_%s_%s", addNameRes[sp].Data(),  str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
           if(!h_CRH_EResoCombCalibSmear_Erec[sp][icalo][ialgo])h_CRH_EResoCombCalibSmear_Erec[sp][icalo][ialgo] = new TH2F(Form("h_CRH_EResoCombCalibSmear_%sErec_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
-          for (Int_t eT = minEtaBinFull[caloDir]; eT < maxEtaBinFull[caloDir]+1; eT++){
+          for (Int_t eT = minEtaBinCalo[caloDir]; eT < maxEtaBinCalo[caloDir]; eT++){
             if(!h_CRH_EResoComb_E_Eta[sp][icalo][ialgo][eT])h_CRH_EResoComb_E_Eta[sp][icalo][ialgo][eT] 	= new TH2F(Form("h_CRH_EResoComb_%sE_Eta_%s_%s_%d", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data(), eT), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
           }        
         }
@@ -387,9 +398,9 @@ void caloresolutionhistos(){
 
         // find eta bin
         Int_t et = 0;
-        while ( ( clustereta > partEta[et+1] ) && ( et < nEta )) et++;
+        while ( ( clustereta > partEtaCalo[et+1] ) && ( et < nEta )) et++;
         // combined res E vs MC E in eta slices
-        if(et >= minEtaBinFull[caloDir] && et < maxEtaBinFull[caloDir]+1) {
+        if(et >= minEtaBinCalo[caloDir] && et < maxEtaBinCalo[caloDir]) {
           h_CRH_EResoComb_E_Eta[particleSpRes-1][icalo][ialgo][et]->Fill(_mcpart_E[currMCID],clusterenergy/_mcpart_E[currMCID]);
           if (pClass != -1) h_CRH_EResoComb_E_Eta[pClass][icalo][ialgo][et]->Fill(_mcpart_E[currMCID],clusterenergy/_mcpart_E[currMCID]);
         }

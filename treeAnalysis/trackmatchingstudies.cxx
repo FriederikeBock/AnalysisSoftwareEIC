@@ -66,8 +66,8 @@ bool trackmatchingstudies(bool runSpecialCuts = false){
       if (!caloEnabled[icalo]) continue;
       
       Int_t caloDir           = GetCaloDirection(icalo);
-      Float_t minEtaCurCalo   = partEta[minEtaBinFull[caloDir]];
-      Float_t maxEtaCurCalo   = partEta[maxEtaBinFull[caloDir]+1];
+      Float_t minEtaCurCalo   = partEtaCalo[minEtaBinCalo[caloDir]];
+      Float_t maxEtaCurCalo   = partEtaCalo[maxEtaBinCalo[caloDir]];
         
       bool isFwd = IsForwardCalorimeter(icalo);
       float nbins2D = isFwd ? 299 : 300;
@@ -110,12 +110,12 @@ bool trackmatchingstudies(bool runSpecialCuts = false){
       }
       
       // add eta dependent hists
-      for (Int_t et = minEtaBinFull[caloDir]; et<maxEtaBinFull[caloDir]+1; et++){
-        Double_t etaMin = partEta[0];
-        Double_t etaMax = partEta[nEta];
+      for (Int_t et = minEtaBinCalo[caloDir]; et<maxEtaBinCalo[caloDir]; et++){
+        Double_t etaMin = partEtaCalo[0];
+        Double_t etaMax = partEtaCalo[nEta];
         if (et < nEta){
-          etaMin = partEta[et];
-          etaMax = partEta[et+1];
+          etaMin = partEtaCalo[et];
+          etaMax = partEtaCalo[et+1];
         }
         // reconstructed  particles
         if(!h_TMstudies_clusSpec_Eta[icalo][et])
@@ -218,12 +218,12 @@ bool trackmatchingstudies(bool runSpecialCuts = false){
                                                                                   nbins2Ddelta, min2Ddeltahist, max2Ddeltahist, (Int_t)(TMath::Abs(minEtaCurCalo-maxEtaCurCalo)*10), minEtaCurCalo, maxEtaCurCalo);
           h_TMstudies_dx_vsTrkEta_projection[icase][icalo][ialgo]       = new TH2F(Form("h_TMstudies_%s_dx_vsTrkEta_projection_%s_%s",strCases_TMStudies[icase].Data(),str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", 
                                                                                     nbins2Ddelta, min2Ddeltahist, max2Ddeltahist, (Int_t)(TMath::Abs(minEtaCurCalo-maxEtaCurCalo)*10), minEtaCurCalo, maxEtaCurCalo);
-          for (Int_t et = minEtaBinFull[caloDir]; et<maxEtaBinFull[caloDir]+1; et++){
-            Double_t etaMin = partEta[0];
-            Double_t etaMax = partEta[nEta];
+          for (Int_t et = minEtaBinCalo[caloDir]; et<maxEtaBinCalo[caloDir]; et++){
+            Double_t etaMin = partEtaCalo[0];
+            Double_t etaMax = partEtaCalo[nEta];
             if (et < nEta){
-              etaMin = partEta[et];
-              etaMax = partEta[et+1];
+              etaMin = partEtaCalo[et];
+              etaMax = partEtaCalo[et+1];
             }
             h_TMstudies_dx_vsClsE_projection[icase][icalo][ialgo][et] = new TH2F(Form("h_TMstudies_%s_dx_vsClsEta_projection_E_%1.1f_%1.1f_%s_%s",strCases_TMStudies[icase].Data(),etaMin,etaMax, str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nBinsP, binningP,
                                                                                   nbins2Ddelta, min2Ddeltahist, max2Ddeltahist);
@@ -241,8 +241,8 @@ bool trackmatchingstudies(bool runSpecialCuts = false){
   for(int icalo=0;icalo<_active_calo;icalo++){
     if (!caloEnabled[icalo]) continue;
     Int_t caloDir           = GetCaloDirection(icalo);
-    Float_t minEtaCurCalo   = partEta[minEtaBinFull[caloDir]];
-    Float_t maxEtaCurCalo   = partEta[maxEtaBinFull[caloDir]+1];
+    Float_t minEtaCurCalo   = partEtaCalo[minEtaBinCalo[caloDir]];
+    Float_t maxEtaCurCalo   = partEtaCalo[maxEtaBinCalo[caloDir]];
     bool isFwd = IsForwardCalorimeter(icalo);
     bool b_TMstudies_2D_projection_filled = false;
   
@@ -272,9 +272,9 @@ bool trackmatchingstudies(bool runSpecialCuts = false){
         
         // determine eta bin
         Int_t et = 0;
-        while (partEta[et+1] < (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta && et < nEta) et++;
+        while (partEtaCalo[et+1] < (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta && et < nEta) et++;
 
-        if(et >= minEtaBinFull[caloDir] && et<maxEtaBinFull[caloDir]+1){
+        if(et >= minEtaBinCalo[caloDir] && et<maxEtaBinCalo[caloDir]){
           h_TMstudies_clusSpec_Eta[icalo][et]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E);
         }
         
@@ -617,12 +617,12 @@ void trackmatchingstudiesSave(){
         if(h_TMstudies_dx_vsClsEta_projection[icase][icalo][ialgo]) h_TMstudies_dx_vsClsEta_projection[icase][icalo][ialgo]->Write();
         if(h_TMstudies_dx_vsTrkEta_track[icase][icalo][ialgo]) h_TMstudies_dx_vsTrkEta_track[icase][icalo][ialgo]->Write();
         if(h_TMstudies_dx_vsTrkEta_projection[icase][icalo][ialgo]) h_TMstudies_dx_vsTrkEta_projection[icase][icalo][ialgo]->Write();
-        for (Int_t et = minEtaBinFull[caloDir]; et<maxEtaBinFull[caloDir]+1; et++){
+        for (Int_t et = minEtaBinCalo[caloDir]; et<maxEtaBinCalo[caloDir]; et++){
           if(h_TMstudies_dx_vsClsE_projection[icase][icalo][ialgo][et]) h_TMstudies_dx_vsClsE_projection[icase][icalo][ialgo][et]->Write();
           if(h_TMstudies_dy_vsClsE_projection[icase][icalo][ialgo][et]) h_TMstudies_dy_vsClsE_projection[icase][icalo][ialgo][et]->Write();
         }
       }
-      for (Int_t et = minEtaBinFull[caloDir]; et<maxEtaBinFull[caloDir]+1; et++){
+      for (Int_t et = minEtaBinCalo[caloDir]; et<maxEtaBinCalo[caloDir]; et++){
         if(h_TMstudies_clusSpec_Eta[icalo][et]&&icase==0)h_TMstudies_clusSpec_Eta[icalo][et]->Write();
         if(h_TMstudies_clusSpec_Matched_Eta[icalo][et]&&icase==0)h_TMstudies_clusSpec_Matched_Eta[icalo][et]->Write();
       }

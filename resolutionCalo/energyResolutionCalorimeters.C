@@ -78,7 +78,7 @@ void energyResolutionCalorimeters(
     linTerm[1]    = 3;
   } else if (caloName.CompareTo("FEMC") == 0){
     detLabel  = "FEMC (PHENIX re-use)";
-    minEtaMax = 1.1;
+    minEtaMax = 1.4;
     maxEtaMax = 4;
     isEMCal   = 1;
     maxResoPer  = 20.5;
@@ -91,7 +91,7 @@ void energyResolutionCalorimeters(
   } else if (caloName.CompareTo("FEMC-wMat") == 0){
     detLabel  = "FEMC, w/ mat. infront";
     caloNameRead = "FEMC";
-    minEtaMax = 1.1;
+    minEtaMax = 1.4;
     maxEtaMax = 4;
     isEMCal   = 1;
     maxResoPer  = 20.5;
@@ -635,8 +635,8 @@ void energyResolutionCalorimeters(
 
     for (Int_t etbin = 0; etbin < nEta; etbin++){
       if (!useEta[i][etbin]) continue;
-      Double_t etaMinCurr = partEta[etbin];
-      Double_t etaMaxCurr = partEta[etbin+1];
+      Double_t etaMinCurr = partEtaCalo[etbin];
+      Double_t etaMaxCurr = partEtaCalo[etbin+1];
       split_canvas(cPNG, Form("cPNG%d_%d",i,etbin), nActiveEpart[i]);
       Int_t padnum =0;
       std::cout << etaMinCurr << "\t" << etaMaxCurr << std::endl;
@@ -751,7 +751,7 @@ void energyResolutionCalorimeters(
       if (!useEta[i][etbin]) continue;
       DrawGammaSetMarker(histResoEVsEEta[i][etbin], markerStyleEta[etbin], markerSizeEta[etbin]*1.5, colorEta[etbin], colorEta[etbin]);
       histResoEVsEEta[i][etbin]->Draw("same,p");
-      legendResEEta->AddEntry(histResoEVsEEta[i][etbin],Form("%1.1f< #eta< %1.1f", partEta[etbin], partEta[etbin+1]),"p");
+      legendResEEta->AddEntry(histResoEVsEEta[i][etbin],Form("%1.1f< #eta< %1.1f", partEtaCalo[etbin], partEtaCalo[etbin+1]),"p");
     }
     DrawGammaSetMarkerTF1(fitResoE[i], 3, 3, kBlack);
     fitResoE[i]->Draw("same");
@@ -1013,7 +1013,7 @@ void energyResolutionCalorimeters(
     legendResPart->Draw();
     drawLatexAdd(perfLabel,0.95,0.92,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     drawLatexAdd(Form("%s", detLabel.Data()),0.95,0.87,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    drawLatexAdd(Form("%1.1f< #eta< %1.1f",partEta[etbin],partEta[etbin+1]),0.95,0.83,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("%1.1f< #eta< %1.1f",partEtaCalo[etbin],partEtaCalo[etbin+1]),0.95,0.83,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     
     
     if (draw)cReso2->Print(Form("%s/Resolution_Fitted_1oE_AllPart_Eta%d.%s", outputDir.Data(), etbin,suffix.Data()));

@@ -216,9 +216,9 @@ void positionResolutionCalorimeters(
       hist2DResoEtaVsE[i]->SetName(Form("projection_Eta_2D_%s_E", readNames[i].Data()));
       
       for (int ebin = 0; ebin < nP; ebin++){
-        histResoEEtaVsEta[i][ebin]  = new TH1F(Form("h_%sreso_EEta_%i", readNames[i].Data(),ebin), "", nEta, partEta);
-        histMeanEEtaVsEta[i][ebin]  = new TH1F(Form("h_%sreso_EEtaMean_%i", readNames[i].Data(),ebin), "", nEta, partEta);
-        histSigmaEEtaVsEta[i][ebin] = new TH1F(Form("h_%sreso_EEtaSigma_%i", readNames[i].Data(),ebin), "", nEta, partEta);
+        histResoEEtaVsEta[i][ebin]  = new TH1F(Form("h_%sreso_EEta_%i", readNames[i].Data(),ebin), "", nEta, partEtaCalo);
+        histMeanEEtaVsEta[i][ebin]  = new TH1F(Form("h_%sreso_EEtaMean_%i", readNames[i].Data(),ebin), "", nEta, partEtaCalo);
+        histSigmaEEtaVsEta[i][ebin] = new TH1F(Form("h_%sreso_EEtaSigma_%i", readNames[i].Data(),ebin), "", nEta, partEtaCalo);
 
 
         for (int etabin = minEtaBinFull[region]; etabin < maxEtaBinFull[region]+1; etabin++){
@@ -228,7 +228,7 @@ void positionResolutionCalorimeters(
           
           hist1DResoEtabins3D[i][ebin][etabin]    = (TH1F*)hist3DResoEta[i]->ProjectionZ(Form("projection_Eta_3D_%s%d_%d", readNames[i].Data(), ebin, etabin), 
                                                                               hist3DResoEta[i]->GetXaxis()->FindBin(partP[ebin]), hist3DResoEta[i]->GetXaxis()->FindBin(partP[ebin+1]),
-                                                                              hist3DResoEta[i]->GetYaxis()->FindBin(partEta[etabin]),hist3DResoEta[i]->GetYaxis()->FindBin(partEta[etabin+1]),"e");
+                                                                              hist3DResoEta[i]->GetYaxis()->FindBin(partEtaCalo[etabin]),hist3DResoEta[i]->GetYaxis()->FindBin(partEtaCalo[etabin+1]),"e");
           hist1DResoEtabins3D[i][ebin][etabin]->Rebin(rebinRes*4);
           if (hist1DResoEtabins3D[i][ebin][etabin]->GetEntries() > 10 ){
             hist1DResoEtabins3D[i][ebin][etabin]->Scale(1/hist1DResoEtabins3D[i][ebin][etabin]->GetMaximum());
@@ -241,12 +241,12 @@ void positionResolutionCalorimeters(
 
             Double_t reso     = sigma/mean;
             Double_t resoErr  = TMath::Sqrt(TMath::Power(sigmaErr/sigma,2)+TMath::Power(meanErr/mean,2));
-            histResoEEtaVsEta[i][ebin]->SetBinContent(histResoEEtaVsEta[i][ebin]->FindBin(partEta[etabin]+0.01),  100*reso);
-            histResoEEtaVsEta[i][ebin]->SetBinError(histResoEEtaVsEta[i][ebin]->FindBin(partEta[etabin]+0.01), resoErr);
-            histMeanEEtaVsEta[i][ebin]->SetBinContent(histResoEEtaVsEta[i][ebin]->FindBin(partEta[etabin]+0.01), mean);
-            histMeanEEtaVsEta[i][ebin]->SetBinError(histResoEEtaVsEta[i][ebin]->FindBin(partEta[etabin]+0.01), meanErr);
-            histSigmaEEtaVsEta[i][ebin]->SetBinContent(histResoEEtaVsEta[i][ebin]->FindBin(partEta[etabin]+0.01), sigma);
-            histSigmaEEtaVsEta[i][ebin]->SetBinError(histResoEEtaVsEta[i][ebin]->FindBin(partEta[etabin]+0.01), sigmaErr);  
+            histResoEEtaVsEta[i][ebin]->SetBinContent(histResoEEtaVsEta[i][ebin]->FindBin(partEtaCalo[etabin]+0.01),  100*reso);
+            histResoEEtaVsEta[i][ebin]->SetBinError(histResoEEtaVsEta[i][ebin]->FindBin(partEtaCalo[etabin]+0.01), resoErr);
+            histMeanEEtaVsEta[i][ebin]->SetBinContent(histResoEEtaVsEta[i][ebin]->FindBin(partEtaCalo[etabin]+0.01), mean);
+            histMeanEEtaVsEta[i][ebin]->SetBinError(histResoEEtaVsEta[i][ebin]->FindBin(partEtaCalo[etabin]+0.01), meanErr);
+            histSigmaEEtaVsEta[i][ebin]->SetBinContent(histResoEEtaVsEta[i][ebin]->FindBin(partEtaCalo[etabin]+0.01), sigma);
+            histSigmaEEtaVsEta[i][ebin]->SetBinError(histResoEEtaVsEta[i][ebin]->FindBin(partEtaCalo[etabin]+0.01), sigmaErr);  
 
             Int_t binE = histResoEEtaVsE[i][etabin]->FindBin(partP[ebin]+0.01);
             histResoEEtaVsE[i][etabin]->SetBinContent(binE,  100*reso);
@@ -262,9 +262,9 @@ void positionResolutionCalorimeters(
     //*****************************************************************
     // integrated eta res vs eta & E
     //*****************************************************************
-    histResoEtaVsEta[i]       = new TH1F(Form("h_%sreso_Eta", readNames[i].Data()), "", nEta, partEta);
-    histMeanEtaVsEta[i]       = new TH1F(Form("h_%sreso_EtaMean", readNames[i].Data()), "", nEta, partEta);
-    histSigmaEtaVsEta[i]      = new TH1F(Form("h_%sreso_EtaSigma", readNames[i].Data()), "", nEta, partEta);
+    histResoEtaVsEta[i]       = new TH1F(Form("h_%sreso_Eta", readNames[i].Data()), "", nEta, partEtaCalo);
+    histMeanEtaVsEta[i]       = new TH1F(Form("h_%sreso_EtaMean", readNames[i].Data()), "", nEta, partEtaCalo);
+    histSigmaEtaVsEta[i]      = new TH1F(Form("h_%sreso_EtaSigma", readNames[i].Data()), "", nEta, partEtaCalo);
     histResoEtaVsE[i]         = new TH1F(Form("h_%sreso_Eta_E", readNames[i].Data()), "", nP, partP);
     histMeanEtaVsE[i]         = new TH1F(Form("h_%sreso_EtaMean_E", readNames[i].Data()), "", nP, partP);
     histSigmaEtaVsE[i]        = new TH1F(Form("h_%sreso_EtaSigma_E", readNames[i].Data()), "", nP, partP);
@@ -276,8 +276,8 @@ void positionResolutionCalorimeters(
     if (hist2DResoEta[i]->GetEntries() > 0){
       for (int etabin = minEtaBinFull[region]; etabin < maxEtaBinFull[region]+1; etabin++){
         hist1DResoEtabins[i][etabin]    = (TH1F*)hist2DResoEta[i]->ProjectionY(Form("projection_dEta_%s%d", readNames[i].Data(), etabin),
-                                                                              hist2DResoEta[i]->GetXaxis()->FindBin(partEta[etabin]), 
-                                                                              hist2DResoEta[i]->GetXaxis()->FindBin(partEta[etabin+1]),"e");
+                                                                              hist2DResoEta[i]->GetXaxis()->FindBin(partEtaCalo[etabin]), 
+                                                                              hist2DResoEta[i]->GetXaxis()->FindBin(partEtaCalo[etabin+1]),"e");
         hist1DResoEtabins[i][etabin]->Rebin(rebinRes);
         if (hist1DResoEtabins[i][etabin]->GetEntries() > 10 ){
           hist1DResoEtabins[i][etabin]->Scale(1/hist1DResoEtabins[i][etabin]->GetMaximum());
@@ -292,12 +292,12 @@ void positionResolutionCalorimeters(
           
           Double_t reso     = sigma/mean;
           Double_t resoErr  = TMath::Sqrt(TMath::Power(sigmaErr/sigma,2)+TMath::Power(meanErr/mean,2));
-          histResoEtaVsEta[i]->SetBinContent(histResoEtaVsEta[i]->FindBin(partEta[etabin]+0.01),  100*reso);
-          histResoEtaVsEta[i]->SetBinError(histResoEtaVsEta[i]->FindBin(partEta[etabin]+0.01), resoErr);
-          histMeanEtaVsEta[i]->SetBinContent(histResoEtaVsEta[i]->FindBin(partEta[etabin]+0.01), mean);
-          histMeanEtaVsEta[i]->SetBinError(histResoEtaVsEta[i]->FindBin(partEta[etabin]+0.01), meanErr);
-          histSigmaEtaVsEta[i]->SetBinContent(histResoEtaVsEta[i]->FindBin(partEta[etabin]+0.01), sigma);
-          histSigmaEtaVsEta[i]->SetBinError(histResoEtaVsEta[i]->FindBin(partEta[etabin]+0.01), sigmaErr);  
+          histResoEtaVsEta[i]->SetBinContent(histResoEtaVsEta[i]->FindBin(partEtaCalo[etabin]+0.01),  100*reso);
+          histResoEtaVsEta[i]->SetBinError(histResoEtaVsEta[i]->FindBin(partEtaCalo[etabin]+0.01), resoErr);
+          histMeanEtaVsEta[i]->SetBinContent(histResoEtaVsEta[i]->FindBin(partEtaCalo[etabin]+0.01), mean);
+          histMeanEtaVsEta[i]->SetBinError(histResoEtaVsEta[i]->FindBin(partEtaCalo[etabin]+0.01), meanErr);
+          histSigmaEtaVsEta[i]->SetBinContent(histResoEtaVsEta[i]->FindBin(partEtaCalo[etabin]+0.01), sigma);
+          histSigmaEtaVsEta[i]->SetBinError(histResoEtaVsEta[i]->FindBin(partEtaCalo[etabin]+0.01), sigmaErr);  
         }
       }
     }
@@ -739,10 +739,10 @@ void positionResolutionCalorimeters(
           drawLatexAdd(Form("%s in %s", labelPart[i].Data() ,detLabel.Data()),0.16,0.89,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
   //         drawLatexAdd(Form("%1.1f< #eta< %1.1f",minEtaMax,maxEtaMax),0.16,0.89-1.3*textSizeLabelsRel,1.3*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
         }
-        drawLatexAdd(Form("%0.1f < #eta < %0.1f ",partEta[etabin], partEta[etabin+1]),0.95,0.89,1.3*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        drawLatexAdd(Form("%0.1f < #eta < %0.1f ",partEtaCalo[etabin], partEtaCalo[etabin+1]),0.95,0.89,1.3*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       
-        Int_t bin = histMeanEtaVsEta[i]->FindBin(partEta[etabin]);
-        cout << "eta: "<<  bin << "\t" << partEta[etabin] << "\t" << histMeanEtaVsEta[i]->GetBinContent(bin) << "\t" << histSigmaEtaVsEta[i]->GetBinContent(bin) << endl;
+        Int_t bin = histMeanEtaVsEta[i]->FindBin(partEtaCalo[etabin]);
+        cout << "eta: "<<  bin << "\t" << partEtaCalo[etabin] << "\t" << histMeanEtaVsEta[i]->GetBinContent(bin) << "\t" << histSigmaEtaVsEta[i]->GetBinContent(bin) << endl;
         DrawGammaLines(histMeanEtaVsEta[i]->GetBinContent(bin), 
                       histMeanEtaVsEta[i]->GetBinContent(bin), 
                       0., 0.2*hist1DResoEtabins[i][etabin]->GetMaximum(), 1, kGray+2, 2);
@@ -894,7 +894,7 @@ void positionResolutionCalorimeters(
         for (int etabin = minEtaBinFull[region]; etabin < maxEtaBinFull[region]+1; etabin++){
           DrawGammaSetMarker(histMeanEEtaVsE[i][etabin], markerStyleEta[etabin], markerSizeEta[etabin], colorEta[etabin], colorEta[etabin]);    
           histMeanEEtaVsE[i][etabin]->Draw("PE,same");
-          legendEEtaMeanE->AddEntry(histMeanEEtaVsE[i][etabin], Form("%1.1f < #eta < %1.1f", partEta[etabin],partEta[etabin+1] ),"p");
+          legendEEtaMeanE->AddEntry(histMeanEEtaVsE[i][etabin], Form("%1.1f < #eta < %1.1f", partEtaCalo[etabin],partEtaCalo[etabin+1] ),"p");
         }
         legendEEtaMeanE->Draw();
         drawLatexAdd(Form("%s in %s", labelPart[i].Data(),detLabel.Data()),0.16,0.14,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);

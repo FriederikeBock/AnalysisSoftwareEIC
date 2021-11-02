@@ -52,6 +52,8 @@
   const Int_t nEta                = 15;                                        
   Double_t partEta[nEta+1]        = { -4.0, -3.5, -3.0, -2.5, -2.0, -1.5, -1.2, -0.4, 0.4, 1.2, 
                                        1.5, 2.0, 2.5, 3.0, 3.5, 4.0};
+  Double_t partEtaCalo[nEta+1]    = { -4.0, -3.5, -3.0, -2.5, -2.0, -1.7, -1.2, -0.4, 0.4, 0.9, 
+                                       1.3, 1.8, 2.5, 3.0, 3.5, 4.0};
                                       // 0: -4.0 < eta < -3.5 
                                       // 1: -3.5 < eta < -3.0 
                                       // 2: -3.0 < eta < -2.5 
@@ -147,6 +149,9 @@
   Int_t minEtaBinFull[3]       = {0, 4,  9};
   Int_t maxEtaBinFull[3]       = {5, 8, 14};
   Int_t maxNEtaBinsFull[3]     = {6, 5,  6};
+  Int_t minEtaBinCalo[3]       = {0, 4,  9};
+  Int_t maxEtaBinCalo[3]       = {6, 11, 15};
+  Int_t maxNEtaBinsCalo[3]     = {6, 6,  6};
 
   const Int_t nClus            = 7;
   TString nameClus[nClus]      = {"MA", "V1", "V3", "3x3", "5x5", "C3", "C5" };

@@ -113,6 +113,8 @@ void plotClustersEndCapCalo(
     labelEnergy   = "e-p: 18#times 108 GeV, Satre";
   } else if (collisionsSys.CompareTo("SingleElectron") == 0){
     labelEnergy   = Form("e^{-}, %0.1f GeV", energy);
+  } else if (collisionsSys.CompareTo("SingleE") == 0){
+    labelEnergy   = "e^{-} simulation";
   } else if (collisionsSys.CompareTo("SingleKaon") == 0){
     labelEnergy   = Form("K^{-}, %0.1f GeV", energy);
   } else if (collisionsSys.CompareTo("SinglePion") == 0){
@@ -367,13 +369,13 @@ void plotClustersEndCapCalo(
   cout << "here" << endl;
   int nMCCurr   = 0;
   int nMCCurrID = input_towersForMC.at(0).tower_trueID;
-  TString tempMCLabel = Form("%i: %.1f GeV", _mcpart_PDG[GetCorrectMCArrayEntry(nMCCurrID)] , _mcpart_E[GetCorrectMCArrayEntry(nMCCurrID)] );
+  TString tempMCLabel = Form("%i: %.1f GeV, #eta = %1.2f", _mcpart_PDG[GetCorrectMCArrayEntry(nMCCurrID)] , _mcpart_E[GetCorrectMCArrayEntry(nMCCurrID)],_mcpart_Eta[GetCorrectMCArrayEntry(nMCCurrID)]  );
   mcPartEnergies.push_back(tempMCLabel);
   while (!input_towersForMC.empty() && nMCCurr < 49) {
     if (nMCCurrID != input_towersForMC.at(0).tower_trueID){
       nMCCurr++;
       nMCCurrID = input_towersForMC.at(0).tower_trueID;
-      tempMCLabel = Form("%i: %.1f GeV", _mcpart_PDG[GetCorrectMCArrayEntry(nMCCurrID)] , _mcpart_E[GetCorrectMCArrayEntry(nMCCurrID)] );
+      tempMCLabel = Form("%i: %.1f GeV, #eta = %1.2f ", _mcpart_PDG[GetCorrectMCArrayEntry(nMCCurrID)] , _mcpart_E[GetCorrectMCArrayEntry(nMCCurrID)], _mcpart_Eta[GetCorrectMCArrayEntry(nMCCurrID)] );
       mcPartEnergies.push_back(tempMCLabel);
     }
 
@@ -385,9 +387,9 @@ void plotClustersEndCapCalo(
   }
   
   
-  if (collisionsSys.Contains("Single"))
-    labelEnergy=Form("%s, #eta = %1.2f", labelEnergy.Data(), _mcpart_Eta[0]);
-  
+//   if (collisionsSys.Contains("Single"))
+//     labelEnergy=Form("%s, #eta = %1.2f", labelEnergy.Data(), _mcpart_Eta[0]);
+//   
   // 2D PLOT
   TCanvas* c2DBox = new TCanvas("c2DBox","",0,0,1000,950);
   DrawGammaCanvasSettings( c2DBox, 0.11, 0.1, 0.01, 0.1);
@@ -402,7 +404,7 @@ void plotClustersEndCapCalo(
     drawLatexAdd(labelDet.Data(),0.88,0.15,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     drawLatexAdd(labelEnergy.Data(),0.88,0.15+textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
 
-  c2DBox->Print(Form("%s/2D/2D_Event%4d_Ecut.%s", outputDir.Data(),plotEvent, suffix.Data()));
+  c2DBox->Print(Form("%s/2D/2D_Event%d_Ecut.%s", outputDir.Data(),plotEvent, suffix.Data()));
 
   // reset 2D canvas
   DrawGammaCanvasSettings( c2DBox, 0.11, 0.03, 0.01, 0.1);
@@ -420,7 +422,7 @@ void plotClustersEndCapCalo(
     drawLatexAdd(labelDet.Data(),0.95,0.14+textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     drawLatexAdd(labelEnergy.Data(),0.95,0.14,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
 
-  c2DBox->Print(Form("%s/2D/2D_Event%4d_Ecut_Box.%s", outputDir.Data(),plotEvent, suffix.Data()));
+  c2DBox->Print(Form("%s/2D/2D_Event%d_Ecut_Box.%s", outputDir.Data(),plotEvent, suffix.Data()));
   
   //************************************************************************************
   // draw 2D hist with box option and different clusters on top
@@ -428,15 +430,15 @@ void plotClustersEndCapCalo(
     for (int nCl = 0; nCl < nclusters; nCl++){
       h_IEtaIPhiMapEvt_Cl[nCl]->SetLineColor(colorCluster[nCl]);
       h_IEtaIPhiMapEvt_Cl[nCl]->Draw("box,same");
-      int cols = nCl%5;
-      int rows = (nCl/5)%5;
-      drawLatexAdd(Form("#it{E}_{cl} = %0.1f GeV", recclusterEnergies.at(nCl) ), 0.14+0.16*cols, 0.93-(rows*0.55*textSizeLabelsRel), 0.55*textSizeLabelsRel, kFALSE, kFALSE, kFALSE, colorCluster[nCl]);
+      int cols = nCl%4;
+      int rows = (nCl/4);
+      drawLatexAdd(Form("#it{E}_{cl} = %0.1f GeV", recclusterEnergies.at(nCl) ), 0.14+0.2*cols, 0.93-(rows*0.55*textSizeLabelsRel), 0.55*textSizeLabelsRel, kFALSE, kFALSE, kFALSE, colorCluster[nCl]);
       
     }
     if (collisionsSys.Contains("Single")){
-      drawLatexAdd(Form("#it{E}_{calo} = %0.1f GeV",sumedE ),0.14,0.93,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      drawLatexAdd(Form("#it{E}_{calo} = %0.1f GeV",sumedE ),0.14,0.14,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
     }
-  c2DBox->Print(Form("%s/2DwClusters/2D_Event%4d_Ecut_clusters.%s", outputDir.Data(),plotEvent, suffix.Data()));
+  c2DBox->Print(Form("%s/2DwClusters/2D_Event%d_Ecut_clusters.%s", outputDir.Data(),plotEvent, suffix.Data()));
   
     //************************************************************************************
   // draw 2D hist with box option and different MC particles on top
@@ -458,7 +460,7 @@ void plotClustersEndCapCalo(
   drawLatexAdd(labelDet.Data(),0.95,0.14+textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
   drawLatexAdd(labelEnergy.Data(),0.95,0.14,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
   
-  c2DBox->Print(Form("%s/2DwClusters/2D_Event%4d_Ecut_MCPart.%s", outputDir.Data(),plotEvent, suffix.Data()));
+  c2DBox->Print(Form("%s/2DwClusters/2D_Event%d_Ecut_MCPart.%s", outputDir.Data(),plotEvent, suffix.Data()));
 
   
 }
