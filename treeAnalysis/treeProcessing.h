@@ -47,6 +47,7 @@ typedef struct {
 bool caloEnabled[20]      = {0};
 bool tracksEnabled        = 0;
 bool vertexEnabled        = 0;
+bool hepMCavailable       = 0;
 bool xSectionEnabled      = 0;
 
 // Event level info
@@ -208,9 +209,26 @@ float* _mcpart_py                 = new float[_maxNMCPart];
 float* _mcpart_pz                 = new float[_maxNMCPart];
 float* _mcpart_Eta                = new float[_maxNMCPart];
 float* _mcpart_Phi                = new float[_maxNMCPart];
+int* _mcpart_BCID                = new int[_maxNMCPart];
 std::array<std::vector<int>, _maxNMCPart> _mcpart_RecTrackIDs;
 std::array<std::vector<projStrct>, _maxNMCPart> _mcpart_EcalProjs;
 std::array<std::vector<projStrct>, _maxNMCPart> _mcpart_HcalProjs;
+
+int _nHepmcp;
+int _hepmcp_procid;
+float _hepmcp_x1;
+float _hepmcp_x2;
+float _hepmcp_Q2;
+int*  _hepmcp_BCID = new int[_maxNHepmcp];
+// float*  _hepmcp_ID_parent = new float[_maxNHepmcp];
+int*  _hepmcp_status = new int[_maxNHepmcp];
+int*  _hepmcp_PDG = new int[_maxNHepmcp];
+float*  _hepmcp_E = new float[_maxNHepmcp];
+float*  _hepmcp_px = new float[_maxNHepmcp];
+float*  _hepmcp_py = new float[_maxNHepmcp];
+float*  _hepmcp_pz = new float[_maxNHepmcp];
+int*  _hepmcp_m1 = new int[_maxNHepmcp];
+int*  _hepmcp_m2 = new int[_maxNHepmcp];
 
 TRandom3  _fRandom;                                  // random for effi generation
 
@@ -439,6 +457,27 @@ void SetBranchAddressesTree(TTree* inputTree){
     inputTree->SetBranchAddress("mcpart_px",     _mcpart_px);
     inputTree->SetBranchAddress("mcpart_py",     _mcpart_py);
     inputTree->SetBranchAddress("mcpart_pz",     _mcpart_pz);
+    inputTree->SetBranchAddress("mcpart_BCID",     _mcpart_BCID);
+
+    if (inputTree->GetBranchStatus("nHepmcp") ){
+      hepMCavailable = 1;
+      inputTree->SetBranchAddress("nHepmcp", &_nHepmcp);
+      inputTree->SetBranchAddress("hepmcp_procid", &_hepmcp_procid);
+      inputTree->SetBranchAddress("hepmcp_x1", &_hepmcp_x1);
+      inputTree->SetBranchAddress("hepmcp_x2", &_hepmcp_x2);
+      inputTree->SetBranchAddress("hepmcp_Q2", &_hepmcp_Q2);
+
+      //    inputTree->SetBranchAddress("hepmcp_ID_parent", _hepmcp_ID_parent, "hepmcp_ID_parent[nHepmcp]/F");
+      inputTree->SetBranchAddress("hepmcp_status", _hepmcp_status);
+      inputTree->SetBranchAddress("hepmcp_PDG", _hepmcp_PDG);
+      inputTree->SetBranchAddress("hepmcp_E", _hepmcp_E);
+      inputTree->SetBranchAddress("hepmcp_px", _hepmcp_px);
+      inputTree->SetBranchAddress("hepmcp_py", _hepmcp_py);
+      inputTree->SetBranchAddress("hepmcp_pz", _hepmcp_pz);
+      inputTree->SetBranchAddress("hepmcp_BCID", _hepmcp_BCID);
+      inputTree->SetBranchAddress("hepmcp_m1", _hepmcp_m1);
+      inputTree->SetBranchAddress("hepmcp_m2", _hepmcp_m2);
+    }
 }
 
 
