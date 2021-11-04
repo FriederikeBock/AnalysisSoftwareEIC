@@ -127,12 +127,22 @@ fi
 
 
 if [ $1 = "centralsim_pythia_TTL8" ]; then
-maxevt=10000
+maxevt=1000 #-1 #10000
     input="/media/nschmidt/SSD/simulationOutputEIC/ECCESimulations/output_TTLGEO_8_HITS_Jets_pythia8_ep-10x100-q2-100.root"
     geometry="/media/nschmidt/local/EIC_running/singleElectron/eval_00000/geometry2ndCampaign.root"
     #input="/Users/ins/Downloads/singleElec_merged/DST_General_particleGun_singleElectron_merged_eval.root"
     #geometry="/Users/ins/Downloads/singleElec_merged/geometry2ndCampaign.root"
-    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CENTRALSIM_PYTHIA_TTL8",'$maxevt',true,false  ,false,false,0)'
+    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CENTRALSIM_PYTHIA_TTL8_EoP",'$maxevt',true,false  ,false,true,0)'
+fi
+
+
+if [ $1 = "centralsim_pythia_TTL8_MB" ]; then
+maxevt=-1 #-1 #10000
+    input="/media/nschmidt/SSD/simulationOutputEIC/ECCESimulations/output_TTLGEO_8_HITS_Jets_pythia8_ep-10x100-q2-1-to-100.root"
+    geometry="/media/nschmidt/local/EIC_running/singleElectron/eval_00000/geometry2ndCampaign.root"
+    #input="/Users/ins/Downloads/singleElec_merged/DST_General_particleGun_singleElectron_merged_eval.root"
+    #geometry="/Users/ins/Downloads/singleElec_merged/geometry2ndCampaign.root"
+    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CENTRALSIM_PYTHIA_TTL8_EoP_MB",'$maxevt',true,false  ,false,true,0)'
 fi
 
 
