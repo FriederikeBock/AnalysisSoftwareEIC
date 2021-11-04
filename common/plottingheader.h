@@ -336,12 +336,12 @@ void SetStyleHistoTH3ForGraphs( TH3* histo,
         Int_t nPixelsSinglePlotX    = (Int_t) (realsizeX/nCols);
         Int_t nPixelsSinglePlotY    = (Int_t) (realsizeY/nRows);
         if(verbose){
-            cout << realsizeX << "\t" << nPixelsSinglePlotX << endl;
-            cout << realsizeY << "\t" << nPixelsSinglePlotY << endl;
-            cout << nPixelsLeftColumn << "\t" << nPixelsRightColumn  << "\t" << nPixelsLowerColumn << "\t" << nPixelsUpperColumn << endl;
+            std::cout << realsizeX << "\t" << nPixelsSinglePlotX << std::endl;
+            std::cout << realsizeY << "\t" << nPixelsSinglePlotY << std::endl;
+            std::cout << nPixelsLeftColumn << "\t" << nPixelsRightColumn  << "\t" << nPixelsLowerColumn << "\t" << nPixelsUpperColumn << std::endl;
         }
         Int_t pixel = 0;
-        if(verbose)cout << "boundaries X" << endl;
+        if(verbose)std::cout << "boundaries X" << std::endl;
         for (Int_t i = 0; i < nCols+1; i++){
             if (i == 0){
                 arrayBoundariesX[i] = 0.;
@@ -353,10 +353,10 @@ void SetStyleHistoTH3ForGraphs( TH3* histo,
                 arrayBoundariesX[i] = (Double_t)pixel/sizeX;
                 pixel = pixel+nPixelsSinglePlotX;
             }
-            if(verbose)cout << i << "\t" << arrayBoundariesX[i] << "\t" << pixel<<endl;
+            if(verbose)std::cout << i << "\t" << arrayBoundariesX[i] << "\t" << pixel<<std::endl;
         }
 
-        if(verbose)cout << "boundaries Y" << endl;
+        if(verbose)std::cout << "boundaries Y" << std::endl;
         pixel = sizeY;
         for (Int_t i = 0; i < nRows+1; i++){
             if (i == 0){
@@ -369,7 +369,7 @@ void SetStyleHistoTH3ForGraphs( TH3* histo,
                 arrayBoundariesY[i] = (Double_t)pixel/sizeY;
                 pixel = pixel-nPixelsSinglePlotY;
             }
-            if(verbose)cout << i << "\t" << arrayBoundariesY[i] <<"\t" << pixel<<endl;
+            if(verbose)std::cout << i << "\t" << arrayBoundariesY[i] <<"\t" << pixel<<std::endl;
         }
 
         relativeMarginsX[0]         = (Double_t)nPixelsLeftColumn/(nPixelsLeftColumn+nPixelsSinglePlotX);
