@@ -36,7 +36,6 @@ void treeProcessing(
     bool do_reclus              = true,
     bool do_jetfinding          = false,
     bool runCaloRes             = true,
-    bool doCalibration          = false,
     Int_t verbosity             = 0,
     // Defaults to tracking from all layers.
     unsigned short primaryTrackSource = 0,
@@ -91,7 +90,6 @@ void treeProcessing(
         nEntriesTree = maxNEvent;
         std::cout << "Will only analyze first " << maxNEvent << " events in the tree..." << std::endl;
     }
-    _doClusterECalibration    = doCalibration;
     if(_doClusterECalibration){
         std::cout << "clusters will be energy-corrected and subsequently smeared to meet testbeam constant term!" << std::endl;
     }
@@ -587,7 +585,6 @@ int main( int argc, char* argv[] )
     bool do_reclus              = true;
     bool do_jetfinding          = false;
     bool runCaloRes             = true;
-    bool doCalibration          = false;
     Int_t verbosity             = 0;
     // Defaults to tracking from all layers.
     unsigned short primaryTrackSource = 0;
@@ -620,11 +617,6 @@ int main( int argc, char* argv[] )
             if( import.EqualTo("kTRUE") || import.EqualTo("true") )  runCaloRes = kTRUE;
             if( import.EqualTo("kFALSE") || import.EqualTo("false") )  runCaloRes = kFALSE;
         }
-        if( argc >  8 ) { // UseTHnSparse
-            import = argv[8];
-            if( import.EqualTo("kTRUE") || import.EqualTo("true") )  doCalibration = kTRUE;
-            if( import.EqualTo("kFALSE") || import.EqualTo("false") )  doCalibration = kFALSE;
-        }
         if( argc >  9 ) {
           std::istringstream sstr(argv[9]);
           sstr >> verbosity;
@@ -655,7 +647,6 @@ int main( int argc, char* argv[] )
             do_reclus,
             do_jetfinding,
             runCaloRes,
-            doCalibration,
             verbosity,
             primaryTrackSource,
             jetAlgorithm,

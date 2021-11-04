@@ -89,8 +89,8 @@ void plotClustersEndCapCalo(
   else 
     maxTower = towersy;
   float minECutOff  = aggE[caloID]/2.;
-  float seedEC       = seedE[caloID];
-  float aggEC        = aggE[caloID];
+  float seedEC      = seedE[caloID];
+  float aggEC       = aggE[caloID];
   int verbosity     = 1;
 
   // dimensions 
@@ -451,8 +451,8 @@ void plotClustersEndCapCalo(
     if (h_IEtaIPhiMapEvt_MCPart[nMC]){
       h_IEtaIPhiMapEvt_MCPart[nMC]->SetLineColor(colorCluster[nMC]);
       h_IEtaIPhiMapEvt_MCPart[nMC]->Draw("box,same");
-      int cols = nMC%5;
-      int rows = (nMC/5)%5;
+      int cols = nMC%4;
+      int rows = (nMC/4);
       drawLatexAdd((TString)(mcPartEnergies.at(nMC)).Data() , 0.14+0.16*cols, 0.93-(rows*0.55*textSizeLabelsRel), 0.55*textSizeLabelsRel, kFALSE, kFALSE, kFALSE, colorCluster[nMC]);
     }
   }

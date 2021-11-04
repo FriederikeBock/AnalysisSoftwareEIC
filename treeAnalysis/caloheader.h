@@ -25,6 +25,7 @@ typedef struct {
   int cluster_NTowers;
   int cluster_trueID;
   int cluster_NtrueID;
+  std::vector<towersStrct> cluster_towers;
 } clustersStrct;
 
 typedef struct {
@@ -537,8 +538,16 @@ float getCalibrationValue(float clusterE, int caloEnum, int algoEnum){
     }
   } else if(caloEnum == kFEMC){
     return 1.0;
-  } else {
+  } else if(caloEnum == kLFHCAL){
     return 0.9;
+  } else if(caloEnum == kHCALOUT){
+    return 0.62;
+  } else if(caloEnum == kHCALIN){
+    return 0.62;
+  } else if(caloEnum == kEHCAL){
+    return 0.37;
+  } else {
+    return 1;
   }
   return 1.0;
 }

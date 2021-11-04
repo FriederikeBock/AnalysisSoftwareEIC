@@ -211,6 +211,8 @@ void clustereffi(
           h_clusterMapSERec_eta_E[pid][iCl]->Sumw2();
         }
         h_clusterMapMC_eta_E[pid][iCl]          = (TH2F*)inputFileCL->Get(Form("%s/h_clusterizer_clsspecMC_particle_E_eta_%s_%s_%s", calo.Data(), calo.Data(), nameClus[iCl].Data(), partNameET[pid].Data()));
+        if (h_trackMapTr_eta_E[pid]->GetEntries() == 0 && h_clusterMapMC_eta_E[pid][iCl]->GetEntries() == 0 ) // no rec particles -> probably only secondaries generated
+          enableParticle[pid]                   = 0;
         h_clusterMapSEMC_eta_E[pid][iCl]        = (TH2F*)inputFileCL->Get(Form("%s/h_clusterizer_clsspecSEMC_particle_E_eta_%s_%s_%s", calo.Data(), calo.Data(), nameClus[iCl].Data(), partNameET[pid].Data()));
         h_clusterMapSEMC_matched_eta_E[pid][iCl]= (TH2F*)inputFileCL->Get(Form("%s/h_clusterizer_clsspecSEMC_matched_particle_E_eta_%s_%s_%s", calo.Data(), calo.Data(), nameClus[iCl].Data(), partNameET[pid].Data()));
         h_clusterMapMC_eta_E[pid][iCl]->Sumw2();
@@ -224,7 +226,7 @@ void clustereffi(
     }
   }
   
-  for (Int_t iEta=0; iEta<maxEtaBinFull[2]+1;iEta++){
+  for (Int_t iEta=0; iEta<maxEtaBinCaloDis[2]+1;iEta++){
     Double_t etaMin = partEta[0];
     Double_t etaMax = partEta[nEta];
     if (iEta < nEta){
@@ -357,7 +359,7 @@ void clustereffi(
         histoDummyEffiE->Draw();
         DrawGammaLines(0.1, 100, 1., 1., 2, kGray+2, 7);
         legendEffiE->Clear();
-        for(Int_t iEta=minEtaBinFull[region]; iEta<maxEtaBinFull[region]+1;iEta++){
+        for(Int_t iEta=minEtaBinCaloDis[region]; iEta<maxEtaBinCaloDis[region];iEta++){
           if (!enablePlot[iEta]) continue;
           DrawGammaSetMarker(h_effi_rec_E[pid][iEta][iCl], markerStyleEta[iEta], markerSizeEta[iEta], colorEta[iEta], colorEta[iEta]);
           h_effi_rec_E[pid][iEta][iCl]->Draw("same,p");
@@ -378,7 +380,7 @@ void clustereffi(
         if (debugOutput)std::cout << "effi single entry E"  << std::endl;
         histoDummyEffiE->Draw();
         DrawGammaLines(0.1, 100, 1., 1., 2, kGray+2, 7);
-        for(Int_t iEta=minEtaBinFull[region]; iEta<maxEtaBinFull[region]+1;iEta++){
+        for(Int_t iEta=minEtaBinCaloDis[region]; iEta<maxEtaBinCaloDis[region];iEta++){
           if (!enablePlot[iEta]) continue;
           DrawGammaSetMarker(h_effi_recSE_E[pid][iEta][iCl], markerStyleEta[iEta], markerSizeEta[iEta], colorEta[iEta], colorEta[iEta]);
           h_effi_recSE_E[pid][iEta][iCl]->Draw("same,p");
@@ -395,7 +397,7 @@ void clustereffi(
       histoDummyEffiMCE->Draw();
       DrawGammaLines(0.1, 100, 1., 1., 2, kGray+2, 7);
       legendEffiE->Clear();
-      for(Int_t iEta=minEtaBinFull[region]; iEta<maxEtaBinFull[region]+1;iEta++){
+      for(Int_t iEta=minEtaBinCaloDis[region]; iEta<maxEtaBinCaloDis[region];iEta++){
         if (!enablePlot[iEta]) continue;
         DrawGammaSetMarker(h_effi_rec_MCE[pid][iEta][iCl], markerStyleEta[iEta], markerSizeEta[iEta], colorEta[iEta], colorEta[iEta]);
         h_effi_rec_MCE[pid][iEta][iCl]->Draw("same,p");
@@ -417,7 +419,7 @@ void clustereffi(
       if (debugOutput)std::cout << "effi single entry MCE"  << std::endl;
       histoDummyEffiMCE->Draw();
       DrawGammaLines(0.1, 100, 1., 1., 2, kGray+2, 7);
-      for(Int_t iEta=0; iEta<nEta+1;iEta++){
+      for(Int_t iEta=minEtaBinCaloDis[region]; iEta<maxEtaBinCaloDis[region];iEta++){
         if (!enablePlot[iEta]) continue;
         DrawGammaSetMarker(h_effi_recSE_MCE[pid][iEta][iCl], markerStyleEta[iEta], markerSizeEta[iEta], colorEta[iEta], colorEta[iEta]);
         h_effi_recSE_MCE[pid][iEta][iCl]->Draw("same,p");
@@ -434,7 +436,7 @@ void clustereffi(
         if (debugOutput)std::cout << "TM effi single entry"  << std::endl;
         histoDummyEffiTMMCE->Draw();
         DrawGammaLines(0.1, 100, 1., 1., 2, kGray+2, 7);
-        for(Int_t iEta=0; iEta<nEta+1;iEta++){
+        for(Int_t iEta=minEtaBinCaloDis[region]; iEta<maxEtaBinCaloDis[region];iEta++){
           if (!enablePlot[iEta]) continue;
           DrawGammaSetMarker(h_TMeffi_recSE_MCE[pid][iEta][iCl], markerStyleEta[iEta], markerSizeEta[iEta], colorEta[iEta], colorEta[iEta]);
           h_TMeffi_recSE_MCE[pid][iEta][iCl]->Draw("same,p");
@@ -448,7 +450,7 @@ void clustereffi(
         cReso->Print(Form("%s/%s%s/TMEffiSE_MCE_%s.%s", outputDir.Data(), calo.Data(), nameClus[iCl].Data(), partName[pid].Data(),   suffix.Data()));
       }
     }
-    for(Int_t iEta=minEtaBinFull[region]; iEta<maxEtaBinFull[region]+1;iEta++){
+    for(Int_t iEta=minEtaBinCaloDis[region]; iEta<maxEtaBinCaloDis[region];iEta++){
       Double_t etaMin = partEta[0];
       Double_t etaMax = partEta[nEta];
       if (iEta < nEta){
@@ -509,7 +511,7 @@ void clustereffi(
   
   for (Int_t pid =1; pid < nPID; pid++){
     if (!enableParticle[pid]) continue;
-    for (Int_t iEta=minEtaBinFull[region]; iEta<maxEtaBinFull[region]+1;iEta++){
+    for (Int_t iEta=minEtaBinCaloDis[region]; iEta<maxEtaBinCaloDis[region];iEta++){
       Double_t etaMin = partEta[0];
       Double_t etaMax = partEta[nEta];
       if (iEta < nEta){
@@ -639,7 +641,7 @@ void clustereffi(
   }
   directoryClEffi->cd();
   for (Int_t iCl = 0; iCl < nClusProcess; iCl++){
-    for (Int_t iEta=minEtaBinFull[2]; iEta<maxEtaBinFull[2]+1;iEta++){
+    for (Int_t iEta=minEtaBinCaloDis[region]; iEta<maxEtaBinCaloDis[region];iEta++){
       for (Int_t pid = 1; pid < 6; pid++){
         if (!enableParticle[pid]) continue;
         if (h_effi_rec_E[pid][iEta][iCl]) h_effi_rec_E[pid][iEta][iCl]->Write(Form("effi%s_E_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()),TObject::kOverwrite);

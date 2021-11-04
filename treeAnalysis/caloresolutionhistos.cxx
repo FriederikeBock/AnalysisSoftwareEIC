@@ -10,21 +10,13 @@ int pdgCodeRes[particleSpRes]       = {22, 11, 211, 2212, 321, 2112, -1};
 // ANCHOR create histograms globally
 // ========================== energy resol ======================================
 TH2F*  h_CRH_EReso_E[particleSpRes][_active_calo][_active_algo];
-TH2F*  h_CRH_EResoSmear_E[particleSpRes][_active_calo][_active_algo];
 TH2F*  h_CRH_EReso_Erec[particleSpRes][_active_calo][_active_algo];
-TH2F*  h_CRH_EResoCalib_E[particleSpRes][_active_calo][_active_algo];
-TH2F*  h_CRH_EResoCalib_Erec[particleSpRes][_active_calo][_active_algo];
-TH2F*  h_CRH_EResoCalibSmear_Erec[particleSpRes][_active_calo][_active_algo];
 TH2F*  h_CRH_EReso_E_Eta[particleSpRes][_active_calo][_active_algo][nEta+1];
 TH2F*  h_CRH_EReso_Ehighest[particleSpRes][_active_calo][_active_algo];
 
 //========================== ECals and HCal energies together ===================
 TH2F*  h_CRH_EResoComb_E[particleSpRes][_active_calo][_active_algo];
-TH2F*  h_CRH_EResoCombSmear_E[particleSpRes][_active_calo][_active_algo];
 TH2F*  h_CRH_EResoComb_Erec[particleSpRes][_active_calo][_active_algo];
-TH2F*  h_CRH_EResoCombCalib_E[particleSpRes][_active_calo][_active_algo];
-TH2F*  h_CRH_EResoCombCalib_Erec[particleSpRes][_active_calo][_active_algo];
-TH2F*  h_CRH_EResoCombCalibSmear_Erec[particleSpRes][_active_calo][_active_algo];
 TH2F*  h_CRH_EResoComb_E_Eta[particleSpRes][_active_calo][_active_algo][nEta+1];
 
 // ========================== phi resol ==========================================
@@ -72,12 +64,7 @@ void caloresolutionhistos(){
       for(Int_t sp = 0; sp< particleSpRes; sp++){
         if(!h_CRH_EReso_E[sp][icalo][ialgo]) h_CRH_EReso_E[sp][icalo][ialgo]              = new TH2F(Form("h_CRH_EReso_%sE_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
         if(!h_CRH_EReso_Ehighest[sp][icalo][ialgo]) h_CRH_EReso_Ehighest[sp][icalo][ialgo] = new TH2F(Form("h_CRH_EReso_%sEhighest_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
-        if(!h_CRH_EResoSmear_E[sp][icalo][ialgo]) h_CRH_EResoSmear_E[sp][icalo][ialgo]  = new TH2F(Form("h_CRH_EResoSmear_%sE_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
         if(!h_CRH_EReso_Erec[sp][icalo][ialgo])h_CRH_EReso_Erec[sp][icalo][ialgo]         = new TH2F(Form("h_CRH_EReso_%sErec_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
-        if(!h_CRH_EResoCalib_E[sp][icalo][ialgo])h_CRH_EResoCalib_E[sp][icalo][ialgo]      = new TH2F(Form("h_CRH_EResoCalib_%sE_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
-      
-        if(!h_CRH_EResoCalib_Erec[sp][icalo][ialgo])h_CRH_EResoCalib_Erec[sp][icalo][ialgo] = new TH2F(Form("h_CRH_EResoCalib_%sErec_%s_%s", addNameRes[sp].Data(),  str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
-        if(!h_CRH_EResoCalibSmear_Erec[sp][icalo][ialgo])h_CRH_EResoCalibSmear_Erec[sp][icalo][ialgo] = new TH2F(Form("h_CRH_EResoCalibSmear_%sErec_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
       
         for (Int_t eT = minEtaBinCalo[caloDir]; eT < maxEtaBinCalo[caloDir]; eT++){
 //           std::cout << eT << "\t" << partEtaCalo[eT] << "\t < eta < \t" << partEtaCalo[eT+1] << std::endl;
@@ -105,9 +92,6 @@ void caloresolutionhistos(){
         // cluster should have at least 2 towers
         if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_NTowers<2) continue;
         
-        // get cluster energy and calibrate if necessary
-        float clusterE_calo = (_clusters_calo[ialgo][icalo].at(iclus)).cluster_E;
-        clusterE_calo/=getCalibrationValue((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E, icalo, ialgo);
         // get MC particle ID
         int mcID = (_clusters_calo[ialgo][icalo].at(iclus)).cluster_trueID;
         // loop over MC particles and find particle type
@@ -146,23 +130,7 @@ void caloresolutionhistos(){
         h_CRH_EReso_Erec[particleSpRes-1][icalo][ialgo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E,energyRes);
         if (pClass != -1) 
           h_CRH_EReso_Erec[pClass][icalo][ialgo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E,energyRes);
-        // smeared res E vs MC E 
-        float smearedClusE = (_clusters_calo[ialgo][icalo].at(iclus)).cluster_E*=getEnergySmearing(icalo,ialgo);
-        h_CRH_EResoSmear_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[mcID],smearedClusE/_mcpart_E[mcID]);
-        if (pClass != -1) 
-          h_CRH_EResoSmear_E[pClass][icalo][ialgo]->Fill(_mcpart_E[mcID],smearedClusE/_mcpart_E[mcID]);
-        //calib res E vs MC E
-        h_CRH_EResoCalib_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[mcID],clusterE_calo/_mcpart_E[mcID]);
-        if (pClass != -1) 
-          h_CRH_EResoCalib_E[pClass][icalo][ialgo]->Fill(_mcpart_E[mcID],clusterE_calo/_mcpart_E[mcID]);
-        //calib res E vs rec E
-        h_CRH_EResoCalib_Erec[particleSpRes-1][icalo][ialgo]->Fill(clusterE_calo,clusterE_calo/_mcpart_E[mcID]);
-        if (pClass != -1) 
-          h_CRH_EResoCalib_Erec[pClass][icalo][ialgo]->Fill(clusterE_calo,clusterE_calo/_mcpart_E[mcID]);
-        //smeared calib res E vs rec E
-        h_CRH_EResoCalibSmear_Erec[particleSpRes-1][icalo][ialgo]->Fill(clusterE_calo,(clusterE_calo*getEnergySmearing(icalo,ialgo))/_mcpart_E[mcID]);
-        if (pClass != -1)
-          h_CRH_EResoCalibSmear_Erec[pClass][icalo][ialgo]->Fill(clusterE_calo,(clusterE_calo*getEnergySmearing(icalo,ialgo))/_mcpart_E[mcID]);
+
         // find eta bin
         Int_t et = 0;
         while ( ( (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta > partEtaCalo[et+1] ) && ( et < nEta )) et++;
@@ -280,11 +248,7 @@ void caloresolutionhistos(){
         
         for(Int_t sp = 0; sp< particleSpRes; sp++){
           if(!h_CRH_EResoComb_E[sp][icalo][ialgo]) h_CRH_EResoComb_E[sp][icalo][ialgo]              = new TH2F(Form("h_CRH_EResoComb_%sE_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
-          if(!h_CRH_EResoCombSmear_E[sp][icalo][ialgo]) h_CRH_EResoCombSmear_E[sp][icalo][ialgo]  = new TH2F(Form("h_CRH_EResoCombSmear_%sE_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
           if(!h_CRH_EResoComb_Erec[sp][icalo][ialgo])h_CRH_EResoComb_Erec[sp][icalo][ialgo]         = new TH2F(Form("h_CRH_EResoComb_%sErec_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
-          if(!h_CRH_EResoCombCalib_E[sp][icalo][ialgo])h_CRH_EResoCombCalib_E[sp][icalo][ialgo]      = new TH2F(Form("h_CRH_EResoCombCalib_%sE_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
-          if(!h_CRH_EResoCombCalib_Erec[sp][icalo][ialgo])h_CRH_EResoCombCalib_Erec[sp][icalo][ialgo] = new TH2F(Form("h_CRH_EResoCombCalib_%sErec_%s_%s", addNameRes[sp].Data(),  str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
-          if(!h_CRH_EResoCombCalibSmear_Erec[sp][icalo][ialgo])h_CRH_EResoCombCalibSmear_Erec[sp][icalo][ialgo] = new TH2F(Form("h_CRH_EResoCombCalibSmear_%sErec_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
           for (Int_t eT = minEtaBinCalo[caloDir]; eT < maxEtaBinCalo[caloDir]; eT++){
             if(!h_CRH_EResoComb_E_Eta[sp][icalo][ialgo][eT])h_CRH_EResoComb_E_Eta[sp][icalo][ialgo][eT] 	= new TH2F(Form("h_CRH_EResoComb_%sE_Eta_%s_%s_%d", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data(), eT), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
           }        
@@ -313,10 +277,6 @@ void caloresolutionhistos(){
 
         float clustereta                  = 0;
         float clusterenergy               = 0;
-        float clusterenergyCalib          = 0;
-        float clusterengeryCalib_smeared  = 0;
-        float clusterengery_smeared       = 0;
-        float tempEcalib                  = 0;
         Int_t currMCID                    = -999999;
         // cluster should have at least 2 towers
         if ( highestECl > -1){
@@ -324,10 +284,6 @@ void caloresolutionhistos(){
             currMCID                    = (_clusters_calo[ialgo][icalo].at(highestECl)).cluster_trueID;
             clustereta                  = (_clusters_calo[ialgo][icalo].at(highestECl)).cluster_Eta;
             clusterenergy               = (_clusters_calo[ialgo][icalo].at(highestECl)).cluster_E;
-            clusterenergyCalib          = (_clusters_calo[ialgo][icalo].at(highestECl)).cluster_E/
-                                            getCalibrationValue((_clusters_calo[ialgo][icalo].at(highestECl)).cluster_E, icalo, ialgo);
-            clusterengeryCalib_smeared  = clusterenergyCalib*getEnergySmearing(icalo,ialgo);
-            clusterengery_smeared       = clusterenergy*getEnergySmearing(icalo,ialgo);
           }
         }
         // find true MC particle for given cluster
@@ -336,23 +292,11 @@ void caloresolutionhistos(){
             if (bRefCalo && currMCID != -999999){
               if(currMCID==(_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_trueID){
                 clusterenergy               += ((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E);
-                clusterenergyCalib          += ((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E/
-                                                getCalibrationValue((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E, _combCalo[icalo], ialgo));
-                tempEcalib                  = ((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E / 
-                                                getCalibrationValue((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E, _combCalo[icalo], ialgo));
-                clusterengeryCalib_smeared  += tempEcalib*getEnergySmearing(_combCalo[icalo],ialgo);
-                clusterengery_smeared       += (_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E*getEnergySmearing(icalo,ialgo);
               }
             } else {
               currMCID                      = (_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_trueID;
               clustereta                    = (_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E;
               clusterenergy                 += ((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E);
-              clusterenergyCalib            += ((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E/
-                                                getCalibrationValue((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E, _combCalo[icalo], ialgo));
-              tempEcalib                    = ((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E / 
-                                              getCalibrationValue((_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E, _combCalo[icalo], ialgo));
-              clusterengeryCalib_smeared    += tempEcalib*getEnergySmearing(_combCalo[icalo],ialgo);
-              clusterengery_smeared         += (_clusters_calo[ialgo][_combCalo[icalo]].at(highestECl2)).cluster_E*getEnergySmearing(icalo,ialgo);
             }
           }
         }
@@ -362,23 +306,11 @@ void caloresolutionhistos(){
             if ((bRefCalo || b1stCalo) && currMCID != -999999 ){
               if(currMCID==(_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_trueID){
                 clusterenergy               += ((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E);
-                clusterenergyCalib          += ((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E/
-                                              getCalibrationValue((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E, _combCalo2[icalo], ialgo));
-                tempEcalib                  = ((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E / 
-                                              getCalibrationValue((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E, _combCalo2[icalo], ialgo));
-                clusterengeryCalib_smeared  += tempEcalib*getEnergySmearing(_combCalo2[icalo],ialgo);
-                clusterengery_smeared       += (_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E*getEnergySmearing(icalo,ialgo);
               }
             } else {
               currMCID                      = (_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_trueID;
               clustereta                    = (_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E;
               clusterenergy                 += ((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E);
-              clusterenergyCalib            += ((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E/
-                                                getCalibrationValue((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E, _combCalo2[icalo], ialgo));
-              tempEcalib                    = ((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E / 
-                                                getCalibrationValue((_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E, _combCalo2[icalo], ialgo));
-              clusterengeryCalib_smeared    += tempEcalib*getEnergySmearing(_combCalo2[icalo],ialgo);
-              clusterengery_smeared         += (_clusters_calo[ialgo][_combCalo2[icalo]].at(highestECl3)).cluster_E*getEnergySmearing(icalo,ialgo);
             }
           }
         }
@@ -392,9 +324,6 @@ void caloresolutionhistos(){
         // combined res E vs MC E
         h_CRH_EResoComb_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[currMCID],clusterenergy/_mcpart_E[currMCID]);
         if (pClass != -1) h_CRH_EResoComb_E[pClass][icalo][ialgo]->Fill(_mcpart_E[currMCID],clusterenergy/_mcpart_E[currMCID]);
-        // combined smeared res E vs MC E
-        h_CRH_EResoCombSmear_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[currMCID],clusterengery_smeared/_mcpart_E[currMCID]);
-        if (pClass != -1) h_CRH_EResoCombSmear_E[pClass][icalo][ialgo]->Fill(_mcpart_E[currMCID],clusterengery_smeared/_mcpart_E[currMCID]);
 
         // find eta bin
         Int_t et = 0;
@@ -407,16 +336,6 @@ void caloresolutionhistos(){
         // combined res E vs rec E
         h_CRH_EResoComb_Erec[particleSpRes-1][icalo][ialgo]->Fill(clusterenergy,clusterenergy/_mcpart_E[currMCID]);
         if (pClass != -1) h_CRH_EResoComb_Erec[pClass][icalo][ialgo]->Fill(clusterenergy,clusterenergy/_mcpart_E[currMCID]);
-        // combined calibrated res E vs MC E
-        h_CRH_EResoCombCalib_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[currMCID],clusterenergyCalib/_mcpart_E[currMCID]);
-        if (pClass != -1) h_CRH_EResoCombCalib_E[pClass][icalo][ialgo]->Fill(_mcpart_E[currMCID],clusterenergyCalib/_mcpart_E[currMCID]);
-        // combined calibrated res E vs rec E
-        h_CRH_EResoCombCalib_Erec[particleSpRes-1][icalo][ialgo]->Fill(clusterenergy,clusterenergyCalib/_mcpart_E[currMCID]);
-        if (pClass != -1) h_CRH_EResoCombCalib_Erec[pClass][icalo][ialgo]->Fill(clusterenergy,clusterenergyCalib/_mcpart_E[currMCID]);
-        // combined calibrated smeared res E vs rec E
-        h_CRH_EResoCombCalibSmear_Erec[particleSpRes-1][icalo][ialgo]->Fill(clusterenergy,clusterengeryCalib_smeared/_mcpart_E[currMCID]);
-        if (pClass != -1) h_CRH_EResoCombCalibSmear_Erec[pClass][icalo][ialgo]->Fill(clusterenergy,clusterengeryCalib_smeared/_mcpart_E[currMCID]);
-        
       }
     }
   }
@@ -436,11 +355,7 @@ void caloresolutionhistossave(){
         // energy resolutions
         if(h_CRH_EReso_E[sp][icalo][ialgo])h_CRH_EReso_E[sp][icalo][ialgo]->Write();
         if(h_CRH_EReso_Ehighest[sp][icalo][ialgo])h_CRH_EReso_Ehighest[sp][icalo][ialgo]->Write();
-        if(h_CRH_EResoSmear_E[sp][icalo][ialgo])h_CRH_EResoSmear_E[sp][icalo][ialgo]->Write();
         if(h_CRH_EReso_Erec[sp][icalo][ialgo])h_CRH_EReso_Erec[sp][icalo][ialgo]->Write();
-        if(h_CRH_EResoCalib_E[sp][icalo][ialgo])h_CRH_EResoCalib_E[sp][icalo][ialgo]->Write();
-        if(h_CRH_EResoCalib_Erec[sp][icalo][ialgo])h_CRH_EResoCalib_Erec[sp][icalo][ialgo]->Write();
-        if(h_CRH_EResoCalibSmear_Erec[sp][icalo][ialgo])h_CRH_EResoCalibSmear_Erec[sp][icalo][ialgo]->Write();
         for (Int_t eT = 0; eT < nEta+1; eT++){
           if(h_CRH_EReso_E_Eta[sp][icalo][ialgo][eT])h_CRH_EReso_E_Eta[sp][icalo][ialgo][eT]->Write();
         }
@@ -461,11 +376,7 @@ void caloresolutionhistossave(){
       // combined energy resolutions
       for(int sp = 0; sp < particleSpRes; sp++){
         if(h_CRH_EResoComb_E[sp][icalo][ialgo])h_CRH_EResoComb_E[sp][icalo][ialgo]->Write();
-        if(h_CRH_EResoCombSmear_E[sp][icalo][ialgo])h_CRH_EResoCombSmear_E[sp][icalo][ialgo]->Write();
         if(h_CRH_EResoComb_Erec[sp][icalo][ialgo])h_CRH_EResoComb_Erec[sp][icalo][ialgo]->Write();
-        if(h_CRH_EResoCombCalib_E[sp][icalo][ialgo])h_CRH_EResoCombCalib_E[sp][icalo][ialgo]->Write();
-        if(h_CRH_EResoCombCalib_Erec[sp][icalo][ialgo])h_CRH_EResoCombCalib_Erec[sp][icalo][ialgo]->Write();
-        if(h_CRH_EResoCombCalibSmear_Erec[sp][icalo][ialgo])h_CRH_EResoCombCalibSmear_Erec[sp][icalo][ialgo]->Write();
         for (Int_t eT = 0; eT < nEta+1; eT++){
           if(h_CRH_EResoComb_E_Eta[sp][icalo][ialgo][eT])h_CRH_EResoComb_E_Eta[sp][icalo][ialgo][eT]->Write();
         }

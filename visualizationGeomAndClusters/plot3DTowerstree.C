@@ -1,68 +1,45 @@
 #include <algorithm>
 #include "../common/plottingheader.h"
+#include "../treeAnalysis/treeProcessing.h"
+#include "../treeAnalysis/clusterizer.cxx"
 #define NELEMS(arr) (sizeof(arr)/sizeof(arr[0]))
 #include "TColor.h"
 #include <TChain.h>
 #include <TVector3.h>
-
-enum calotype {
-  kFHCAL          = 0,
-  kFEMC           = 1,
-  kDRCALO         = 2,
-  kEEMC           = 3,
-  kCEMC           = 4,
-  kEHCAL          = 5,
-  kHCALIN         = 6,
-  kHCALOUT        = 7,
-  kLFHCAL         = 8,
-  kEEMCG          = 9,
-  kBECAL          = 10
-};
+#include <vector>
 
 typedef struct {
-  float tower_E;
-  int tower_iEta;
-  int tower_iPhi;
-  int tower_iL;
-} towersStrct;
-
-typedef struct {
-  float cluster_E;
-  float cluster_seed;
-  float cluster_Eta;
-  float cluster_Phi;
-  float cluster_Z;
-  float cluster_X;
-  float cluster_Y;
-  float cluster_M02;
-  float cluster_M20;
-  int cluster_NTowers;
-} clusterStrct;
-
-// sorting function for towers
-bool acompare(towersStrct lhs, towersStrct rhs) { return lhs.tower_E > rhs.tower_E; }
-
+  float tower_Eta;
+  float tower_Phi;
+  float tower_x;
+  float tower_y;
+  float tower_z;
+  float tower_R;
+  float tower_theta;
+} geomStrct;
+  
 
 void plot3DTowerstree(
     TString nameFile          = "",
+    TString inFileGeometry    = "",
     TString suffix            = "pdf",
     TString collisionsSys     = "PythiaMB",
     double energy             = -1.0,
     int plotEvent             = 7,
-    bool isLong               = false,
     TString addName           = ""           
 ){
+  int clusterizerEnum =0;
+  int caloID        = 8;
   // dimensions 
-  int towersx       = 524/5;
-  int innerR        = 15/5;
-  int offsetX       = 2;
-  int towersz       = 5;
-  if (isLong) towersz       = 7;
-  float minECutOff  = 0.001;
-  float seedE       = 0.1;
-  float aggE        = 0.001;
+  int towersx       = 105;
+  int towersy       = 105;
+  int towersz       = 7;
+  float minECutOff  = aggE[caloID]/2.;
+  float seedEC      = seedE[caloID];
+  float aggEC       = aggE[caloID];
   int verbosity     = 0;
   TString labelDet  = Form("LFHCal%s", addName.Data());
+  TString caloName  = "LFHCAL";
   gROOT->Reset();
   gROOT->SetStyle("Plain");
   StyleSettingsThesis();
@@ -76,6 +53,10 @@ void plot3DTowerstree(
   TString labelEnergy = "";
   if (collisionsSys.CompareTo("PythiaMB") == 0){
     labelEnergy   = "e-p: 18#times 275 GeV";
+  } else if (collisionsSys.CompareTo("PythiaQ2_100") == 0){
+    labelEnergy   = "e-p: 18#times 275 GeV, Q^{2} > 100 GeV";
+  } else if (collisionsSys.CompareTo("Satre18x108") == 0){
+    labelEnergy   = "e-p: 18#times 108 GeV, Satre";
   } else if (collisionsSys.CompareTo("SingleElectron") == 0){
     labelEnergy   = Form("e^{-}, %0.1f GeV", energy);
   } else if (collisionsSys.CompareTo("SingleKaon") == 0){
@@ -90,7 +71,7 @@ void plot3DTowerstree(
   
   TString dateForOutput                         = ReturnDateStringForOutput();
 
-  TString outputDir                             = Form("plots/%s_%s",dateForOutput.Data(),collisionsSys.Data());
+  TString outputDir                             = Form("plots/%s_%s_%s",dateForOutput.Data(),collisionsSys.Data(),caloName.Data());
   if (collisionsSys.Contains("Single"))
     outputDir = Form("%s_%.0f", outputDir.Data(), energy);
   gSystem->Exec("mkdir -p "+outputDir);
@@ -104,99 +85,111 @@ void plot3DTowerstree(
   double textSizeLabelsRel                    = 58./1300;
 
   int granularity = 1;
-  TH2F* h_IEtaIPhiMapEvt_LFHCAL                   = NULL;
-  TH2F* h_IEtaIPhiMapEvt_LFHCAL_Ecut              = NULL;
-  TH2F* h_IEtaIPhiMapEvt_Hole                     = new TH2F("h_IEtaIPhiMapEvt_Hole", "",  towersx+1, -0.5, towersx+0.5, towersx+1, -0.5, towersx+0.5);
-  TH2F* h_IEtaIPhiMapEvt_LFHCAL_Cl[50]            = {NULL};
-  TH3F* h_IEtaIPhiILMapEvt_LFHCAL                 = NULL;
-  TH3F* h_IEtaIPhiILMapEvt_Hole                   = new TH3F("h_IEtaIPhiILMapEvt_Hole", "", towersz, -0.5, towersz-0.5,  towersx+1, -0.5, towersx+0.5, towersx+1, -0.5, towersx+0.5  );
-  TH3F* h_IEtaIPhiILMapEvt_LFHCAL_Ecut            = NULL;
-  TH3F* h_IEtaIPhiILMapEvt_LFHCAL_Cl[50]          = {NULL};
+  TH2F* h_IEtaIPhiMapEvt                   = new TH2F("h_IEtaIPhiMapEvt", "",  towersx+1, -0.5, towersx+0.5, towersx+1, -0.5, towersx+0.5);
+  TH2F* h_IEtaIPhiMapEvt_Ecut              = new TH2F("h_IEtaIPhiMapEvt_Ecut", "",  towersx+1, -0.5, towersx+0.5, towersx+1, -0.5, towersx+0.5);
+  TH2F* h_IEtaIPhiMapEvt_Hole              = new TH2F("h_IEtaIPhiMapEvt_Hole", "",  towersx+1, -0.5, towersx+0.5, towersx+1, -0.5, towersx+0.5);
+  TH2F* h_IEtaIPhiMapEvt_Cl[50]            = {NULL};
+  TH2F* h_IEtaIPhiMapEvt_MCPart[50]        = {NULL};
+  TH3F* h_IEtaIPhiILMapEvt                 = new TH3F("h_IEtaIPhiILMapEvt", "", towersz, -0.5, towersz-0.5,  towersx+1, -0.5, towersx+0.5, towersx+1, -0.5, towersx+0.5  );
+  TH3F* h_IEtaIPhiILMapEvt_Hole            = new TH3F("h_IEtaIPhiILMapEvt_Hole", "", towersz, -0.5, towersz-0.5,  towersx+1, -0.5, towersx+0.5, towersx+1, -0.5, towersx+0.5  );
+  TH3F* h_IEtaIPhiILMapEvt_Ecut            = new TH3F("h_IEtaIPhiILMapEvt_Ecut", "", towersz, -0.5, towersz-0.5,  towersx+1, -0.5, towersx+0.5, towersx+1, -0.5, towersx+0.5);
+  TH3F* h_IEtaIPhiILMapEvt_Cl[50]          = {NULL};
+  TH3F* h_IEtaIPhiILMapEvt_MCPart[50]      = {NULL};
   
-  for (int x = 0; x < towersx+1; x++){
-    for (int y = 0; y < towersx+1; y++){
-      if (TMath::Sqrt(TMath::Power(x-(towersx/2),2)+TMath::Power(y-(towersx/2),2)) > towersx/2){
-        h_IEtaIPhiMapEvt_Hole->Fill(x,y, 0.1);
-        for (int z = 0; z < towersz; z++){
-          h_IEtaIPhiILMapEvt_Hole->Fill(z,x,y, 0.1);
-        }
-      }
-      if (TMath::Sqrt(TMath::Power(x-(double)((towersx+1+offsetX)/2),2)+TMath::Power(y-(double)((towersx+1)/2),2)) < (double)innerR){
-        h_IEtaIPhiMapEvt_Hole->Fill(x,y, 0.1);
-        for (int z = 0; z < towersz; z++){
-          h_IEtaIPhiILMapEvt_Hole->Fill(z,x,y, 0.1);
-        }
+  // read file
+  // load event tree
+  TChain *tt_event  = new TChain("event_tree");
+  tt_event->Add(nameFile.Data());
+  if( !tt_event ) { std::cout << "tree not found... returning!" << std::endl; return; }
+  
+  // load geometry 
+  tt_geometry   = (TTree*) (new TFile(inFileGeometry.Data(),"READ"))->Get("geometry_tree");
+  if( !tt_geometry ) { std:: cout << "geometry tree not found... returning! " << std:: endl; return; }
+
+  // load all branches (see treeProcessing header)
+  SetBranchAddressesTree(tt_event);
+  SetBranchAddressesGeometryTree(tt_geometry);
+  SetGeometryIndices();
+
+    // load geometry of chosen calorimeter
+  tt_geometry->GetEvent( calogeomindex[caloID] );
+
+  // vector geometry structure
+  geomStrct   arr_GeoStrt[towersx][towersy][towersz];  // array[iEta-1][iPhi-1]
+  for(int i=0; i<(int)_calogeom_towers_N; i++){
+    int tmpEta  = _calogeom_towers_iEta[i]-1;
+    int tmpPhi  = _calogeom_towers_iPhi[i]-1;
+    int tmpL  = _calogeom_towers_iL[i];
+    h_IEtaIPhiMapEvt_Hole->SetBinContent(tmpEta+2,tmpPhi+2, 1);
+    h_IEtaIPhiILMapEvt_Hole->SetBinContent(tmpL+1,tmpEta+2,tmpPhi+2, 1);
+    arr_GeoStrt[tmpEta][tmpPhi][tmpL].tower_Eta   = _calogeom_towers_Eta[i];
+    arr_GeoStrt[tmpEta][tmpPhi][tmpL].tower_Phi   = _calogeom_towers_Phi[i];
+    arr_GeoStrt[tmpEta][tmpPhi][tmpL].tower_x     = _calogeom_towers_x[i];
+    arr_GeoStrt[tmpEta][tmpPhi][tmpL].tower_y     = _calogeom_towers_y[i];
+    arr_GeoStrt[tmpEta][tmpPhi][tmpL].tower_z     = _calogeom_towers_z[i];
+  }
+
+  for (int x = 1; x < h_IEtaIPhiMapEvt_Hole->GetNbinsX()+1; x++){
+    for (int y = 1; y < h_IEtaIPhiMapEvt_Hole->GetNbinsY()+1; y++){
+      if (h_IEtaIPhiMapEvt_Hole->GetBinContent(x,y) > 0 )
+        h_IEtaIPhiMapEvt_Hole->SetBinContent(x,y, 0);
+      else 
+        h_IEtaIPhiMapEvt_Hole->SetBinContent(x,y, 0.1);
+    }
+  }
+
+  for (int x = 1; x < h_IEtaIPhiILMapEvt_Hole->GetNbinsX()+1; x++){
+    for (int y = 1; y < h_IEtaIPhiILMapEvt_Hole->GetNbinsY()+1; y++){
+      for (int z = 1; z < h_IEtaIPhiILMapEvt_Hole->GetNbinsZ()+1; z++){
+        if (h_IEtaIPhiILMapEvt_Hole->GetBinContent(x,y,z) > 0 )
+          h_IEtaIPhiILMapEvt_Hole->SetBinContent(x,y,z, 0);
+        else 
+          h_IEtaIPhiILMapEvt_Hole->SetBinContent(x,y,z, 0.1);
       }
     }
   }
   
-  // read file
-  TChain* t_towers_LFHCAL = new TChain("event_tree", "event_tree");
-  t_towers_LFHCAL->Add(nameFile.Data());
   
-  const int _maxNTowersDR = towersx * towersx;
-  int _nTowers_LFHCAL;
-  float* _tower_LFHCAL_E           = new float[_maxNTowersDR];
-  int* _tower_LFHCAL_iEta         = new int[_maxNTowersDR];
-  int* _tower_LFHCAL_iPhi         = new int[_maxNTowersDR];
-  int* _tower_LFHCAL_iL           = new int[_maxNTowersDR];
-  int* _tower_LFHCAL_trueID       = new int[_maxNTowersDR];
-  const int _maxNMCPart = 10000;
-  int _nMCPart;
-  float* _mcpart_E                = new float[_maxNMCPart];
-  float* _mcpart_px                = new float[_maxNMCPart];
-  float* _mcpart_py                = new float[_maxNMCPart];
-  float* _mcpart_pz                = new float[_maxNMCPart];
-  float* _mcpart_Eta              = new float[_maxNMCPart];
-
   float sumedE                    = 0;
-  if(t_towers_LFHCAL){
-    h_IEtaIPhiMapEvt_LFHCAL       = new TH2F("h_IEtaIPhiMapEvt_LFHCAL", "",  towersx+1, -0.5, towersx+0.5, towersx+1, -0.5, towersx+0.5);
-    h_IEtaIPhiMapEvt_LFHCAL->Sumw2();
-    h_IEtaIPhiMapEvt_LFHCAL_Ecut  = new TH2F("h_IEtaIPhiMapEvt_LFHCAL_Ecut", "",  towersx+1, -0.5, towersx+0.5, towersx+1, -0.5, towersx+0.5);
-    h_IEtaIPhiMapEvt_LFHCAL_Ecut->Sumw2();
-    h_IEtaIPhiILMapEvt_LFHCAL       = new TH3F("h_IEtaIPhiILMapEvt_LFHCAL", "", towersz, -0.5, towersz-0.5,  towersx+1, -0.5, towersx+0.5, towersx+1, -0.5, towersx+0.5  );
-    h_IEtaIPhiILMapEvt_LFHCAL->Sumw2();
-    h_IEtaIPhiILMapEvt_LFHCAL_Ecut  = new TH3F("h_IEtaIPhiILMapEvt_LFHCAL_Ecut", "", towersz, -0.5, towersz-0.5,  towersx+1, -0.5, towersx+0.5, towersx+1, -0.5, towersx+0.5);
-    h_IEtaIPhiILMapEvt_LFHCAL_Ecut->Sumw2();
+  if(tt_event){
+    h_IEtaIPhiMapEvt->Sumw2();
+    h_IEtaIPhiMapEvt_Ecut->Sumw2();
+    h_IEtaIPhiILMapEvt->Sumw2();
+    h_IEtaIPhiILMapEvt_Ecut->Sumw2();
     for (int i = 0; i < 50; i++){
-      h_IEtaIPhiMapEvt_LFHCAL_Cl[i]  = new TH2F(Form("h_IEtaIPhiMapEvt_LFHCAL_Cl%d",i), "",  towersx+1, -0.5, towersx+0.5, towersx+1, -0.5, towersx+0.5);
-      h_IEtaIPhiMapEvt_LFHCAL_Cl[i]->Sumw2();
-      h_IEtaIPhiILMapEvt_LFHCAL_Cl[i]  = new TH3F(Form("h_IEtaIPhiILMapEvt_LFHCAL_Cl%d",i), "", towersz, -0.5, towersz-0.5,  towersx+1, -0.5, towersx+0.5, towersx+1, -0.5, towersx+0.5);
-      h_IEtaIPhiILMapEvt_LFHCAL_Cl[i]->Sumw2();
+      h_IEtaIPhiMapEvt_Cl[i]  = new TH2F(Form("h_IEtaIPhiMapEvt_Cl%d",i), "",  towersx+1, -0.5, towersx+0.5, towersx+1, -0.5, towersx+0.5);
+      h_IEtaIPhiMapEvt_Cl[i]->Sumw2();
+      h_IEtaIPhiMapEvt_MCPart[i]  = new TH2F(Form("h_IEtaIPhiMapEvt_MCPart%d",i), "",  towersx+1, -0.5, towersx+0.5, towersx+1, -0.5, towersx+0.5);
+      h_IEtaIPhiMapEvt_MCPart[i]->Sumw2();
+      h_IEtaIPhiILMapEvt_Cl[i]  = new TH3F(Form("h_IEtaIPhiILMapEvt_Cl%d",i), "", towersz, -0.5, towersz-0.5,  towersx+1, -0.5, towersx+0.5, towersx+1, -0.5, towersx+0.5);
+      h_IEtaIPhiILMapEvt_Cl[i]->Sumw2();
+      h_IEtaIPhiILMapEvt_MCPart[i]  = new TH3F(Form("h_IEtaIPhiILMapEvt_MCPart%d",i), "", towersz, -0.5, towersz-0.5,  towersx+1, -0.5, towersx+0.5, towersx+1, -0.5, towersx+0.5);
+      h_IEtaIPhiILMapEvt_MCPart[i]->Sumw2();
     }
-    t_towers_LFHCAL->SetBranchAddress("tower_LFHCAL_N",             &_nTowers_LFHCAL);
-    t_towers_LFHCAL->SetBranchAddress("tower_LFHCAL_E",             _tower_LFHCAL_E);
-    t_towers_LFHCAL->SetBranchAddress("tower_LFHCAL_iEta",          _tower_LFHCAL_iEta);
-    t_towers_LFHCAL->SetBranchAddress("tower_LFHCAL_iPhi",          _tower_LFHCAL_iPhi);
-    t_towers_LFHCAL->SetBranchAddress("tower_LFHCAL_iL",            _tower_LFHCAL_iL);
-    t_towers_LFHCAL->SetBranchAddress("nMCPart",       &_nMCPart);
-    t_towers_LFHCAL->SetBranchAddress("mcpart_px",     _mcpart_px);
-    t_towers_LFHCAL->SetBranchAddress("mcpart_py",     _mcpart_py);
-    t_towers_LFHCAL->SetBranchAddress("mcpart_pz",     _mcpart_pz);
-    t_towers_LFHCAL->SetBranchAddress("mcpart_E",      _mcpart_E);
     
-    Int_t nentries = Int_t(t_towers_LFHCAL->GetEntries());
+    Int_t nentries = Int_t(tt_event->GetEntries());
     for (Int_t i = 0; i < nentries; ++i) {
       
-      if (t_towers_LFHCAL->LoadTree(i) < 0)
+      if (tt_event->LoadTree(i) < 0)
         break;
       if(i!=plotEvent) continue;
-      t_towers_LFHCAL->GetEntry(i);
+      tt_event->GetEntry(i);
       
       for(Int_t imc=0; (Int_t)imc<_nMCPart; imc++){
         TVector3 truevec(_mcpart_px[imc],_mcpart_py[imc],_mcpart_pz[imc]);
         _mcpart_Eta[imc]=truevec.Eta();
+        _mcpart_Phi[imc]=truevec.Phi();
       }
-      
+      if(_nTowers_LFHCAL == 0 ) return;
+
       for(int itwr=0;(int)itwr<_nTowers_LFHCAL;itwr++){
-        sumedE += 0.55*_tower_LFHCAL_E[itwr];
-        if (0.55*_tower_LFHCAL_E[itwr] > 1e-3 && verbosity) cout << _tower_LFHCAL_iEta[itwr] << "\t" << _tower_LFHCAL_iPhi[itwr] << "\t"<< _tower_LFHCAL_iL[itwr] << "\t"<< 0.55*_tower_LFHCAL_E[itwr] << endl;
-        h_IEtaIPhiMapEvt_LFHCAL->Fill(_tower_LFHCAL_iEta[itwr],_tower_LFHCAL_iPhi[itwr],0.55*_tower_LFHCAL_E[itwr]);
-        h_IEtaIPhiILMapEvt_LFHCAL->Fill(_tower_LFHCAL_iL[itwr],_tower_LFHCAL_iEta[itwr],_tower_LFHCAL_iPhi[itwr], 0.55*_tower_LFHCAL_E[itwr]);
-        if(0.55*_tower_LFHCAL_E[itwr]>0.001){
-          h_IEtaIPhiMapEvt_LFHCAL_Ecut->Fill(_tower_LFHCAL_iEta[itwr],_tower_LFHCAL_iPhi[itwr],0.55*_tower_LFHCAL_E[itwr]);
-          h_IEtaIPhiILMapEvt_LFHCAL_Ecut->Fill(_tower_LFHCAL_iL[itwr],_tower_LFHCAL_iEta[itwr],_tower_LFHCAL_iPhi[itwr], 0.55*_tower_LFHCAL_E[itwr]);
+        sumedE += _tower_LFHCAL_E[itwr];
+        if (_tower_LFHCAL_E[itwr] > 1e-3 && verbosity > 2) cout << _tower_LFHCAL_iEta[itwr] << "\t" << _tower_LFHCAL_iPhi[itwr] << "\t"<< _tower_LFHCAL_iL[itwr] << "\t"<< _tower_LFHCAL_E[itwr] << endl;
+        h_IEtaIPhiMapEvt->Fill(_tower_LFHCAL_iEta[itwr],_tower_LFHCAL_iPhi[itwr],_tower_LFHCAL_E[itwr]);
+        h_IEtaIPhiILMapEvt->Fill(_tower_LFHCAL_iL[itwr],_tower_LFHCAL_iEta[itwr],_tower_LFHCAL_iPhi[itwr], _tower_LFHCAL_E[itwr]);
+        if(_tower_LFHCAL_E[itwr]>0.001){
+          h_IEtaIPhiMapEvt_Ecut->Fill(_tower_LFHCAL_iEta[itwr],_tower_LFHCAL_iPhi[itwr],_tower_LFHCAL_E[itwr]);
+          h_IEtaIPhiILMapEvt_Ecut->Fill(_tower_LFHCAL_iL[itwr],_tower_LFHCAL_iEta[itwr],_tower_LFHCAL_iPhi[itwr], _tower_LFHCAL_E[itwr]);
         }  TCanvas* cPNG; // = new TCanvas("cPNG", "", gStyle->GetCanvasDefW() * 3,
       }
     }
@@ -206,92 +199,70 @@ void plot3DTowerstree(
 
   // vector of towers used in the clusterizer
   std::vector<towersStrct> input_towers;
+  std::vector<towersStrct> input_towersForMC;
   // vector of towers within the currently found cluster
   std::vector<towersStrct> cluster_towers;
-  std::vector<clusterStrct> rec_clusters;
-  
+  std::vector<clustersStrct> rec_clusters;
+  std::vector<float> recclusterEnergies;
+  std::vector<TString> mcPartEnergies;
+  std::vector<int> clslabels;
+
   // fill vector with towers for clusterization above aggregation threshold
   for(int itow=0; itow<(int)_nTowers_LFHCAL; itow++){
-    if(0.55*_tower_LFHCAL_E[itow]>aggE){
+    if(_tower_LFHCAL_E[itow]>aggEC){
       towersStrct tempstructT;
-      tempstructT.tower_E       = 0.55*_tower_LFHCAL_E[itow];
+      tempstructT.tower_E       = _tower_LFHCAL_E[itow];
       tempstructT.tower_iEta    = _tower_LFHCAL_iEta[itow];
       tempstructT.tower_iPhi    = _tower_LFHCAL_iPhi[itow];
       tempstructT.tower_iL      = _tower_LFHCAL_iL[itow];
+      tempstructT.tower_trueID  = _tower_LFHCAL_trueID[itow];
       input_towers.push_back(tempstructT);
-      if (verbosity) std::cout << tempstructT.tower_E << "\t" << tempstructT.tower_iEta << "\t" << tempstructT.tower_iPhi << "\t" << tempstructT.tower_iL << std::endl;
+      input_towersForMC.push_back(tempstructT);
+      if (verbosity > 1) std::cout << tempstructT.tower_E << "\t" << tempstructT.tower_iEta << "\t" << tempstructT.tower_iPhi << "\t" << tempstructT.tower_iL << std::endl;
     }
   }
 
   // sort vector in descending energy order
   std::sort(input_towers.begin(), input_towers.end(), &acompare);
+  std::sort(input_towersForMC.begin(), input_towersForMC.end(), &acompareTrueID);
   while (!input_towers.empty()) {
     cluster_towers.clear();
-    clusterStrct tempstructC;
-    tempstructC.cluster_E       = 0;
-    tempstructC.cluster_seed    = 0;
-    tempstructC.cluster_Eta     = -1000;
-    tempstructC.cluster_Phi     = -1000;
-    tempstructC.cluster_Z       = -1000;
-    tempstructC.cluster_X       = -1000;
-    tempstructC.cluster_Y       = -1000;
-    tempstructC.cluster_M02     = -1000;
-    tempstructC.cluster_M20     = -1000;
-    tempstructC.cluster_NTowers = 0;
+    clustersStrct tempstructC;
+    clslabels.clear();
 
-    // always start with highest energetic tower
-    if(input_towers.at(0).tower_E > seedE){
-      if (verbosity) std::cout << "new cluster" << std::endl;
-      // fill seed cell information into current cluster
-      tempstructC.cluster_E       = input_towers.at(0).tower_E;
-      tempstructC.cluster_seed    = tempstructC.cluster_E;
-      tempstructC.cluster_NTowers = 1;
-      cluster_towers.push_back(input_towers.at(0));
-      if (verbosity) std::cout << "seed: "<<  input_towers.at(0).tower_iEta << "\t" << input_towers.at(0).tower_iPhi << "\t" << input_towers.at(0).tower_iL << "\t E:"<< tempstructC.cluster_E << std::endl;
-      
+    if(input_towers.at(0).tower_E > seedEC){
 
-      // remove seed tower from sample
-      input_towers.erase(input_towers.begin());
-      for (int tit = 0; tit < (int)cluster_towers.size(); tit++){
-        // Now go recursively to all neighbours and add them to the cluster if they fulfill the conditions
-        int refC = 0;
-        int iEtaTwr = cluster_towers.at(tit).tower_iEta;
-        int iPhiTwr = cluster_towers.at(tit).tower_iPhi;
-        int iLTwr   = cluster_towers.at(tit).tower_iL;
-        for (int ait = 0; ait < (int)input_towers.size(); ait++){
-          int iEtaTwrAgg = input_towers.at(ait).tower_iEta;
-          int iPhiTwrAgg = input_towers.at(ait).tower_iPhi;
-          int iLTwrAgg   = input_towers.at(ait).tower_iL;
-          // first condition asks for V3-like neighbors, while second condition also checks diagonally attached towers
-          int deltaL    = TMath::Abs(iLTwrAgg-iLTwr) ;
-          int deltaPhi  = TMath::Abs(iPhiTwrAgg-iPhiTwr) ;
-          int deltaEta  = TMath::Abs(iEtaTwrAgg-iEtaTwr) ;
-          bool neighbor = (deltaL+deltaPhi+deltaEta == 1);
-          bool corner2D = (deltaL == 0 && deltaPhi == 1 && deltaEta == 1) || (deltaL == 1 && deltaPhi == 0 && deltaEta == 1) || (deltaL == 1 && deltaPhi == 1 && deltaEta == 0);          
-          if(neighbor || corner2D ){
-            // only aggregate towers with lower energy than current tower
-//             if(input_towers.at(ait).tower_E >= (cluster_towers.at(tit).tower_E + (aggE/10.))) continue;
-            tempstructC.cluster_E+=input_towers.at(ait).tower_E;
-            tempstructC.cluster_NTowers++;
-            cluster_towers.push_back(input_towers.at(ait));
-            if (verbosity) std::cout << "aggregated: "<< iEtaTwrAgg << "\t" << iPhiTwrAgg << "\t" << iLTwrAgg << "\t E:" << input_towers.at(ait).tower_E << "\t reference: "<< refC << "\t"<< iEtaTwr << "\t" << iPhiTwr << "\t" << iLTwr << "\t cond.: \t"<< neighbor << "\t" << corner2D << "\t  diffs: " << deltaEta << "\t" << deltaPhi << "\t" << deltaL<< std::endl;
-            input_towers.erase(input_towers.begin()+ait);
-            ait--;
-            refC++;
-          }
-        }
+      if(clusterizerEnum==kC3){
+        tempstructC = findCircularCluster(3, seedEC, caloID, input_towers, cluster_towers, clslabels);
+      } else if (clusterizerEnum==kC5){
+        tempstructC = findCircularCluster(5, seedEC, caloID, input_towers, cluster_towers, clslabels);
+      } else if (clusterizerEnum==k3x3){
+        tempstructC = findSquareCluster(3, seedEC, caloID, input_towers, cluster_towers, clslabels);
+      } else if (clusterizerEnum==k5x5){
+        tempstructC = findSquareCluster(5, seedEC, caloID, input_towers, cluster_towers, clslabels);
+      } else if (clusterizerEnum==kV1){  
+        tempstructC = findV1Cluster(seedEC, caloID, input_towers, cluster_towers, clslabels);
+      } else if (clusterizerEnum==kV3){  
+        tempstructC = findV3Cluster(seedEC, caloID, input_towers, cluster_towers, clslabels);
+      } else if (clusterizerEnum==kMA){  
+        tempstructC = findMACluster(seedEC, caloID, input_towers, cluster_towers, clslabels);
+      } else {
+        std::cout << "incorrect clusterizer selected! Enum " << clusterizerEnum << " not defined!" << std::endl;
+        return;
       }
+      tempstructC.cluster_towers = cluster_towers;
       cout << "filling hist for cluster: "  << nclusters << "\t E: " << tempstructC.cluster_E << "\t seed E: " << tempstructC.cluster_seed<<  endl;
       for (int tic = 0; tic < (int)cluster_towers.size(); tic++){
         int iEtaTwr = cluster_towers.at(tic).tower_iEta;
         int iPhiTwr = cluster_towers.at(tic).tower_iPhi;
         int iLTwr   = cluster_towers.at(tic).tower_iL;
         float eTwr    = cluster_towers.at(tic).tower_E;
-        if (verbosity) cout << iEtaTwr << "\t"<< iPhiTwr << "\t"<< iLTwr << "\t" << eTwr << endl;
-        h_IEtaIPhiMapEvt_LFHCAL_Cl[nclusters]->Fill(iEtaTwr, iPhiTwr, eTwr);
-        h_IEtaIPhiILMapEvt_LFHCAL_Cl[nclusters]->Fill(iLTwr, iEtaTwr, iPhiTwr, eTwr);
+        if (verbosity > 0) std::cout << "\t" << Form("%.3f",cluster_towers.at(tic).tower_E) << "\t eta \t" << cluster_towers.at(tic).tower_iEta << "\t phi \t" << cluster_towers.at(tic).tower_iPhi << "\t L \t" << cluster_towers.at(tic).tower_iL << std::endl;      
+        h_IEtaIPhiMapEvt_Cl[nclusters]->Fill(iEtaTwr, iPhiTwr, eTwr);
+        h_IEtaIPhiILMapEvt_Cl[nclusters]->Fill(iLTwr, iEtaTwr, iPhiTwr, eTwr);
       }
       rec_clusters.push_back(tempstructC);
+//       recclusterEnergies.push_back(tempstructC.cluster_E);
 
       nclusters++;
       
@@ -299,17 +270,23 @@ void plot3DTowerstree(
       input_towers.clear();
     }
   }
+  std::sort(rec_clusters.begin(), rec_clusters.end(), &acompareCl);
   
-  float firstClusterE     = 0;
-  if(nclusters==0) 
-    firstClusterE   = 0;
-  else 
-    firstClusterE   = rec_clusters.at(0).cluster_E;
+  
     
   float maxSeedEnergy = 0;
   for (int it = 0; it < (int)rec_clusters.size(); it++){
-      if (rec_clusters.at(it).cluster_seed > maxSeedEnergy)
-        maxSeedEnergy   =  rec_clusters.at(it).cluster_seed;
+    for (int tic = 0; tic < (int)(rec_clusters.at(it).cluster_towers).size(); tic++){
+      int iEtaTwr = rec_clusters.at(it).cluster_towers.at(tic).tower_iEta;
+      int iPhiTwr = rec_clusters.at(it).cluster_towers.at(tic).tower_iPhi;
+      int iLTwr   = rec_clusters.at(it).cluster_towers.at(tic).tower_iL;
+      float eTwr    = rec_clusters.at(it).cluster_towers.at(tic).tower_E;
+      if (verbosity > 0) std::cout << "\t" << Form("%.3f",eTwr) << "\t eta \t" << iEtaTwr << "\t phi \t" << iPhiTwr << "\t L \t" << iLTwr << std::endl;      
+      h_IEtaIPhiMapEvt_Cl[nclusters]->Fill(iEtaTwr, iPhiTwr, eTwr);
+      h_IEtaIPhiILMapEvt_Cl[nclusters]->Fill(iLTwr, iEtaTwr, iPhiTwr, eTwr);
+    }
+    if (rec_clusters.at(it).cluster_seed > maxSeedEnergy)
+      maxSeedEnergy   =  rec_clusters.at(it).cluster_seed;
   }
   
   if (sumedE < 0.01){
@@ -319,100 +296,210 @@ void plot3DTowerstree(
     cout << "total E calo: " << sumedE << endl; 
   }
   
+  int nMCCurr   = 0;
+  int nMCCurrID = input_towersForMC.at(0).tower_trueID;
+
+  std::vector<towersStrct> cluster_towersMC;
+  std::vector<clustersStrct> MC_clusters;
+  clustersStrct tempstructMC;
+
+  while (!input_towersForMC.empty() ) {
+    if (nMCCurrID != input_towersForMC.at(0).tower_trueID ){
+      tempstructMC.cluster_Eta    = _mcpart_Eta[GetCorrectMCArrayEntry(nMCCurrID)] ;
+      tempstructMC.cluster_Phi    = _mcpart_Phi[GetCorrectMCArrayEntry(nMCCurrID)] ;
+      tempstructMC.cluster_trueID = nMCCurrID;
+      tempstructMC.cluster_NTowers  = cluster_towersMC.size();
+      tempstructMC.cluster_towers   = cluster_towersMC;
+      MC_clusters.push_back(tempstructMC);
+      nMCCurrID = input_towersForMC.at(0).tower_trueID;
+      // reseting tempstructMC
+      tempstructMC.cluster_E      = 0;
+      tempstructMC.cluster_Eta    = -1000;
+      tempstructMC.cluster_Phi    = -1000;
+      tempstructMC.cluster_trueID = nMCCurrID;
+      tempstructMC.cluster_NTowers  = 0;
+      cluster_towersMC.clear();
+    }
+    cluster_towersMC.push_back(input_towersForMC.at(0));
+    tempstructMC.cluster_E += input_towersForMC.at(0).tower_E;
+    
+    if (input_towersForMC.size() == 1){
+      tempstructMC.cluster_Eta    = _mcpart_Eta[GetCorrectMCArrayEntry(nMCCurrID)] ;
+      tempstructMC.cluster_Phi    = _mcpart_Phi[GetCorrectMCArrayEntry(nMCCurrID)] ;
+      tempstructMC.cluster_trueID = nMCCurrID;
+      tempstructMC.cluster_NTowers  = cluster_towersMC.size();
+      tempstructMC.cluster_towers   = cluster_towersMC;
+      MC_clusters.push_back(tempstructMC);    
+    }
+    input_towersForMC.erase(input_towersForMC.begin());
+  }
+  std::sort(MC_clusters.begin(), MC_clusters.end(), &acompareCl);
+  
+  for (int nMC = 0; nMC < (int)MC_clusters.size() && nMC < 50; nMC++  ){
+    int mcID    = MC_clusters.at(nMC).cluster_trueID;
+    TString tempMCLabel = Form("%i: r. %.1f GeV, #eta = %1.2f", _mcpart_PDG[GetCorrectMCArrayEntry(mcID)] , MC_clusters.at(nMC).cluster_E,  MC_clusters.at(nMC).cluster_Eta  );
+    mcPartEnergies.push_back(tempMCLabel);
+    cout << tempMCLabel.Data() << endl;
+    for (int tic = 0; tic < (int)(MC_clusters.at(nMC).cluster_towers).size(); tic++){
+      int iEtaTwr = MC_clusters.at(nMC).cluster_towers.at(tic).tower_iEta;
+      int iPhiTwr = MC_clusters.at(nMC).cluster_towers.at(tic).tower_iPhi;
+      int iLTwr   = MC_clusters.at(nMC).cluster_towers.at(tic).tower_iL;
+      float eTwr  = MC_clusters.at(nMC).cluster_towers.at(tic).tower_E;
+      
+      h_IEtaIPhiMapEvt_MCPart[nMC]->Fill(iEtaTwr, iPhiTwr, eTwr);
+      h_IEtaIPhiILMapEvt_MCPart[nMC]->Fill(iLTwr, iEtaTwr, iPhiTwr, eTwr);
+    }  
+    nMCCurr++;
+  }
+  
   if (collisionsSys.Contains("Single"))
     labelEnergy=Form("%s, #eta = %1.2f", labelEnergy.Data(), _mcpart_Eta[0]);
   
   // 2D PLOT
-  TCanvas* cReso = new TCanvas("cReso","",0,0,1000,950);
-  DrawGammaCanvasSettings( cReso, 0.11, 0.1, 0.01, 0.1);
+  TCanvas* c2DBox = new TCanvas("c2DBox","",0,0,1000,950);
+  DrawGammaCanvasSettings( c2DBox, 0.11, 0.1, 0.01, 0.1);
 
   // 1D PLOT
-  SetStyleHistoTH2ForGraphs(h_IEtaIPhiMapEvt_LFHCAL_Ecut, "tower x index","tower y index", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
+  SetStyleHistoTH2ForGraphs(h_IEtaIPhiMapEvt_Ecut, "tower x index","tower y index", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
     
-    h_IEtaIPhiMapEvt_LFHCAL_Ecut->Draw("colz");
+    h_IEtaIPhiMapEvt_Ecut->Draw("colz");
     h_IEtaIPhiMapEvt_Hole->SetLineColor(kGray);
     h_IEtaIPhiMapEvt_Hole->Draw("box,same");
     
-    drawLatexAdd(Form("%s, %s",labelDet.Data(), labelEnergy.Data()),0.88,0.15,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(labelDet.Data(),0.88,0.15,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(labelEnergy.Data(),0.88,0.15+textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
 
-  cReso->Print(Form("%s/2D/2D_Event%d_Ecut.%s", outputDir.Data(),plotEvent, suffix.Data()));
+  c2DBox->Print(Form("%s/2D/2D_Event%d_Ecut.%s", outputDir.Data(),plotEvent, suffix.Data()));
 
   // reset 2D canvas
-  DrawGammaCanvasSettings( cReso, 0.11, 0.03, 0.01, 0.1);
+  DrawGammaCanvasSettings( c2DBox, 0.11, 0.03, 0.01, 0.1);
   
   //************************************************************************************
   // draw 2D hist with box option
   //************************************************************************************  
     SetStyleHistoTH2ForGraphs(h_IEtaIPhiMapEvt_Hole, "tower x index","tower y index", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1);
-    h_IEtaIPhiMapEvt_Hole->GetZaxis()->SetRangeUser(0,h_IEtaIPhiMapEvt_LFHCAL_Ecut->GetMaximum()*1.1);
+    h_IEtaIPhiMapEvt_Hole->GetZaxis()->SetRangeUser(0,h_IEtaIPhiMapEvt_Ecut->GetMaximum()*1.1);
     h_IEtaIPhiMapEvt_Hole->Draw("box");
     h_IEtaIPhiMapEvt_Hole->Draw("same,axis");
-    h_IEtaIPhiMapEvt_LFHCAL_Ecut->SetLineColor(kGray+2);
-    h_IEtaIPhiMapEvt_LFHCAL_Ecut->Draw("box,same");
+    h_IEtaIPhiMapEvt_Ecut->SetLineColor(kGray+2);
+    h_IEtaIPhiMapEvt_Ecut->Draw("box,same");
     
-    
-    drawLatexAdd(Form("%s, %s",labelDet.Data(), labelEnergy.Data()),0.95,0.15,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);  
+    drawLatexAdd(labelDet.Data(),0.95,0.14+textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(labelEnergy.Data(),0.95,0.14,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
 
-  cReso->Print(Form("%s/2D/2D_Event%d_Ecut_Box.%s", outputDir.Data(),plotEvent, suffix.Data()));
-  
+  c2DBox->Print(Form("%s/2D/2D_Event%d_Ecut_Box.%s", outputDir.Data(),plotEvent, suffix.Data()));
   //************************************************************************************
   // draw 2D hist with box option and different clusters on top
   //************************************************************************************
     for (int nCl = 0; nCl < nclusters; nCl++){
-      h_IEtaIPhiMapEvt_LFHCAL_Cl[nCl]->SetLineColor(colorCluster[nCl]);
-      h_IEtaIPhiMapEvt_LFHCAL_Cl[nCl]->Draw("box,same");
+      h_IEtaIPhiMapEvt_Cl[nCl]->SetLineColor(colorCluster[nCl]);
+      h_IEtaIPhiMapEvt_Cl[nCl]->Draw("box,same");
+      int cols = nCl%4;
+      int rows = (nCl/4);
+      drawLatexAdd(Form("#it{E}_{cl} = %0.1f GeV", rec_clusters.at(nCl).cluster_E ), 0.14+0.2*cols, 0.93-(rows*0.55*textSizeLabelsRel), 0.55*textSizeLabelsRel, kFALSE, kFALSE, kFALSE, colorCluster[nCl]);
     }
     if (collisionsSys.Contains("Single")){
-      drawLatexAdd(Form("#it{E}_{calo} = %0.1f GeV",sumedE ),0.14,0.93,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-      if(nclusters>0)drawLatexAdd(Form("#it{E}_{cl} = %0.1f GeV", firstClusterE ),0.14,0.88,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      drawLatexAdd(Form("#it{E}_{calo} = %0.1f GeV",sumedE ),0.14,0.14,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
     }
-  cReso->Print(Form("%s/2DwClusters/2D_Event%d_Ecut_clusters.%s", outputDir.Data(),plotEvent, suffix.Data()));
+  c2DBox->Print(Form("%s/2DwClusters/2D_Event%d_Ecut_clusters.%s", outputDir.Data(),plotEvent, suffix.Data()));
+  
+  //************************************************************************************
+  // draw 2D hist with box option and different MC particles on top
+  //************************************************************************************  
+  h_IEtaIPhiMapEvt_Hole->Draw("box");
+  h_IEtaIPhiMapEvt_Ecut->SetLineColor(kGray+2);
+  h_IEtaIPhiMapEvt_Ecut->Draw("same,box");
+  
+  for (int nMC = 0; nMC < nMCCurr; nMC++){
+    if (h_IEtaIPhiMapEvt_MCPart[nMC]){
+      h_IEtaIPhiMapEvt_MCPart[nMC]->SetLineColor(colorCluster[nMC]);
+      h_IEtaIPhiMapEvt_MCPart[nMC]->Draw("box,same");
+      int cols = nMC%4;
+      int rows = (nMC/4);
+      drawLatexAdd((TString)(mcPartEnergies.at(nMC)).Data() , 0.14+0.2*cols, 0.93-(rows*0.45*textSizeLabelsRel), 0.45*textSizeLabelsRel, kFALSE, kFALSE, kFALSE, colorCluster[nMC]);
+    }
+  }
+  
+  drawLatexAdd(labelDet.Data(),0.95,0.14+textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  drawLatexAdd(labelEnergy.Data(),0.95,0.14,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+  c2DBox->Print(Form("%s/2DwClusters/2D_Event%d_Ecut_MCPart.%s", outputDir.Data(),plotEvent, suffix.Data()));
   
   //************************************************************************************
   // draw 3D hist with box option   
   //************************************************************************************
-  DrawGammaCanvasSettings( cReso, 0.12, 0.05, 0.01, 0.1);
-  cReso->SetTheta(16);
-  cReso->SetPhi(68);
+  TCanvas* c3DBox = new TCanvas("c3DBox","",0,0,1000,950);
+  DrawGammaCanvasSettings( c3DBox, 0.12, 0.1, 0.01, 0.18);
+  c3DBox->SetTheta(16);
+  c3DBox->SetPhi(68);
    
     SetStyleHistoTH3ForGraphs(h_IEtaIPhiILMapEvt_Hole, "tower z index", "tower x index","tower y index", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 1.1, 1.1, 1.15, 505, 510,510);
 
     h_IEtaIPhiILMapEvt_Hole->SetLineColor(kGray);
     h_IEtaIPhiILMapEvt_Hole->Draw("box");
     h_IEtaIPhiILMapEvt_Hole->Draw("same,axis");
-    h_IEtaIPhiILMapEvt_LFHCAL_Ecut->SetMaximum(maxSeedEnergy);
-    h_IEtaIPhiILMapEvt_LFHCAL_Ecut->SetLineColor(kGray+1);
-    h_IEtaIPhiILMapEvt_LFHCAL_Ecut->Draw("box,same");
+    h_IEtaIPhiILMapEvt_Ecut->SetMaximum(maxSeedEnergy);
+    h_IEtaIPhiILMapEvt_Ecut->SetLineColor(kGray+1);
+    h_IEtaIPhiILMapEvt_Ecut->Draw("box,same");
     
     drawLatexAdd(labelEnergy.Data(),0.02,0.95,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
     drawLatexAdd(labelDet,0.02,0.90,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
     
-  cReso->Print(Form("%s/3D/3D_Event%d_Ecut.%s", outputDir.Data(),plotEvent, suffix.Data()));
-
+  c3DBox->Print(Form("%s/3D/3D_Event%d_Ecut.%s", outputDir.Data(),plotEvent, suffix.Data()));
   //************************************************************************************
   // draw 3D hist with box option   
   //************************************************************************************
+    h_IEtaIPhiILMapEvt_Hole->Draw("box");
+    h_IEtaIPhiILMapEvt_Hole->Draw("same,axis");
+    h_IEtaIPhiILMapEvt_Ecut->Draw("box,same");
     for (int nCl = 0; nCl < nclusters; nCl++){
-      h_IEtaIPhiILMapEvt_LFHCAL_Cl[nCl]->SetMaximum(maxSeedEnergy);
-      h_IEtaIPhiILMapEvt_LFHCAL_Cl[nCl]->SetLineColor(colorCluster[nCl]);
-      h_IEtaIPhiILMapEvt_LFHCAL_Cl[nCl]->Draw("box,same");
+      if (h_IEtaIPhiILMapEvt_Cl[nCl]){
+        h_IEtaIPhiILMapEvt_Cl[nCl]->SetMaximum(maxSeedEnergy);
+        h_IEtaIPhiILMapEvt_Cl[nCl]->SetLineColor(colorCluster[nCl]);
+        h_IEtaIPhiILMapEvt_Cl[nCl]->Draw("box,same");
+        int cols = nCl%5;
+        int rows = (nCl/5);
+        drawLatexAdd(Form("%d: #it{E}_{cl} = %0.1f GeV", _mcpart_PDG[GetCorrectMCArrayEntry(rec_clusters.at(nCl).cluster_trueID)] , rec_clusters.at(nCl).cluster_E ), 0.02+0.2*cols, 0.97-(rows*0.55*textSizeLabelsRel), 0.55*textSizeLabelsRel, kFALSE, kFALSE, kFALSE, colorCluster[nCl]);
+      }
     }
-    drawLatexAdd(labelEnergy.Data(),0.02,0.95,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-    drawLatexAdd(labelDet,0.02,0.90,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+    drawLatexAdd(labelEnergy.Data(),0.98,0.02,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("%s, Event %d", labelDet.Data(), plotEvent),0.98,0.06,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     if (collisionsSys.Contains("Single")) 
-      drawLatexAdd(Form("#it{E}_{calo} = %0.1f GeV, #it{E}_{cl} = %0.1f GeV",sumedE,firstClusterE  ),0.02,0.015,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      drawLatexAdd(Form("#it{E}_{calo} = %0.1f GeV",sumedE ),0.02,0.015,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
   
-    cReso->Print(Form("%s/3DwClusters/3D_Event%d_Ecut_clusters.%s", outputDir.Data(),plotEvent, suffix.Data()));
+    c3DBox->Print(Form("%s/3DwClusters/3D_Event%d_Ecut_clusters.%s", outputDir.Data(),plotEvent, suffix.Data()));
+  //************************************************************************************
+  // draw 3D hist with box option   
+  //************************************************************************************
+    h_IEtaIPhiILMapEvt_Hole->Draw("box");
+    h_IEtaIPhiILMapEvt_Hole->Draw("same,axis");
+    h_IEtaIPhiILMapEvt_Ecut->Draw("box,same");
+    for (int nMC = 0; nMC < nMCCurr; nMC++){
+      if (h_IEtaIPhiILMapEvt_MCPart[nMC]){
+        h_IEtaIPhiILMapEvt_MCPart[nMC]->SetMaximum(maxSeedEnergy);
+        h_IEtaIPhiILMapEvt_MCPart[nMC]->SetLineColor(colorCluster[nMC]);
+        h_IEtaIPhiILMapEvt_MCPart[nMC]->Draw("box,same");
+        int cols = nMC%5;
+        int rows = (nMC/5);
+        drawLatexAdd((TString)(mcPartEnergies.at(nMC)).Data() , 0.02+0.2*cols, 0.98-(rows*0.42*textSizeLabelsRel), 0.42*textSizeLabelsRel, kFALSE, kFALSE, kFALSE, colorCluster[nMC]);
+      }
+    }
+    drawLatexAdd(labelEnergy.Data(),0.98,0.02,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("%s, Event %d", labelDet.Data(), plotEvent),0.98,0.06,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    if (collisionsSys.Contains("Single")) 
+      drawLatexAdd(Form("#it{E}_{calo} = %0.1f GeV",sumedE ),0.02,0.015,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+  
+    c3DBox->Print(Form("%s/3DwClusters/3D_Event%d_Ecut_MCPart.%s", outputDir.Data(),plotEvent, suffix.Data()));
   
   //************************************************************************************
   // draw 1D projection on Z axis 
   //************************************************************************************
-  TH1D* h_IZ_LFHCAL_ECut    = (TH1D*)h_IEtaIPhiILMapEvt_LFHCAL_Ecut->Project3D("xe");
+  TH1D* h_IZ_LFHCAL_ECut    = (TH1D*)h_IEtaIPhiILMapEvt_Ecut->Project3D("xe");
   TH1D* h_IZ_LFHCAL_Cl[50]  = {NULL};
   for (int nCl = 0; nCl < nclusters; nCl++){
-    h_IZ_LFHCAL_Cl[nCl]     = (TH1D*)h_IEtaIPhiILMapEvt_LFHCAL_Cl[nCl]->Project3D("xe");
+    h_IZ_LFHCAL_Cl[nCl]     = (TH1D*)h_IEtaIPhiILMapEvt_Cl[nCl]->Project3D("xe");
   }
-  DrawGammaCanvasSettings( cReso, 0.12, 0.01, 0.01, 0.1);
+  DrawGammaCanvasSettings( c2DBox, 0.12, 0.01, 0.01, 0.1);
+  c2DBox->cd();
   SetStyleHistoTH1ForGraphs(h_IZ_LFHCAL_ECut, "tower z index", "#it{E} (GeV)", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9, 1.1, 505, 510);
     h_IZ_LFHCAL_ECut->Draw("hist,e1");
     for (int nCl = 0; nCl < nclusters; nCl++){
@@ -422,26 +509,25 @@ void plot3DTowerstree(
     drawLatexAdd(Form("%s, %s",labelDet.Data(), labelEnergy.Data()),0.95,0.93,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);  
     if (collisionsSys.Contains("Single")){
       drawLatexAdd(Form("#it{E}_{calo} = %0.1f GeV",sumedE ),0.95,0.88,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-      if(nclusters>0) drawLatexAdd(Form("#it{E}_{cl} = %0.1f GeV", firstClusterE ),0.95,0.83,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     }
   
-  cReso->Print(Form("%s/ZProjection_Event%d.%s", outputDir.Data(),plotEvent, suffix.Data()));
+  c2DBox->Print(Form("%s/ZProjection_Event%d.%s", outputDir.Data(),plotEvent, suffix.Data()));
 
 
   TH2D* h_IEtaIPhi_LFHCAL_IZ[7]          = {NULL};
   TH2D* h_IEtaIPhi_LFHCAL_IZ_Cl[7][50]   = {{NULL}};
   
   for (Int_t z = 0; z < towersz; z++){
-    h_IEtaIPhiILMapEvt_LFHCAL_Ecut->GetXaxis()->SetRange(z+1,z+1);
-    h_IEtaIPhi_LFHCAL_IZ[z]   = (TH2D*)h_IEtaIPhiILMapEvt_LFHCAL_Ecut->Project3D("zye");
+    h_IEtaIPhiILMapEvt_Ecut->GetXaxis()->SetRange(z+1,z+1);
+    h_IEtaIPhi_LFHCAL_IZ[z]   = (TH2D*)h_IEtaIPhiILMapEvt_Ecut->Project3D("zye");
     h_IEtaIPhi_LFHCAL_IZ[z]->SetName(Form("etaphi_iL%d", z));
     for (int nCl = 0; nCl < nclusters; nCl++){
-      h_IEtaIPhiILMapEvt_LFHCAL_Cl[nCl]->GetXaxis()->SetRange(z+1,z+1);
-      h_IEtaIPhi_LFHCAL_IZ_Cl[z][nCl]   = (TH2D*)h_IEtaIPhiILMapEvt_LFHCAL_Cl[nCl]->Project3D(Form("cl%d_iL%d_zy_e", nCl, z));
+      h_IEtaIPhiILMapEvt_Cl[nCl]->GetXaxis()->SetRange(z+1,z+1);
+      h_IEtaIPhi_LFHCAL_IZ_Cl[z][nCl]   = (TH2D*)h_IEtaIPhiILMapEvt_Cl[nCl]->Project3D(Form("cl%d_iL%d_zy_e", nCl, z));
     }
   }
 
-  
+
   TCanvas* cPNG = new TCanvas("cPNG", "", (950*towersz+50)*4,950*4);
 	split_canvas(cPNG, "cPNG1", towersz, true);
   Int_t padnum =0;
@@ -467,7 +553,6 @@ void plot3DTowerstree(
       drawLatexAdd(Form("%s, %s",labelDet.Data(),labelEnergy.Data()),0.95,0.15,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);  
       if (collisionsSys.Contains("Single")){
         drawLatexAdd(Form("#it{E}_{calo} = %0.1f GeV",sumedE ),0.14,0.92,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        if(nclusters>0)drawLatexAdd(Form("#it{E}_{cl} = %0.1f GeV", firstClusterE ),0.14,0.87,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
       }
     }
 
