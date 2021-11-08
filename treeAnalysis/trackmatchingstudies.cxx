@@ -50,8 +50,14 @@ TH2F*  h_TMstudies_isMatched_findable_PDG[diffCases_TMStudies][_active_calo]; //
 
 TH1F*  h_TMstudies_EoverP_trackSpec_pions[_active_calo]; // [calorimeter_enum][algorithm_enum]
 TH1F*  h_TMstudies_EoverP_trackSpec_electrons[_active_calo]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_TMstudies_EoverP_pions_EoverP_E[_active_calo]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_TMstudies_EoverP_electrons_EoverP_E[_active_calo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_TMstudies_EoverP_pions_EoverP_E_trackbased[_active_calo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_TMstudies_EoverP_electrons_EoverP_E_trackbased[_active_calo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_TMstudies_EoverP_pions_EoverP_E_projectionbased[_active_calo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_TMstudies_EoverP_electrons_EoverP_E_projectionbased[_active_calo]; // [calorimeter_enum][algorithm_enum]
+TH3F*  h_TMstudies_EoverP_pions_EoverP_E_Eta_trackbased[_active_calo]; // [calorimeter_enum][algorithm_enum]
+TH3F*  h_TMstudies_EoverP_electrons_EoverP_E_Eta_trackbased[_active_calo]; // [calorimeter_enum][algorithm_enum]
+TH3F*  h_TMstudies_EoverP_pions_EoverP_E_Eta_projectionbased[_active_calo]; // [calorimeter_enum][algorithm_enum]
+TH3F*  h_TMstudies_EoverP_electrons_EoverP_E_Eta_projectionbased[_active_calo]; // [calorimeter_enum][algorithm_enum]
 
 //************************************************************************************************************
 //************************************************************************************************************
@@ -59,7 +65,7 @@ TH2F*  h_TMstudies_EoverP_electrons_EoverP_E[_active_calo]; // [calorimeter_enum
 // TODO at some point we might want E/p
 //************************************************************************************************************
 //************************************************************************************************************
-bool trackmatchingstudies(bool runSpecialCuts = false){
+bool trackmatchingstudies( int primaryTrackSource = 0, bool runSpecialCuts = false){
 
   
   // boolean for single event histo?
@@ -248,10 +254,23 @@ bool trackmatchingstudies(bool runSpecialCuts = false){
           h_TMstudies_EoverP_trackSpec_pions[icalo]     = new TH1F(Form("h_TMstudies_EoverP_trackSpec_pions_%s",str_calorimeter[icalo].Data()), "", nbinsEStud,0,50);
         if(!h_TMstudies_EoverP_trackSpec_electrons[icalo])
           h_TMstudies_EoverP_trackSpec_electrons[icalo]     = new TH1F(Form("h_TMstudies_EoverP_trackSpec_electrons_%s",str_calorimeter[icalo].Data()), "", nbinsEStud,0,50);
-        if(!h_TMstudies_EoverP_pions_EoverP_E[icalo])
-          h_TMstudies_EoverP_pions_EoverP_E[icalo]        = new TH2F(Form("h_TMstudies_EoverP_pions_EoverP_E_%s",str_calorimeter[icalo].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50);
-        if(!h_TMstudies_EoverP_electrons_EoverP_E[icalo])
-          h_TMstudies_EoverP_electrons_EoverP_E[icalo]        = new TH2F(Form("h_TMstudies_EoverP_electrons_EoverP_E_%s",str_calorimeter[icalo].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50);
+        if(!h_TMstudies_EoverP_pions_EoverP_E_trackbased[icalo])
+          h_TMstudies_EoverP_pions_EoverP_E_trackbased[icalo]        = new TH2F(Form("h_TMstudies_EoverP_pions_EoverP_E_trackbased_%s",str_calorimeter[icalo].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50);
+        if(!h_TMstudies_EoverP_electrons_EoverP_E_trackbased[icalo])
+          h_TMstudies_EoverP_electrons_EoverP_E_trackbased[icalo]        = new TH2F(Form("h_TMstudies_EoverP_electrons_EoverP_E_trackbased_%s",str_calorimeter[icalo].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50);
+        if(!h_TMstudies_EoverP_pions_EoverP_E_projectionbased[icalo])
+          h_TMstudies_EoverP_pions_EoverP_E_projectionbased[icalo]        = new TH2F(Form("h_TMstudies_EoverP_pions_EoverP_E_projectionbased_%s",str_calorimeter[icalo].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50);
+        if(!h_TMstudies_EoverP_electrons_EoverP_E_projectionbased[icalo])
+          h_TMstudies_EoverP_electrons_EoverP_E_projectionbased[icalo]        = new TH2F(Form("h_TMstudies_EoverP_electrons_EoverP_E_projectionbased_%s",str_calorimeter[icalo].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50);
+          // versus Eta
+        if(!h_TMstudies_EoverP_pions_EoverP_E_Eta_trackbased[icalo])
+          h_TMstudies_EoverP_pions_EoverP_E_Eta_trackbased[icalo]        = new TH3F(Form("h_TMstudies_EoverP_pions_EoverP_E_Eta_trackbased_%s",str_calorimeter[icalo].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50, 160, -4, 4);
+        if(!h_TMstudies_EoverP_electrons_EoverP_E_Eta_trackbased[icalo])
+          h_TMstudies_EoverP_electrons_EoverP_E_Eta_trackbased[icalo]        = new TH3F(Form("h_TMstudies_EoverP_electrons_EoverP_E_Eta_trackbased_%s",str_calorimeter[icalo].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50, 160, -4, 4);
+        if(!h_TMstudies_EoverP_pions_EoverP_E_Eta_projectionbased[icalo])
+          h_TMstudies_EoverP_pions_EoverP_E_Eta_projectionbased[icalo]        = new TH3F(Form("h_TMstudies_EoverP_pions_EoverP_E_Eta_projectionbased_%s",str_calorimeter[icalo].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50, 160, -4, 4);
+        if(!h_TMstudies_EoverP_electrons_EoverP_E_Eta_projectionbased[icalo])
+          h_TMstudies_EoverP_electrons_EoverP_E_Eta_projectionbased[icalo]        = new TH3F(Form("h_TMstudies_EoverP_electrons_EoverP_E_Eta_projectionbased_%s",str_calorimeter[icalo].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50, 160, -4, 4);
       }
     }
     initializeHistsTMS = true;
@@ -269,7 +288,7 @@ bool trackmatchingstudies(bool runSpecialCuts = false){
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
       if(!loadClusterizerInput( ialgo, icalo)) continue;
 
-      int projectionlayer = ReturnProjectionIndexForCalorimeter(icalo, true);
+      int projectionlayer = ReturnProjectionIndexForCalorimeter(icalo, false);
       float zHC = isFwd ? ReturnFwdCalorimeterPosition(icalo) : 1;
       float matchingwdw = ReturnTrackMatchingWindowForCalo(icalo);
 
@@ -352,6 +371,7 @@ bool trackmatchingstudies(bool runSpecialCuts = false){
         for(Int_t iproj=0; iproj<_nProjections; iproj++){
           // perform matching only if projection layer is the correct one for the current calorimeter
           if(_track_ProjLayer[iproj]!=projectionlayer) continue;
+          if (_track_source[(int)_track_ProjTrackID[iproj]] != primaryTrackSource) { continue; }
           // if timing is -9000 then projection failed
           if(_track_Proj_t[iproj]<-9000) continue;
           // if x and y in forward direction is 0, then projection can not be used
@@ -403,19 +423,19 @@ bool trackmatchingstudies(bool runSpecialCuts = false){
               ismatched_largest_projection = true;
             }
           }
-          if(icalo==kBECAL && doEoverPStudies && ialgo==kMA){
+          if(doEoverPStudies && ialgo==kMA){
             float trackmom = sqrt(pow(_track_px[(int)_track_ProjTrackID[iproj]], 2) + pow(_track_py[(int)_track_ProjTrackID[iproj]], 2) + pow(_track_pz[(int)_track_ProjTrackID[iproj]], 2));
             if(abs(_mcpart_PDG[(int)_track_trueID[(int)_track_ProjTrackID[iproj]]])==211){
               if(ismatched_projection){
-                h_TMstudies_EoverP_pions_EoverP_E[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom);
+                h_TMstudies_EoverP_pions_EoverP_E_projectionbased[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom);
+                h_TMstudies_EoverP_pions_EoverP_E_Eta_projectionbased[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom,projeta);
               }
-              h_TMstudies_EoverP_trackSpec_pions[icalo]->Fill(trackmom);
             }
             if(abs(_mcpart_PDG[(int)_track_trueID[(int)_track_ProjTrackID[iproj]]])==11){
               if(ismatched_projection){
-                h_TMstudies_EoverP_electrons_EoverP_E[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom);
+                h_TMstudies_EoverP_electrons_EoverP_E_projectionbased[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom);
+                h_TMstudies_EoverP_electrons_EoverP_E_Eta_projectionbased[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom,projeta);
               }
-              h_TMstudies_EoverP_trackSpec_electrons[icalo]->Fill(trackmom);
             }
           }
         }
@@ -429,6 +449,8 @@ bool trackmatchingstudies(bool runSpecialCuts = false){
           // don't match backward tracks to forward calo and vise versa
           if(ReturnCaloFwdBarrelBckw(icalo)==0 && _track_pz[itrk]<0) continue;
           if(ReturnCaloFwdBarrelBckw(icalo)==2 && _track_pz[itrk]>0) continue;
+          if (_track_source[itrk] != primaryTrackSource) { continue; }
+
           // check eta difference
           TVector3 trackvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
           if(isFwd)trackvec*=abs(zHC/trackvec.Z());
@@ -464,17 +486,19 @@ bool trackmatchingstudies(bool runSpecialCuts = false){
             }
           }
 
-          if(icalo!=kBECAL && doEoverPStudies && ialgo==kMA){
+          if(doEoverPStudies && ialgo==kMA){
             float trackmom = sqrt(pow(_track_px[itrk], 2) + pow(_track_py[itrk], 2) + pow(_track_pz[itrk], 2));
             if(abs(_mcpart_PDG[(int)_track_trueID[itrk]])==211){
               if(ismatched_track){
-                h_TMstudies_EoverP_pions_EoverP_E[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom);
+                h_TMstudies_EoverP_pions_EoverP_E_trackbased[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom);
+                h_TMstudies_EoverP_pions_EoverP_E_Eta_trackbased[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom,tracketa);
               }
               h_TMstudies_EoverP_trackSpec_pions[icalo]->Fill(trackmom);
             }
             if(abs(_mcpart_PDG[(int)_track_trueID[itrk]])==11){
               if(ismatched_track){
-                h_TMstudies_EoverP_electrons_EoverP_E[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom);
+                h_TMstudies_EoverP_electrons_EoverP_E_trackbased[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom);
+                h_TMstudies_EoverP_electrons_EoverP_E_Eta_trackbased[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom,tracketa);
               }
               h_TMstudies_EoverP_trackSpec_electrons[icalo]->Fill(trackmom);
             }
@@ -484,7 +508,7 @@ bool trackmatchingstudies(bool runSpecialCuts = false){
 
         for(Int_t ihit=0; ihit<_nHitsLayers; ihit++){
           if (_hits_layerID[ihit] == -1) continue;
-          if( _hits_layerID[ihit]==ReturnProjectionIndexForCalorimeter(icalo, true) ){
+          if( _hits_layerID[ihit]==ReturnProjectionIndexForCalorimeter(icalo, false) ){
 
             if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_X==0 && (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Y==0) continue;
             h_TMstudies_2D_delta_TTLhits[0][icalo][ialgo]->Fill(_hits_x[ihit]-(_clusters_calo[ialgo][icalo].at(iclus)).cluster_X,_hits_y[ihit]-(_clusters_calo[ialgo][icalo].at(iclus)).cluster_Y);
@@ -679,8 +703,14 @@ void trackmatchingstudiesSave(){
       }
     }
     if(doEoverPStudies){
-      if(h_TMstudies_EoverP_pions_EoverP_E[icalo])h_TMstudies_EoverP_pions_EoverP_E[icalo]->Write();
-      if(h_TMstudies_EoverP_electrons_EoverP_E[icalo])h_TMstudies_EoverP_electrons_EoverP_E[icalo]->Write();
+      if(h_TMstudies_EoverP_pions_EoverP_E_trackbased[icalo])h_TMstudies_EoverP_pions_EoverP_E_trackbased[icalo]->Write();
+      if(h_TMstudies_EoverP_electrons_EoverP_E_trackbased[icalo])h_TMstudies_EoverP_electrons_EoverP_E_trackbased[icalo]->Write();
+      if(h_TMstudies_EoverP_pions_EoverP_E_projectionbased[icalo])h_TMstudies_EoverP_pions_EoverP_E_projectionbased[icalo]->Write();
+      if(h_TMstudies_EoverP_electrons_EoverP_E_projectionbased[icalo])h_TMstudies_EoverP_electrons_EoverP_E_projectionbased[icalo]->Write();
+      if(h_TMstudies_EoverP_pions_EoverP_E_Eta_trackbased[icalo])h_TMstudies_EoverP_pions_EoverP_E_Eta_trackbased[icalo]->Write();
+      if(h_TMstudies_EoverP_electrons_EoverP_E_Eta_trackbased[icalo])h_TMstudies_EoverP_electrons_EoverP_E_Eta_trackbased[icalo]->Write();
+      if(h_TMstudies_EoverP_pions_EoverP_E_Eta_projectionbased[icalo])h_TMstudies_EoverP_pions_EoverP_E_Eta_projectionbased[icalo]->Write();
+      if(h_TMstudies_EoverP_electrons_EoverP_E_Eta_projectionbased[icalo])h_TMstudies_EoverP_electrons_EoverP_E_Eta_projectionbased[icalo]->Write();
       if(h_TMstudies_EoverP_trackSpec_pions[icalo])h_TMstudies_EoverP_trackSpec_pions[icalo]->Write();
       if(h_TMstudies_EoverP_trackSpec_electrons[icalo])h_TMstudies_EoverP_trackSpec_electrons[icalo]->Write();
     }

@@ -19,6 +19,7 @@ return Amplitude*sin(2*TMath::Pi()/wavelength*x[0]+phase);
 }
 
 TF1* FitExpPlusGaussian(TH1F* histo, Double_t fitRangeMin, Double_t fitRangeMax, Int_t icalo, Double_t ptcenter, Int_t iDataMC);
+TF1* FitExpPlusGaussianPol2(TH1F* histo, Double_t fitRangeMin, Double_t fitRangeMax, Int_t icalo, Double_t ptcenter, Int_t iDataMC);
 
 double GaussExpLinear(double* x, double* par) {
   double p0 = par[0];
@@ -347,7 +348,8 @@ void pi0resolution(
 
           if (doFitting){   
 
-            fithistEtrueMinv[icalo][padebin] = FitExpPlusGaussian (histEtrueMinvbin[icalo][padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
+            // fithistEtrueMinv[icalo][padebin] = FitExpPlusGaussian (histEtrueMinvbin[icalo][padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
+            fithistEtrueMinv[icalo][padebin] = FitExpPlusGaussianPol2 (histEtrueMinvbin[icalo][padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
             // fithistEtrueMinv[icalo][padebin]    = new TF1(Form("fit_Minv_%s_%f",caloName[icalo].Data(), partE[ebin]), "crystalball", 0.05, 0.15);
             // fithistEtrueMinv[icalo][padebin]->SetParameters(0.55*histEtrueMinvbin[icalo][padebin]->GetMaximum(),histEtrueMinvbin[icalo][padebin]->GetMean(),2.*histEtrueMinvbin[icalo][padebin]->GetRMS(),2.*histEtrueMinvbin[icalo][padebin]->GetRMS(),2.5*histEtrueMinvbin[icalo][padebin]->GetRMS());
             histEtrueMinvbin[icalo][padebin]->Fit(fithistEtrueMinv[icalo][padebin],"L0RMEQ","",minmassfit, maxmassfit);
@@ -450,7 +452,8 @@ void pi0resolution(
 
               // fithistEtrueMinv_allcalo[padebin]    = new TF1(Form("fit_Minv_%s_%f","hybrid", partE[ebin]), "crystalball", 0.05, 0.15);
               // fithistEtrueMinv_allcalo[padebin]->SetParameters(0.55*histEtrueMinvbin_allcalo[padebin]->GetMaximum(),histEtrueMinvbin_allcalo[padebin]->GetMean(),2.*histEtrueMinvbin_allcalo[padebin]->GetRMS(),2.*histEtrueMinvbin_allcalo[padebin]->GetRMS(),2.5*histEtrueMinvbin_allcalo[padebin]->GetRMS());
-              fithistEtrueMinv_allcalo[padebin] = FitExpPlusGaussian (histEtrueMinvbin_allcalo[padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
+              // fithistEtrueMinv_allcalo[padebin] = FitExpPlusGaussian (histEtrueMinvbin_allcalo[padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
+              fithistEtrueMinv_allcalo[padebin] = FitExpPlusGaussianPol2 (histEtrueMinvbin_allcalo[padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
               histEtrueMinvbin_allcalo[padebin]->Fit(fithistEtrueMinv_allcalo[padebin],"L0RMEQ","",minmassfit, maxmassfit);
               
               fithistEtrueMinvFINAL_allcalo[padebin] = fithistEtrueMinv_allcalo[padebin];
@@ -842,7 +845,7 @@ void pi0resolution(
     SetStyleHistoTH2ForGraphs(histo2DPi0InvMassDummy, "#it{M}_{#gamma#gamma} (GeV/#it{c}^{2})","Counts",0.85*textsizeLabelsInvMass, textsizeLabelsInvMass,
                             0.85*textsizeLabelsInvMass, textsizeLabelsInvMass,0.88, 0.115/(textsizeFacInvMass*marginInvMass),505,510,42,42);
   int exampleBins[maxcalo+1] = {16,7,6,11};
-  bool plotinvmass = false;
+  bool plotinvmass = true;
   if(plotinvmass){
     for (Int_t icalo = 0; icalo < maxcalo+1; icalo++){
       if(histEtrueMinvbin[icalo][exampleBins[icalo]]){
@@ -1043,7 +1046,7 @@ TF1* FitExpPlusGaussian(TH1F* histo, Double_t fitRangeMin, Double_t fitRangeMax,
 
     fFitReco->SetParLimits(0, mesonAmplitudeMin, mesonAmplitudeMax);
     // if (icalo == 4 || icalo == 12 || icalo == 15){
-        fFitReco->SetParLimits(1, fMesonMassExpect*0.75, fMesonMassExpect*1.2);
+      fFitReco->SetParLimits(1, fMesonMassExpect*0.75, fMesonMassExpect*1.2);
     // } else {
         // fFitReco->SetParLimits(1, fMesonMassExpect*0.9, fMesonMassExpect*1.1);
     // }
@@ -1069,5 +1072,70 @@ TF1* FitExpPlusGaussian(TH1F* histo, Double_t fitRangeMin, Double_t fitRangeMax,
     // } else {
     //     cout << "Exp+Gaussian fitting failed in with status " << gMinuit->fCstatu.Data() <<endl << endl;
     // }
+    return fFitReco;
+}
+
+TF1* FitExpPlusGaussianPol2(TH1F* histo, Double_t fitRangeMin, Double_t fitRangeMax, Int_t icalo, Double_t ptcenter , Int_t iDataMC){
+
+    Double_t mesonAmplitude = 0;
+    for(Int_t i = histo->FindBin(0.09); i < histo->FindBin(0.2) ; i++ ){
+      if(histo->GetBinContent(i) > mesonAmplitude) mesonAmplitude = histo->GetBinContent(i);
+    }
+    Double_t mesonAmplitudeMin;
+    Double_t mesonAmplitudeMax;
+
+    mesonAmplitudeMin = mesonAmplitude*70./100.;
+    mesonAmplitudeMax = mesonAmplitude*110./100.;
+    // if(icalo==3){
+    //   mesonAmplitudeMin = mesonAmplitude*50./100.;
+    // }
+    if (icalo == 0){
+      fitRangeMin = 0.07;
+      fitRangeMax = 0.17;
+    } else if (icalo == 2){
+      // fitRangeMax = 0.19;
+    }
+
+    TF1* fFitReco    = new TF1("GaussExpPol2","(x<[1])*([0]*(TMath::Exp(-0.5*((x-[1])/[2])^2)+TMath::Exp((x-[1])/[3])*(1.-TMath::Exp(-0.5*((x-[1])/[2])^2)))+[4]+[5]*x)+(x>=[1])*([0]*TMath::Exp(-0.5*((x-[1])/[2])^2)+[4]+[5]*x)",fitRangeMin, fitRangeMax);
+    // TF1* fFitReco    = new TF1("GaussExpPol2","(x<[1])*([0]*(TMath::Exp(-0.5*((x-[1])/[2])^2)+TMath::Exp((x-[1])/[3])*(1.-TMath::Exp(-0.5*((x-[1])/[2])^2)))+[4]+[5]*x+[6]*x*x)+(x>=[1])*([0]*TMath::Exp(-0.5*((x-[1])/[2])^2)+[4]+[5]*x+[6]*x*x)",fitRangeMin, fitRangeMax);
+    Double_t fMesonMassExpect = TDatabasePDG::Instance()->GetParticle(111)->Mass();
+    // amplitude
+    fFitReco->SetParameter(0, mesonAmplitude);
+    fFitReco->SetParLimits(0, mesonAmplitudeMin, mesonAmplitudeMax);
+
+    // peak position
+    fFitReco->SetParameter(1, fMesonMassExpect);
+    fFitReco->SetParLimits(1, fMesonMassExpect*0.75, fMesonMassExpect*1.1);
+
+    // peak width
+    fFitReco->SetParameter(2, 0.03);
+    fFitReco->SetParLimits(2, 0.01, 0.5);
+    // if(icalo==0){
+    //   fFitReco->SetParLimits(2, 0.001, 0.03);
+    // }
+
+    // lambda tail
+    fFitReco->SetParameter(3, 0.012);
+    // fFitReco->SetParLimits(3, 0.00001, 0.09);
+
+    // constant offset
+    fFitReco->SetParLimits(4, 0.0,1000);
+
+    // linear BG
+    fFitReco->SetParameter(5, 1.0);
+
+    // pol2 BG
+    // fFitReco->SetParameter(6, 0.1);
+    // fFitReco->SetParLimits(6, 0.0, 0.0);
+
+
+
+    histo->Fit(fFitReco,"QRME0");
+    histo->Fit(fFitReco,"QRME0");
+
+    fFitReco->SetLineColor(kRed+1);
+    fFitReco->SetLineWidth(1);
+    fFitReco->SetLineStyle(1);
+
     return fFitReco;
 }

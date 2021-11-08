@@ -4,7 +4,7 @@ Int_t verbosityTRKEFF = 0;
 
 // ANCHOR create histograms globally
 const int nPart_TRKEFF = 5;
-const unsigned int nTrackSources = 3;
+const unsigned int nTrackSources = 4;
 TString str_TRKEFF_mcparticles[nPart_TRKEFF+1] = {"electron", "cpion", "proton", "ckaon", "muon", "all"};
 int int_TRKEFF_mcparticles_PDG[nPart_TRKEFF] = {11 /*e*/,211  /*pi*/,  2212/*p*/,  321/*K*/,  13/*mu*/};
 

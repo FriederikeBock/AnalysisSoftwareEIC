@@ -93,11 +93,17 @@ fi
 
 
 
-if [ $1 = "centralsim_singlepion" ]; then
+if [ $1 = "cades_singlemultipion" ]; then
 maxevt=10000
-    input=/media/nschmidt/local/EIC_running/singlePion/eval_00000/DST_General_particleGun_singlePion_merged_eval.root
-    geometry=/media/nschmidt/local/EIC_running/singlePion/eval_00000/geometry2ndCampaign.root
-    #root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CENTRALSIM_SINGLEPION",true,false  ,true,true,'$maxevt',0,false,0)'
+    input=/media/nschmidt/SSD/simulationOutputCADES/merged_output_TTLGEO_7_HITS_SimpleMultiPion/G4EICDetector_merged.root
+    geometry=/media/nschmidt/SSD/simulationOutputCADES/geometry.root
+    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CADES_SINGLEMULTIPION_TTLGEO7",'$maxevt',true,false  ,false,0)'
+fi
+if [ $1 = "cades_singlemultielectron" ]; then
+maxevt=10000
+    input=/media/nschmidt/SSD/simulationOutputCADES/merged_output_TTLGEO_7_HITS_SimpleMultiElectron/G4EICDetector_merged.root
+    geometry=/media/nschmidt/SSD/simulationOutputCADES/geometry.root
+    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CADES_SINGLEMULTIELECTRON_TTLGEO7",'$maxevt',true,false  ,false,0)'
 fi
 
 if [ $1 = "centralsim_singleelectron" ]; then

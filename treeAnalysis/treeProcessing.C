@@ -519,7 +519,7 @@ void treeProcessing(
           caloresolutionhistos();
           if(verbosity>1) std::cout << "loop done ... next event" << std::endl;
         }
-        if(tracksEnabled) trackmatchingstudies();
+        if(tracksEnabled) trackmatchingstudies(primaryTrackSource);
 
         clearClusterVectors();
         clearMCRecMatchVectors();
