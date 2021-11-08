@@ -94,8 +94,8 @@ fi
 
 
 if [ $1 = "cades_singlemultipion" ]; then
-maxevt=10000
-    input=/media/nschmidt/SSD/simulationOutputCADES/merged_output_TTLGEO_7_HITS_SimpleMultiPion/G4EICDetector_merged.root
+maxevt=100000
+    input=/media/nschmidt/SSD/simulationOutputCADES/single_particle_productions/merged_output_TTLGEO_7_HITS_SimpleMultiPion/merged_output_TTLGEO_7_HITS_SimpleMultiPion.root
     geometry=/media/nschmidt/SSD/simulationOutputCADES/geometry.root
     root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CADES_SINGLEMULTIPION_TTLGEO7",'$maxevt',true,false  ,false,0)'
 fi
