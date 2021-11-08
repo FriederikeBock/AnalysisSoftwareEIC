@@ -353,7 +353,7 @@ void plot3DTowerstree(
   }
   
   if (collisionsSys.Contains("Single"))
-    labelEnergy=Form("%s, #eta = %1.2f", labelEnergy.Data(), _mcpart_Eta[0]);
+    labelEnergy=Form("E = %1.2f, #eta = %1.2f",_mcpart_E[0], _mcpart_Eta[0]);
   
   // 2D PLOT
   TCanvas* c2DBox = new TCanvas("c2DBox","",0,0,1000,950);

@@ -25,9 +25,6 @@
 #include "trackmatchingstudies.cxx"
 #include "pi0studies.cxx"
 
-
-
-
 void treeProcessing(
     TString inFile              = "",
     TString inFileGeometry      = "geometry.root",
@@ -42,7 +39,8 @@ void treeProcessing(
     std::string jetAlgorithm    = "anti-kt",
     double jetR                 = 0.5,
     double tracked_jet_max_pT   = 30,
-    bool removeTracklets        = false
+    bool removeTracklets        = false,
+    bool brokenProjections      = true
 ){
     // make output directory
     TString dateForOutput = ReturnDateStr();
@@ -51,7 +49,12 @@ void treeProcessing(
     gSystem->Exec("mkdir -p "+outputDir + "/etaphi");
 
     if(do_jetfinding) _do_jetfinding = true;
-
+    if (brokenProjections){
+      _useAlternateForProjections = brokenProjections;
+      std::cout << "calorimeter projections not available, using projections in TTL for matching" << std::endl;
+    } else { 
+      std::cout << "using calorimeter projections for matching" << std::endl;
+    }
     bool runPi0Reco = true;
 
     // load tree

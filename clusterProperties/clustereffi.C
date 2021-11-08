@@ -360,7 +360,7 @@ void clustereffi(
         DrawGammaLines(0.1, 100, 1., 1., 2, kGray+2, 7);
         legendEffiE->Clear();
         for(Int_t iEta=minEtaBinCaloDis[region]; iEta<maxEtaBinCaloDis[region];iEta++){
-          if (!enablePlot[iEta]) continue;
+//           if (!enablePlot[iEta]) continue;
           DrawGammaSetMarker(h_effi_rec_E[pid][iEta][iCl], markerStyleEta[iEta], markerSizeEta[iEta], colorEta[iEta], colorEta[iEta]);
           h_effi_rec_E[pid][iEta][iCl]->Draw("same,p");
           if ( h_effi_rec_E[pid][iEta][iCl]->GetMaximum() > 0){
@@ -381,7 +381,7 @@ void clustereffi(
         histoDummyEffiE->Draw();
         DrawGammaLines(0.1, 100, 1., 1., 2, kGray+2, 7);
         for(Int_t iEta=minEtaBinCaloDis[region]; iEta<maxEtaBinCaloDis[region];iEta++){
-          if (!enablePlot[iEta]) continue;
+//           if (!enablePlot[iEta]) continue;
           DrawGammaSetMarker(h_effi_recSE_E[pid][iEta][iCl], markerStyleEta[iEta], markerSizeEta[iEta], colorEta[iEta], colorEta[iEta]);
           h_effi_recSE_E[pid][iEta][iCl]->Draw("same,p");
         }
@@ -398,7 +398,7 @@ void clustereffi(
       DrawGammaLines(0.1, 100, 1., 1., 2, kGray+2, 7);
       legendEffiE->Clear();
       for(Int_t iEta=minEtaBinCaloDis[region]; iEta<maxEtaBinCaloDis[region];iEta++){
-        if (!enablePlot[iEta]) continue;
+//         if (!enablePlot[iEta]) continue;
         DrawGammaSetMarker(h_effi_rec_MCE[pid][iEta][iCl], markerStyleEta[iEta], markerSizeEta[iEta], colorEta[iEta], colorEta[iEta]);
         h_effi_rec_MCE[pid][iEta][iCl]->Draw("same,p");
         if ( h_effi_rec_MCE[pid][iEta][iCl]->GetMaximum() > 0){
@@ -420,7 +420,7 @@ void clustereffi(
       histoDummyEffiMCE->Draw();
       DrawGammaLines(0.1, 100, 1., 1., 2, kGray+2, 7);
       for(Int_t iEta=minEtaBinCaloDis[region]; iEta<maxEtaBinCaloDis[region];iEta++){
-        if (!enablePlot[iEta]) continue;
+//         if (!enablePlot[iEta]) continue;
         DrawGammaSetMarker(h_effi_recSE_MCE[pid][iEta][iCl], markerStyleEta[iEta], markerSizeEta[iEta], colorEta[iEta], colorEta[iEta]);
         h_effi_recSE_MCE[pid][iEta][iCl]->Draw("same,p");
       }
@@ -437,7 +437,7 @@ void clustereffi(
         histoDummyEffiTMMCE->Draw();
         DrawGammaLines(0.1, 100, 1., 1., 2, kGray+2, 7);
         for(Int_t iEta=minEtaBinCaloDis[region]; iEta<maxEtaBinCaloDis[region];iEta++){
-          if (!enablePlot[iEta]) continue;
+//           if (!enablePlot[iEta]) continue;
           DrawGammaSetMarker(h_TMeffi_recSE_MCE[pid][iEta][iCl], markerStyleEta[iEta], markerSizeEta[iEta], colorEta[iEta], colorEta[iEta]);
           h_TMeffi_recSE_MCE[pid][iEta][iCl]->Draw("same,p");
         }

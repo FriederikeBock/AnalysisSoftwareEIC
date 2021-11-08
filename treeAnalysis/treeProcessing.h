@@ -16,10 +16,11 @@ const int _maxNTowersCalo = 5000000;
 const int _maxNclusters = 100;
 const int _maxNclustersCentral = 2000;
 const int _maxNTracks = 200;
-const int _maxNProjections = 2000;
+const int _maxNProjections = 20000;
 const int _maxNMCPart = 100000;
 const int _maxNHepmcp = 1000;
 int verbosityBASE = 2;
+bool _useAlternateForProjections = false;
 
 float _nEventsTree;
 
@@ -1016,11 +1017,16 @@ void prepareMCMatchInfo(){
       _track_RefProjID[itrk].push_back(iproj);
       
       projStrct tempProj;
-      if ( (IsECalProjection(_track_ProjLayer[iproj],true) || IsHCalProjection(_track_ProjLayer[iproj],true)) && trackSource == 0 ){
+      if ( IsECalProjection(_track_ProjLayer[iproj], _useAlternateForProjections) && trackSource == 0 ){
         TVector3 projvec(_track_Proj_true_x[iproj],_track_Proj_true_y[iproj],_track_Proj_true_z[iproj]);
         tempProj.eta_Calo = projvec.Eta();
         tempProj.phi_Calo = projvec.Phi();
         _mcpart_EcalProjs[(int)_track_trueID[itrk]].push_back(tempProj);
+      }
+      if ( IsHCalProjection(_track_ProjLayer[iproj], _useAlternateForProjections) && trackSource == 0 ){
+        TVector3 projvec(_track_Proj_true_x[iproj],_track_Proj_true_y[iproj],_track_Proj_true_z[iproj]);
+        tempProj.eta_Calo = projvec.Eta();
+        tempProj.phi_Calo = projvec.Phi();
         _mcpart_HcalProjs[(int)_track_trueID[itrk]].push_back(tempProj);
       }
       nCurrProj = iproj;      

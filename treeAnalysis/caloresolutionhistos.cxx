@@ -102,6 +102,16 @@ void caloresolutionhistos(){
           nTry++;  
         }
         
+        bool isHighestForPart = true;
+        for(Int_t iclus2=0; iclus2<(Int_t)_clusters_calo[ialgo][icalo].size(); iclus2++){
+          if( iclus == iclus2) continue;
+          if ( (_clusters_calo[ialgo][icalo].at(iclus2)).cluster_NTowers<2) continue;
+          if ( (_clusters_calo[ialgo][icalo].at(iclus)).cluster_trueID == (_clusters_calo[ialgo][icalo].at(iclus2)).cluster_trueID  ) {
+            if ( (_clusters_calo[ialgo][icalo].at(iclus)).cluster_E < (_clusters_calo[ialgo][icalo].at(iclus2)).cluster_E  ){
+              isHighestForPart = false;
+            }
+          }
+        }
         float mcEta = _mcpart_Eta[mcID];
         float mcPhi = _mcpart_Phi[mcID];
         if (_mcpart_EcalProjs[mcID].size() > 0 && !IsHCALCalorimeter(icalo)){
@@ -122,7 +132,7 @@ void caloresolutionhistos(){
         h_CRH_EReso_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[mcID],energyRes);
         if (pClass != -1) h_CRH_EReso_E[pClass][icalo][ialgo]->Fill(_mcpart_E[mcID],energyRes);
         // highest energy cluster res E vs MC E
-        if (iclus == 0 && _nMCPart==1 ){
+        if ( isHighestForPart ){
           h_CRH_EReso_Ehighest[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[mcID],energyRes);
           if (pClass != -1) h_CRH_EReso_Ehighest[pClass][icalo][ialgo]->Fill(_mcpart_E[mcID],energyRes);
         }
@@ -148,6 +158,7 @@ void caloresolutionhistos(){
         if (pClass != -1) 
           h_CRH_EtaReso_Eta[pClass][icalo][ialgo]->Fill(_mcpart_Eta[mcID], etadiff);
         // highest energy cluster res Eta vs MC eta
+        
         if (iclus == 0 && _nMCPart==1 ){
           h_CRH_EtaReso_Etahighest[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_Eta[mcID],etadiff);
           if (pClass != -1) 
@@ -208,7 +219,7 @@ void caloresolutionhistos(){
     }
   }
   
-  if (_nMCPart==1){
+//   if (_nMCPart==1){
     for(int icalo=0;icalo<_active_calo;icalo++){
       if (!caloEnabled[icalo]) continue;          // calorimeter is enabled
       if (_combCalo[icalo] == -1 ) continue;      // inner Hcal or Ecal defined
@@ -218,15 +229,12 @@ void caloresolutionhistos(){
         bool bRefCalo = loadClusterizerInput( ialgo, icalo);
         bool b1stCalo = loadClusterizerInput( ialgo, _combCalo[icalo]);
         Int_t caloDir = GetCaloDirection(icalo);
-
-        std::sort(_clusters_calo[ialgo][_combCalo[icalo]].begin(), _clusters_calo[ialgo][_combCalo[icalo]].end(), &acompareCl);    
           
         bool b2ndCalo = false;
         if (_combCalo2[icalo] != -1 ){
           if (caloEnabled[_combCalo2[icalo]]){ 
             b2ndCalo = loadClusterizerInput( ialgo, _combCalo2[icalo]);
           }
-          std::sort(_clusters_calo[ialgo][_combCalo2[icalo]].begin(), _clusters_calo[ialgo][_combCalo2[icalo]].end(), &acompareCl);  
         }
         
         if (!(b1stCalo || b2ndCalo)) continue;
@@ -339,7 +347,7 @@ void caloresolutionhistos(){
       }
     }
   }
-}
+// }
 // ANCHOR save function after event loop
 void caloresolutionhistossave(){
   // define output file

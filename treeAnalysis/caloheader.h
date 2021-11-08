@@ -307,7 +307,7 @@ int ReturnProjectionIndexForCalorimeter(int caloID,  bool alternate){
       case kHCALOUT: return 63;
       case kCEMC: return 64;
       case kEEMCG: return 65;
-      case kLFHCAL: return 67;
+      case kLFHCAL: return 5;
       case kBECAL: return 66;
       case kFOCAL: return 85;
       default:

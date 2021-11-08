@@ -288,7 +288,7 @@ bool trackmatchingstudies( int primaryTrackSource = 0, bool runSpecialCuts = fal
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
       if(!loadClusterizerInput( ialgo, icalo)) continue;
 
-      int projectionlayer = ReturnProjectionIndexForCalorimeter(icalo, false);
+      int projectionlayer = ReturnProjectionIndexForCalorimeter(icalo, _useAlternateForProjections);
       float zHC = isFwd ? ReturnFwdCalorimeterPosition(icalo) : 1;
       float matchingwdw = ReturnTrackMatchingWindowForCalo(icalo);
 
@@ -508,7 +508,7 @@ bool trackmatchingstudies( int primaryTrackSource = 0, bool runSpecialCuts = fal
 
         for(Int_t ihit=0; ihit<_nHitsLayers; ihit++){
           if (_hits_layerID[ihit] == -1) continue;
-          if( _hits_layerID[ihit]==ReturnProjectionIndexForCalorimeter(icalo, false) ){
+          if( _hits_layerID[ihit]==ReturnProjectionIndexForCalorimeter(icalo, _useAlternateForProjections) ){
 
             if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_X==0 && (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Y==0) continue;
             h_TMstudies_2D_delta_TTLhits[0][icalo][ialgo]->Fill(_hits_x[ihit]-(_clusters_calo[ialgo][icalo].at(iclus)).cluster_X,_hits_y[ihit]-(_clusters_calo[ialgo][icalo].at(iclus)).cluster_Y);

@@ -47,10 +47,10 @@ void hitstudies(unsigned short primaryTrackSource){
   // *****************************************************************************************************
   // ANCHOR Hits, fill eta-phi and x-y distribitions for hits
   // *****************************************************************************************************
-  int ihitslayer[10] = {0};
+  int ihitslayer[_maxProjectionLayers] = {0};
   for(Int_t ihit=0; ihit<_nHitsLayers; ihit++){
     if(verbosityHITS>1) 
-      std::cout << "\tHIT: hit " << ihit << "\tin layer " << _hits_layerID[ihit] << "\twith X = " << _hits_x[ihit] << " cm" << std::endl;
+      std::cout << "\tHIT: hit " << ihit<<"/"<< _nHitsLayers << "\tin layer " << _hits_layerID[ihit] << "\twith X = " << _hits_x[ihit] << " cm" << std::endl;
 
     TVector3 hitvec(_hits_x[ihit],_hits_y[ihit],_hits_z[ihit]);
     float hiteta = hitvec.Eta();
@@ -83,13 +83,13 @@ void hitstudies(unsigned short primaryTrackSource){
   // *****************************************************************************************************
   // correlate hits in different layers with tracks/cluster 
   // *****************************************************************************************************
-  for(int il=0;il<_maxProjectionLayers;il++){
-    h_hitslayer_vs_tracks[il]->Fill(ihitslayer[il], itracks[GetRegionFromIndex(il)]);
-    if (IsCaloProjection(layerIndexHist[il]) || HasTimingLayer(layerIndexHist[il]) ){
+  for(int ik = 0; ik < (int)_maxProjectionLayers; ik++){
+    h_hitslayer_vs_tracks[ik]->Fill(ihitslayer[ik], itracks[GetRegionFromIndex(ik)]);
+    if (IsCaloProjection(layerIndexHist[ik]) || HasTimingLayer(layerIndexHist[ik]) ){
       for(int icalo=0;icalo<_active_calo;icalo++){
         if (!caloEnabled[icalo]) continue;
-        h_hitslayer_vs_clusters[il][icalo]->Fill(ihitslayer[il], _clusters_calo[kMA][icalo].size() );
-        h_hitslayer_vs_towers[il][icalo]->Fill(ihitslayer[il], ReturnMaxTowerCalo(icalo));
+        h_hitslayer_vs_clusters[ik][icalo]->Fill(ihitslayer[ik], _clusters_calo[kMA][icalo].size() );
+        h_hitslayer_vs_towers[ik][icalo]->Fill(ihitslayer[ik], ReturnMaxTowerCalo(icalo));
       }
     }
   }

@@ -50,7 +50,7 @@ std::vector<int> isClusterMatched(  clustersStrct tempcluster,
   bool isFwd = IsForwardCalorimeter(caloEnum);
 
   if(useProjection){
-    int projectionlayer = ReturnProjectionIndexForCalorimeter(caloEnum, true);    // use the projections to the last TTL layers
+    int projectionlayer = ReturnProjectionIndexForCalorimeter(caloEnum, _useAlternateForProjections);    // use the projections to the last TTL layers
     if(projectionlayer==-1) return matching_trackIDs;
     for(Int_t iproj=0; iproj<_nProjections; iproj++){
       // check for correct projection layer
@@ -729,6 +729,9 @@ void runclusterizer(
     }
   }
   if (verbosityCLS > 3) std::cout<< "finished this event for " << str_clusterizer[clusterizerEnum].Data() << std::endl;
+  
+  std::sort(_clusters_calo[clusterizerEnum][caloEnum].begin(), _clusters_calo[clusterizerEnum][caloEnum].end(), &acompareCl);    
+
   return; 
 }
 
