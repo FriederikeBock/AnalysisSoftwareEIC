@@ -25,7 +25,6 @@
 #include "trackmatchingstudies.cxx"
 #include "eoverpstudies.cxx"
 #include "pi0studies.cxx"
-#include "pi_reject.cxx"
 
 void treeProcessing(
     TString inFile              = "",
@@ -538,7 +537,6 @@ void treeProcessing(
         if (runPi0Reco){
           pi0studies();
         }
-        pi_reject();
         if (runCaloRes){
           if(verbosity>1) std::cout << "running clusterstudies" << std::endl;
           clusterstudies();
@@ -590,7 +588,6 @@ void treeProcessing(
     if(runPi0Reco){
       pi0studiesSave();
     }
-    pi_rejectSave();
     if(tracksEnabled) {
       std::cout << "running trackmatchingstudiesSave" << std::endl;
       trackmatchingstudiesSave();
