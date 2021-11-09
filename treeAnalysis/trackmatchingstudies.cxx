@@ -2,7 +2,6 @@
 // ANCHOR debug output verbosity
 int verbosityTM = 1;
 bool initializeHistsTMS = false;
-bool doEoverPStudies = true;
 //************************************************************************************************************
 //************************************************************************************************************
 // declaration of histogramas and global variables
@@ -46,18 +45,6 @@ TH2F*  h_TMstudies_isMatched_PDG[diffCases_TMStudies][_active_calo]; // [calorim
 TH1F*  h_TMstudies_isMatched_findable[diffCases_TMStudies][_active_calo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_TMstudies_isMatched_findable_E[diffCases_TMStudies][_active_calo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_TMstudies_isMatched_findable_PDG[diffCases_TMStudies][_active_calo]; // [calorimeter_enum][algorithm_enum]
-
-
-TH1F*  h_TMstudies_EoverP_trackSpec_pions[_active_calo]; // [calorimeter_enum][algorithm_enum]
-TH1F*  h_TMstudies_EoverP_trackSpec_electrons[_active_calo]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_TMstudies_EoverP_pions_EoverP_E_trackbased[_active_calo]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_TMstudies_EoverP_electrons_EoverP_E_trackbased[_active_calo]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_TMstudies_EoverP_pions_EoverP_E_projectionbased[_active_calo]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_TMstudies_EoverP_electrons_EoverP_E_projectionbased[_active_calo]; // [calorimeter_enum][algorithm_enum]
-TH3F*  h_TMstudies_EoverP_pions_EoverP_E_Eta_trackbased[_active_calo]; // [calorimeter_enum][algorithm_enum]
-TH3F*  h_TMstudies_EoverP_electrons_EoverP_E_Eta_trackbased[_active_calo]; // [calorimeter_enum][algorithm_enum]
-TH3F*  h_TMstudies_EoverP_pions_EoverP_E_Eta_projectionbased[_active_calo]; // [calorimeter_enum][algorithm_enum]
-TH3F*  h_TMstudies_EoverP_electrons_EoverP_E_Eta_projectionbased[_active_calo]; // [calorimeter_enum][algorithm_enum]
 
 //************************************************************************************************************
 //************************************************************************************************************
@@ -247,31 +234,6 @@ bool trackmatchingstudies( int primaryTrackSource = 0, bool runSpecialCuts = fal
         if(!h_TMstudies_2D_clus[icalo][ialgo])
           h_TMstudies_2D_clus[icalo][ialgo]       = new TH2F(Form("h_TMstudies_%s_clus_%s_%s",str2DhistoName.Data(),str_calorimeter[icalo].Data(),str_clusterizer[ialgo].Data()), "", nbins2D, min2Dhist, max2Dhist, nbins2D, min2Dhist2, max2Dhist2);
       }
-      if(doEoverPStudies){
-        int nbinsEStud = 500;
-        int nbinsEoP = 200;
-        if(!h_TMstudies_EoverP_trackSpec_pions[icalo])
-          h_TMstudies_EoverP_trackSpec_pions[icalo]     = new TH1F(Form("h_TMstudies_EoverP_trackSpec_pions_%s",str_calorimeter[icalo].Data()), "", nbinsEStud,0,50);
-        if(!h_TMstudies_EoverP_trackSpec_electrons[icalo])
-          h_TMstudies_EoverP_trackSpec_electrons[icalo]     = new TH1F(Form("h_TMstudies_EoverP_trackSpec_electrons_%s",str_calorimeter[icalo].Data()), "", nbinsEStud,0,50);
-        if(!h_TMstudies_EoverP_pions_EoverP_E_trackbased[icalo])
-          h_TMstudies_EoverP_pions_EoverP_E_trackbased[icalo]        = new TH2F(Form("h_TMstudies_EoverP_pions_EoverP_E_trackbased_%s",str_calorimeter[icalo].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50);
-        if(!h_TMstudies_EoverP_electrons_EoverP_E_trackbased[icalo])
-          h_TMstudies_EoverP_electrons_EoverP_E_trackbased[icalo]        = new TH2F(Form("h_TMstudies_EoverP_electrons_EoverP_E_trackbased_%s",str_calorimeter[icalo].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50);
-        if(!h_TMstudies_EoverP_pions_EoverP_E_projectionbased[icalo])
-          h_TMstudies_EoverP_pions_EoverP_E_projectionbased[icalo]        = new TH2F(Form("h_TMstudies_EoverP_pions_EoverP_E_projectionbased_%s",str_calorimeter[icalo].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50);
-        if(!h_TMstudies_EoverP_electrons_EoverP_E_projectionbased[icalo])
-          h_TMstudies_EoverP_electrons_EoverP_E_projectionbased[icalo]        = new TH2F(Form("h_TMstudies_EoverP_electrons_EoverP_E_projectionbased_%s",str_calorimeter[icalo].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50);
-          // versus Eta
-        if(!h_TMstudies_EoverP_pions_EoverP_E_Eta_trackbased[icalo])
-          h_TMstudies_EoverP_pions_EoverP_E_Eta_trackbased[icalo]        = new TH3F(Form("h_TMstudies_EoverP_pions_EoverP_E_Eta_trackbased_%s",str_calorimeter[icalo].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50, 160, -4, 4);
-        if(!h_TMstudies_EoverP_electrons_EoverP_E_Eta_trackbased[icalo])
-          h_TMstudies_EoverP_electrons_EoverP_E_Eta_trackbased[icalo]        = new TH3F(Form("h_TMstudies_EoverP_electrons_EoverP_E_Eta_trackbased_%s",str_calorimeter[icalo].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50, 160, -4, 4);
-        if(!h_TMstudies_EoverP_pions_EoverP_E_Eta_projectionbased[icalo])
-          h_TMstudies_EoverP_pions_EoverP_E_Eta_projectionbased[icalo]        = new TH3F(Form("h_TMstudies_EoverP_pions_EoverP_E_Eta_projectionbased_%s",str_calorimeter[icalo].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50, 160, -4, 4);
-        if(!h_TMstudies_EoverP_electrons_EoverP_E_Eta_projectionbased[icalo])
-          h_TMstudies_EoverP_electrons_EoverP_E_Eta_projectionbased[icalo]        = new TH3F(Form("h_TMstudies_EoverP_electrons_EoverP_E_Eta_projectionbased_%s",str_calorimeter[icalo].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50, 160, -4, 4);
-      }
     }
     initializeHistsTMS = true;
   }
@@ -305,7 +267,7 @@ bool trackmatchingstudies( int primaryTrackSource = 0, bool runSpecialCuts = fal
         bool ismatched_calo       = false;
         int mcID                = (_clusters_calo[ialgo][icalo].at(iclus)).cluster_trueID;
         
-        if(((_clusters_calo[ialgo][icalo].at(iclus)).cluster_M02<0.1))continue;
+        // if(((_clusters_calo[ialgo][icalo].at(iclus)).cluster_M02<0.1))continue;
         h_TMstudies_clusSpec[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E);
         
         // determine eta bin
@@ -423,21 +385,6 @@ bool trackmatchingstudies( int primaryTrackSource = 0, bool runSpecialCuts = fal
               ismatched_largest_projection = true;
             }
           }
-          if(doEoverPStudies && ialgo==kMA){
-            float trackmom = sqrt(pow(_track_px[(int)_track_ProjTrackID[iproj]], 2) + pow(_track_py[(int)_track_ProjTrackID[iproj]], 2) + pow(_track_pz[(int)_track_ProjTrackID[iproj]], 2));
-            if(abs(_mcpart_PDG[(int)_track_trueID[(int)_track_ProjTrackID[iproj]]])==211){
-              if(ismatched_projection){
-                h_TMstudies_EoverP_pions_EoverP_E_projectionbased[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom);
-                h_TMstudies_EoverP_pions_EoverP_E_Eta_projectionbased[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom,projeta);
-              }
-            }
-            if(abs(_mcpart_PDG[(int)_track_trueID[(int)_track_ProjTrackID[iproj]]])==11){
-              if(ismatched_projection){
-                h_TMstudies_EoverP_electrons_EoverP_E_projectionbased[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom);
-                h_TMstudies_EoverP_electrons_EoverP_E_Eta_projectionbased[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom,projeta);
-              }
-            }
-          }
         }
         b_TMstudies_2D_projection_filled = true;
 
@@ -483,24 +430,6 @@ bool trackmatchingstudies( int primaryTrackSource = 0, bool runSpecialCuts = fal
           if(abs(delta_1_lgst) < matchingwdw){
             if(abs(delta_2_lgst) < matchingwdw){
               ismatched_largest_track = true;
-            }
-          }
-
-          if(doEoverPStudies && ialgo==kMA){
-            float trackmom = sqrt(pow(_track_px[itrk], 2) + pow(_track_py[itrk], 2) + pow(_track_pz[itrk], 2));
-            if(abs(_mcpart_PDG[(int)_track_trueID[itrk]])==211){
-              if(ismatched_track){
-                h_TMstudies_EoverP_pions_EoverP_E_trackbased[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom);
-                h_TMstudies_EoverP_pions_EoverP_E_Eta_trackbased[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom,tracketa);
-              }
-              h_TMstudies_EoverP_trackSpec_pions[icalo]->Fill(trackmom);
-            }
-            if(abs(_mcpart_PDG[(int)_track_trueID[itrk]])==11){
-              if(ismatched_track){
-                h_TMstudies_EoverP_electrons_EoverP_E_trackbased[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom);
-                h_TMstudies_EoverP_electrons_EoverP_E_Eta_trackbased[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackmom,trackmom,tracketa);
-              }
-              h_TMstudies_EoverP_trackSpec_electrons[icalo]->Fill(trackmom);
             }
           }
         }
@@ -701,18 +630,6 @@ void trackmatchingstudiesSave(){
         if(h_TMstudies_clusSpec_Eta[icalo][et]&&icase==0)h_TMstudies_clusSpec_Eta[icalo][et]->Write();
         if(h_TMstudies_clusSpec_Matched_Eta[icalo][et]&&icase==0)h_TMstudies_clusSpec_Matched_Eta[icalo][et]->Write();
       }
-    }
-    if(doEoverPStudies){
-      if(h_TMstudies_EoverP_pions_EoverP_E_trackbased[icalo])h_TMstudies_EoverP_pions_EoverP_E_trackbased[icalo]->Write();
-      if(h_TMstudies_EoverP_electrons_EoverP_E_trackbased[icalo])h_TMstudies_EoverP_electrons_EoverP_E_trackbased[icalo]->Write();
-      if(h_TMstudies_EoverP_pions_EoverP_E_projectionbased[icalo])h_TMstudies_EoverP_pions_EoverP_E_projectionbased[icalo]->Write();
-      if(h_TMstudies_EoverP_electrons_EoverP_E_projectionbased[icalo])h_TMstudies_EoverP_electrons_EoverP_E_projectionbased[icalo]->Write();
-      if(h_TMstudies_EoverP_pions_EoverP_E_Eta_trackbased[icalo])h_TMstudies_EoverP_pions_EoverP_E_Eta_trackbased[icalo]->Write();
-      if(h_TMstudies_EoverP_electrons_EoverP_E_Eta_trackbased[icalo])h_TMstudies_EoverP_electrons_EoverP_E_Eta_trackbased[icalo]->Write();
-      if(h_TMstudies_EoverP_pions_EoverP_E_Eta_projectionbased[icalo])h_TMstudies_EoverP_pions_EoverP_E_Eta_projectionbased[icalo]->Write();
-      if(h_TMstudies_EoverP_electrons_EoverP_E_Eta_projectionbased[icalo])h_TMstudies_EoverP_electrons_EoverP_E_Eta_projectionbased[icalo]->Write();
-      if(h_TMstudies_EoverP_trackSpec_pions[icalo])h_TMstudies_EoverP_trackSpec_pions[icalo]->Write();
-      if(h_TMstudies_EoverP_trackSpec_electrons[icalo])h_TMstudies_EoverP_trackSpec_electrons[icalo]->Write();
     }
   }
   // write output file
