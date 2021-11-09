@@ -373,6 +373,9 @@ int ReturnCalorimeterFromProjectionIndex(int projID){
   return -1;
 }
 
+// ***********************************************************************************
+// matching windows for tracks to calo's going outward dX/dy for forward, dPhi/dEta for barrel
+// ***********************************************************************************
 float ReturnTrackMatchingWindowForCalo(int caloID){
   switch (caloID){
     case kDRCALO: return 5;
@@ -389,6 +392,54 @@ float ReturnTrackMatchingWindowForCalo(int caloID){
     case kFOCAL: return 3;
     default:
       std::cout << "ReturnTrackMatchingWindowForCalo: caloID " << caloID << " not defined, returning -1" << std::endl;
+      return -1;
+  }
+  return -1;
+}
+
+// ***********************************************************************************
+// matching windows for Calo's going inward in dPhi
+// ***********************************************************************************
+float ReturnPhiCaloMatching(int caloID){
+  switch (caloID){
+    case kDRCALO: return 0.1;
+    case kFHCAL: return 0.1;
+    case kFEMC: return 0.1;
+    case kEHCAL: return 0.1;
+    case kEEMC: return 0.1;
+    case kHCALIN: return 0.1;
+    case kHCALOUT: return 0.1;
+    case kCEMC: return 0.1;
+    case kEEMCG: return 0.1;
+    case kLFHCAL: return 0.1;
+    case kBECAL: return 0.05;
+    case kFOCAL: return 0.1;
+    default:
+      std::cout << "ReturnPhiCaloMatching: caloID " << caloID << " not defined, returning -1" << std::endl;
+      return -1;
+  }
+  return -1;
+}
+
+// ***********************************************************************************
+// matching windows for Calo's going inward in dEta
+// ***********************************************************************************
+float ReturnEtaCaloMatching(int caloID){
+  switch (caloID){
+    case kDRCALO: return 0.1;
+    case kFHCAL: return 0.1;
+    case kFEMC: return 0.1;
+    case kEHCAL: return 0.1;
+    case kEEMC: return 0.1;
+    case kHCALIN: return 0.1;
+    case kHCALOUT: return 0.1;
+    case kCEMC: return 0.1;
+    case kEEMCG: return 0.1;
+    case kLFHCAL: return 0.1;
+    case kBECAL: return 0.05;
+    case kFOCAL: return 0.1;
+    default:
+      std::cout << "ReturnEtaCaloMatching: caloID " << caloID << " not defined, returning -1" << std::endl;
       return -1;
   }
   return -1;
@@ -430,19 +481,19 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
     float delta_eta_phi[4] = {0};
     int supModLeadingCell = -1;
     for(int cellI=0; cellI<(int)cluster_towers.size(); cellI++){
-        int iphi=cluster_towers.at(cellI).tower_iPhi;
-        int ieta=cluster_towers.at(cellI).tower_iEta;
-        delta_phi_phi[1] += (w_i.at(cellI)*iphi*iphi)/w_tot;
-        delta_phi_phi[2] += (w_i.at(cellI)*iphi)/w_tot;
-        delta_phi_phi[3] += (w_i.at(cellI)*iphi)/w_tot;
+      int iphi=cluster_towers.at(cellI).tower_iPhi;
+      int ieta=cluster_towers.at(cellI).tower_iEta;
+      delta_phi_phi[1] += (w_i.at(cellI)*iphi*iphi)/w_tot;
+      delta_phi_phi[2] += (w_i.at(cellI)*iphi)/w_tot;
+      delta_phi_phi[3] += (w_i.at(cellI)*iphi)/w_tot;
 
-        delta_eta_eta[1] += (w_i.at(cellI)*ieta*ieta)/w_tot;
-        delta_eta_eta[2] += (w_i.at(cellI)*ieta)/w_tot;
-        delta_eta_eta[3] += (w_i.at(cellI)*ieta)/w_tot;
+      delta_eta_eta[1] += (w_i.at(cellI)*ieta*ieta)/w_tot;
+      delta_eta_eta[2] += (w_i.at(cellI)*ieta)/w_tot;
+      delta_eta_eta[3] += (w_i.at(cellI)*ieta)/w_tot;
 
-        delta_eta_phi[1] += (w_i.at(cellI)*ieta*iphi)/w_tot;
-        delta_eta_phi[2] += (w_i.at(cellI)*iphi)/w_tot;
-        delta_eta_phi[3] += (w_i.at(cellI)*ieta)/w_tot;
+      delta_eta_phi[1] += (w_i.at(cellI)*ieta*iphi)/w_tot;
+      delta_eta_phi[2] += (w_i.at(cellI)*iphi)/w_tot;
+      delta_eta_phi[3] += (w_i.at(cellI)*ieta)/w_tot;
     }
     delta_phi_phi[0] = delta_phi_phi[1] - (delta_phi_phi[2] * delta_phi_phi[3]);
     delta_eta_eta[0] = delta_eta_eta[1] - (delta_eta_eta[2] * delta_eta_eta[3]);

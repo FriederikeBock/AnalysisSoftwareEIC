@@ -32,12 +32,21 @@ void treeProcessingSimple(
     bool doCalibration          = false,              //  
     Int_t verbosity             = 0,                  //
     // Defaults to tracking from all layers.
-    unsigned short primaryTrackSource = 0             //
+    unsigned short primaryTrackSource = 0,             //
+    bool brokenProjections      = true                 // use this to true with outputs for prod4, newer output swtich it to false       
 ){
     // make output directory
     TString dateForOutput = ReturnDateStr();
     outputDir = Form("treeProcessingSimple/%s",addOutputName.Data());
     gSystem->Exec("mkdir -p "+outputDir);
+
+    // switch projection layer to most appropriate
+    if (brokenProjections){
+      _useAlternateForProjections = brokenProjections;
+      std::cout << "calorimeter projections not available, using projections in TTL for matching" << std::endl;
+    } else { 
+      std::cout << "using calorimeter projections for matching" << std::endl;
+    }
 
     // load tree
     TChain *const tt_event = new TChain("event_tree");

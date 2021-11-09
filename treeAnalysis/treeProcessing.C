@@ -41,7 +41,7 @@ void treeProcessing(
     double jetR                 = 0.5,
     double tracked_jet_max_pT   = 30,
     bool removeTracklets        = false,
-    bool brokenProjections      = true,
+    bool brokenProjections      = true,               // use this to true with outputs for prod4, newer output swtich it to false
     bool isSingleParticleProd   = false
 ){
     // make output directory
@@ -51,6 +51,7 @@ void treeProcessing(
     gSystem->Exec("mkdir -p "+outputDir + "/etaphi");
 
     if(do_jetfinding) _do_jetfinding = true;
+    // switch projection layer to most appropriate
     if (brokenProjections){
       _useAlternateForProjections = brokenProjections;
       std::cout << "calorimeter projections not available, using projections in TTL for matching" << std::endl;
@@ -212,6 +213,14 @@ void treeProcessing(
         
         // set clusters matched to respective track for direct accessing
         SetClustersMatchedToTracks();
+        // do calo-calo matching
+        for (int cal = 0; cal < maxcalo; cal++){
+          if(do_reclus && nTowers[cal] > 0 && caloEnabled[cal]){
+            for (int algo = 0; algo < _active_algo; algo++){
+              MatchClustersWithOtherCalos( int caloEnum, int clusterizerEnum )
+            }
+          }
+        }
         
         // ANCHOR Hits loop variables:
         // float* _hits_x[ihit]
