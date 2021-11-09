@@ -40,7 +40,8 @@ void treeProcessing(
     double jetR                 = 0.5,
     double tracked_jet_max_pT   = 30,
     bool removeTracklets        = false,
-    bool brokenProjections      = true
+    bool brokenProjections      = true,
+    bool isSingleParticleProd   = false
 ){
     // make output directory
     TString dateForOutput = ReturnDateStr();
@@ -119,6 +120,8 @@ void treeProcessing(
 
     _nEventsTree=0;
     // main event loop
+    bool tooSmallDeltaEta = false;
+    
     for (Long64_t i=0; i<nEntriesTree;i++) {
         // load current event
         tt_event->GetEntry(i);
@@ -138,12 +141,13 @@ void treeProcessing(
             _mcpart_Phi[imc]=truevec.Phi();
             int motherid = 0;
             for(Int_t imc2=0; imc2<_nMCPart; imc2++){
-                if(_mcpart_ID[imc2]==_mcpart_ID_parent[imc]){
-                    motherid=imc2;
-                }
+              if(_mcpart_ID[imc2]==_mcpart_ID_parent[imc]){
+                  motherid=imc2;
+              }
             }
             // if(_mcpart_PDG[imc]==111) cout << "pi0 found (" << _mcpart_ID[imc] << ") with mother: " << _mcpart_PDG[motherid] << " (" <<  _mcpart_ID_parent[imc] << ")" << endl;
         }
+        
         if (verbosity > 0){
           for(int imc=0; imc<_nMCPart; imc++){
             std::cout << "MC part: \t" << imc << "\t E = " << _mcpart_E[imc] << "\tEta: " << _mcpart_Eta[imc]<< "\tPhi: " << _mcpart_Phi[imc]<<  std::endl;
@@ -153,11 +157,33 @@ void treeProcessing(
               std::cout << "towers " <<   str_calorimeter[icalo].Data() << "\t" << ReturnMaxTowerCalo(icalo) << std::endl;
           }
         }
-        
+
+        if (isSingleParticleProd){
+          for (Int_t imc=0; imc<_nMCPart; imc++){
+            for (Int_t imc2=imc; imc2<_nMCPart; imc2++){
+              if (TMath::Abs(_mcpart_Eta[imc] - _mcpart_Eta[imc2]) < 1.)
+                tooSmallDeltaEta = true;
+            }
+          }
+          if (tooSmallDeltaEta){
+            if (verbosity>0) std::cout << "eta gap too small for single particle simulations" << std::endl;
+            continue;
+          }
+        }
+
         Int_t nTowers[maxcalo] = {_nTowers_FHCAL, _nTowers_FEMC, _nTowers_DRCALO, _nTowers_EEMC, _nTowers_CEMC,
                                   _nTowers_EHCAL, _nTowers_HCALIN, _nTowers_HCALOUT, _nTowers_LFHCAL, _nTowers_EEMCG,
                                   _nTowers_BECAL  };
 
+        
+        for(Int_t itrk=0; itrk<_nTracks; itrk++){
+            _track_trueID[itrk] = GetCorrectMCArrayEntry(_track_trueID[itrk]);
+            // if(verbosity>1) std::cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk] << "\tand X = " << _track_px[itrk] << " cm" << std::endl;
+        }
+        // obtain labels for different track sources
+        prepareMCMatchInfo();
+
+        
         // run clusterizers normal calos
         for (int cal = 0; cal < maxcalo; cal++){
           if(do_reclus && nTowers[cal] > 0 && caloEnabled[cal]){
@@ -176,21 +202,16 @@ void treeProcessing(
                 runclusterizer(kMA, kFOCAL,seed_E_FOCAL, aggregation_E_FOCAL, primaryTrackSource);
             }
         } 
-
+        
         if(do_reclus && _nTowers_DRCALO && caloEnabled[kDRCALO]){ //do_V1clusterizerDRCALO
           if(verbosity>1) std::cout << "clusterizing V1 for DRCALO" << std::endl;
           runclusterizer(kV1, kDRCALO, seedE[kDRCALO], aggE[kDRCALO], primaryTrackSource);
         }
         if((do_reclus) && verbosity>1) std::cout << "done with clusterization!" << std::endl;
-
-
-        for(Int_t itrk=0; itrk<_nTracks; itrk++){
-            _track_trueID[itrk] = GetCorrectMCArrayEntry(_track_trueID[itrk]);
-            // if(verbosity>1) std::cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk] << "\tand X = " << _track_px[itrk] << " cm" << std::endl;
-        }
-        // obtain labels for different track sources
-        prepareMCMatchInfo();
-
+        
+        // set clusters matched to respective track for direct accessing
+        SetClustersMatchedToTracks();
+        
         // ANCHOR Hits loop variables:
         // float* _hits_x[ihit]
         // float* _hits_y[ihit]

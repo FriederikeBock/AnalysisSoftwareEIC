@@ -2,37 +2,53 @@
 #define CALOHEADER_H
 
 // ANCHOR basic struct for towers in clusterizer
-typedef struct {
+struct towersStrct{
+  towersStrct(): tower_E(0), tower_iEta(-1), tower_iPhi(-1), tower_iL(-1), tower_trueID(-10000) {}
   float tower_E;
   int tower_iEta;
   int tower_iPhi;
   int tower_iL;
   int tower_trueID;
-} towersStrct;
+} ;
 
-typedef struct {
+struct matchingStrct {
+  matchingStrct(): id(-1), dPhi(-1000), dEta(-1000), dX(-1000), dY(-1000) {}
+  int id;
+  float dPhi;
+  float dEta;
+  float dX;
+  float dY;
+};
+
+struct clustersStrct{
+  clustersStrct(): cluster_E(0.), cluster_seed(0.), cluster_Eta(-10.), cluster_Phi(-10.), cluster_X(0.) , cluster_Y(0.), cluster_Z(0.), cluster_M02(0.), cluster_M20(0.), cluster_isMatched(false), cluster_isMatchedECal(false), cluster_isMatchedHCal(false), cluster_NTowers(0), cluster_trueID(-10000), cluster_NtrueID(0) {}
   float cluster_E;
   float cluster_seed;
   float cluster_Eta;
   float cluster_Phi;
-  float cluster_Z;
   float cluster_X;
   float cluster_Y;
+  float cluster_Z;
   float cluster_M02;
   float cluster_M20;
   bool cluster_isMatched;
-  std::vector<int> cluster_matchedTrackIDs;
+  bool cluster_isMatchedECal;
+  bool cluster_isMatchedHCal;
   int cluster_NTowers;
   int cluster_trueID;
   int cluster_NtrueID;
+  std::vector<matchingStrct> cluster_matchedTracks;
+  std::vector<matchingCalStrct> cluster_matchedECals;
+  std::vector<matchingCalStrct> cluster_matchedHCals;
   std::vector<towersStrct> cluster_towers;
-} clustersStrct;
+} ;
 
-typedef struct {
+struct occuranceStrct{
+  occuranceStrct(): particle_ID(-10000), highest_E(0.), nClusters(0) {}
   int particle_ID;
   float highest_E;
   int nClusters;
-} occuranceStrct;
+} ;
 
 // enum calotype {
 //   kFHCAL         = 0,

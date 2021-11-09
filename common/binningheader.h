@@ -158,7 +158,9 @@
   Int_t minEtaBinCaloDis[3]    = {0, 5,  10};
   Int_t maxEtaBinCaloDis[3]    = {5, 10, 15};
   Int_t maxNEtaBinsCaloDis[3]  = {6, 5,  6};
-
+  Double_t nominalEtaRegion[3][2] = {{-3.2, -1.9}, {-1.4, 1.1}, {1.5, 3.2}}; 
+  
+  
   const Int_t nClus            = 7;
   TString nameClus[nClus]      = {"MA", "V1", "V3", "3x3", "5x5", "C3", "C5" };
   

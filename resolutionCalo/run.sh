@@ -1,6 +1,8 @@
 # inputfile=/home/fbock/EIC/Analysis/2ndSimulationCampaign/treeAnalysis/treeProcessing/SinglePartileFullSummed/output_CRH.root
-inputfile=/home/fbock/EIC/Analysis/2ndSimulationCampaign/treeAnalysis/treeProcessing/SingleParticleNew/output_CRH.root
+inputfile=/home/fbock/EIC/Analysis/2ndSimulationCampaign/treeAnalysis/treeProcessing/SingleParticleNewGeom/output_CRH.root
 
+# inputfile=/home/fbock/EIC/Analysis/2ndSimulationCampaign/treeAnalysis/treeProcessing/SingleElectronStandaloneWMaterial_new/output_CRH.root
+# inputfileWO=/home/fbock/EIC/Analysis/2ndSimulationCampaign/treeAnalysis/treeProcessing/SingleElectronStandaloneWOMaterial_new/output_CRH.root
 if [ $1 == "energy" ] ; then
   # root -b -x -l -q 'energyResolutionCalorimeters.C("/home/fbock/EIC/Analysis/2ndSimulationCampaign/treeAnalysis/treeProcessing/SingleElectron500K/output_CRH.root","FEMC-wMat","MA","pdf",kFALSE)'
   # root -b -x -l -q 'energyResolutionCalorimeters.C("/home/fbock/EIC/Analysis/2ndSimulationCampaign/treeAnalysis/treeProcessing/SingleElectron500K/output_CRH.root","BECAL-wMat","MA","pdf",kFALSE)'
@@ -16,12 +18,15 @@ if [ $1 == "energy" ] ; then
   root -b -x -l -q 'energyResolutionCalorimeters.C("'$inputfile'","FEMC-wMat","MA","'$suffix'",kTRUE)'
   root -b -x -l -q 'energyResolutionCalorimeters.C("'$inputfile'","BECAL-wMat","MA","'$suffix'",kTRUE)'
   root -b -x -l -q 'energyResolutionCalorimeters.C("'$inputfile'","EEMC-wMat","MA","'$suffix'",kTRUE)'
+#   root -b -x -l -q 'energyResolutionCalorimeters.C("'$inputfileWO'","FEMC","MA","'$suffix'",kTRUE)'
+#   root -b -x -l -q 'energyResolutionCalorimeters.C("'$inputfileWO'","BECAL","MA","'$suffix'",kTRUE)'
+#   root -b -x -l -q 'energyResolutionCalorimeters.C("'$inputfileWO'","EEMC","MA","'$suffix'",kTRUE)'
 
   root -b -x -l -q 'energyResolutionCalorimeters.C("'$inputfile'","LFHCAL-wMat","MA","'$suffix'",kTRUE)'
   root -b -x -l -q 'energyResolutionCalorimeters.C("'$inputfile'","CHCAL","MA","'$suffix'",kTRUE)'
   root -b -x -l -q 'energyResolutionCalorimeters.C("'$inputfile'","HCALIN-wMat","MA","'$suffix'",kTRUE)'
   root -b -x -l -q 'energyResolutionCalorimeters.C("'$inputfile'","EHCAL-wMat","MA","'$suffix'",kTRUE)'
-
+# 
   root -b -x -l -q 'energyResolutionCalorimeters.C("'$inputfile'","LFHCAL-FEMC","MA","'$suffix'",kTRUE)'
   root -b -x -l -q 'energyResolutionCalorimeters.C("'$inputfile'","CHCAL-comb","MA","'$suffix'",kTRUE)'
   root -b -x -l -q 'energyResolutionCalorimeters.C("'$inputfile'","EHCAL-EEMC","MA","'$suffix'",kTRUE)'

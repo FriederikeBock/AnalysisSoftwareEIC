@@ -251,31 +251,17 @@ void plot3DTowerstree(
         return;
       }
       tempstructC.cluster_towers = cluster_towers;
-      cout << "filling hist for cluster: "  << nclusters << "\t E: " << tempstructC.cluster_E << "\t seed E: " << tempstructC.cluster_seed<<  endl;
-      for (int tic = 0; tic < (int)cluster_towers.size(); tic++){
-        int iEtaTwr = cluster_towers.at(tic).tower_iEta;
-        int iPhiTwr = cluster_towers.at(tic).tower_iPhi;
-        int iLTwr   = cluster_towers.at(tic).tower_iL;
-        float eTwr    = cluster_towers.at(tic).tower_E;
-        if (verbosity > 0) std::cout << "\t" << Form("%.3f",cluster_towers.at(tic).tower_E) << "\t eta \t" << cluster_towers.at(tic).tower_iEta << "\t phi \t" << cluster_towers.at(tic).tower_iPhi << "\t L \t" << cluster_towers.at(tic).tower_iL << std::endl;      
-        h_IEtaIPhiMapEvt_Cl[nclusters]->Fill(iEtaTwr, iPhiTwr, eTwr);
-        h_IEtaIPhiILMapEvt_Cl[nclusters]->Fill(iLTwr, iEtaTwr, iPhiTwr, eTwr);
-      }
       rec_clusters.push_back(tempstructC);
-//       recclusterEnergies.push_back(tempstructC.cluster_E);
-
       nclusters++;
-      
     } else {
       input_towers.clear();
     }
   }
   std::sort(rec_clusters.begin(), rec_clusters.end(), &acompareCl);
-  
-  
-    
+
   float maxSeedEnergy = 0;
   for (int it = 0; it < (int)rec_clusters.size(); it++){
+      cout << "filling hist for cluster: "  << nclusters << "\t E: " << rec_clusters.at(it).cluster_E << "\t seed E: " << rec_clusters.at(it).cluster_seed<<  endl;
     for (int tic = 0; tic < (int)(rec_clusters.at(it).cluster_towers).size(); tic++){
       int iEtaTwr = rec_clusters.at(it).cluster_towers.at(tic).tower_iEta;
       int iPhiTwr = rec_clusters.at(it).cluster_towers.at(tic).tower_iPhi;
@@ -313,11 +299,8 @@ void plot3DTowerstree(
       MC_clusters.push_back(tempstructMC);
       nMCCurrID = input_towersForMC.at(0).tower_trueID;
       // reseting tempstructMC
-      tempstructMC.cluster_E      = 0;
-      tempstructMC.cluster_Eta    = -1000;
-      tempstructMC.cluster_Phi    = -1000;
+      tempstructMC = clustersStrct();
       tempstructMC.cluster_trueID = nMCCurrID;
-      tempstructMC.cluster_NTowers  = 0;
       cluster_towersMC.clear();
     }
     cluster_towersMC.push_back(input_towersForMC.at(0));

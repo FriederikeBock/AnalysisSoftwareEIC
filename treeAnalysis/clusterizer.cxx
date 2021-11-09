@@ -19,7 +19,7 @@ bool _doClusterECalibration = true;
 // TODO at some point we might want E/p
 //**************************************************************************************************************
 //**************************************************************************************************************
-std::vector<int> isClusterMatched(  clustersStrct tempcluster, 
+std::vector<matchingStrct> isClusterMatched(  clustersStrct tempcluster, 
                         int caloEnum, 
                         int clusterizerEnum, 
                         unsigned short primaryTrackSource, 
@@ -41,22 +41,24 @@ std::vector<int> isClusterMatched(  clustersStrct tempcluster,
     }
   }
 
-  std::vector<int> matching_trackIDs;
+  std::vector<matchingStrct> matching_trackIDs;
 
   // in case the cluster position is 0,0 -> no matching to be done
   if(tempcluster.cluster_X==0 && tempcluster.cluster_Y==0) return matching_trackIDs;
 
+  matchingStrct tempMatch;
   float matchingwindow = ReturnTrackMatchingWindowForCalo(caloEnum);
   bool isFwd = IsForwardCalorimeter(caloEnum);
 
   if(useProjection){
     int projectionlayer = ReturnProjectionIndexForCalorimeter(caloEnum, _useAlternateForProjections);    // use the projections to the last TTL layers
+//     std::cout << caloEnum << "\t" << projectionlayer << endl;
     if(projectionlayer==-1) return matching_trackIDs;
     for(Int_t iproj=0; iproj<_nProjections; iproj++){
       // check for correct projection layer
       if(_track_ProjLayer[iproj]!=projectionlayer) continue;
       // bad timing = bad projection
-      if(_track_Proj_t[iproj]<-9000) continue;
+      if(_track_Proj_t[iproj] < 0) continue;
       if (_track_source[(int)_track_ProjTrackID[iproj]] != primaryTrackSource) { continue; }
       // no projection should end up on the beampipe
       if(isFwd && _track_Proj_x[iproj]==0 && _track_Proj_y[iproj]==0) continue;
@@ -82,8 +84,15 @@ std::vector<int> isClusterMatched(  clustersStrct tempcluster,
       if(abs(delta_1) < matchingwindow){
         // check y or phi difference
         if(abs(delta_2) < matchingwindow){
+          tempMatch.dX = _track_Proj_x[iproj]-tempcluster.cluster_X;
+          tempMatch.dY = _track_Proj_y[iproj]-tempcluster.cluster_Y;
+          tempMatch.dPhi = projphi-tempcluster.cluster_Phi;
+          tempMatch.dEta = projeta-tempcluster.cluster_Eta;
+          tempMatch.id = (int)_track_ProjTrackID[iproj];
           h_clusterizer_matched_2D_delta[caloEnum][clusterizerEnum]->Fill(delta_1,delta_2);
-          matching_trackIDs.push_back((int)_track_ProjTrackID[iproj]);
+          matching_trackIDs.push_back(tempMatch);
+          // reset temp struct 
+          tempMatch = matchingStrct();
         }
       }
     }
@@ -95,11 +104,11 @@ std::vector<int> isClusterMatched(  clustersStrct tempcluster,
       // check eta difference
       TVector3 trackvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
       float tracketa,trackphi = -20;
+      tracketa = trackvec.Eta();
+      trackphi = trackvec.Phi();
       if(isFwd){
         trackvec*=(zHC/abs(trackvec.Z()));
       } else {
-          tracketa = trackvec.Eta();
-          trackphi = trackvec.Phi();
           if((tracketa==0 && trackphi==0) || (tracketa==-20 && trackphi==-20)) continue;
       }
 
@@ -114,14 +123,94 @@ std::vector<int> isClusterMatched(  clustersStrct tempcluster,
       if(abs(delta_1) < matchingwindow){
         // check y or phi difference
         if(abs(delta_2) < matchingwindow){
+          tempMatch.dX    = trackvec.X()-tempcluster.cluster_X;
+          tempMatch.dY    = trackvec.Y()-tempcluster.cluster_Y;
+          tempMatch.dPhi  = trackphi-tempcluster.cluster_Phi;
+          tempMatch.dEta  = tracketa-tempcluster.cluster_Eta;
+          tempMatch.id    = itrk;
           h_clusterizer_matched_2D_delta[caloEnum][clusterizerEnum]->Fill(delta_1,delta_2);
-          matching_trackIDs.push_back((int)_track_ID[itrk]);
+          matching_trackIDs.push_back(tempMatch);
+          // reset temp struct 
+          tempMatch = matchingStrct();
         }
       }
     }
   }
   return matching_trackIDs;
 }
+
+//**************************************************************************************************************
+//**************************************************************************************************************
+// associate clusters in vectors to track arrays
+//**************************************************************************************************************
+//**************************************************************************************************************
+void SetClustersMatchedToTracks(){
+  for (int caloEnum = 0; caloEnum < maxcalo; caloEnum++){
+    if (!caloEnabled[caloEnum]) continue;
+    for (int ialgo = 0; ialgo < _active_algo; ialgo++){
+      for (int iCl = 0; iCl < (int)_clusters_calo[ialgo][caloEnum].size(); iCl++){
+        if ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_isMatched){
+          for (int iT = 0; iT < (int)(((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).size()); iT++){
+            int trkID = ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).id;
+            // do separate checks for HCal and ECal
+            if (IsHCALCalorimeter(caloEnum)){
+              // is this the first match?
+              if (_track_matchHCal[trkID].caloid == -1){
+                _track_matchHCal[trkID].caloid  = caloEnum;
+                _track_matchHCal[trkID].id      = iCl;
+                _track_matchHCal[trkID].dPhi    = ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dPhi;
+                _track_matchHCal[trkID].dEta    = ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dEta;
+                _track_matchHCal[trkID].dX      = ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dX;
+                _track_matchHCal[trkID].dY      = ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dY;
+              } else {
+                // calc 2D distance for current cluster
+                float dRC = TMath::Sqrt(TMath::Power(((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dPhi,2)+TMath::Power(((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dEta,2));
+                // calc 2D distance for already matched cluster
+                float dRP = TMath::Sqrt(TMath::Power(_track_matchHCal[trkID].dPhi,2)+ TMath::Power(_track_matchHCal[trkID].dEta,2));
+                // update track info if cluster better matched
+                if (dRC < dRP){
+                  _track_matchHCal[trkID].caloid  = caloEnum;
+                  _track_matchHCal[trkID].id      = iCl;
+                  _track_matchHCal[trkID].dPhi    = ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dPhi;
+                  _track_matchHCal[trkID].dEta    = ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dEta;
+                  _track_matchHCal[trkID].dX      = ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dX;
+                  _track_matchHCal[trkID].dY      = ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dY;
+                }
+              }
+            } else {
+              // is this the first match?
+              if (_track_matchECal[trkID].caloid == -1){
+                _track_matchECal[trkID].caloid  = caloEnum;
+                _track_matchECal[trkID].id      = iCl;
+                _track_matchECal[trkID].dPhi    = ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dPhi;
+                _track_matchECal[trkID].dEta    = ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dEta;
+                _track_matchECal[trkID].dX      = ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dX;
+                _track_matchECal[trkID].dY      = ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dY;
+              } else {
+                // calc 2D distance for current cluster
+                float dRC = TMath::Sqrt(TMath::Power(((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dPhi,2)+ TMath::Power(((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dEta,2));
+                // calc 2D distance for already matched cluster
+                float dRP = TMath::Sqrt(TMath::Power(_track_matchECal[trkID].dPhi,2)+ TMath::Power(_track_matchECal[trkID].dEta,2));
+                // update track info if cluster better matched
+                if (dRC < dRP){
+                  _track_matchECal[trkID].caloid  = caloEnum;
+                  _track_matchECal[trkID].id      = iCl;
+                  _track_matchECal[trkID].dPhi    = ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dPhi;
+                  _track_matchECal[trkID].dEta    = ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dEta;
+                  _track_matchECal[trkID].dX      = ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dX;
+                  _track_matchECal[trkID].dY      = ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).dY;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
 //**************************************************************************************************************
 //**************************************************************************************************************
 // put calorimeter towers in temporary structure for clusterization
@@ -697,8 +786,8 @@ void runclusterizer(
       tempstructC.cluster_Y = showershape_eta_phi[5];
       tempstructC.cluster_Z = showershape_eta_phi[6];
       if (tracksEnabled){
-        tempstructC.cluster_matchedTrackIDs = isClusterMatched(tempstructC, caloEnum, clusterizerEnum, primaryTrackSource, true);
-        if(tempstructC.cluster_matchedTrackIDs.size() > 0) {
+        tempstructC.cluster_matchedTracks = isClusterMatched(tempstructC, caloEnum, clusterizerEnum, primaryTrackSource, true);
+        if(tempstructC.cluster_matchedTracks.size() > 0) {
                 tempstructC.cluster_isMatched = true;
         } else {
           tempstructC.cluster_isMatched = false;

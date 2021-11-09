@@ -122,6 +122,15 @@ void treeProcessingSimple(
                                   _nTowers_EHCAL, _nTowers_HCALIN, _nTowers_HCALOUT, _nTowers_LFHCAL, _nTowers_EEMCG,
                                   _nTowers_BECAL  };
 
+      
+        // Reset array entries for true ID
+        for(Int_t itrk=0; itrk<_nTracks; itrk++){
+          _track_trueID[itrk] = GetCorrectMCArrayEntry(_track_trueID[itrk]);
+          if(verbosity>2) std::cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk] << "\tand X = " << _track_px[itrk] << " cm" << std::endl;
+        }
+        // obtain labels for different track sources
+        prepareMCMatchInfo();
+      
         // run clusterizers normal calos
         for (int cal = 0; cal < maxcalo; cal++){
           if(do_reclus && nTowers[cal] > 0 && caloEnabled[cal]){
@@ -133,22 +142,16 @@ void treeProcessingSimple(
         }
         if((do_reclus) && verbosity>1) cout << "done with clusterization!" << endl;
 
-    
-        // Reset array entries for true ID
-        for(Int_t itrk=0; itrk<_nTracks; itrk++){
-          _track_trueID[itrk] = GetCorrectMCArrayEntry(_track_trueID[itrk]);
-          if(verbosity>2) std::cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk] << "\tand X = " << _track_px[itrk] << " cm" << std::endl;
-        }
-        // obtain labels for different track sources
-        prepareMCMatchInfo();
-
-        
+        // load correct clusterizer output also for centrally stored clusters, where appropriate
         for (Int_t icalo = 0; icalo < maxcalo; icalo++){
           for (Int_t ialgo = 0; ialgo < maxAlgo; ialgo++){
             if (loadClusterizerInput(ialgo, icalo) && verbosity>2) std::cout << str_calorimeter[icalo].Data() << "\t" << ialgo << endl;
           }
         }
-
+        // set clusters matched to respective track for direct accessing
+        SetClustersMatchedToTracks();
+        
+        
         
         // simple TM validation
         if(tracksEnabled) trackmatchingstudies();

@@ -205,17 +205,24 @@ void clusterstudies(){
 
         Double_t trackP = 0;
         if ((_clusters_calo[ialgo][icalo].at(iclus)).cluster_isMatched){
-          int trackID = ((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedTrackIDs).at(0);
+          int trackID = (((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedTracks).at(0)).id;
           TVector3 recpartvec(_track_px[trackID],_track_py[trackID],_track_pz[trackID]);
+          int caloIDMatchedTrack  = _track_matchECal[trackID].caloid; 
+          int clIDMatchedTrack    = _track_matchECal[trackID].id;
+          if (IsHCALCalorimeter(icalo)){
+            caloIDMatchedTrack  = _track_matchHCal[trackID].caloid; 
+            clIDMatchedTrack    = _track_matchHCal[trackID].id;
+          }
+          
           trackP = recpartvec.Mag();
-          if ( (int)((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedTrackIDs).size() > 1){
-            for (Int_t k = 1; k < (int)((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedTrackIDs).size(); k++){
-              int trackIDAlt = ((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedTrackIDs).at(k);
+          if ( (int)((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedTracks).size() > 1){
+            for (Int_t k = 1; k < (int)((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedTracks).size(); k++){
+              int trackIDAlt = (((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedTracks).at(k)).id;
               TVector3 recpartvec2(_track_px[trackIDAlt],_track_py[trackIDAlt],_track_pz[trackIDAlt]);
               if (int_CS_verbosity){
                 if (k == 1){
                   std::cout << "calo: "<< str_calorimeter[icalo].Data()<< ", found more than one track for cluster " << iclus << "\t" << currEnergy << "\t eta \t"<< etaCurr<< "\t phi \t"<< phiCurr<< std::endl;
-                  std::cout << "\t\t\t\t 0\t track P\t" << trackP << "\t eta \t"<< recpartvec.Eta()<< "\t phi \t"<< recpartvec.Phi() << "\t source \t" <<  _track_source[trackID] << std::endl; 
+                  std::cout << "\t\t\t\t 0\t track P\t" << trackP << "\t eta \t"<< recpartvec.Eta()<< "\t phi \t"<< recpartvec.Phi() << "\t source \t" <<  _track_source[trackID] << "\t calo-enum\t "<<caloIDMatchedTrack << "\t cl ID\t" << clIDMatchedTrack << std::endl; 
                 } 
                 std::cout << "\t\t\t\t " << k << "\t track P\t" << recpartvec2.Mag() << "\t eta \t"<< recpartvec2.Eta()<< "\t phi \t"<< recpartvec2.Phi()<< "\t source \t" <<  _track_source[trackIDAlt]<< std::endl;
               }

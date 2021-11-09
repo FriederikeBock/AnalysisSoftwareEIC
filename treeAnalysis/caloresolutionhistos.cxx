@@ -13,6 +13,7 @@ TH2F*  h_CRH_EReso_E[particleSpRes][_active_calo][_active_algo];
 TH2F*  h_CRH_EReso_Erec[particleSpRes][_active_calo][_active_algo];
 TH2F*  h_CRH_EReso_E_Eta[particleSpRes][_active_calo][_active_algo][nEta+1];
 TH2F*  h_CRH_EReso_Ehighest[particleSpRes][_active_calo][_active_algo];
+TH2F*  h_CRH_EReso_Ehighest_Eta[particleSpRes][_active_calo][_active_algo][nEta+1];
 
 //========================== ECals and HCal energies together ===================
 TH2F*  h_CRH_EResoComb_E[particleSpRes][_active_calo][_active_algo];
@@ -45,8 +46,6 @@ void caloresolutionhistos(){
       if(verbosityCRH) std::cout << "Calo-type: " << icalo << "\t Algorithm: " << ialgo << std::endl;
       if(!loadClusterizerInput( ialgo, icalo )) continue;
       
-      std::sort(_clusters_calo[ialgo][icalo].begin(), _clusters_calo[ialgo][icalo].end(), &acompareCl);
-
       int nbinsERes = 400;
       int nbinsPhiRes = 200;
       int nbinsEtaRes = 200;
@@ -69,6 +68,7 @@ void caloresolutionhistos(){
         for (Int_t eT = minEtaBinCalo[caloDir]; eT < maxEtaBinCalo[caloDir]; eT++){
 //           std::cout << eT << "\t" << partEtaCalo[eT] << "\t < eta < \t" << partEtaCalo[eT+1] << std::endl;
           if(!h_CRH_EReso_E_Eta[sp][icalo][ialgo][eT])h_CRH_EReso_E_Eta[sp][icalo][ialgo][eT] 	= new TH2F(Form("h_CRH_EReso_%sE_Eta_%s_%s_%d", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data(), eT), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
+          if(!h_CRH_EReso_Ehighest_Eta[sp][icalo][ialgo][eT])h_CRH_EReso_Ehighest_Eta[sp][icalo][ialgo][eT] 	= new TH2F(Form("h_CRH_EReso_%sEhighest_Eta_%s_%s_%d", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data(), eT), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
         }
         
         if(!h_CRH_EtaReso_Eta[sp][icalo][ialgo]) h_CRH_EtaReso_Eta[sp][icalo][ialgo]                = new TH2F(Form("h_CRH_EtaReso_%sEta_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", (Int_t)(TMath::Abs(minEtaCurCalo-maxEtaCurCalo)*10), minEtaCurCalo, maxEtaCurCalo, nbinsEtaRes, -0.2, 0.2);
@@ -124,31 +124,44 @@ void caloresolutionhistos(){
             mcEta = _mcpart_HcalProjs[mcID].at(0).eta_Calo;
             mcPhi = _mcpart_HcalProjs[mcID].at(0).phi_Calo;
         }
+        
+        bool isInNomEta = false;
+        if (mcEta >= nominalEtaRegion[caloDir][0] && mcEta <= nominalEtaRegion[caloDir][0])
+          isInNomEta    = true;
+        
         // find true MC particle for given cluster
         // if(verbosityCRH>1) std::cout << "\tfound MC:  particle " << mcID << "\twith E = " << _mcpart_E[mcID] << " GeV" << std::endl;
         // ========== Energy resolutions ================================================
         float energyRes = (_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/_mcpart_E[mcID];
         // res E vs MC E
-        h_CRH_EReso_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[mcID],energyRes);
-        if (pClass != -1) h_CRH_EReso_E[pClass][icalo][ialgo]->Fill(_mcpart_E[mcID],energyRes);
-        // highest energy cluster res E vs MC E
-        if ( isHighestForPart ){
-          h_CRH_EReso_Ehighest[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[mcID],energyRes);
-          if (pClass != -1) h_CRH_EReso_Ehighest[pClass][icalo][ialgo]->Fill(_mcpart_E[mcID],energyRes);
+        if (isInNomEta){
+          h_CRH_EReso_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[mcID],energyRes);
+          if (pClass != -1) h_CRH_EReso_E[pClass][icalo][ialgo]->Fill(_mcpart_E[mcID],energyRes);
+          // highest energy cluster res E vs MC E
+          if ( isHighestForPart ){
+            h_CRH_EReso_Ehighest[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[mcID],energyRes);
+            if (pClass != -1) h_CRH_EReso_Ehighest[pClass][icalo][ialgo]->Fill(_mcpart_E[mcID],energyRes);
+          }
+          // res E vs rec E
+          h_CRH_EReso_Erec[particleSpRes-1][icalo][ialgo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E,energyRes);
+          if (pClass != -1) 
+            h_CRH_EReso_Erec[pClass][icalo][ialgo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E,energyRes);
         }
-        // res E vs rec E
-        h_CRH_EReso_Erec[particleSpRes-1][icalo][ialgo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E,energyRes);
-        if (pClass != -1) 
-          h_CRH_EReso_Erec[pClass][icalo][ialgo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E,energyRes);
-
+        
         // find eta bin
         Int_t et = 0;
-        while ( ( (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta > partEtaCalo[et+1] ) && ( et < nEta )) et++;
+        while ( ( mcEta > partEtaCalo[et+1] ) && ( et < nEta )) et++;
+//         while ( ( (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta > partEtaCalo[et+1] ) && ( et < nEta )) et++;
         // res E vs MC E in eta slices
         if(et >= minEtaBinCalo[caloDir] && et < maxEtaBinCalo[caloDir]) {
           h_CRH_EReso_E_Eta[particleSpRes-1][icalo][ialgo][et]->Fill(_mcpart_E[mcID],energyRes);
           if (pClass != -1) 
             h_CRH_EReso_E_Eta[pClass][icalo][ialgo][et]->Fill(_mcpart_E[mcID],energyRes);
+          if (isHighestForPart){
+            h_CRH_EReso_Ehighest_Eta[particleSpRes-1][icalo][ialgo][et]->Fill(_mcpart_E[mcID],energyRes);
+            if (pClass != -1) 
+              h_CRH_EReso_Ehighest_Eta[pClass][icalo][ialgo][et]->Fill(_mcpart_E[mcID],energyRes);            
+          }
         }
 
         //====== Eta resolutions =====================================================//                
@@ -185,36 +198,35 @@ void caloresolutionhistos(){
         if (phidiff >= TMath::Pi()) phidiff = phidiff-2*TMath::Pi();
         if (phidiff <= -TMath::Pi()) phidiff = phidiff+2*TMath::Pi();
         
-        // res Phi vs MC Phi
-        h_CRH_PhiReso_Phi[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_Phi[mcID], phidiff);
-        if (pClass != -1) 
-          h_CRH_PhiReso_Phi[pClass][icalo][ialgo]->Fill(_mcpart_Phi[mcID], phidiff);
-        // higherst energy cluster res Phi vs MC Phi
-        if (iclus == 0 && _nMCPart==1 ){
-          h_CRH_PhiReso_Phihighest[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_Phi[mcID], phidiff);
+        if (isInNomEta){
+          // res Phi vs MC Phi
+          h_CRH_PhiReso_Phi[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_Phi[mcID], phidiff);
           if (pClass != -1) 
-            h_CRH_PhiReso_Phihighest[pClass][icalo][ialgo]->Fill(_mcpart_Phi[mcID], phidiff);
-        }
-        // res Phi vs rec Phi
-        h_CRH_PhiReso_Phirec[particleSpRes-1][icalo][ialgo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_Phi, phidiff);
-        if (pClass != -1) 
-          h_CRH_PhiReso_Phirec[pClass][icalo][ialgo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_Phi, phidiff);
-        // res Phi vs MC E vs MC Phi
-        h_CRH_PhiReso_E_Phi[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[mcID],_mcpart_Phi[mcID], phidiff);
-        if (pClass != -1) 
-          h_CRH_PhiReso_E_Phi[pClass][icalo][ialgo]->Fill(_mcpart_E[mcID],_mcpart_Phi[mcID], phidiff);
-        // res Phi vs rec E vs rec Phi
-        h_CRH_PhiReso_Ereco_Phi[particleSpRes-1][icalo][ialgo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E,
-                                                                  (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Phi,
-                                                                  phidiff);
-        if (pClass != -1) 
-          h_CRH_PhiReso_Ereco_Phi[pClass][icalo][ialgo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E,
-                                                           ((_clusters_calo[ialgo][icalo].at(iclus)).cluster_Phi),
-                                                           phidiff);
+            h_CRH_PhiReso_Phi[pClass][icalo][ialgo]->Fill(_mcpart_Phi[mcID], phidiff);
+          // higherst energy cluster res Phi vs MC Phi
+          if (iclus == 0 && _nMCPart==1 ){
+            h_CRH_PhiReso_Phihighest[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_Phi[mcID], phidiff);
+            if (pClass != -1) 
+              h_CRH_PhiReso_Phihighest[pClass][icalo][ialgo]->Fill(_mcpart_Phi[mcID], phidiff);
+          }
+          // res Phi vs rec Phi
+          h_CRH_PhiReso_Phirec[particleSpRes-1][icalo][ialgo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_Phi, phidiff);
+          if (pClass != -1) 
+            h_CRH_PhiReso_Phirec[pClass][icalo][ialgo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_Phi, phidiff);
+          // res Phi vs MC E vs MC Phi
+          h_CRH_PhiReso_E_Phi[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[mcID],_mcpart_Phi[mcID], phidiff);
+          if (pClass != -1) 
+            h_CRH_PhiReso_E_Phi[pClass][icalo][ialgo]->Fill(_mcpart_E[mcID],_mcpart_Phi[mcID], phidiff);
+          // res Phi vs rec E vs rec Phi
+          h_CRH_PhiReso_Ereco_Phi[particleSpRes-1][icalo][ialgo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E,
+                                                                    (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Phi,
+                                                                    phidiff);
+          if (pClass != -1) 
+            h_CRH_PhiReso_Ereco_Phi[pClass][icalo][ialgo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E,
+                                                            ((_clusters_calo[ialgo][icalo].at(iclus)).cluster_Phi),
+                                                            phidiff);
 
-          
-          
-          
+        }   
       }
     }
   }
@@ -322,6 +334,7 @@ void caloresolutionhistos(){
             }
           }
         }
+        float mcEta                  = _mcpart_Eta[currMCID];
         int pClass = -1;
         int nTry  = 0;
         while (pClass == -1 && nTry < particleSpRes-1){
@@ -329,13 +342,18 @@ void caloresolutionhistos(){
           nTry++;  
         }
         
+         bool isInNomEta = false;
+        if (mcEta >= nominalEtaRegion[caloDir][0] && mcEta <= nominalEtaRegion[caloDir][0])
+          isInNomEta    = true;
+       
+        
         // combined res E vs MC E
         h_CRH_EResoComb_E[particleSpRes-1][icalo][ialgo]->Fill(_mcpart_E[currMCID],clusterenergy/_mcpart_E[currMCID]);
         if (pClass != -1) h_CRH_EResoComb_E[pClass][icalo][ialgo]->Fill(_mcpart_E[currMCID],clusterenergy/_mcpart_E[currMCID]);
 
         // find eta bin
         Int_t et = 0;
-        while ( ( clustereta > partEtaCalo[et+1] ) && ( et < nEta )) et++;
+        while ( ( mcEta > partEtaCalo[et+1] ) && ( et < nEta )) et++;
         // combined res E vs MC E in eta slices
         if(et >= minEtaBinCalo[caloDir] && et < maxEtaBinCalo[caloDir]) {
           h_CRH_EResoComb_E_Eta[particleSpRes-1][icalo][ialgo][et]->Fill(_mcpart_E[currMCID],clusterenergy/_mcpart_E[currMCID]);
@@ -366,6 +384,7 @@ void caloresolutionhistossave(){
         if(h_CRH_EReso_Erec[sp][icalo][ialgo])h_CRH_EReso_Erec[sp][icalo][ialgo]->Write();
         for (Int_t eT = 0; eT < nEta+1; eT++){
           if(h_CRH_EReso_E_Eta[sp][icalo][ialgo][eT])h_CRH_EReso_E_Eta[sp][icalo][ialgo][eT]->Write();
+          if(h_CRH_EReso_Ehighest_Eta[sp][icalo][ialgo][eT])h_CRH_EReso_Ehighest_Eta[sp][icalo][ialgo][eT]->Write();
         }
         // eta resolutions
         if(h_CRH_EtaReso_Eta[sp][icalo][ialgo])h_CRH_EtaReso_Eta[sp][icalo][ialgo]->Write();

@@ -204,7 +204,7 @@ bool trackmatchingstudies( int primaryTrackSource = 0, bool runSpecialCuts = fal
       }
       for(int ialgo=0;ialgo<_active_algo;ialgo++){
         for(int icase=0;icase<diffCases_TMStudies;icase++){
-          float nbins2Ddelta = isFwd ? 78 : 200;
+          float nbins2Ddelta = isFwd ? 78*4 : 200;
           float min2Ddeltahist = isFwd ? -39 : -0.25;
           float max2Ddeltahist = isFwd ? 39 : 0.25;
           

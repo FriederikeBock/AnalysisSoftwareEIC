@@ -30,8 +30,6 @@ void pi0studies(){
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
       if(!loadClusterizerInput(ialgo,icalo )) continue;
 
-      std::sort(_clusters_calo[ialgo][icalo].begin(), _clusters_calo[ialgo][icalo].end(), &acompareCl);
-
       int nbinsx = 500;
       // create output histograms
       if(!h_Etrue_Minv_allcalo) h_Etrue_Minv_allcalo  = new TH2F(Form("h_Etrue_Minv_allcalo"), "", nbinsx, 0, 50, nbinsx, 0, 0.5);

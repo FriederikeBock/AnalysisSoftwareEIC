@@ -327,26 +327,16 @@ void plotClustersEndCapCalo(
         std::cout << "incorrect clusterizer selected! Enum " << clusterizerEnum << " not defined!" << std::endl;
         return;
       }
+      tempstructC.cluster_towers = cluster_towers;
 
-      cout << "filling hist for cluster: "  << nclusters << "\t E: " << tempstructC.cluster_E << "\t seed E: " << tempstructC.cluster_seed<<  endl;
-
-      for (int tic = 0; tic < (int)cluster_towers.size(); tic++){
-        int iEtaTwr = cluster_towers.at(tic).tower_iEta;
-        int iPhiTwr = cluster_towers.at(tic).tower_iPhi;
-        float eTwr  = cluster_towers.at(tic).tower_E;
-        if (verbosity > 0) std::cout << "\t" << Form("%.3f",cluster_towers.at(tic).tower_E) << "\t eta \t" << cluster_towers.at(tic).tower_iEta << "\t phi \t" << cluster_towers.at(tic).tower_iPhi << std::endl;
-        h_IEtaIPhiMapEvt_Cl[nclusters]->Fill(iEtaTwr, iPhiTwr, eTwr);
-         
-      }
       rec_clusters.push_back(tempstructC);
-      recclusterEnergies.push_back(tempstructC.cluster_E);
       nclusters++;
       
     } else {
       input_towers.clear();
     }
   }
-
+  std::sort(rec_clusters.begin(), rec_clusters.end(), &acompareCl);  
   float firstClusterE     = 0;
   if(nclusters==0) 
     firstClusterE   = 0;
@@ -355,8 +345,17 @@ void plotClustersEndCapCalo(
     
   float maxSeedEnergy = 0;
   for (int it = 0; it < (int)rec_clusters.size(); it++){
-      if (rec_clusters.at(it).cluster_seed > maxSeedEnergy)
-        maxSeedEnergy   =  rec_clusters.at(it).cluster_seed;
+    cout << "filling hist for cluster: "  << nclusters << "\t E: " << rec_clusters.at(it).cluster_E << "\t seed E: " << rec_clusters.at(it).cluster_seed<<  endl;
+    for (int tic = 0; tic < (int)(rec_clusters.at(it).cluster_towers).size(); tic++){
+      int iEtaTwr = rec_clusters.at(it).cluster_towers.at(tic).tower_iEta;
+      int iPhiTwr = rec_clusters.at(it).cluster_towers.at(tic).tower_iPhi;
+      float eTwr    = rec_clusters.at(it).cluster_towers.at(tic).tower_E;
+      if (verbosity > 0) std::cout << "\t" << Form("%.3f",eTwr) << "\t eta \t" << iEtaTwr << "\t phi \t" << iPhiTwr << std::endl;
+
+      h_IEtaIPhiMapEvt_Cl[it]->Fill(iEtaTwr, iPhiTwr, eTwr);
+    }
+    if (rec_clusters.at(it).cluster_seed > maxSeedEnergy)
+      maxSeedEnergy   =  rec_clusters.at(it).cluster_seed;
   }
   
   if (sumedE < 0.01){
@@ -369,27 +368,59 @@ void plotClustersEndCapCalo(
   cout << "here" << endl;
   int nMCCurr   = 0;
   int nMCCurrID = input_towersForMC.at(0).tower_trueID;
-  TString tempMCLabel = Form("%i: %.1f GeV, #eta = %1.2f", _mcpart_PDG[GetCorrectMCArrayEntry(nMCCurrID)] , _mcpart_E[GetCorrectMCArrayEntry(nMCCurrID)],_mcpart_Eta[GetCorrectMCArrayEntry(nMCCurrID)]  );
-  mcPartEnergies.push_back(tempMCLabel);
-  while (!input_towersForMC.empty() && nMCCurr < 49) {
-    if (nMCCurrID != input_towersForMC.at(0).tower_trueID){
-      nMCCurr++;
-      nMCCurrID = input_towersForMC.at(0).tower_trueID;
-      tempMCLabel = Form("%i: %.1f GeV, #eta = %1.2f ", _mcpart_PDG[GetCorrectMCArrayEntry(nMCCurrID)] , _mcpart_E[GetCorrectMCArrayEntry(nMCCurrID)], _mcpart_Eta[GetCorrectMCArrayEntry(nMCCurrID)] );
-      mcPartEnergies.push_back(tempMCLabel);
-    }
+  std::vector<towersStrct> cluster_towersMC;
+  std::vector<clustersStrct> MC_clusters;
+  clustersStrct tempstructMC;
+  tempstructMC.cluster_trueID = nMCCurrID;
 
-    int iEtaTwr = input_towersForMC.at(0).tower_iEta;
-    int iPhiTwr = input_towersForMC.at(0).tower_iPhi;
-    float eTwr    = input_towersForMC.at(0).tower_E;
-    h_IEtaIPhiMapEvt_MCPart[nMCCurr]->Fill(iEtaTwr, iPhiTwr, eTwr);
+  while (!input_towersForMC.empty() ) {
+    if (nMCCurrID != input_towersForMC.at(0).tower_trueID ){
+      tempstructMC.cluster_Eta    = _mcpart_Eta[GetCorrectMCArrayEntry(nMCCurrID)] ;
+      tempstructMC.cluster_Phi    = _mcpart_Phi[GetCorrectMCArrayEntry(nMCCurrID)] ;
+      tempstructMC.cluster_trueID = nMCCurrID;
+      tempstructMC.cluster_NTowers  = cluster_towersMC.size();
+      tempstructMC.cluster_towers   = cluster_towersMC;
+      MC_clusters.push_back(tempstructMC);
+      nMCCurrID = input_towersForMC.at(0).tower_trueID;
+      // reseting tempstructMC
+      tempstructMC  = clustersStrct();
+      tempstructMC.cluster_trueID = nMCCurrID;
+      cluster_towersMC.clear();
+    }
+    cluster_towersMC.push_back(input_towersForMC.at(0));
+    tempstructMC.cluster_E += input_towersForMC.at(0).tower_E;
+    
+    if (input_towersForMC.size() == 1){
+      tempstructMC.cluster_Eta    = _mcpart_Eta[GetCorrectMCArrayEntry(nMCCurrID)] ;
+      tempstructMC.cluster_Phi    = _mcpart_Phi[GetCorrectMCArrayEntry(nMCCurrID)] ;
+      tempstructMC.cluster_trueID = nMCCurrID;
+      tempstructMC.cluster_NTowers  = cluster_towersMC.size();
+      tempstructMC.cluster_towers   = cluster_towersMC;
+      MC_clusters.push_back(tempstructMC);    
+    }
     input_towersForMC.erase(input_towersForMC.begin());
   }
-  
-  
-//   if (collisionsSys.Contains("Single"))
-//     labelEnergy=Form("%s, #eta = %1.2f", labelEnergy.Data(), _mcpart_Eta[0]);
-//   
+  std::sort(MC_clusters.begin(), MC_clusters.end(), &acompareCl);
+  cout << __LINE__ << endl;
+
+  for (int nMC = 0; nMC < (int)MC_clusters.size() && nMC < 50; nMC++  ){
+    int mcID    = MC_clusters.at(nMC).cluster_trueID;
+    TString tempMCLabel = Form("%i: r. %.1f GeV, #eta = %1.2f", _mcpart_PDG[GetCorrectMCArrayEntry(mcID)] , MC_clusters.at(nMC).cluster_E,  MC_clusters.at(nMC).cluster_Eta  );
+    mcPartEnergies.push_back(tempMCLabel);
+    cout << tempMCLabel.Data() << endl;
+    for (int tic = 0; tic < (int)(MC_clusters.at(nMC).cluster_towers).size(); tic++){
+      int iEtaTwr = MC_clusters.at(nMC).cluster_towers.at(tic).tower_iEta;
+      int iPhiTwr = MC_clusters.at(nMC).cluster_towers.at(tic).tower_iPhi;
+      float eTwr  = MC_clusters.at(nMC).cluster_towers.at(tic).tower_E;
+      
+      h_IEtaIPhiMapEvt_MCPart[nMC]->Fill(iEtaTwr, iPhiTwr, eTwr);
+    }  
+    nMCCurr++;
+  }
+
+  if (collisionsSys.Contains("Single"))
+    labelEnergy=Form("E = %1.2f, #eta = %1.2f",_mcpart_E[0], _mcpart_Eta[0]);
+
   // 2D PLOT
   TCanvas* c2DBox = new TCanvas("c2DBox","",0,0,1000,950);
   DrawGammaCanvasSettings( c2DBox, 0.11, 0.1, 0.01, 0.1);
@@ -432,7 +463,7 @@ void plotClustersEndCapCalo(
       h_IEtaIPhiMapEvt_Cl[nCl]->Draw("box,same");
       int cols = nCl%4;
       int rows = (nCl/4);
-      drawLatexAdd(Form("#it{E}_{cl} = %0.1f GeV", recclusterEnergies.at(nCl) ), 0.14+0.2*cols, 0.93-(rows*0.55*textSizeLabelsRel), 0.55*textSizeLabelsRel, kFALSE, kFALSE, kFALSE, colorCluster[nCl]);
+      drawLatexAdd(Form("#it{E}_{cl} = %0.1f GeV", rec_clusters.at(nCl).cluster_E ), 0.14+0.2*cols, 0.93-(rows*0.55*textSizeLabelsRel), 0.55*textSizeLabelsRel, kFALSE, kFALSE, kFALSE, colorCluster[nCl]);
       
     }
     if (collisionsSys.Contains("Single")){
@@ -447,13 +478,13 @@ void plotClustersEndCapCalo(
   h_IEtaIPhiMapEvt_Ecut->SetLineColor(kGray+2);
   h_IEtaIPhiMapEvt_Ecut->Draw("same,box");
   
-  for (int nMC = 0; nMC < nMCCurr+1; nMC++){
+  for (int nMC = 0; nMC < nMCCurr; nMC++){
     if (h_IEtaIPhiMapEvt_MCPart[nMC]){
       h_IEtaIPhiMapEvt_MCPart[nMC]->SetLineColor(colorCluster[nMC]);
       h_IEtaIPhiMapEvt_MCPart[nMC]->Draw("box,same");
-      int cols = nMC%4;
-      int rows = (nMC/4);
-      drawLatexAdd((TString)(mcPartEnergies.at(nMC)).Data() , 0.14+0.16*cols, 0.93-(rows*0.55*textSizeLabelsRel), 0.55*textSizeLabelsRel, kFALSE, kFALSE, kFALSE, colorCluster[nMC]);
+      int cols = nMC%3;
+      int rows = (nMC/3);
+      drawLatexAdd((TString)(mcPartEnergies.at(nMC)).Data() , 0.14+0.22*cols, 0.93-(rows*0.45*textSizeLabelsRel), 0.45*textSizeLabelsRel, kFALSE, kFALSE, kFALSE, colorCluster[nMC]);
     }
   }
   

@@ -45,6 +45,18 @@ typedef struct {
 } projStrct;
 
 
+struct matchingCalStrct{
+  matchingCalStrct(): caloid(-1), id(-1), dPhi(-1000), dEta(-1000), dX(-1000), dY(-1000) {}
+  int caloid;
+  int id;
+  float dPhi;
+  float dEta;
+  float dX;
+  float dY;
+} ;
+
+
+
 bool caloEnabled[20]      = {0};
 bool tracksEnabled        = 0;
 bool vertexEnabled        = 0;
@@ -186,6 +198,8 @@ std::array<int, _maxNTracks> _track_nTTL{{}};
 std::array<int, _maxNTracks> _track_nTrL{{}};
 std::array<bool, _maxNTracks> _track_hasIL{{}};
 std::array<bool, _maxNTracks> _track_hasOL{{}};
+std::array<matchingCalStrct, _maxNTracks> _track_matchECal{{}};
+std::array<matchingCalStrct, _maxNTracks> _track_matchHCal{{}};
 
 int _nProjections;
 float* _track_ProjTrackID                 = new float[_maxNProjections];
@@ -1052,6 +1066,8 @@ void prepareMCMatchInfo(){
     }
     if (verbosityBASE > 2) std::cout << "found: " << _track_RefProjID[itrk].size() << "\t projections " << std::endl;
     
+    _track_matchECal[itrk] = matchingCalStrct();
+    _track_matchHCal[itrk] = matchingCalStrct();
   }
 }
 
