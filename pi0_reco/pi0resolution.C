@@ -348,8 +348,8 @@ void pi0resolution(
 
           if (doFitting){   
 
-            // fithistEtrueMinv[icalo][padebin] = FitExpPlusGaussian (histEtrueMinvbin[icalo][padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
-            fithistEtrueMinv[icalo][padebin] = FitExpPlusGaussianPol2 (histEtrueMinvbin[icalo][padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
+            fithistEtrueMinv[icalo][padebin] = FitExpPlusGaussian (histEtrueMinvbin[icalo][padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
+            // fithistEtrueMinv[icalo][padebin] = FitExpPlusGaussianPol2 (histEtrueMinvbin[icalo][padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
             // fithistEtrueMinv[icalo][padebin]    = new TF1(Form("fit_Minv_%s_%f",caloName[icalo].Data(), partE[ebin]), "crystalball", 0.05, 0.15);
             // fithistEtrueMinv[icalo][padebin]->SetParameters(0.55*histEtrueMinvbin[icalo][padebin]->GetMaximum(),histEtrueMinvbin[icalo][padebin]->GetMean(),2.*histEtrueMinvbin[icalo][padebin]->GetRMS(),2.*histEtrueMinvbin[icalo][padebin]->GetRMS(),2.5*histEtrueMinvbin[icalo][padebin]->GetRMS());
             histEtrueMinvbin[icalo][padebin]->Fit(fithistEtrueMinv[icalo][padebin],"L0RMEQ","",minmassfit, maxmassfit);
@@ -452,8 +452,8 @@ void pi0resolution(
 
               // fithistEtrueMinv_allcalo[padebin]    = new TF1(Form("fit_Minv_%s_%f","hybrid", partE[ebin]), "crystalball", 0.05, 0.15);
               // fithistEtrueMinv_allcalo[padebin]->SetParameters(0.55*histEtrueMinvbin_allcalo[padebin]->GetMaximum(),histEtrueMinvbin_allcalo[padebin]->GetMean(),2.*histEtrueMinvbin_allcalo[padebin]->GetRMS(),2.*histEtrueMinvbin_allcalo[padebin]->GetRMS(),2.5*histEtrueMinvbin_allcalo[padebin]->GetRMS());
-              // fithistEtrueMinv_allcalo[padebin] = FitExpPlusGaussian (histEtrueMinvbin_allcalo[padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
-              fithistEtrueMinv_allcalo[padebin] = FitExpPlusGaussianPol2 (histEtrueMinvbin_allcalo[padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
+              fithistEtrueMinv_allcalo[padebin] = FitExpPlusGaussian (histEtrueMinvbin_allcalo[padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
+              // fithistEtrueMinv_allcalo[padebin] = FitExpPlusGaussianPol2 (histEtrueMinvbin_allcalo[padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
               histEtrueMinvbin_allcalo[padebin]->Fit(fithistEtrueMinv_allcalo[padebin],"L0RMEQ","",minmassfit, maxmassfit);
               
               fithistEtrueMinvFINAL_allcalo[padebin] = fithistEtrueMinv_allcalo[padebin];
