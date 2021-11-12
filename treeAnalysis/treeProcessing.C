@@ -554,7 +554,7 @@ void treeProcessing(
           if(verbosity>1) std::cout << "loop done ... next event" << std::endl;
         }
         if(tracksEnabled) trackmatchingstudies(primaryTrackSource);
-        if(tracksEnabled) eoverpstudies(primaryTrackSource);
+        if(tracksEnabled && addOutputName.Contains("EOP")) eoverpstudies(primaryTrackSource);
 
         clearClusterVectors();
         clearMCRecMatchVectors();
@@ -600,7 +600,7 @@ void treeProcessing(
     if(tracksEnabled) {
       std::cout << "running trackmatchingstudiesSave" << std::endl;
       trackmatchingstudiesSave();
-      eoverpstudiesSave();
+      if(addOutputName.Contains("EOP"))eoverpstudiesSave();
     }
     std::cout << "running clusterizerSave" << std::endl;
     clusterizerSave();

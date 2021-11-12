@@ -15,6 +15,9 @@ TH1F*  h_NClus[_active_calo][_active_algo];
 TH1F*  h_Pi0Spec_total[_active_calo][_active_algo];
 TH1F*  h_Pi0Spec_separatecls[_active_calo][_active_algo];
 TH1F*  h_Pi0Spec_mergedclus[_active_calo][_active_algo];
+TH2F*  h_Pi0Spec_total_Eta[_active_calo][_active_algo];
+TH2F*  h_Pi0Spec_separatecls_Eta[_active_calo][_active_algo];
+TH2F*  h_Pi0Spec_mergedclus_Eta[_active_calo][_active_algo];
 
 
 void pi0studies(){
@@ -45,6 +48,9 @@ void pi0studies(){
       if(!h_Pi0Spec_total[icalo][ialgo]) h_Pi0Spec_total[icalo][ialgo]  = new TH1F(Form("h_Pi0Spec_total_%s_%s", str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 200, 0, 50);
       if(!h_Pi0Spec_separatecls[icalo][ialgo]) h_Pi0Spec_separatecls[icalo][ialgo]  = new TH1F(Form("h_Pi0Spec_separatecls_%s_%s", str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 200, 0, 50);
       if(!h_Pi0Spec_mergedclus[icalo][ialgo]) h_Pi0Spec_mergedclus[icalo][ialgo]  = new TH1F(Form("h_Pi0Spec_mergedclus_%s_%s", str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 200, 0, 50);
+      if(!h_Pi0Spec_total_Eta[icalo][ialgo]) h_Pi0Spec_total_Eta[icalo][ialgo]  = new TH2F(Form("h_Pi0Spec_total_Eta_%s_%s", str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 200, 0, 50, 160, -4, 4);
+      if(!h_Pi0Spec_separatecls_Eta[icalo][ialgo]) h_Pi0Spec_separatecls_Eta[icalo][ialgo]  = new TH2F(Form("h_Pi0Spec_separatecls_Eta_%s_%s", str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 200, 0, 50, 160, -4, 4);
+      if(!h_Pi0Spec_mergedclus_Eta[icalo][ialgo]) h_Pi0Spec_mergedclus_Eta[icalo][ialgo]  = new TH2F(Form("h_Pi0Spec_mergedclus_Eta_%s_%s", str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 200, 0, 50, 160, -4, 4);
 
       // calculations only necessary if at least two clusters are present
       h_NClus[icalo][ialgo]->Fill(_clusters_calo[ialgo][icalo].size());
@@ -206,9 +212,13 @@ void pi0studies(){
             if(iclusfound==1){
               h_Pi0Spec_total[ialgo][icalo]->Fill(_mcpart_E[imc]);
               h_Pi0Spec_mergedclus[ialgo][icalo]->Fill(_mcpart_E[imc]);
+              h_Pi0Spec_total_Eta[ialgo][icalo]->Fill(_mcpart_E[imc],trueeta);
+              h_Pi0Spec_mergedclus_Eta[ialgo][icalo]->Fill(_mcpart_E[imc],trueeta);
             } else if(iclusfound>1){
               h_Pi0Spec_total[ialgo][icalo]->Fill(_mcpart_E[imc]);
               h_Pi0Spec_separatecls[ialgo][icalo]->Fill(_mcpart_E[imc]);
+              h_Pi0Spec_total_Eta[ialgo][icalo]->Fill(_mcpart_E[imc],trueeta);
+              h_Pi0Spec_separatecls[ialgo][icalo]->Fill(_mcpart_E[imc],trueeta);
             }
             // TH1F*  h_Pi0Spec_total[_active_calo][_active_algo];
             // TH1F*  h_Pi0Spec_separatecls[_active_calo][_active_algo];
@@ -338,6 +348,9 @@ void pi0studiesSave(){
       if(h_Pi0Spec_total[icalo][ialgo]) h_Pi0Spec_total[icalo][ialgo]->Write();
       if(h_Pi0Spec_separatecls[icalo][ialgo]) h_Pi0Spec_separatecls[icalo][ialgo]->Write();
       if(h_Pi0Spec_mergedclus[icalo][ialgo]) h_Pi0Spec_mergedclus[icalo][ialgo]->Write();
+      if(h_Pi0Spec_total_Eta[icalo][ialgo]) h_Pi0Spec_total_Eta[icalo][ialgo]->Write();
+      if(h_Pi0Spec_separatecls_Eta[icalo][ialgo]) h_Pi0Spec_separatecls_Eta[icalo][ialgo]->Write();
+      if(h_Pi0Spec_mergedclus_Eta[icalo][ialgo]) h_Pi0Spec_mergedclus_Eta[icalo][ialgo]->Write();
     }
   }
 

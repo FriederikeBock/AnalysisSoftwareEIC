@@ -2,6 +2,9 @@
 #define BINNINGHEADER_H
 
 #include <TString.h>
+#include <TMath.h>
+#include <iostream>
+#include <fstream>
 
   const Int_t nBinsP              = 148;
   const Int_t nBinsPLow           = 99;

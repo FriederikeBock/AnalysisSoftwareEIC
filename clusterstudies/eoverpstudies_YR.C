@@ -8,14 +8,18 @@
 
 #define NELEMS(arr) (sizeof(arr)/sizeof(arr[0])) 
 
-float getEPcutvalue(int icalo, float partE){
+float getEPcutvalue(int icalo, float partE, bool useFWHM = false){
   float EP_cut_strength = 1.6;
   float EP_cut = 1;
-  
-  if(icalo==0) EP_cut = 1. - EP_cut_strength * std::sqrt( 0.5 * 0.5 + 2.2 * 2.2 / partE ) / 100.;
-  if(icalo==1) EP_cut = 1. - EP_cut_strength *std::sqrt( 0.8 * 0.8 + 1.7 * 1.7 / partE ) / 100.;
-  if(icalo==2) EP_cut = 1. - EP_cut_strength * std::sqrt( 0.1 * 0.1 + 7.3 * 7.3 / partE ) / 100.;
-
+  if(useFWHM){
+    if(icalo==0) EP_cut = 1. - EP_cut_strength * 2 * std::sqrt( 0.5 * 0.5 + 2.2 * 2.2 / partE ) / 100.;
+    if(icalo==1) EP_cut = 1. - EP_cut_strength * 2 *std::sqrt( 0.8 * 0.8 + 1.7 * 1.7 / partE ) / 100.;
+    if(icalo==2) EP_cut = 1. - EP_cut_strength * 2 * std::sqrt( 0.1 * 0.1 + 7.3 * 7.3 / partE ) / 100.;
+  } else {
+    if(icalo==0) EP_cut = 1. - EP_cut_strength * std::sqrt( 0.5 * 0.5 + 2.2 * 2.2 / partE ) / 100.;
+    if(icalo==1) EP_cut = 1. - EP_cut_strength *std::sqrt( 0.8 * 0.8 + 1.7 * 1.7 / partE ) / 100.;
+    if(icalo==2) EP_cut = 1. - EP_cut_strength * std::sqrt( 0.1 * 0.1 + 7.3 * 7.3 / partE ) / 100.;
+  }
   return EP_cut;
 }
 void eoverpstudies_YR(
@@ -31,7 +35,7 @@ void eoverpstudies_YR(
   bool caloactive[maxcalo] = {false};
   Double_t mass_pi0PDG = 0.1349770;
   double eopcutvalue[maxcalo] = {0.8, 0.75, 0.77};
-  double eopcutvaluemax[maxcalo] = {2.0, 2.0, 2.0};
+  double eopcutvaluemax[maxcalo] = {1.9, 1.9, 1.9};
   double etarangemin[maxcalo] = {-4, -1.7, 1.3};
   double etarangemax[maxcalo] = {-1.7, 1.3, 4.0};
   double energymax[maxcalo] = {50, 20, 50.0};
@@ -100,11 +104,15 @@ void eoverpstudies_YR(
   TH1F* histEoP_proj_electrons[Nusefilltrue][maxmatch][maxcalo][nEta+1][50] = {{{{{NULL}}}}};
   TH1F* histIntCounts_pions_EoP[Nusefilltrue][maxmatch][maxcalo][nEta+1]    = {{{{NULL}}}};
   TH1F* histIntCounts_electrons_EoP[Nusefilltrue][maxmatch][maxcalo][nEta+1]= {{{{NULL}}}};
+  TH1F* histIntCounts_electrons_EoP_fwhm[Nusefilltrue][maxmatch][maxcalo][nEta+1]= {{{{NULL}}}};
   TH1F* histIntCounts_pions_all[Nusefilltrue][maxmatch][maxcalo][nEta+1]    = {{{{NULL}}}};
   TH1F* histIntCounts_electrons_all[Nusefilltrue][maxmatch][maxcalo][nEta+1]= {{{{NULL}}}};
   TH1F* histPionRejection[Nusefilltrue][maxmatch][maxcalo][nEta+1]          = {{{{NULL}}}};
+  TH1F* histElectronEfficiency[Nusefilltrue][maxmatch][maxcalo][nEta+1]          = {{{{NULL}}}};
+  TH1F* histElectronEfficiency_fwhm[Nusefilltrue][maxmatch][maxcalo][nEta+1]          = {{{{NULL}}}};
 
   double EP_cut[Nusefilltrue][maxmatch][maxcalo][nEta+1][50] = {0};
+  double EP_cut_FWHM[Nusefilltrue][maxmatch][maxcalo][nEta+1][50] = {0};
   TF1* EP_fit[Nusefilltrue][maxmatch][maxcalo][nEta+1][50] = {NULL};
 
   TH2F * histProjDummy                           = new TH2F("histProjDummy","histProjDummy",1000,0, 2,1000,0.8, 1e6);
@@ -190,9 +198,12 @@ void eoverpstudies_YR(
         padebinelec = 0;
         histIntCounts_pions_EoP[ifilltrue][imatch][icalo][ieta] = new TH1F(Form("histIntCounts_pions_EoP_%s_%f",caloName[icalo].Data(),minEtaProj),"",nEne-1,partE);
         histIntCounts_electrons_EoP[ifilltrue][imatch][icalo][ieta] = new TH1F(Form("histIntCounts_electrons_EoP_%s_%f",caloName[icalo].Data(),minEtaProj),"",nEne-1,partE);
+        histIntCounts_electrons_EoP_fwhm[ifilltrue][imatch][icalo][ieta] = new TH1F(Form("histIntCounts_electrons_EoP_fwhm_%s_%f",caloName[icalo].Data(),minEtaProj),"",nEne-1,partE);
         histIntCounts_pions_all[ifilltrue][imatch][icalo][ieta] = new TH1F(Form("histIntCounts_pions_all_%s_%f",caloName[icalo].Data(),minEtaProj),"",nEne-1,partE);
         histIntCounts_electrons_all[ifilltrue][imatch][icalo][ieta] = new TH1F(Form("histIntCounts_electrons_all_%s_%f",caloName[icalo].Data(),minEtaProj),"",nEne-1,partE);
         histPionRejection[ifilltrue][imatch][icalo][ieta] = new TH1F(Form("histPionRejection_%s_%f",caloName[icalo].Data(),minEtaProj),"",nEne-1,partE);
+        histElectronEfficiency[ifilltrue][imatch][icalo][ieta] = new TH1F(Form("histElectronEfficiency_%s_%f",caloName[icalo].Data(),minEtaProj),"",nEne-1,partE);
+        histElectronEfficiency_fwhm[ifilltrue][imatch][icalo][ieta] = new TH1F(Form("histElectronEfficiency_fwhm_%s_%f",caloName[icalo].Data(),minEtaProj),"",nEne-1,partE);
 
         for(int ebin=0;ebin<nEne-1;ebin++){
 
@@ -202,63 +213,86 @@ void eoverpstudies_YR(
           h_EoverP_electrons_EoverP_E_Eta[imatch][icalo][ifilltrue]->GetZaxis()->SetRange( h_EoverP_electrons_EoverP_E_Eta[imatch][icalo][ifilltrue]->GetZaxis()->FindBin(minEtaProj),h_EoverP_electrons_EoverP_E_Eta[imatch][icalo][ifilltrue]->GetZaxis()->FindBin(maxEtaProj));
 
           histEoP_proj_pions[ifilltrue][imatch][icalo][ieta][padebin]    = (TH1F*)h_EoverP_pions_EoverP_E_Eta[imatch][icalo][ifilltrue]->Project3D(Form("%1.1f_%1.1f_%d_%s_x",minEtaProj,partE[ebin],imatch,caloName[icalo].Data()));
-          histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebinelec]    = (TH1F*)h_EoverP_electrons_EoverP_E_Eta[imatch][icalo][ifilltrue]->Project3D(Form("%1.1f_%1.1f_%d_%s_x",minEtaProj,partE[ebin],imatch,caloName[icalo].Data()));
+          histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]    = (TH1F*)h_EoverP_electrons_EoverP_E_Eta[imatch][icalo][ifilltrue]->Project3D(Form("%1.1f_%1.1f_%d_%s_x",minEtaProj,partE[ebin],imatch,caloName[icalo].Data()));
           // histEoP_proj_pions[ifilltrue][imatch][icalo][ieta][padebin]    = (TH1F*)h_EoverP_pions_EoverP_E_Eta[imatch][icalo][ifilltrue]->Project3D(Form("histEoP_proj_pions_%s_%f_%f",caloName[icalo].Data(),minEtaProj, partE[ebin]));
           // histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]    = (TH1F*)h_EoverP_electrons_EoverP_E_Eta[imatch][icalo][ifilltrue]->Project3D(Form("histEoP_proj_pions_%s_%f_%f",caloName[icalo].Data(),minEtaProj, partE[ebin]));
           float EP_cut_tmp = getEPcutvalue(icalo,(partE[ebin]+partE[ebin+1])/2);
+          float EP_cut_tmp_fwhm = getEPcutvalue(icalo,(partE[ebin]+partE[ebin+1])/2,true);
           double EP_shift =0;
-          if(histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebinelec]->GetEntries()>10){
-            EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]     = new TF1(Form("fit_%1.1f_%1.1f_%d_%s_x",minEtaProj,partE[ebin],imatch,caloName[icalo].Data()), "gaus", 0.8, 1.05);
-            EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->SetParLimits(1, 0.8, 1.0);
-            EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->SetParameter(1, 0.95);
+          if(histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->GetEntries()>10){
+            EP_fit[ifilltrue][imatch][icalo][ieta][padebin]     = new TF1(Form("fit_%1.1f_%1.1f_%d_%s_x",minEtaProj,partE[ebin],imatch,caloName[icalo].Data()), "gaus", 0.8, 1.05);
+            EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->SetParLimits(1, 0.8, 1.0);
+            EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->SetParameter(1, 0.95);
             double fitsigmatemp = 0.02;
-            EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->SetParLimits(2, 0.6*fitsigmatemp,3*fitsigmatemp);
-            EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->SetParameter(2, fitsigmatemp);
-            histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebinelec]->Fit(EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec],"L0RMEQ","",0.8, 1.05);
-            EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->SetParLimits(1, EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->GetParameter(1)*0.9, EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->GetParameter(1)*1.1);
-            EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->SetParameter(1, EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->GetParameter(1));
-            EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->SetParLimits(2, EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->GetParameter(2)*0.5,EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->GetParameter(2)*1.5);
-            EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->SetParameter(2, EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->GetParameter(2));
-            histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebinelec]->Fit(EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec],"L0RMEQ","",EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->GetParameter(1)-EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->GetParameter(2)*2, EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->GetParameter(1)+EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->GetParameter(2)*3);
-            EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->SetRange(EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->GetParameter(1)-EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->GetParameter(2)*2, EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->GetParameter(1)+EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->GetParameter(2)*3);
-            EP_shift     = 1 - EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->GetParameter(1);
-            // meanErr  = EP_fit[ifilltrue][imatch][icalo][ieta][padebinelec]->GetParError(1);
-            // EP_shift = 1-histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebinelec]->GetMaximum();
-            EP_cut[ifilltrue][imatch][icalo][ieta][padebinelec] = EP_cut_tmp-EP_shift;
+            EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->SetParLimits(2, 0.6*fitsigmatemp,3*fitsigmatemp);
+            EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->SetParameter(2, fitsigmatemp);
+            histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->Fit(EP_fit[ifilltrue][imatch][icalo][ieta][padebin],"L0RMEQ","",0.8, 1.05);
+            EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->SetParLimits(1, EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->GetParameter(1)*0.9, EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->GetParameter(1)*1.1);
+            EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->SetParameter(1, EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->GetParameter(1));
+            EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->SetParLimits(2, EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->GetParameter(2)*0.5,EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->GetParameter(2)*1.5);
+            EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->SetParameter(2, EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->GetParameter(2));
+            histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->Fit(EP_fit[ifilltrue][imatch][icalo][ieta][padebin],"L0RMEQ","",EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->GetParameter(1)-EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->GetParameter(2)*2, EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->GetParameter(1)+EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->GetParameter(2)*3);
+            EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->SetRange(EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->GetParameter(1)-EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->GetParameter(2)*2, EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->GetParameter(1)+EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->GetParameter(2)*3);
+            // EP_shift     = 1 - EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->GetParameter(1);
+            double EP_shift_bin = FindLargestBin1DHist(histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin], 0.6, 1.1 );
+            cout << EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->GetParameter(1) << " vs " << EP_shift_bin << endl;
+            EP_shift     = 1 - EP_shift_bin;
+            // meanErr  = EP_fit[ifilltrue][imatch][icalo][ieta][padebin]->GetParError(1);
+            // EP_shift = 1-histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->GetMaximum();
+            EP_cut[ifilltrue][imatch][icalo][ieta][padebin] = EP_cut_tmp-EP_shift;
+            EP_cut_FWHM[ifilltrue][imatch][icalo][ieta][padebin] = EP_cut_tmp_fwhm-EP_shift;
           }else {
-            // if(padebinelec==0)
-              EP_cut[ifilltrue][imatch][icalo][ieta][padebinelec] = EP_cut_tmp;
+            // if(padebin==0)
+              EP_cut[ifilltrue][imatch][icalo][ieta][padebin] = EP_cut_tmp;
+              EP_cut_FWHM[ifilltrue][imatch][icalo][ieta][padebin] = EP_cut_tmp_fwhm;
+              EP_fit[ifilltrue][imatch][icalo][ieta][padebin]     = new TF1(Form("fit_%1.1f_%1.1f_%d_%s_x",minEtaProj,partE[ebin],imatch,caloName[icalo].Data()), "gaus", 0.8, 1.05);
             // else
-            //   EP_cut[ifilltrue][imatch][icalo][ieta][padebinelec] = EP_cut[ifilltrue][imatch][icalo][ieta][padebinelec-1];
+            //   EP_cut[ifilltrue][imatch][icalo][ieta][padebin] = EP_cut[ifilltrue][imatch][icalo][ieta][padebin-1];
           }
-          // cout << "EPcutvalue: " << EP_cut[ifilltrue][imatch][icalo][ieta][padebin] << " = " << EP_cut_tmp << " - " << EP_shift << endl;
+          // cout << "EPcutvalue: " << EP_cut[ifilltrue][imatch][icalo][ieta][padebin] << endl;
 
-          Double_t intpions  = histEoP_proj_pions[ifilltrue][imatch][icalo][ieta][padebin]->Integral(histEoP_proj_pions[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->FindBin(EP_cut[ifilltrue][imatch][icalo][ieta][padebin]), histEoP_proj_pions[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->FindBin(eopcutvaluemax[icalo]));
+          Double_t intpions  = histEoP_proj_pions[ifilltrue][imatch][icalo][ieta][padebin]->Integral(
+            histEoP_proj_pions[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->FindBin(EP_cut[ifilltrue][imatch][icalo][ieta][padebin]),
+            histEoP_proj_pions[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->FindBin(eopcutvaluemax[icalo]));
           if(intpions==0)intpions=1;
           histIntCounts_pions_EoP[ifilltrue][imatch][icalo][ieta]->SetBinContent(histIntCounts_pions_EoP[ifilltrue][imatch][icalo][ieta]->GetXaxis()->FindBin((partE[ebin]+partE[ebin+1])/2),intpions);
 
-          Double_t intpionsall  = histEoP_proj_pions[ifilltrue][imatch][icalo][ieta][padebin]->Integral(histEoP_proj_pions[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->FindBin(0.0), histEoP_proj_pions[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->FindBin(1.9));
+          Double_t intpionsall  = histEoP_proj_pions[ifilltrue][imatch][icalo][ieta][padebin]->Integral(
+            histEoP_proj_pions[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->FindBin(0.0),
+            histEoP_proj_pions[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->FindBin(eopcutvaluemax[icalo]));
           histIntCounts_pions_all[ifilltrue][imatch][icalo][ieta]->SetBinContent(histIntCounts_pions_all[ifilltrue][imatch][icalo][ieta]->GetXaxis()->FindBin((partE[ebin]+partE[ebin+1])/2),intpionsall);
-          padebin++;
+          // padebin++;
 
-
-          Double_t intelectrons  = histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebinelec]->Integral(histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebinelec]->GetXaxis()->FindBin(EP_cut[ifilltrue][imatch][icalo][ieta][padebin]), histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebinelec]->GetXaxis()->FindBin(eopcutvaluemax[icalo]));
+          Double_t intelectrons  = histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->Integral(
+            histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->FindBin(EP_cut[ifilltrue][imatch][icalo][ieta][padebin]),
+            histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->FindBin(eopcutvaluemax[icalo]));
+          if(intelectrons==0)intelectrons=1;
           histIntCounts_electrons_EoP[ifilltrue][imatch][icalo][ieta]->SetBinContent(histIntCounts_electrons_EoP[ifilltrue][imatch][icalo][ieta]->GetXaxis()->FindBin((partE[ebin]+partE[ebin+1])/2),intelectrons);
 
-          Double_t intelectronsall  = histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebinelec]->Integral(histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebinelec]->GetXaxis()->FindBin(0.0), histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebinelec]->GetXaxis()->FindBin(1.9));
+          Double_t intelectronsall  = histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->Integral(
+            histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->FindBin(0.0),
+            histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->FindBin(eopcutvaluemax[icalo]));
+          if(intelectronsall==0)intelectronsall=1;
           histIntCounts_electrons_all[ifilltrue][imatch][icalo][ieta]->SetBinContent(histIntCounts_electrons_all[ifilltrue][imatch][icalo][ieta]->GetXaxis()->FindBin((partE[ebin]+partE[ebin+1])/2),intelectronsall);
 
-          padebinelec++;
+          Double_t intelectrons_fwhm  = histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->Integral(
+            histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->FindBin(EP_cut_FWHM[ifilltrue][imatch][icalo][ieta][padebin]),
+            histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->FindBin(eopcutvaluemax[icalo]));
+          if(intelectrons_fwhm==0)intelectrons_fwhm=1;
+          histIntCounts_electrons_EoP_fwhm[ifilltrue][imatch][icalo][ieta]->SetBinContent(histIntCounts_electrons_EoP_fwhm[ifilltrue][imatch][icalo][ieta]->GetXaxis()->FindBin((partE[ebin]+partE[ebin+1])/2),intelectrons_fwhm);
 
-          // cout << (partE[ebin]+partE[ebin+1])/2 << "\tpions: " << histIntCounts_pions_EoP[ifilltrue][imatch][icalo][ieta]->GetBinContent(histIntCounts_pions_EoP[ifilltrue][imatch][icalo][ieta]->GetXaxis()->FindBin((partE[ebin]+partE[ebin+1])/2)) << "\telectrons: " << histIntCounts_electrons_EoP[ifilltrue][imatch][icalo][ieta]->GetBinContent(histIntCounts_electrons_EoP[ifilltrue][imatch][icalo][ieta]->GetXaxis()->FindBin((partE[ebin]+partE[ebin+1])/2)) << endl;
-          // cout << "\tallpions: " << histIntCounts_pions_all[ifilltrue][imatch][icalo][ieta]->GetBinContent(histIntCounts_pions_all[ifilltrue][imatch][icalo][ieta]->GetXaxis()->FindBin((partE[ebin]+partE[ebin+1])/2)) << "\tallelectrons: " << histIntCounts_electrons_all[ifilltrue][imatch][icalo][ieta]->GetBinContent(histIntCounts_electrons_all[ifilltrue][imatch][icalo][ieta]->GetXaxis()->FindBin((partE[ebin]+partE[ebin+1])/2)) << endl;
+          // cout << (partE[ebin]+partE[ebin+1])/2 << "\telec_eop: " << intelectrons << "\telecall: " << intelectronsall << "\tsurvival: " << intelectrons/intelectronsall << endl;
+
           double rejection = histIntCounts_pions_all[ifilltrue][imatch][icalo][ieta]->GetBinContent(histIntCounts_pions_all[ifilltrue][imatch][icalo][ieta]->GetXaxis()->FindBin((partE[ebin]+partE[ebin+1])/2)) / histIntCounts_pions_EoP[ifilltrue][imatch][icalo][ieta]->GetBinContent(histIntCounts_pions_EoP[ifilltrue][imatch][icalo][ieta]->GetXaxis()->FindBin((partE[ebin]+partE[ebin+1])/2));
           if(isnan(rejection)) rejection = -1;
           if(isinf(rejection)) rejection = -1;
-          // cout << (partE[ebin]+partE[ebin+1])/2 << "\trejection: " << rejection << "\tpions: " << histIntCounts_pions_EoP[ifilltrue][imatch][icalo][ieta]->GetBinContent(histIntCounts_pions_EoP[ifilltrue][imatch][icalo][ieta]->GetXaxis()->FindBin((partE[ebin]+partE[ebin+1])/2)) << "\tallpions: " << histIntCounts_pions_all[ifilltrue][imatch][icalo][ieta]->GetBinContent(histIntCounts_pions_all[ifilltrue][imatch][icalo][ieta]->GetXaxis()->FindBin((partE[ebin]+partE[ebin+1])/2))<< endl;
           histPionRejection[ifilltrue][imatch][icalo][ieta]->SetBinContent(histPionRejection[ifilltrue][imatch][icalo][ieta]->GetXaxis()->FindBin((partE[ebin]+partE[ebin+1])/2),rejection);
+          // histElectronEfficiency[ifilltrue][imatch][icalo][ieta]->SetBinContent(histElectronEfficiency[ifilltrue][imatch][icalo][ieta]->GetXaxis()->FindBin((partE[ebin]+partE[ebin+1])/2),intelectrons/intelectronsall);
+          // histElectronEfficiency[ifilltrue][imatch][icalo][ieta]->SetBinError(histElectronEfficiency[ifilltrue][imatch][icalo][ieta]->GetXaxis()->FindBin((partE[ebin]+partE[ebin+1])/2),0.03*intelectrons/intelectronsall);
+          padebin++;
         }
-
+      histElectronEfficiency[ifilltrue][imatch][icalo][ieta]->Divide(histIntCounts_electrons_EoP[ifilltrue][imatch][icalo][ieta],histIntCounts_electrons_all[ifilltrue][imatch][icalo][ieta], 1, 1,"B" );
+      histElectronEfficiency_fwhm[ifilltrue][imatch][icalo][ieta]->Divide(histIntCounts_electrons_EoP_fwhm[ifilltrue][imatch][icalo][ieta],histIntCounts_electrons_all[ifilltrue][imatch][icalo][ieta], 1, 1,"B" );
       TCanvas* mass2D = new TCanvas("mass2D","",0,0,1000,800);
       gStyle->SetTitleX(0.5);
       gStyle->SetTitleAlign(23);
@@ -514,7 +548,7 @@ cout << "meow" << endl;
             DrawGammaSetMarkerTGraphAsym(graphPionRejection[ifilltrue][icalo][ieta], markerStyleEta[ieta], markerSizeEta[ieta], colorEta[ieta] , colorEta[ieta]);
             graphPionRejection[ifilltrue][icalo][ieta]->Draw("samelpe");
           }
-          cout << " done" << endl;
+          cout << " done l:" << __LINE__ << endl;
         } else if(partEtaCalo[ieta] >= etarangemin[icalo] && partEtaCalo[ieta+1] <= etarangemax[icalo]){
           cout << partEtaCalo[ieta] << " < eta  < " << partEtaCalo[ieta+1];
           if(histPionRejection[ifilltrue][imatch][icalo][ieta]){
@@ -524,7 +558,7 @@ cout << "meow" << endl;
             DrawGammaSetMarkerTGraphAsym(graphPionRejection[ifilltrue][icalo][ieta], markerStyleEta[ieta], markerSizeEta[ieta], colorEta[ieta] , colorEta[ieta]);
             graphPionRejection[ifilltrue][icalo][ieta]->Draw("samelpe");
           }
-          cout << " done" << endl;
+          cout << " done l:" << __LINE__ << endl;
         }
       }
       TLegend* legendPi0Merge           = GetAndSetLegend2(0.65, 0.92, 0.85, 0.92-(5*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
@@ -564,7 +598,7 @@ cout << "meow" << endl;
         DrawGammaSetMarkerTGraphAsym(graphPionRejection[ifilltrue][icalo][nEta], markerStylePID[icalo], markerSizePID[icalo], colorPID[icalo] , colorPID[icalo]);
         graphPionRejection[ifilltrue][icalo][nEta]->Draw("samecx0");
       }
-      cout << " done" << endl;
+      cout << " done l:" << __LINE__ << endl;
       legendPi0Merge->AddEntry(graphPionRejection[ifilltrue][icalo][nEta],Form("%s",caloName[icalo].Data()),"p");
     }
     legendPi0Merge->Draw();
@@ -580,11 +614,12 @@ cout << "meow" << endl;
     canvasMergingFraction->Update();
     canvasMergingFraction->Print(Form("%s/EoP_pionrejection_AllCalo_%s.%s",outputDir.Data(),str_EoverP_FillTrue[ifilltrue].Data(),suffix.Data()));
   }
-    histo2DAccEff->GetYaxis()->SetRangeUser(1,10999);
+    histo2DAccEff->GetYaxis()->SetRangeUser(1,30999);
   SetStyleHistoTH2ForGraphs( histo2DAccEff, "#it{p}_{track} (GeV/#it{c})", "#pi^{#pm}  rejection",
                           0.85*textSizeLabelsRel, textSizeLabelsRel, 0.85*textSizeLabelsRel, textSizeLabelsRel, 0.9, 1, 510, 510);//(#times #epsilon_{pur})
   histo2DAccEff->DrawCopy();
   Style_t markerStyleCalo[maxcalo] = {20, 47, 33};
+  Style_t markerStyleCalo2[maxcalo] = {24, 46, 27};
   Size_t markerSizeCalo[maxcalo] = {1.5, 1.8, 2.2};
   TLegend* legendPi0Merge1           = GetAndSetLegend2(0.65, 0.14, 0.90, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
   TLegend* legendPi0Merge2           = GetAndSetLegend2(0.75, 0.14, 0.90, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
@@ -597,7 +632,7 @@ cout << "meow" << endl;
       graphPionRejection[1][icalo][nEta]->SetLineWidth(3);
       graphPionRejection[1][icalo][nEta]->Draw("samecx0");
     }
-    cout << " done" << endl;
+    cout << " done l:" << __LINE__ << endl;
     legendPi0Merge1->AddEntry(graphPionRejection[1][icalo][nEta]," ","l");
     // legendPi0Merge->AddEntry(graphPionRejection[1][icalo][nEta],Form("%s",caloName[icalo].Data()),"p");
   }
@@ -607,7 +642,7 @@ cout << "meow" << endl;
       DrawGammaSetMarkerTGraphAsym(graphPionRejection[0][icalo][nEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorPID[icalo] , colorPID[icalo]);
       graphPionRejection[0][icalo][nEta]->Draw("samepe");
     }
-    cout << " done" << endl;
+    cout << " done l:" << __LINE__ << endl;
     legendPi0Merge2->AddEntry(graphPionRejection[0][icalo][nEta]," ","p");
     legendPi0Merge3->AddEntry((TObject*)0,Form("%s",caloName[icalo].Data()),"");
   }
@@ -627,4 +662,200 @@ cout << "meow" << endl;
 
   canvasMergingFraction->Update();
   canvasMergingFraction->Print(Form("%s/EoP_pionrejection_AllCalo_truerec.%s",outputDir.Data(),suffix.Data()));
+
+  Color_t colorPID_light[nPID]          = {kGray+1, kRed-6, kGreen-6, kCyan-6, kBlue+1, kOrange};
+
+
+  TCanvas* canvaseleceffi       = new TCanvas("canvaseleceffi", "", 200, 10, 1200, 1100);  // gives the page size
+  DrawGammaCanvasSettings( canvaseleceffi,  0.1, 0.01, 0.015, 0.095);
+  // canvaseleceffi->SetLogy(1);
+  // canvaseleceffi->SetLogx(1);
+  TGraphAsymmErrors* graphElectronEfficiency[Nusefilltrue][maxcalo][nEta+1]={{{NULL}}};
+  TGraphAsymmErrors* graphElectronEfficiency_fwhm[Nusefilltrue][maxcalo][nEta+1]={{{NULL}}};
+  TH2F * histoDummyEffi;
+  histoDummyEffi                = new TH2F("histoDummyEffi", "histoDummyEffi",1000, 0.51, 22, 1000, 0, 1.29 );
+  SetStyleHistoTH2ForGraphs( histoDummyEffi, "#it{p}_{track} (GeV/#it{c})", "electron survival probability",
+                          0.85*textSizeLabelsRel, textSizeLabelsRel, 0.85*textSizeLabelsRel, textSizeLabelsRel, 0.9, 1, 510, 510);//(#times #epsilon_{pur})
+    // histoDummyEffi->GetYaxis()->SetRangeUser(1,30999);
+  histoDummyEffi->DrawCopy();
+  legendPi0Merge1           = GetAndSetLegend2(0.65, 0.14, 0.90, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
+  legendPi0Merge2           = GetAndSetLegend2(0.75, 0.14, 0.90, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
+  legendPi0Merge3           = GetAndSetLegend2(0.80, 0.14, 0.90, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
+  for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+    cout << nominalEtaRegion[icalo][0] << " < eta  < " << nominalEtaRegion[icalo][1];
+    if(histElectronEfficiency[1][imatch][icalo][nEta]){
+      graphElectronEfficiency[1][icalo][nEta] = new TGraphAsymmErrors(histElectronEfficiency[1][imatch][icalo][nEta]);
+      while(graphElectronEfficiency[1][icalo][nEta]->GetN()>0 && graphElectronEfficiency[1][icalo][nEta]->GetY()[graphElectronEfficiency[1][icalo][nEta]->GetN()-1] == -1) graphElectronEfficiency[1][icalo][nEta]->RemovePoint(graphElectronEfficiency[1][icalo][nEta]->GetN()-1);
+      while(graphElectronEfficiency[1][icalo][nEta]->GetN()>0 && graphElectronEfficiency[1][icalo][nEta]->GetX()[graphElectronEfficiency[1][icalo][nEta]->GetN()-1] > energymax[icalo]) graphElectronEfficiency[1][icalo][nEta]->RemovePoint(graphElectronEfficiency[1][icalo][nEta]->GetN()-1);
+      DrawGammaSetMarkerTGraphAsym(graphElectronEfficiency[1][icalo][nEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorPID[icalo] , colorPID[icalo]);
+      graphElectronEfficiency[1][icalo][nEta]->SetLineStyle(icalo+1);
+      graphElectronEfficiency[1][icalo][nEta]->SetLineWidth(3);
+      graphElectronEfficiency[1][icalo][nEta]->Draw("samepe");
+    }
+    cout << " done l:" << __LINE__ << endl;
+    legendPi0Merge1->AddEntry(graphElectronEfficiency[1][icalo][nEta]," ","p");
+    // legendPi0Merge->AddEntry(graphElectronEfficiency[1][icalo][nEta],Form("%s",caloName[icalo].Data()),"p");
+  }
+  for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+    cout << nominalEtaRegion[icalo][0] << " < eta  < " << nominalEtaRegion[icalo][1];
+    if(histElectronEfficiency_fwhm[1][imatch][icalo][nEta]){
+      graphElectronEfficiency_fwhm[1][icalo][nEta] = new TGraphAsymmErrors(histElectronEfficiency_fwhm[1][imatch][icalo][nEta]);
+      while(graphElectronEfficiency_fwhm[1][icalo][nEta]->GetN()>0 && graphElectronEfficiency_fwhm[1][icalo][nEta]->GetY()[graphElectronEfficiency_fwhm[1][icalo][nEta]->GetN()-1] == -1) graphElectronEfficiency_fwhm[1][icalo][nEta]->RemovePoint(graphElectronEfficiency_fwhm[1][icalo][nEta]->GetN()-1);
+      while(graphElectronEfficiency_fwhm[1][icalo][nEta]->GetN()>0 && graphElectronEfficiency_fwhm[1][icalo][nEta]->GetX()[graphElectronEfficiency_fwhm[1][icalo][nEta]->GetN()-1] > energymax[icalo]) graphElectronEfficiency_fwhm[1][icalo][nEta]->RemovePoint(graphElectronEfficiency_fwhm[1][icalo][nEta]->GetN()-1);
+      DrawGammaSetMarkerTGraphAsym(graphElectronEfficiency_fwhm[1][icalo][nEta], markerStyleCalo2[icalo], 1.5*markerSizeCalo[icalo], colorPID_light[icalo] , colorPID_light[icalo]);
+      graphElectronEfficiency_fwhm[1][icalo][nEta]->SetLineStyle(icalo+1);
+      graphElectronEfficiency_fwhm[1][icalo][nEta]->SetLineWidth(3);
+      graphElectronEfficiency_fwhm[1][icalo][nEta]->Draw("samepe");
+    }
+    cout << " done l:" << __LINE__ << endl;
+    legendPi0Merge2->AddEntry(graphElectronEfficiency_fwhm[1][icalo][nEta]," ","p");
+    legendPi0Merge3->AddEntry((TObject*)0,Form("%s",caloName[icalo].Data()),"");
+  }
+  legendPi0Merge1->Draw();
+  legendPi0Merge2->Draw();
+  legendPi0Merge3->Draw();
+  drawLatexAdd("FWHM",0.75,0.30,textSizeLabelsRel,false,false,false);
+  drawLatexAdd("#sigma",0.65,0.30,textSizeLabelsRel,false,false,false);
+  drawLatexAdd(perfLabel.Data(),0.15,toplegval,textSizeLabelsRel,false,false,false);
+  drawLatexAdd(collisionSystem.Data(),0.15,toplegval-0.05,textSizeLabelsRel,false,false,false);
+  // drawLatexAdd(caloName[icalo].Data(),0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
+  // drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
+
+  // DrawGammaLines(minPtPi0, maxPtPi0woMerged, 1,1,2,kGray+1, 2);
+
+
+  canvaseleceffi->Update();
+  canvaseleceffi->Print(Form("%s/EoP_electroneffi_AllCalo_sigmafwhm.%s",outputDir.Data(),suffix.Data()));
+
+
+  TCanvas* canvasEPcutValue       = new TCanvas("canvasEPcutValue", "", 200, 10, 1200, 1100);  // gives the page size
+  DrawGammaCanvasSettings( canvasEPcutValue,  0.1, 0.01, 0.015, 0.095);
+  // canvasEPcutValue->SetLogy(1);
+  canvasEPcutValue->SetLogx(1);
+  TH2F * histoEPcutValue;
+  histoEPcutValue                = new TH2F("histoEPcutValue", "histoEPcutValue",1000, 0.51, 49, 1000, 0.5, 1.19 );
+  SetStyleHistoTH2ForGraphs( histoEPcutValue, "#it{p}_{track,true} (GeV/#it{c})", "#it{E}/#it{p} cut value",
+                          0.85*textSizeLabelsRel, textSizeLabelsRel, 0.85*textSizeLabelsRel, textSizeLabelsRel, 0.9, 1, 510, 510);//(#times #epsilon_{pur})
+  histoEPcutValue->GetYaxis()->SetLabelOffset(0.001);
+  histoEPcutValue->GetXaxis()->SetNoExponent();
+  histoEPcutValue->GetXaxis()->SetMoreLogLabels(kTRUE);
+  TGraphErrors* graphEPcutValue[Nusefilltrue][maxcalo][nEta+1]={{{NULL}}};
+  TGraphErrors* graphEPcutValue_fwhm[Nusefilltrue][maxcalo][nEta+1]={{{NULL}}};
+
+  histoEPcutValue->DrawCopy();
+  // TLegend* legendPi0Merge1           = GetAndSetLegend2(0.65, 0.14, 0.90, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
+  // TLegend* legendPi0Merge2           = GetAndSetLegend2(0.75, 0.14, 0.90, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
+  legendPi0Merge3           = GetAndSetLegend2(0.70, 0.14, 0.90, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
+  for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+    int iEta = nEta;
+    int ifilltrue = 1;
+    graphEPcutValue[1][icalo][iEta]   = new TGraphErrors(15,partE,EP_cut[ifilltrue][imatch][icalo][nEta]);
+    while(graphEPcutValue[1][icalo][iEta]->GetN()>0 && graphEPcutValue[1][icalo][iEta]->GetX()[graphEPcutValue[1][icalo][iEta]->GetN()-1] >= energymax[icalo]) graphEPcutValue[1][icalo][iEta]->RemovePoint(graphEPcutValue[1][icalo][iEta]->GetN()-1);
+    DrawGammaSetMarkerTGraph(graphEPcutValue[1][icalo][iEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorPID[icalo] , colorPID[icalo]);
+    graphEPcutValue[1][icalo][iEta]->SetLineStyle(icalo+1);
+    graphEPcutValue[1][icalo][iEta]->SetLineWidth(3);
+    graphEPcutValue[1][icalo][iEta]->Draw("samepe");
+    
+    graphEPcutValue_fwhm[1][icalo][iEta]   = new TGraphErrors(15,partE,EP_cut_FWHM[ifilltrue][imatch][icalo][nEta]);
+    while(graphEPcutValue_fwhm[1][icalo][iEta]->GetN()>0 && graphEPcutValue_fwhm[1][icalo][iEta]->GetX()[graphEPcutValue_fwhm[1][icalo][iEta]->GetN()-1] >= energymax[icalo]) graphEPcutValue_fwhm[1][icalo][iEta]->RemovePoint(graphEPcutValue_fwhm[1][icalo][iEta]->GetN()-1);
+    DrawGammaSetMarkerTGraph(graphEPcutValue_fwhm[1][icalo][iEta], markerStyleCalo2[icalo], 1.5*markerSizeCalo[icalo], colorPID_light[icalo] , colorPID_light[icalo]);
+    graphEPcutValue_fwhm[1][icalo][iEta]->SetLineStyle(icalo+1);
+    graphEPcutValue_fwhm[1][icalo][iEta]->SetLineWidth(3);
+    graphEPcutValue_fwhm[1][icalo][iEta]->Draw("samepe");
+
+    cout << " done l:" << __LINE__ << endl;
+    // legendPi0Merge1->AddEntry(graphPionRejection[1][icalo][iEta]," ","l");
+    legendPi0Merge3->AddEntry(graphPionRejection[1][icalo][iEta],Form("%s",caloName[icalo].Data()),"p");
+  }
+
+  legendPi0Merge3->Draw();
+  // float toplegval = 0.90;
+  // drawLatexAdd("#it{p}_{rec}",0.75,0.30,textSizeLabelsRel,false,false,false);
+  // drawLatexAdd("#it{p}_{true}",0.65,0.30,textSizeLabelsRel,false,false,false);
+  drawLatexAdd(perfLabel.Data(),0.15,toplegval,textSizeLabelsRel,false,false,false);
+  drawLatexAdd(collisionSystem.Data(),0.15,toplegval-0.05,textSizeLabelsRel,false,false,false);
+  // drawLatexAdd(caloName[icalo].Data(),0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
+  // drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
+
+  DrawGammaLines(0.51, 49, 1,1,2,kGray+1, 2);
+
+
+  canvasEPcutValue->Update();
+  canvasEPcutValue->Print(Form("%s/EoP_cutVlue_AllCalo_true.%s",outputDir.Data(),suffix.Data()));
+
+
+
+  TCanvas* canvasExampleBin       = new TCanvas("canvasExampleBin", "", 200, 10, 1300, 1100);  // gives the page size
+  DrawGammaCanvasSettings( canvasExampleBin,  0.105, 0.01, 0.015, 0.09);
+  // canvasExampleBin->SetLogy(1);
+  // canvasExampleBin->SetLogx(1);
+  cout << __LINE__ << endl;
+  textSizeLabelsRel        = 58./1200;
+  TH2F * histoExampleBin;
+  histoExampleBin                = new TH2F("histoExampleBin", "histoExampleBin",1000, 0.0, 1.23, 1000, -0.002, 0.19 );
+  SetStyleHistoTH2ForGraphs( histoExampleBin, "#it{E}/#it{p}", "probability",
+                          0.85*textSizeLabelsRel, textSizeLabelsRel, 0.85*textSizeLabelsRel, textSizeLabelsRel, 0.9, 1.1, 510, 505);//(#times #epsilon_{pur})
+  histoExampleBin->GetYaxis()->SetLabelOffset(0.001);
+  histoExampleBin->GetXaxis()->SetNoExponent();
+  histoExampleBin->GetXaxis()->SetMoreLogLabels(kTRUE);
+  int exampleBinCalo[maxcalo] = {3,4,5};
+    Color_t colorPi = kRed+2;
+    Color_t colorElec = kBlue+2;
+  for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+
+    histoExampleBin->DrawCopy();
+    TLegend* legendExmplPlot           = GetAndSetLegend2(0.13, 0.885-(2*textSizeLabelsRel), 0.55, 0.885,0.9*textSizeLabelsPixel,2);
+    // TLegend* legendPi0Merge2           = GetAndSetLegend2(0.75, 0.14, 0.90, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
+    // legendPi0Merge3           = GetAndSetLegend2(0.70, 0.14, 0.90, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
+    int ieta = nEta;
+  cout << __LINE__ << endl;
+
+    // histEoP_proj_pions[ifilltrue][imatch][icalo][ieta][exampleBinCalo[icalo]] 
+    // histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][exampleBinCalo[icalo]]
+    TH1D* hPionEoPplot = (TH1D*)histEoP_proj_pions[1][imatch][icalo][ieta][exampleBinCalo[icalo]]->Clone(Form("hPionEoPplot%s",caloName[icalo].Data()));
+    TH1D* hElectronEoPplot = (TH1D*)histEoP_proj_electrons[1][imatch][icalo][ieta][exampleBinCalo[icalo]]->Clone(Form("hElectronEoPplot%s",caloName[icalo].Data()));
+    hPionEoPplot->Scale(1/hPionEoPplot->GetEntries());
+    hElectronEoPplot->Scale(1/hElectronEoPplot->GetEntries());
+    DrawGammaSetMarker(hPionEoPplot, 33, 4, colorPi , colorPi);
+    hPionEoPplot->Draw("samepe");
+    DrawGammaSetMarker(hElectronEoPplot, 47, 3.5, colorElec , colorElec);
+    hElectronEoPplot->Draw("samepe");
+  cout << __LINE__ << endl;
+
+
+    TH1D* hPionEoPplot_rec = (TH1D*)histEoP_proj_pions[0][imatch][icalo][ieta][exampleBinCalo[icalo]]->Clone(Form("hPionEoPplot_rec%s",caloName[icalo].Data()));
+    TH1D* hElectronEoPplot_rec = (TH1D*)histEoP_proj_electrons[0][imatch][icalo][ieta][exampleBinCalo[icalo]]->Clone(Form("hElectronEoPplot_rec%s",caloName[icalo].Data()));
+    hPionEoPplot_rec->Scale(1/hPionEoPplot_rec->GetEntries());
+    hElectronEoPplot_rec->Scale(1/hElectronEoPplot_rec->GetEntries());
+    DrawGammaSetMarker(hPionEoPplot_rec, 27, 4, colorPi-6 , colorPi-6);
+    hPionEoPplot_rec->Draw("samepe");
+    DrawGammaSetMarker(hElectronEoPplot_rec, 46, 3.5, colorElec-6 , colorElec-6);
+    hElectronEoPplot_rec->Draw("samepe");
+  cout << __LINE__ << endl;
+
+    cout << " done l:" << __LINE__ << endl;
+    legendExmplPlot->AddEntry(hPionEoPplot,"#pi^{-} (true #it{p})","p");
+    legendExmplPlot->AddEntry(hElectronEoPplot,"e^{-} (true #it{p})","p");
+    legendExmplPlot->AddEntry(hPionEoPplot_rec,"#pi^{-} (rec. #it{p})","p");
+    legendExmplPlot->AddEntry(hElectronEoPplot_rec,"e^{-} (rec. #it{p})","p");
+    // legendPi0Merge3->AddEntry(graphPionRejection[1][icalo][iEta],Form("%s",caloName[icalo].Data()),"p");
+
+    legendExmplPlot->Draw();
+    // float toplegval = 0.90;
+    // drawLatexAdd("#it{p}_{rec}",0.75,0.30,textSizeLabelsRel,false,false,false);
+    // drawLatexAdd("#it{p}_{true}",0.65,0.30,textSizeLabelsRel,false,false,false);
+    drawLatexAdd(perfLabel.Data(),0.945,toplegval,textSizeLabelsRel,false,false,true);
+    // drawLatexAdd(collisionSystem.Data(),0.94,toplegval-0.05,textSizeLabelsRel,false,false,true);
+    // drawLatexAdd(collisionSystem.Data(),0.94,toplegval-0.05,textSizeLabelsRel,false,false,true);
+    drawLatexAdd(Form("%s, w/ mat. infront",caloName[icalo].Data()),0.945,toplegval-0.05,textSizeLabelsRel,false,false,true);
+    drawLatexAdd(Form("%1.1f< #it{#eta}< %1.1f, #it{E} = %1.1f GeV",nominalEtaRegion[icalo][0],nominalEtaRegion[icalo][1], (partE[exampleBinCalo[icalo]]+partE[exampleBinCalo[icalo]+1])/2),0.14,toplegval,textSizeLabelsRel,false,false,false);
+
+    // DrawGammaLines(EP_cut[0][imatch][icalo][ieta][exampleBinCalo[icalo]], EP_cut[0][imatch][icalo][nEta][exampleBinCalo[icalo]], 0,0.1,2,kGray+1, 3);
+    DrawGammaLines(EP_cut[1][imatch][icalo][ieta][exampleBinCalo[icalo]], EP_cut[1][imatch][icalo][nEta][exampleBinCalo[icalo]], 0,0.1,2,kGray+2, 2);
+
+
+    canvasExampleBin->Update();
+    canvasExampleBin->Print(Form("%s/EoP_ExampleBin_%s.%s",outputDir.Data(),caloName[icalo].Data(),suffix.Data()));
+  }
+
 }

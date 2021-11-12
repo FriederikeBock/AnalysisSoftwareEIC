@@ -55,13 +55,13 @@ bool eoverpstudies( int primaryTrackSource = 0, bool runSpecialCuts = false){
         // versus Eta
       for(int ifilltrue=0;ifilltrue<2;ifilltrue++){
         if(!h_EoverP_pions_EoverP_E_Eta_trackbased[icalo][ifilltrue])
-          h_EoverP_pions_EoverP_E_Eta_trackbased[icalo][ifilltrue]        = new TH3F(Form("h_EoverP_pions_EoverP_E_Eta_trackbased_%s_%s",str_calorimeter[icalo].Data(),str_EoverP_FillTrue[ifilltrue].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50, 160, -4, 4);
+          h_EoverP_pions_EoverP_E_Eta_trackbased[icalo][ifilltrue]        = new TH3F(Form("h_EoverP_pions_EoverP_E_Eta_trackbased_%s_%s",str_calorimeter[icalo].Data(),str_EoverP_FillTrue[ifilltrue].Data()), "", nbinsEoP, 0, 2, nbinsEStud, 0, 50, 160, -4, 4);
         if(!h_EoverP_electrons_EoverP_E_Eta_trackbased[icalo][ifilltrue])
-          h_EoverP_electrons_EoverP_E_Eta_trackbased[icalo][ifilltrue]        = new TH3F(Form("h_EoverP_electrons_EoverP_E_Eta_trackbased_%s_%s",str_calorimeter[icalo].Data(),str_EoverP_FillTrue[ifilltrue].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50, 160, -4, 4);
+          h_EoverP_electrons_EoverP_E_Eta_trackbased[icalo][ifilltrue]        = new TH3F(Form("h_EoverP_electrons_EoverP_E_Eta_trackbased_%s_%s",str_calorimeter[icalo].Data(),str_EoverP_FillTrue[ifilltrue].Data()), "", nbinsEoP, 0, 2, nbinsEStud, 0, 50, 160, -4, 4);
         if(!h_EoverP_pions_EoverP_E_Eta_projectionbased[icalo][ifilltrue])
-          h_EoverP_pions_EoverP_E_Eta_projectionbased[icalo][ifilltrue]        = new TH3F(Form("h_EoverP_pions_EoverP_E_Eta_projectionbased_%s_%s",str_calorimeter[icalo].Data(),str_EoverP_FillTrue[ifilltrue].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50, 160, -4, 4);
+          h_EoverP_pions_EoverP_E_Eta_projectionbased[icalo][ifilltrue]        = new TH3F(Form("h_EoverP_pions_EoverP_E_Eta_projectionbased_%s_%s",str_calorimeter[icalo].Data(),str_EoverP_FillTrue[ifilltrue].Data()), "", nbinsEoP, 0, 2, nbinsEStud, 0, 50, 160, -4, 4);
         if(!h_EoverP_electrons_EoverP_E_Eta_projectionbased[icalo][ifilltrue])
-          h_EoverP_electrons_EoverP_E_Eta_projectionbased[icalo][ifilltrue]        = new TH3F(Form("h_EoverP_electrons_EoverP_E_Eta_projectionbased_%s_%s",str_calorimeter[icalo].Data(),str_EoverP_FillTrue[ifilltrue].Data()), "", nbinsEoP, 0, 4, nbinsEStud, 0, 50, 160, -4, 4);
+          h_EoverP_electrons_EoverP_E_Eta_projectionbased[icalo][ifilltrue]        = new TH3F(Form("h_EoverP_electrons_EoverP_E_Eta_projectionbased_%s_%s",str_calorimeter[icalo].Data(),str_EoverP_FillTrue[ifilltrue].Data()), "", nbinsEoP, 0, 2, nbinsEStud, 0, 50, 160, -4, 4);
       }
     }
     initializeHistsEOP = true;
@@ -100,6 +100,7 @@ bool eoverpstudies( int primaryTrackSource = 0, bool runSpecialCuts = false){
         
         // if(((_clusters_calo[ialgo][icalo].at(iclus)).cluster_M02<0.1))continue;
           if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta < minEtaCurCalo || (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta > maxEtaCurCalo) continue;
+          if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_NTowers < 2) continue;
         
         // if(!((_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta>3.0))continue;
         // if(((_clusters_calo[ialgo][icalo].at(iclus)).cluster_NTowers<2))continue;

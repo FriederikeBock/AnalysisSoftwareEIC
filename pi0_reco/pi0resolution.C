@@ -5,6 +5,7 @@
 #include <cerrno>
 #include <cfenv>
 #include <cstring>
+#include <TDatabasePDG.h>
 
 #define NELEMS(arr) (sizeof(arr)/sizeof(arr[0])) 
 
@@ -49,7 +50,8 @@ void pi0resolution(
 ){  
 
   const int maxcalo = 3;
-  TString caloName[maxcalo+1] = {"FEMC", "EEMC", "BECAL", "Hybrid"};
+  // TString caloName[maxcalo+1] = {"FEMC", "EEMC", "BECAL", "Hybrid"};
+  TString caloName[maxcalo+1] = { "EEMC", "BECAL", "FEMC", "Hybrid"};
   bool caloactive[maxcalo] = {false};
   Double_t mass_pi0PDG = 0.1349770;
 
@@ -92,7 +94,7 @@ void pi0resolution(
 
   //************************** Read data **************************************************
   const int nEne = 26;
-  const int nEta = 40;
+  // const int nEta = 40;
   const int nPhi = 25;
   
   const static Double_t partE[]   = {   0.7, 0.9, 1.2, 1.6, 2, 2.5, 3, 3.5, 4, 4.5,  5,
@@ -100,33 +102,33 @@ void pi0resolution(
                                        12.5,15,17.5,20,22.5,25,  30,35,  40, 50};
   double energymax = 40.;
 
-  TH2F* histEtrueMinv[maxcalo] = {NULL};
-  TH2F* histEtrueMinv_allcls[maxcalo] = {NULL};
+  TH2F* histEtrueMinv[maxcalo+1] = {NULL};
+  TH2F* histEtrueMinv_allcls[maxcalo+1] = {NULL};
   TH2F* histEtrueMinv_allcalo= NULL;
   TH2F* histEtrueMinv_allcalo_unmatched= NULL;
   TH2F* histpTMinv= NULL;
-  TH2F* histErecMinv[maxcalo] = {NULL};
-  TH2F* histErecMinv_allcls[maxcalo] = {NULL};
+  TH2F* histErecMinv[maxcalo+1] = {NULL};
+  TH2F* histErecMinv_allcls[maxcalo+1] = {NULL};
   TH2F* histErecMinv_allcalo = NULL;
   TH2F* histErecMinv_allcalo_unmatched= NULL;
 
-  TH1F* histEtrueMinvbin[maxcalo][50]            = {NULL};
-  TH1F* histEtrueMinvbin_allcls[maxcalo][50]            = {NULL};
+  TH1F* histEtrueMinvbin[maxcalo+1][50]            = {NULL};
+  TH1F* histEtrueMinvbin_allcls[maxcalo+1][50]            = {NULL};
   TH1F* histEtrueMinvbin_allcalo[50]            = {NULL};
 
-  TF1*  fithistEtrueMinv[maxcalo][50] = {NULL};
+  TF1*  fithistEtrueMinv[maxcalo+1][50] = {NULL};
   TF1*  fithistEtrueMinv_allclus[50] = {NULL};
   TF1*  fithistEtrueMinv_allcalo[50] = {NULL};
   TF1*  fithistEtrueMinv2[50] = {NULL};
-  TF1*  fithistEtrueMinvFINAL[maxcalo][50] = {NULL};
+  TF1*  fithistEtrueMinvFINAL[maxcalo+1][50] = {NULL};
   TF1*  fithistEtrueMinvFINAL_allcalo[50] = {NULL};
 
   // TH1F* histResoEVsMinv = new TH1F("histResoEVsMinv","",100,0,41) = {NULL};
-  TH1F* histResoEVsMinv[maxcalo] = {NULL};
+  TH1F* histResoEVsMinv[maxcalo+1] = {NULL};
   // TH1F* histMeanEVsMinv = new TH1F("histMeanEVsMinv","",100,0,41) = {NULL};
-  TH1F* histMeanEVsMinv[maxcalo] = {NULL};
+  TH1F* histMeanEVsMinv[maxcalo+1] = {NULL};
   // TH1F* histSigmaEVsMinv = new TH1F("histSigmaEVsMinv","",100,0,41) = {NULL};
-  TH1F* histSigmaEVsMinv[maxcalo] = {NULL};
+  TH1F* histSigmaEVsMinv[maxcalo+1] = {NULL};
   TH1F* histResoEVsMinv_allcalo= NULL;
   TH1F* histMeanEVsMinv_allcalo= NULL;
   TH1F* histSigmaEVsMinv_allcalo= NULL;
@@ -154,9 +156,9 @@ void pi0resolution(
   TH2F* histM20SCPt= NULL;
 
 
-  TH1F* h_Pi0Spec_separatecls[maxcalo] = {NULL};
-  TH1F* h_Pi0Spec_mergedclus[maxcalo] = {NULL};
-  TH1F* h_Pi0Spec_total[maxcalo] = {NULL};
+  TH1F* h_Pi0Spec_separatecls[maxcalo+1] = {NULL};
+  TH1F* h_Pi0Spec_mergedclus[maxcalo+1] = {NULL};
+  TH1F* h_Pi0Spec_total[maxcalo+1] = {NULL};
 
 
   Int_t nParticles                  = 7;
@@ -636,7 +638,7 @@ void pi0resolution(
   Color_t colorDet[maxcalo+1]                          = {kBlack, kRed+2, kBlue+2, kGreen+2};//, kGreen+3, kCyan+2, kViolet, kMagenta+2,  kRed-2, kBlue-2,kOrange+2,kSpring+2};
   Style_t markerStyleDet[maxcalo+1]   = {20, 47, 28, 34};//, 28, 30, 42, 46, 24, 25, 27, 28, 30};
   Size_t markerSizeDet[maxcalo+1]     = {2.5, 3, 3 , 3};//, 1.5, 1.8, 1.8, 1.5, 1.5, 1.4, 1.9,1.5, 1.8 };
-  TGraphAsymmErrors* graphPi0FWHMMeV[maxcalo];
+  TGraphAsymmErrors* graphPi0FWHMMeV[maxcalo+1];
   for (Int_t icalo = 0; icalo < maxcalo; icalo++){
     if(caloactive[icalo]){
       if(histSigmaEVsMinv[icalo]){
@@ -838,6 +840,7 @@ void pi0resolution(
         textsizeFacInvMass          = (Double_t)1./canvasInvMassSamplePlot->YtoPixel(canvasInvMassSamplePlot->GetY1());
     }
     cout << textsizeLabelsInvMass << endl;
+    cout << __LINE__ << endl;
 
     TH2F * histo2DPi0InvMassDummy;
     histo2DPi0InvMassDummy             = new TH2F("histo2DPi0InvMassDummy","histo2DPi0InvMassDummy",11000,0.05,0.21,21000,-1000,200000);
@@ -954,6 +957,7 @@ void pi0resolution(
     // h_Pi0Spec_mergedclus[icalo]    = (TH2F*)inputFile->Get(Name_mclus.Data());
     // h_Pi0Spec_separatecls[icalo]    = (TH2F*)inputFile->Get(Name_sepclus.Data());
     // h_Pi0Spec_total[icalo]    = (TH2F*)inputFile->Get(Name_totclus.Data());
+
   TH1F* h_Pi0_mergedfraction[maxcalo] = {NULL};
   TH1F* h_Pi0_separatefraction[maxcalo] = {NULL};
 
@@ -963,12 +967,13 @@ void pi0resolution(
   textSizeLabelsPixel             = 55;
   textSizeLabelsRel      = 55./1200;
   cout << textSizeLabelsRel << endl;
+  cout << __LINE__ << endl;
 
   TCanvas* canvasMergingFraction       = new TCanvas("canvasMergingFraction", "", 200, 10, 1200, 1100);  // gives the page size
   DrawGammaCanvasSettings( canvasMergingFraction,  0.1, 0.01, 0.015, 0.095);
   // canvasMergingFraction->SetLogy(1);
   // canvasMergingFraction->SetLogx(1);
-
+  // float minPtPi0MF = 5;
   TH2F * histo2DAccEff;
   histo2DAccEff                = new TH2F("histo2DAccEff", "histo2DAccEff",1000, minPtPi0, maxPtPi0woMerged, 1000, 0, 1.09 );
   SetStyleHistoTH2ForGraphs( histo2DAccEff, "#it{E}_{#pi^{0}} (GeV)", "#it{f}_{merg.}",
@@ -987,6 +992,8 @@ void pi0resolution(
         // h_Pi0_mergedfraction[icalo]->Divide(h_Pi0Spec_total[icalo]);
         h_Pi0_mergedfraction[icalo]->Divide(h_Pi0_mergedfraction[icalo],h_Pi0Spec_total[icalo], 1, 1,"B" );
           DrawGammaSetMarker(h_Pi0_mergedfraction[icalo], markerStylePID[icalo], 1.2*markerSizePID[icalo], colorPID[icalo] , colorPID[icalo]);
+          if(icalo==1)h_Pi0_mergedfraction[icalo]->GetXaxis()->SetRangeUser(2,50);
+          if(icalo==0 || icalo==2)h_Pi0_mergedfraction[icalo]->GetXaxis()->SetRangeUser(5,50);
           h_Pi0_mergedfraction[icalo]->Draw("same,p,e");
       }
   }
@@ -999,8 +1006,8 @@ void pi0resolution(
   }
   legendPi0Merge->Draw();
   float lowlegval = 0.20;
-  drawLatexAdd(perfLabel.Data(),0.95,lowlegval+0.1,textSizeLabelsRel,false,false,true);
-  drawLatexAdd(collisionSystem.Data(),0.95,lowlegval+0.05,textSizeLabelsRel,false,false,true);
+  drawLatexAdd(perfLabel.Data(),0.95,lowlegval+0.05,textSizeLabelsRel,false,false,true);
+  // drawLatexAdd(collisionSystem.Data(),0.95,lowlegval+0.05,textSizeLabelsRel,false,false,true);
   drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.95,lowlegval,textSizeLabelsRel,false,false,true);
 
   DrawGammaLines(minPtPi0, maxPtPi0woMerged, 1,1,2,kGray+1, 2);
@@ -1009,6 +1016,76 @@ void pi0resolution(
   canvasMergingFraction->Update();
   canvasMergingFraction->Print(Form("%s/Pi0_MergingFraction.%s",outputDir.Data(),suffix.Data()));
  
+
+  cout << __LINE__ << endl;
+  TH2F* h_Pi0Spec_mergedclus_Eta[maxcalo] = {NULL};
+  TH2F* h_Pi0Spec_separatecls_Eta[maxcalo] = {NULL};
+  TH2F* h_Pi0Spec_total_Eta[maxcalo] = {NULL};
+
+  for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+
+    TString Name_mclus_Eta = Form("%s/h_Pi0Spec_mergedclus_Eta_%s_%s",caloName[icalo].Data(), caloName[icalo].Data(), clusterizerName.Data() );
+    h_Pi0Spec_mergedclus_Eta[icalo]    = (TH2F*)inputFile->Get(Name_mclus_Eta.Data());
+    TString Name_sepclus_Eta = Form("%s/h_Pi0Spec_separatecls_Eta_%s_%s",caloName[icalo].Data(), caloName[icalo].Data(), clusterizerName.Data() );
+    h_Pi0Spec_separatecls_Eta[icalo]    = (TH2F*)inputFile->Get(Name_sepclus_Eta.Data());
+    TString Name_totclus_Eta = Form("%s/h_Pi0Spec_total_Eta_%s_%s",caloName[icalo].Data(), caloName[icalo].Data(), clusterizerName.Data() );
+    h_Pi0Spec_total_Eta[icalo]    = (TH2F*)inputFile->Get(Name_totclus_Eta.Data());
+  }
+  cout << __LINE__ << endl;
+
+  TH1F* h_Pi0_mergedfraction_Eta[maxcalo][nEta] = {NULL};
+  TH1F* h_Pi0_total_Eta[maxcalo][nEta] = {NULL};
+
+  double etarangemin[maxcalo] = {-4, -1.7, 1.3};
+  double etarangemax[maxcalo] = {-1.7, 1.3, 4.0};
+  float minEtaProj = 0;
+  float maxEtaProj = 0;
+  for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+    cout << caloName[icalo] << endl;
+    for(int ieta=0;ieta<nEta;ieta++){
+      // if(ieta>nEta) break;
+      minEtaProj = partEtaCalo[ieta];
+      maxEtaProj = partEtaCalo[ieta+1];
+      cout << ieta << "\t" <<  minEtaProj << " < eta < " << maxEtaProj << endl;
+
+      h_Pi0_mergedfraction_Eta[icalo][ieta]    = (TH1F*)h_Pi0Spec_mergedclus_Eta[icalo]->ProjectionX(Form("h_Pi0_mergedfraction_Eta_%s_%f",caloName[icalo].Data(), minEtaProj), 
+                                            h_Pi0Spec_mergedclus_Eta[icalo]->GetYaxis()->FindBin(minEtaProj), h_Pi0Spec_mergedclus_Eta[icalo]->GetYaxis()->FindBin(maxEtaProj),"e");
+      h_Pi0_mergedfraction_Eta[icalo][ieta]->Rebin(4);
+      h_Pi0_mergedfraction_Eta[icalo][ieta]->Sumw2();
+      h_Pi0_total_Eta[icalo][ieta]    = (TH1F*)h_Pi0Spec_total_Eta[icalo]->ProjectionX(Form("h_Pi0_total_Eta_%s_%f",caloName[icalo].Data(), minEtaProj), 
+                                            h_Pi0Spec_total_Eta[icalo]->GetYaxis()->FindBin(minEtaProj), h_Pi0Spec_total_Eta[icalo]->GetYaxis()->FindBin(maxEtaProj),"e");
+      h_Pi0_total_Eta[icalo][ieta]->Sumw2();
+      h_Pi0_total_Eta[icalo][ieta]->Rebin(4);
+      h_Pi0_mergedfraction_Eta[icalo][ieta]->Divide(h_Pi0_mergedfraction_Eta[icalo][ieta],h_Pi0_total_Eta[icalo][ieta], 1, 1,"B" );
+
+    }
+
+    histo2DAccEff->DrawCopy();
+    TLegend* legendPi0Merge           = GetAndSetLegend2(0.64, 0.13, 0.92, 0.13+(5*0.95*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
+    for(int ieta=0;ieta<nEta;ieta++){
+      if(partEtaCalo[ieta] >= etarangemin[icalo] && partEtaCalo[ieta+1] <= etarangemax[icalo]){
+        if(h_Pi0_mergedfraction_Eta[icalo][ieta]){
+            DrawGammaSetMarker(h_Pi0_mergedfraction_Eta[icalo][ieta], markerStyleEta[ieta], 1.2*markerSizeEta[ieta], colorEta[ieta] , colorEta[ieta]);
+            if(icalo==1)h_Pi0_mergedfraction_Eta[icalo][ieta]->GetXaxis()->SetRangeUser(2,50);
+            if(icalo==0 || icalo==2)h_Pi0_mergedfraction_Eta[icalo][ieta]->GetXaxis()->SetRangeUser(5,50);
+            h_Pi0_mergedfraction_Eta[icalo][ieta]->Draw("same,p,e");
+            legendPi0Merge->AddEntry(h_Pi0_mergedfraction_Eta[icalo][ieta],Form("%1.1f < #it{#eta} < %1.1f",partEtaCalo[ieta],partEtaCalo[ieta+1]),"p");
+        }
+      }
+    }
+    legendPi0Merge->Draw();
+    float lowlegval = 0.15+(5*0.95*textSizeLabelsRel);
+    drawLatexAdd(perfLabel.Data(),0.95,lowlegval+0.05,textSizeLabelsRel,false,false,true);
+    drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.95,lowlegval,textSizeLabelsRel,false,false,true);
+    // drawLatexAdd(collisionSystem.Data(),0.95,lowlegval+0.05,textSizeLabelsRel,false,false,true);
+
+    DrawGammaLines(minPtPi0, maxPtPi0woMerged, 1,1,2,kGray+1, 2);
+
+
+    canvasMergingFraction->Update();
+    canvasMergingFraction->Print(Form("%s/Pi0_MergingFraction_vsEta_%s.%s",outputDir.Data(),caloName[icalo].Data(),suffix.Data()));
+ 
+  }
 }
 
 
@@ -1026,7 +1103,7 @@ TF1* FitExpPlusGaussian(TH1F* histo, Double_t fitRangeMin, Double_t fitRangeMax,
     // if (icalo == 2 || icalo == 14){
     mesonAmplitudeMin = mesonAmplitude*80./100.;
     mesonAmplitudeMax = mesonAmplitude*110./100.;
-    if (icalo == 2){
+    if (icalo == 1){
       fitRangeMax = 0.2;
     }
     // cout << "mesonAmplitudeMin = " << mesonAmplitudeMin << endl;
@@ -1089,10 +1166,10 @@ TF1* FitExpPlusGaussianPol2(TH1F* histo, Double_t fitRangeMin, Double_t fitRange
     // if(icalo==3){
     //   mesonAmplitudeMin = mesonAmplitude*50./100.;
     // }
-    if (icalo == 0){
+    if (icalo == 2){
       fitRangeMin = 0.07;
       fitRangeMax = 0.17;
-    } else if (icalo == 2){
+    } else if (icalo == 1){
       // fitRangeMax = 0.19;
     }
 
