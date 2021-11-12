@@ -243,7 +243,7 @@ void plotBarrelClusters3D(
 
     for(int itwr=0;(int)itwr<_nTowers;itwr++){
       sumedE += _tower_E[itwr];
-      if (_tower_E[itwr] > 1e-3 && verbosity) cout << _tower_iEta[itwr] << "\t" << _tower_iPhi[itwr] << "\t"<< _tower_E[itwr] << endl;
+      if (_tower_E[itwr] > 0.5*aggEC && verbosity) cout << _tower_iEta[itwr] << "\t" << _tower_iPhi[itwr] << "\t"<< _tower_E[itwr] << endl;
       h_IEtaIPhiMapEvt->Fill(_tower_iEta[itwr],_tower_iPhi[itwr],_tower_E[itwr]);
       if(_tower_E[itwr]>minECutOff){
         h_IEtaIPhiMapEvt_Ecut->Fill(_tower_iEta[itwr],_tower_iPhi[itwr],_tower_E[itwr]);

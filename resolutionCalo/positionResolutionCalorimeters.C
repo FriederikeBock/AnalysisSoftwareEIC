@@ -229,7 +229,10 @@ void positionResolutionCalorimeters(
     TString tempName = Form("%s/h_CRH_EtaReso_%sE_Eta_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
     cout << "reading: " << tempName << endl;
     hist3DResoEta[i]    = (TH3F*)inputFile->Get(tempName.Data());
-
+    if (!hist3DResoEta[i]) {
+      cout << "could't find histo for " << caloNameRead.Data() << endl;
+      continue;
+    }
     //*****************************************************************
     // create slices in E for eta res & evaluate
     //*****************************************************************
@@ -383,7 +386,12 @@ void positionResolutionCalorimeters(
     TString tempName = Form("%s/h_CRH_PhiReso_%sE_Phi_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
     cout << "reading: " << tempName << endl;
     hist3DResoPhi[i]    = (TH3F*)inputFile->Get(tempName.Data());
+    if (!hist3DResoPhi[i]) {
+      cout << "could't find histo for " << caloNameRead.Data() << endl;
+      continue;
+    }
 
+    
     //*****************************************************************
     // create slices in E for phi res & evaluate
     //*****************************************************************

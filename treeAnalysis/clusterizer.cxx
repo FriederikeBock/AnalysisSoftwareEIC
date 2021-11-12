@@ -11,8 +11,13 @@ float aggregation_margin_MA[maxcalo] = { 0.05,   0.03,   0.03,   0.075, 0.05,  0
 TH2F*  h_clusterizer_nonagg_towers[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_matched_2D_delta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
 TH2F*  h_clusterizer_all_2D_delta[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_clusterizer_all_2D_deltaCalo[_active_calo][_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
-TH2F*  h_clusterizer_calomatch_2D_deltaCalo[_active_calo][_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_all_2D_deltaCalo[_active_calo][_active_calo][_active_algo]; // [calorimeter_enum][calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_calomatch_2D_deltaCalo[_active_calo][_active_calo][_active_algo]; // [calorimeter_enum][calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_calomatchtrue_2D_deltaCalo[_active_calo][_active_calo][_active_algo]; // [calorimeter_enum][calorimeter_enum][algorithm_enum]
+
+TH2F*  h_clusterizer_isMatched_E[_active_calo][_active_algo]; // [calorimeter_enum][algorithm_enum]
+TH2F*  h_clusterizer_isMatchedCalo_E[_active_calo][_active_calo][_active_algo]; // [calorimeter_enum][calorimeter_enum][algorithm_enum]
+
 
 bool _doClusterECalibration = true;
 
@@ -31,7 +36,7 @@ std::vector<matchingStrct> isClusterMatched(  clustersStrct tempcluster,
   for(int icalo=0;icalo<_active_calo;icalo++){
     if (!caloEnabled[icalo]) continue;
     bool isFwd = IsForwardCalorimeter(icalo);
-    float nbins2Ddelta = isFwd ? 78 : 80;
+    float nbins2Ddelta = isFwd ? 78*4 : 80*2;
     float min2Ddeltahist = isFwd ? -39 : -0.2;
     float max2Ddeltahist = isFwd ? 39 : 0.2;
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
@@ -73,7 +78,7 @@ std::vector<matchingStrct> isClusterMatched(  clustersStrct tempcluster,
         TVector3 projvec(_track_Proj_x[iproj],_track_Proj_y[iproj],_track_Proj_z[iproj]);
         projeta = projvec.Eta();
         projphi = projvec.Phi();
-        if((projphi==0 && projeta==0) || (projphi==-20 && projeta==-20)) continue;ok 
+        if((projphi==0 && projeta==0) || (projphi==-20 && projeta==-20)) continue;
       }
 
       float dPhi = projphi-tempcluster.cluster_Phi;
@@ -159,9 +164,25 @@ std::vector<matchingStrct> isClusterMatched(  clustersStrct tempcluster,
 void SetClustersMatchedToTracks(){
   for (int caloEnum = 0; caloEnum < maxcalo; caloEnum++){
     if (!caloEnabled[caloEnum]) continue;
+    if (caloEnum == kHCALIN) continue; // skip HCAL in for now in track association
     for (int ialgo = 0; ialgo < _active_algo; ialgo++){
+      // create bookkeeping histo
+      if(!h_clusterizer_isMatched_E[caloEnum][ialgo]){
+        h_clusterizer_isMatched_E[caloEnum][ialgo]             = new TH2F(Form("h_clusterizer_isMatched_E_%s_%s", str_calorimeter[caloEnum].Data(), str_clusterizer[ialgo].Data()), "; condition; E (GeV)", 3, 0, 3,100,0,100);
+        h_clusterizer_isMatched_E[caloEnum][ialgo]->GetXaxis()->SetBinLabel(1, "clusters");
+        h_clusterizer_isMatched_E[caloEnum][ialgo]->GetXaxis()->SetBinLabel(2, "clusters 1 match");
+        h_clusterizer_isMatched_E[caloEnum][ialgo]->GetXaxis()->SetBinLabel(3, "clusters > 1 match");
+      }
+      
       for (int iCl = 0; iCl < (int)_clusters_calo[ialgo][caloEnum].size(); iCl++){
+        h_clusterizer_isMatched_E[caloEnum][ialgo]->Fill(0.5,(_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_E );
+        
         if ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_isMatched){
+          if ((((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).size()) == 1)
+            h_clusterizer_isMatched_E[caloEnum][ialgo]->Fill(1.5,(_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_E );
+          else 
+            h_clusterizer_isMatched_E[caloEnum][ialgo]->Fill(2.5,(_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_E );
+            
           for (int iT = 0; iT < (int)(((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).size()); iT++){
             int trkID = ((_clusters_calo[ialgo][caloEnum].at(iCl)).cluster_matchedTracks).at(iT).id;
             // do separate checks for HCal and ECal
@@ -230,28 +251,40 @@ void SetClustersMatchedToTracks(){
 void MatchClustersWithOtherCalos( int caloEnum, int clusterizerEnum ){
   
   if (!caloEnabled[caloEnum]) return;
-  if( (_combCalo[caloEnum] != -1  && IsHCALCalorimeter(caloEnum))) continue;
+  if( !(_combCalo[caloEnum] != -1  && IsHCALCalorimeter(caloEnum))) return;
   if (!caloEnabled[_combCalo[caloEnum]]) return;
   int calID2 = _combCalo[caloEnum];
   
+//   std::cout <<  "starting matching for "<< str_calorimeter[caloEnum].Data() << " and " << str_calorimeter[calID2].Data() << std::endl;
+  
   if (!h_clusterizer_all_2D_deltaCalo[caloEnum][calID2][clusterizerEnum])
-    h_clusterizer_all_2D_deltaCalo[caloEnum][calID2][clusterizerEnum]           = new TH2F(Form("h_clusterizer_all_2D_deltaCalo_%s_%s_%s",str_calorimeter[caloEnum].Data(),str_calorimeter[calID2].Data(), str_clusterizer[clusterizerEnum].Data()), "", 200, -0.25, 0.25, 200, -0.25, 0.25);
+    h_clusterizer_all_2D_deltaCalo[caloEnum][calID2][clusterizerEnum]           = new TH2F(Form("h_clusterizer_all_2D_deltaCalo_%s_%s_%s",str_calorimeter[caloEnum].Data(),str_calorimeter[calID2].Data(), str_clusterizer[clusterizerEnum].Data()), "; dEta; dPhi", 200, -0.25, 0.25, 200, -0.25, 0.25);
   if (!h_clusterizer_calomatch_2D_deltaCalo[caloEnum][calID2][clusterizerEnum])
-    h_clusterizer_calomatch_2D_deltaCalo[caloEnum][calID2][clusterizerEnum]           = new TH2F(Form("h_clusterizer_calomatch_2D_deltaCalo_%s_%s_%s",str_calorimeter[caloEnum].Data(),str_calorimeter[calID2].Data(), str_clusterizer[clusterizerEnum].Data()), "", 200, -0.25, 0.25, 200, -0.25, 0.25);
+    h_clusterizer_calomatch_2D_deltaCalo[caloEnum][calID2][clusterizerEnum]           = new TH2F(Form("h_clusterizer_calomatch_2D_deltaCalo_%s_%s_%s",str_calorimeter[caloEnum].Data(),str_calorimeter[calID2].Data(), str_clusterizer[clusterizerEnum].Data()), "; dEta; dPhi", 200, -0.25, 0.25, 200, -0.25, 0.25);
+  if (!h_clusterizer_calomatchtrue_2D_deltaCalo[caloEnum][calID2][clusterizerEnum])
+    h_clusterizer_calomatchtrue_2D_deltaCalo[caloEnum][calID2][clusterizerEnum]           = new TH2F(Form("h_clusterizer_calomatch_true_2D_deltaCalo_%s_%s_%s",str_calorimeter[caloEnum].Data(),str_calorimeter[calID2].Data(), str_clusterizer[clusterizerEnum].Data()), "; dEta; dPhi", 200, -0.25, 0.25, 200, -0.25, 0.25);
 
-  
-  
+  // create bookkeeping hist
+  if(!h_clusterizer_isMatchedCalo_E[caloEnum][calID2][clusterizerEnum]){
+    h_clusterizer_isMatchedCalo_E[caloEnum][calID2][clusterizerEnum]             = new TH2F(Form("h_clusterizer_isMatchedCalo_E_%s_%s_%s", str_calorimeter[caloEnum].Data(), str_calorimeter[calID2].Data(),  str_clusterizer[clusterizerEnum].Data()), "; condition; E (GeV)", 3, 0, 3,100,0,100);  
+    h_clusterizer_isMatchedCalo_E[caloEnum][calID2][clusterizerEnum]->GetXaxis()->SetBinLabel(1, "clusters");
+    h_clusterizer_isMatchedCalo_E[caloEnum][calID2][clusterizerEnum]->GetXaxis()->SetBinLabel(2, "clusters 1 match");
+    h_clusterizer_isMatchedCalo_E[caloEnum][calID2][clusterizerEnum]->GetXaxis()->SetBinLabel(3, "clusters > 1 match");
+  }
+
   for (int iCl = 0; iCl < (int)_clusters_calo[clusterizerEnum][caloEnum].size(); iCl++){
     float etaCl1 = (_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_Eta;
-    float phiCl1 = (_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_Eta;
+    float phiCl1 = (_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_Phi;
     float xCl1 = (_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_X;
     float yCl1 = (_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_Y;
     
     if (xCl1 == 0 && yCl1 == 0) continue;
     
+    h_clusterizer_isMatchedCalo_E[caloEnum][calID2][clusterizerEnum]->Fill(0.5,(_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_E );
+    int nMatches = 0;
     for (int jCl = 0; jCl < (int)_clusters_calo[clusterizerEnum][calID2].size(); jCl++){
       float etaCl2 = (_clusters_calo[clusterizerEnum][calID2].at(jCl)).cluster_Eta;
-      float phiCl2 = (_clusters_calo[clusterizerEnum][calID2].at(jCl)).cluster_Eta;
+      float phiCl2 = (_clusters_calo[clusterizerEnum][calID2].at(jCl)).cluster_Phi;
       float xCl2 = (_clusters_calo[clusterizerEnum][calID2].at(jCl)).cluster_X;
       float yCl2 = (_clusters_calo[clusterizerEnum][calID2].at(jCl)).cluster_Y;
       if (xCl2 == 0 && yCl2 == 0) continue;
@@ -263,20 +296,23 @@ void MatchClustersWithOtherCalos( int caloEnum, int clusterizerEnum ){
       float dX    = xCl1 -xCl2;
       float dY    = yCl1 -yCl2;
     
-      
       h_clusterizer_all_2D_deltaCalo[caloEnum][calID2][clusterizerEnum]->Fill(dEta, dPhi);
       
-      if (dPhi > ReturnPhiCaloMatching(caloEnum)) continue;
-      if (dEta > ReturnEtaCaloMatching(caloEnum)) continue;
+      if (TMath::Abs(dPhi) > ReturnPhiCaloMatching(caloEnum, calID2)) continue;
+      if (TMath::Abs(dEta) > ReturnEtaCaloMatching(caloEnum, calID2)) continue;
       
       h_clusterizer_calomatch_2D_deltaCalo[caloEnum][calID2][clusterizerEnum]->Fill(dEta, dPhi);
+      if ((_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_trueID == (_clusters_calo[clusterizerEnum][calID2].at(jCl)).cluster_trueID)
+        h_clusterizer_calomatchtrue_2D_deltaCalo[caloEnum][calID2][clusterizerEnum]->Fill(dEta, dPhi);
+      
+      nMatches++;
       
       if (caloEnum == kEHCAL || caloEnum == kLFHCAL){
         matchingCalStrct tempMatch = matchingCalStrct();
         tempMatch.caloid  = calID2;
         tempMatch.id      = jCl;
-        tempMatch.dPhi    = dEta;
-        tempMatch.dEta    = dPhi;
+        tempMatch.dPhi    = dPhi;
+        tempMatch.dEta    = dEta;
         tempMatch.dX      = dX;
         tempMatch.dY      = dY;
         (_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_matchedECals.push_back(tempMatch);
@@ -289,22 +325,23 @@ void MatchClustersWithOtherCalos( int caloEnum, int clusterizerEnum ){
         matchingCalStrct tempMatch = matchingCalStrct();
         tempMatch.caloid  = calID2;
         tempMatch.id      = jCl;
-        tempMatch.dPhi    = dEta;
-        tempMatch.dEta    = dPhi;
+        tempMatch.dPhi    = dPhi;
+        tempMatch.dEta    = dEta;
         tempMatch.dX      = dX;
         tempMatch.dY      = dY;
-        (_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_matchedHCals.push_back(tempMatch);
+        (_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_matchedECals.push_back(tempMatch);
         tempMatch.caloid  = caloEnum;
         tempMatch.id      = iCl;
         (_clusters_calo[clusterizerEnum][calID2].at(jCl)).cluster_matchedHCals.push_back(tempMatch);
+
       }
 
       if (caloEnum == kHCALIN){
         matchingCalStrct tempMatch = matchingCalStrct();
         tempMatch.caloid  = calID2;
         tempMatch.id      = jCl;
-        tempMatch.dPhi    = dEta;
-        tempMatch.dEta    = dPhi;
+        tempMatch.dPhi    = dPhi;
+        tempMatch.dEta    = dEta;
         tempMatch.dX      = dX;
         tempMatch.dY      = dY;
         (_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_matchedECals.push_back(tempMatch);
@@ -313,31 +350,48 @@ void MatchClustersWithOtherCalos( int caloEnum, int clusterizerEnum ){
         (_clusters_calo[clusterizerEnum][calID2].at(jCl)).cluster_matchedECals.push_back(tempMatch);
       } 
     }
+    if (nMatches == 1)
+      h_clusterizer_isMatchedCalo_E[caloEnum][calID2][clusterizerEnum]->Fill(1.5,(_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_E );
+    else if (nMatches > 1)
+      h_clusterizer_isMatchedCalo_E[caloEnum][calID2][clusterizerEnum]->Fill(2.5,(_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_E );
   }
 
   if (caloEnum == kHCALOUT){
-    if( (_combCalo2[caloEnum] != -1 ) return;
+    if( _combCalo2[caloEnum] == -1 ) return;
     if (!caloEnabled[_combCalo2[caloEnum]]) return;
     int calID3 = _combCalo2[caloEnum];
     
-      if (!h_clusterizer_all_2D_deltaCalo[caloEnum][calID3][clusterizerEnum])
-    h_clusterizer_all_2D_deltaCalo[caloEnum][calID3][clusterizerEnum]           = new TH2F(Form("h_clusterizer_all_2D_deltaCalo_%s_%s_%s",str_calorimeter[caloEnum].Data(),str_calorimeter[calID3].Data(), str_clusterizer[clusterizerEnum].Data()), "", 200, -0.25, 0.25, 200, -0.25, 0.25);
-  if (!h_clusterizer_calomatch_2D_deltaCalo[caloEnum][calID3][clusterizerEnum])
-    h_clusterizer_calomatch_2D_deltaCalo[caloEnum][calID3][clusterizerEnum]           = new TH2F(Form("h_clusterizer_calomatch_2D_deltaCalo_%s_%s_%s",str_calorimeter[caloEnum].Data(),str_calorimeter[calID3].Data(), str_clusterizer[clusterizerEnum].Data()), "", 200, -0.25, 0.25, 200, -0.25, 0.25);
+    if (!h_clusterizer_all_2D_deltaCalo[caloEnum][calID3][clusterizerEnum])
+      h_clusterizer_all_2D_deltaCalo[caloEnum][calID3][clusterizerEnum]           = new TH2F(Form("h_clusterizer_all_2D_deltaCalo_%s_%s_%s",str_calorimeter[caloEnum].Data(),str_calorimeter[calID3].Data(), str_clusterizer[clusterizerEnum].Data()), "; dEta; dPhi", 200, -0.25, 0.25, 200, -0.25, 0.25);
+    if (!h_clusterizer_calomatch_2D_deltaCalo[caloEnum][calID3][clusterizerEnum])
+      h_clusterizer_calomatch_2D_deltaCalo[caloEnum][calID3][clusterizerEnum]           = new TH2F(Form("h_clusterizer_calomatch_2D_deltaCalo_%s_%s_%s",str_calorimeter[caloEnum].Data(),str_calorimeter[calID3].Data(), str_clusterizer[clusterizerEnum].Data()), "; dEta; dPhi", 200, -0.25, 0.25, 200, -0.25, 0.25);
+    if (!h_clusterizer_calomatchtrue_2D_deltaCalo[caloEnum][calID3][clusterizerEnum])
+      h_clusterizer_calomatchtrue_2D_deltaCalo[caloEnum][calID3][clusterizerEnum]           = new TH2F(Form("h_clusterizer_calomatch_true_2D_deltaCalo_%s_%s_%s",str_calorimeter[caloEnum].Data(),str_calorimeter[calID3].Data(), str_clusterizer[clusterizerEnum].Data()), "; dEta; dPhi", 200, -0.25, 0.25, 200, -0.25, 0.25);
 
+      // create bookkeeping hist
+    if(!h_clusterizer_isMatchedCalo_E[caloEnum][calID3][clusterizerEnum]){
+      h_clusterizer_isMatchedCalo_E[caloEnum][calID3][clusterizerEnum]             = new TH2F(Form("h_clusterizer_isMatchedCalo_E_%s_%s_%s", str_calorimeter[caloEnum].Data(), str_calorimeter[calID3].Data(),  str_clusterizer[clusterizerEnum].Data()), "; condition; E (GeV)", 3, 0, 3,100,0,100);  
+      h_clusterizer_isMatchedCalo_E[caloEnum][calID3][clusterizerEnum]->GetXaxis()->SetBinLabel(1, "clusters");
+      h_clusterizer_isMatchedCalo_E[caloEnum][calID3][clusterizerEnum]->GetXaxis()->SetBinLabel(2, "clusters 1 match");
+      h_clusterizer_isMatchedCalo_E[caloEnum][calID3][clusterizerEnum]->GetXaxis()->SetBinLabel(3, "clusters > 1 match");
+    }
 
+//     std::cout <<  "starting matching for "<< str_calorimeter[caloEnum].Data() << " and " << str_calorimeter[calID3].Data() << std::endl;
     
     for (int iCl = 0; iCl < (int)_clusters_calo[clusterizerEnum][caloEnum].size(); iCl++){
       float etaCl1 = (_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_Eta;
-      float phiCl1 = (_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_Eta;
+      float phiCl1 = (_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_Phi;
       float xCl1 = (_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_X;
       float yCl1 = (_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_Y;
+      
+      h_clusterizer_isMatchedCalo_E[caloEnum][calID3][clusterizerEnum]->Fill(0.5,(_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_E );
+      int nMatches = 0;
       
       if (xCl1 == 0 && yCl1 == 0) continue;
       
       for (int jCl = 0; jCl < (int)_clusters_calo[clusterizerEnum][calID3].size(); jCl++){
         float etaCl2 = (_clusters_calo[clusterizerEnum][calID3].at(jCl)).cluster_Eta;
-        float phiCl2 = (_clusters_calo[clusterizerEnum][calID3].at(jCl)).cluster_Eta;
+        float phiCl2 = (_clusters_calo[clusterizerEnum][calID3].at(jCl)).cluster_Phi;
         float xCl2 = (_clusters_calo[clusterizerEnum][calID3].at(jCl)).cluster_X;
         float yCl2 = (_clusters_calo[clusterizerEnum][calID3].at(jCl)).cluster_Y;
         if (xCl2 == 0 && yCl2 == 0) continue;
@@ -351,23 +405,29 @@ void MatchClustersWithOtherCalos( int caloEnum, int clusterizerEnum ){
       
         h_clusterizer_all_2D_deltaCalo[caloEnum][calID3][clusterizerEnum]->Fill(dEta, dPhi);
       
-        if (dPhi > ReturnPhiCaloMatching(caloEnum)) continue;
-        if (dEta > ReturnEtaCaloMatching(caloEnum)) continue;
-
+        if (TMath::Abs(dPhi) > ReturnPhiCaloMatching(caloEnum, calID3)) continue;
+        if (TMath::Abs(dEta) > ReturnEtaCaloMatching(caloEnum, calID3)) continue;
+        nMatches++;
         h_clusterizer_calomatch_2D_deltaCalo[caloEnum][calID3][clusterizerEnum]->Fill(dEta, dPhi);
-       
+        if ((_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_trueID == (_clusters_calo[clusterizerEnum][calID3].at(jCl)).cluster_trueID)
+          h_clusterizer_calomatchtrue_2D_deltaCalo[caloEnum][calID3][clusterizerEnum]->Fill(dEta, dPhi);
+
         matchingCalStrct tempMatch = matchingCalStrct();
         tempMatch.caloid  = calID3;
         tempMatch.id      = jCl;
-        tempMatch.dPhi    = dEta;
-        tempMatch.dEta    = dPhi;
+        tempMatch.dEta    = dEta;
+        tempMatch.dPhi    = dPhi;
         tempMatch.dX      = dX;
         tempMatch.dY      = dY;
-        (_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_matchedECals.push_back(tempMatch);
+        (_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_matchedHCals.push_back(tempMatch);
         tempMatch.caloid  = caloEnum;
         tempMatch.id      = iCl;
-        (_clusters_calo[clusterizerEnum][calID2].at(jCl)).cluster_matchedHCals.push_back(tempMatch);
-      }
+        (_clusters_calo[clusterizerEnum][calID3].at(jCl)).cluster_matchedHCals.push_back(tempMatch);      }
+      if (nMatches == 1)
+        h_clusterizer_isMatchedCalo_E[caloEnum][calID3][clusterizerEnum]->Fill(1.5,(_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_E );
+      else if (nMatches > 1)
+        h_clusterizer_isMatchedCalo_E[caloEnum][calID3][clusterizerEnum]->Fill(2.5,(_clusters_calo[clusterizerEnum][caloEnum].at(iCl)).cluster_E );
+
     }
   }
 }
@@ -1001,12 +1061,15 @@ void clusterizerSave(){
     fileOutput->mkdir(Form("%s",str_calorimeter[icalo].Data()));
     fileOutput->cd(Form("%s",str_calorimeter[icalo].Data()));
     for(int ialgo=0;ialgo<_active_algo;ialgo++){
-      if(h_clusterizer_nonagg_towers[icalo][ialgo]) h_clusterizer_nonagg_towers[icalo][ialgo]->Write();
-      if(h_clusterizer_all_2D_delta[icalo][ialgo]) h_clusterizer_all_2D_delta[icalo][ialgo]->Write();
-      if(h_clusterizer_matched_2D_delta[icalo][ialgo]) h_clusterizer_matched_2D_delta[icalo][ialgo]->Write();
+      if (h_clusterizer_nonagg_towers[icalo][ialgo])    h_clusterizer_nonagg_towers[icalo][ialgo]->Write();
+      if (h_clusterizer_all_2D_delta[icalo][ialgo])     h_clusterizer_all_2D_delta[icalo][ialgo]->Write();
+      if (h_clusterizer_matched_2D_delta[icalo][ialgo]) h_clusterizer_matched_2D_delta[icalo][ialgo]->Write();
+      if (h_clusterizer_isMatched_E[icalo][ialgo])      h_clusterizer_isMatched_E[icalo][ialgo]->Write();
       for (int jcalo=0; jcalo < _active_calo; jcalo++){
-        if (h_clusterizer_all_2D_deltaCalo[icalo][jcalo][ialgo]) h_clusterizer_all_2D_deltaCalo[icalo][jcalo][ialgo]->Write();
-        if (h_clusterizer_calomatch_2D_deltaCalo[icalo][jcalo][ialgo]) h_clusterizer_calomatch_2D_deltaCalo[icalo][jcalo][ialgo]->Write();
+        if (h_clusterizer_all_2D_deltaCalo[icalo][jcalo][ialgo])            h_clusterizer_all_2D_deltaCalo[icalo][jcalo][ialgo]->Write();
+        if (h_clusterizer_calomatch_2D_deltaCalo[icalo][jcalo][ialgo])      h_clusterizer_calomatch_2D_deltaCalo[icalo][jcalo][ialgo]->Write();
+        if (h_clusterizer_calomatchtrue_2D_deltaCalo[icalo][jcalo][ialgo])  h_clusterizer_calomatchtrue_2D_deltaCalo[icalo][jcalo][ialgo]->Write();
+        if (h_clusterizer_isMatchedCalo_E[icalo][jcalo][ialgo])             h_clusterizer_isMatchedCalo_E[icalo][jcalo][ialgo]->Write();
       }
     }
   }

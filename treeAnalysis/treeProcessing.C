@@ -217,7 +217,7 @@ void treeProcessing(
         for (int cal = 0; cal < maxcalo; cal++){
           if(do_reclus && nTowers[cal] > 0 && caloEnabled[cal]){
             for (int algo = 0; algo < _active_algo; algo++){
-              MatchClustersWithOtherCalos( int caloEnum, int clusterizerEnum )
+              MatchClustersWithOtherCalos( cal, algo );
             }
           }
         }

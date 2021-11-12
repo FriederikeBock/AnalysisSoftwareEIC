@@ -7,7 +7,7 @@ Double_t linTermHCal[3][2]    = {{6,10}, {7,10}, {7,10}};
 Double_t sqrtETermECal[3][2]  = {{2,3}, {7,10}, {7,10}};
 Double_t sqrtETermHCal[3][2]  = {{45,50}, {85,100}, {35,50}};
 
-Double_t maxResPerEM[3]       = {12.5, 17.5, 20.5};
+Double_t maxResPerEM[3]       = {8.5, 10.5, 17.5};
 Double_t maxResPerHad[3]      = {62, 82, 72};
 Double_t maxResEM[3]          = {1.125, 1.175, 1.205};
 Double_t maxResHad[3]         = {1.25, 1.85, 1.65};
@@ -20,13 +20,35 @@ Double_t meanFitHad[3][2]     = {{10,-1}, { 10, -1}, {10, 20} };
 
 Double_t minEnergy[3][2]      = {{0,2.2}, { 0, 2.5}, {0, 1.5} };
 
+TF1* CreateFit1ovE (TH1* histoToFit, TString name, Float_t minX, Float_t maxX){
+  TF1*  fitReso1oET = new TF1(name, "[0]+[1]*x+[2]*TMath::Power(x,2)", minX,maxX); 
+  fitReso1oET->SetParLimits(0,0, 50);
+  fitReso1oET->SetParameter(2,0.01);
+  fitReso1oET->SetParLimits(2,0.001, 0.3);
+  histoToFit->Fit(fitReso1oET,"RMNE");
+  fitReso1oET->SetRange(minX, maxX);
+  return fitReso1oET;
+}
+
+TF1* CreateFitE (TH1* histoToFit, TString name, Float_t minX, Float_t maxX){
+  TF1* fitResoET = new TF1(name, "[0]+([1]/TMath::Sqrt(x))+([2]/x)", minX,maxX); 
+  fitResoET->SetParLimits(0,0.,20);
+  fitResoET->SetParLimits(1,0.,90);
+  fitResoET->SetParameter(2,0.01);
+  fitResoET->SetParLimits(2,0.,0.3);
+  histoToFit->Fit(fitResoET,"RMNE");
+  fitResoET->SetRange(minX, maxX);
+  return fitResoET;
+}
+
 
 void energyResolutionCalorimeters(
     TString inputFileName     = "",
     TString caloName          = "",
     TString clusterizerName   = "",
     TString suffix            = "pdf",
-    Bool_t doFitting          = kTRUE
+    Bool_t doFitting          = kTRUE,
+    Bool_t isSingleParticle   = kTRUE
 ){
 
   gROOT->Reset();
@@ -48,14 +70,12 @@ void energyResolutionCalorimeters(
   TString caloNameRead = caloName;
   Bool_t isComb         = 0;
   Int_t dirCal          = 0;  // 0- bwd, 1- cent, 2-fwd
-  Int_t exEbin          = 15;
+  Int_t exEbin          = 17;
   Int_t exEtabin        = 2;
     
   if (caloName.BeginsWith("EEMC") ){
     detLabel      = "EEMC (PbWO_{4} crystal)";
     caloNameRead  = "EEMC";
-    minEtaMax     = -4;
-    maxEtaMax     = -1.7;
     isEMCal       = 1;
     exEtabin      = 2;
     if (caloName.CompareTo("EEMC-wMat") == 0){
@@ -64,8 +84,6 @@ void energyResolutionCalorimeters(
   } else if (caloName.BeginsWith("FEMC") ){
     detLabel  = "FEMC (PHENIX re-use)";
     caloNameRead = "FEMC";
-    minEtaMax     = 1.4;
-    maxEtaMax     = 4;
     isEMCal       = 1;
     dirCal        = 2;
     exEtabin      = 11;
@@ -75,8 +93,6 @@ void energyResolutionCalorimeters(
   } else if (caloName.BeginsWith("BECAL") ){
     detLabel      = "BECAL (Sci-glass)";
     caloNameRead  = "BECAL";
-    minEtaMax     = -1.8;
-    maxEtaMax     = 1.3;
     isEMCal       = 1;
     exEtabin      = 7;
     dirCal        = 1;
@@ -86,8 +102,6 @@ void energyResolutionCalorimeters(
   } else if (caloName.BeginsWith("LFHCAL") ){
     detLabel      = "LFHCAL";
     caloNameRead  = "LFHCAL";
-    minEtaMax     = 1.1;
-    maxEtaMax     = 4;
     rebinRes      = 2;
     exEtabin      = 11;
     dirCal        = 2;
@@ -100,9 +114,8 @@ void energyResolutionCalorimeters(
   } else if (caloName.BeginsWith("EHCAL") ){
     detLabel      = "EHCAL (STAR re-use)";
     caloNameRead  = "EHCAL";
-    minEtaMax     = -4;
-    maxEtaMax     = -1.7;
     exEtabin      = 2;
+    dirCal        = 0;
     if (caloName.CompareTo("EHCAL-wMat") == 0){
       detLabel  = "EHCAL, EEMC infront";
     } else if (caloName.CompareTo("EHCAL-EEMC") == 0){
@@ -112,8 +125,6 @@ void energyResolutionCalorimeters(
   } else if (caloName.BeginsWith("CHCAL") ){
     detLabel      = "oHCAL, iHCal infront";
     caloNameRead  = "HCALOUT";
-    minEtaMax     = -1.8;
-    maxEtaMax     = 1.2;
     exEtabin      = 2;
     dirCal        = 1;
     if (caloName.CompareTo("CHCAL-comb") == 0){
@@ -123,17 +134,20 @@ void energyResolutionCalorimeters(
   } else if (caloName.BeginsWith("HCALIN") ){
     detLabel      = "iHCal";
     caloNameRead  = "HCALIN";
-    minEtaMax     = -1.8;
-    maxEtaMax     = 1.2;
     exEtabin      = 2;
     dirCal        = 1;
     if (caloName.CompareTo("HCALIN-wMat") == 0){
       detLabel  = "iHCal-w/ mat infront";
     }
-  } else {
-    minEtaMax = -1.8;
-    maxEtaMax = 1.2;
-  }
+  } 
+  minEtaMax     = nominalEtaRegion[dirCal][0];
+  maxEtaMax     = nominalEtaRegion[dirCal][1];
+  maxReso       = maxResHad[dirCal];
+  if (isEMCal)
+    maxReso     = maxResEM[dirCal];
+  
+  TString etaRangeFull = Form("%1.1f < #eta < %1.1f", minEtaMax, maxEtaMax);
+  
   // determine eta bins
   Int_t binEtaMin = 0;
   Int_t binEtaMax = 15;
@@ -211,6 +225,7 @@ void energyResolutionCalorimeters(
   Float_t minEPart[7];
   Float_t maxEPart[7];
   Int_t nActivePart                 = 0;
+  Int_t nActivePartAll              = 0;
   Int_t nActiveEpart[7]             = {0};
   Int_t nActiveEtapart[7]           = {0};
   
@@ -282,12 +297,22 @@ void energyResolutionCalorimeters(
     TString tempName = Form("%s/h_CRH_EReso_%sE_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
     if (isComb) tempName = Form("%s/h_CRH_EResoComb_%sE_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
     cout << tempName << endl;
+    
     TString tempName3 = Form("%s/h_CRH_EReso_%sEhighest_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
-    if (isComb) tempName3 = tempName;
+    if (isComb) tempName3 = Form("%s/h_CRH_EResoCombHighest_%sE_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
     cout << tempName3 << endl;
     hist2DResoE[i]            = (TH2D*)inputFile->Get(tempName.Data());
     hist2DResoEhighest[i]     = (TH2D*)inputFile->Get(tempName3.Data());
+    
     if (!hist2DResoE[i]) continue;
+    if (isComb){
+      tempName = Form("%s/h_CRH_EResoCombEMonly_%sE_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
+      TH2D* tempHist  = (TH2D*)inputFile->Get(tempName.Data());
+      if (tempHist){
+        hist2DResoE[i]->Add(tempHist);
+      }
+    }
+
     if (hist2DResoE[i]->GetEntries() > 0){
       hist2DResoE[i]->Sumw2();
       hist2DResoEhighest[i]->Sumw2();
@@ -310,14 +335,15 @@ void energyResolutionCalorimeters(
           Double_t sigmaErr = hist1DResoEbins[i][ebin]->GetRMSError();
           Double_t fwhm    = hist1DResoEbins[i][ebin]->GetRMS();
           Double_t fwhmErr = hist1DResoEbins[i][ebin]->GetRMSError();
+          Double_t fitRange[2]  = {mean - 1*sigma, mean + 1.2*sigma};
           
           if (doFitting){
-            cout << labelPart[i] <<"\t" << partE[ebin] << "\t" << mean << "\t" << sigma<< endl;;
-//             fitResoEbins[i][ebin]     = new TF1(Form("fit_reso_%s%d", readNames[i].Data(), ebin), "(x<[1])*([0]*(TMath::Exp(-0.5*((x-[1])/[2])^2)+TMath::Exp((x-[1])/[3])*(1.-TMath::Exp(-0.5*((x-[1])/[2])^2))))+(x>=[1])*([0]*TMath::Exp(-0.5*((x-[1])/[2])^2))", mean-3*sigma, mean+2*sigma);
+            TString fitOpt = "L0RMEQ";
+          
+//             cout << labelPart[i] <<"\t" << partE[ebin] << "\t" << mean << "\t" << sigma<< endl;;
             hist1DResoEbins[i][ebin]->Rebin(rebinRes);
             if (i > 1){
               fitResoEbins[i][ebin]     = new TF1(Form("fit_reso_%s%d", readNames[i].Data(), ebin), "gaus", mean-3*sigma, mean+2*sigma);
-              fitResoEbins[i][ebin]->SetParLimits(1, 0.6*mean, 1.2*mean);
               fitResoEbins[i][ebin]->SetParLimits(1, 0.6*mean, 1.2*mean);
               fitResoEbins[i][ebin]->SetParameter(1, mean);
               if (!isEMCal && dirCal == 1)
@@ -328,12 +354,27 @@ void energyResolutionCalorimeters(
 //             fitResoEbins[i][ebin]->SetParLimits(0, 0.9*hist1DResoEbins[i][ebin]->GetMaximum(), 10*hist1DResoEbins[i][ebin]->GetMaximum());
 //             fitResoEbins[i][ebin]->SetParameter(0, hist1DResoEbins[i][ebin]->GetMaximum());
             } else  {
+              fitOpt  = "L0RME";
               fitResoEbins[i][ebin]    = new TF1(Form("fit_reso_%s%d", readNames[i].Data(), ebin), "crystalball", mean-3*sigma, mean+2*sigma);
-              fitResoEbins[i][ebin]->SetParameters(1*hist1DResoEbins[i][ebin]->GetMaximum(),hist1DResoEbins[i][ebin]->GetMean(),0.5*hist1DResoEbins[i][ebin]->GetRMS(),0.2*hist1DResoEbins[i][ebin]->GetRMS(),1*hist1DResoEbins[i][ebin]->GetRMS());
-             
+              fitResoEbins[i][ebin]->SetParameters(1*hist1DResoEbins[i][ebin]->GetMaximum(),hist1DResoEbins[i][ebin]->GetMean(),0.5*hist1DResoEbins[i][ebin]->GetRMS(),1.6,1.5);
+              if (dirCal == 2){
+                fitResoEbins[i][ebin]->SetParLimits(1, 0.6*mean, 1.2*mean);
+                fitResoEbins[i][ebin]->SetParLimits(2, 0.01*sigma, 1.1*sigma);
+                fitResoEbins[i][ebin]->SetParLimits(3, 1.4, 1.8);
+                fitResoEbins[i][ebin]->SetParLimits(4, 1, 2.5);
+              } else if (dirCal == 1){
+                fitResoEbins[i][ebin]->SetParLimits(1, 0.6*mean, 1.2*mean);
+                fitResoEbins[i][ebin]->SetParLimits(2, 0.01*sigma, 1.1*sigma);
+                fitResoEbins[i][ebin]->SetParLimits(3, 0.1, 1.8);
+                fitResoEbins[i][ebin]->SetParLimits(4, 1, 8);
+              } else {
+                fitResoEbins[i][ebin]->SetParLimits(1, 0.6*mean, 1.2*mean);
+                fitResoEbins[i][ebin]->SetParLimits(3, 0.1, 1.8);
+                fitResoEbins[i][ebin]->SetParLimits(4, 1, 10);
+              }
+
             }
-            hist1DResoEbins[i][ebin]->Fit(fitResoEbins[i][ebin],"L0RME","",mean-1*sigma, mean+1.2*sigma);
-//             hist1DResoEbins[i][ebin]->Fit(fitResoEbins[i][ebin],"L0RME", "", fitResoEbins[i][ebin]->GetParameter(1)-0.5*fitResoEbins[i][ebin]->GetParameter(2), fitResoEbins[i][ebin]->GetParameter(1)+1*fitResoEbins[i][ebin]->GetParameter(2));
+            hist1DResoEbins[i][ebin]->Fit(fitResoEbins[i][ebin],fitOpt,"",fitRange[0], fitRange[1]);
             
             mean     = fitResoEbins[i][ebin]->GetParameter(1);
             meanErr  = fitResoEbins[i][ebin]->GetParError(1);
@@ -350,27 +391,36 @@ void energyResolutionCalorimeters(
               Double_t relEN = fitResoEbins[i][ebin]->GetParError(4)/ fitResoEbins[i][ebin]->GetParameter(4);
               fwhmErr = fwhm*TMath::Sqrt(relEM*relEM+relES*relES+relEL*relEL+relEN*relEN);
             }
+            if (sigmaErr/sigma > 0.5){
+              sigma = -1;
+            }
+            if (fwhmErr/fwhm > 0.5){
+              fwhm = -1;
+            }
           }
           Double_t reso     = sigma/mean;
           Double_t resoErr  = TMath::Sqrt(TMath::Power(sigmaErr/sigma,2)+TMath::Power(meanErr/mean,2));
           Double_t resoF    = fwhm/mean;
           Double_t resoFErr = TMath::Sqrt(TMath::Power(fwhmErr/fwhm,2)+TMath::Power(meanErr/mean,2));
           
-          histResoEVsE[i]->SetBinContent(histResoEVsE[i]->FindBin(partE[ebin]),  100*reso);
-          histResoEVsE[i]->SetBinError(histResoEVsE[i]->FindBin(partE[ebin]), resoErr);
-          histResoEVs1oE[i]->SetBinContent(histResoEVs1oE[i]->FindBin(1./TMath::Sqrt(partE[ebin])),100*reso);
-          histResoEVs1oE[i]->SetBinError(histResoEVs1oE[i]->FindBin(1./TMath::Sqrt(partE[ebin])),resoErr);
-          histResoFEVsE[i]->SetBinContent(histResoFEVsE[i]->FindBin(partE[ebin]),  100*resoF);
-          histResoFEVsE[i]->SetBinError(histResoFEVsE[i]->FindBin(partE[ebin]), resoFErr);
-          histResoFEVs1oE[i]->SetBinContent(histResoFEVs1oE[i]->FindBin(1./TMath::Sqrt(partE[ebin])),100*resoF);
-          histResoFEVs1oE[i]->SetBinError(histResoFEVs1oE[i]->FindBin(1./TMath::Sqrt(partE[ebin])),resoFErr);
-
-          histMeanEVsE[i]->SetBinContent(histResoEVsE[i]->FindBin(partE[ebin]), mean);
-          histMeanEVsE[i]->SetBinError(histResoEVsE[i]->FindBin(partE[ebin]), meanErr);
-          histSigmaEVsE[i]->SetBinContent(histResoEVsE[i]->FindBin(partE[ebin]), sigma);
-          histSigmaEVsE[i]->SetBinError(histResoEVsE[i]->FindBin(partE[ebin]), sigmaErr);
-          histFWHMEVsE[i]->SetBinContent(histResoEVsE[i]->FindBin(partE[ebin]), fwhm);
-          histFWHMEVsE[i]->SetBinError(histResoEVsE[i]->FindBin(partE[ebin]), fwhmErr);
+          if (sigma > 0){
+            histResoEVsE[i]->SetBinContent(histResoEVsE[i]->FindBin(partE[ebin]),  100*reso);
+            histResoEVsE[i]->SetBinError(histResoEVsE[i]->FindBin(partE[ebin]), resoErr);
+            histResoEVs1oE[i]->SetBinContent(histResoEVs1oE[i]->FindBin(1./TMath::Sqrt(partE[ebin])),100*reso);
+            histResoEVs1oE[i]->SetBinError(histResoEVs1oE[i]->FindBin(1./TMath::Sqrt(partE[ebin])),resoErr);
+            histMeanEVsE[i]->SetBinContent(histResoEVsE[i]->FindBin(partE[ebin]), mean);
+            histMeanEVsE[i]->SetBinError(histResoEVsE[i]->FindBin(partE[ebin]), meanErr);
+            histSigmaEVsE[i]->SetBinContent(histResoEVsE[i]->FindBin(partE[ebin]), sigma);
+            histSigmaEVsE[i]->SetBinError(histResoEVsE[i]->FindBin(partE[ebin]), sigmaErr);
+          } 
+          if (fwhm > 0){
+            histResoFEVsE[i]->SetBinContent(histResoFEVsE[i]->FindBin(partE[ebin]),  100*resoF);
+            histResoFEVsE[i]->SetBinError(histResoFEVsE[i]->FindBin(partE[ebin]), resoFErr);
+            histResoFEVs1oE[i]->SetBinContent(histResoFEVs1oE[i]->FindBin(1./TMath::Sqrt(partE[ebin])),100*resoF);
+            histResoFEVs1oE[i]->SetBinError(histResoFEVs1oE[i]->FindBin(1./TMath::Sqrt(partE[ebin])),resoFErr);
+            histFWHMEVsE[i]->SetBinContent(histResoEVsE[i]->FindBin(partE[ebin]), fwhm);
+            histFWHMEVsE[i]->SetBinError(histResoEVsE[i]->FindBin(partE[ebin]), fwhmErr);
+          }
         } else {
           useE[i][ebin] = 0;
         }
@@ -382,21 +432,24 @@ void energyResolutionCalorimeters(
         if (i > 1 && partE[ebin] < minEnergy[dirCal][1]) continue; // switch of low E bins for HCals
 
         if (hist1DResoEbinshighests[i][ebin]->GetEntries() > 10 ){
-          Double_t mean     = FindLargestBin1DHist(hist1DResoEbinshighests[i][ebin], 0.4, 1.9);
+          Double_t mean         = FindLargestBin1DHist(hist1DResoEbinshighests[i][ebin], 0.4, 1.9);
 //           Double_t mean     = hist1DResoEbins[i][ebin]->GetMean();
-          Double_t meanErr  = hist1DResoEbinshighests[i][ebin]->GetMeanError();
+          Double_t meanErr      = hist1DResoEbinshighests[i][ebin]->GetMeanError();
 //           Double_t sigma    = hist1DResoEbins[i][ebin]->GetStdDev();
 //           Double_t sigmaErr = hist1DResoEbins[i][ebin]->GetStdDevError();
-          Double_t sigma    = hist1DResoEbinshighests[i][ebin]->GetRMS();
-          Double_t sigmaErr = hist1DResoEbinshighests[i][ebin]->GetRMSError();
-          Double_t fwhm     = hist1DResoEbinshighests[i][ebin]->GetRMS();
-          Double_t fwhmErr  = hist1DResoEbinshighests[i][ebin]->GetRMSError();
-
+          Double_t sigma        = hist1DResoEbinshighests[i][ebin]->GetRMS();
+          Double_t sigmaErr     = hist1DResoEbinshighests[i][ebin]->GetRMSError();
+          Double_t fwhm         = hist1DResoEbinshighests[i][ebin]->GetRMS();
+          Double_t fwhmErr      = hist1DResoEbinshighests[i][ebin]->GetRMSError();
+          Double_t fitRange[2]  = {mean - 1*sigma, mean + 1.2*sigma};
+          
           if (doFitting){
+            TString fitOpt = "L0RMEQ";
             hist1DResoEbinshighests[i][ebin]->Rebin(rebinRes);
+//             cout << labelPart[i] <<"\t highest \t" << partE[ebin] << "\t" << mean << "\t" << sigma<< endl;;
             if (i > 1){
+
 //             cout << labelPart[i] <<"\t" << partE[ebin] << "\t" << mean << "\t" << sigma<< endl;;
-//             fitResoEbins[i][ebin]     = new TF1(Form("fit_reso_%s%d", readNames[i].Data(), ebin), "(x<[1])*([0]*(TMath::Exp(-0.5*((x-[1])/[2])^2)+TMath::Exp((x-[1])/[3])*(1.-TMath::Exp(-0.5*((x-[1])/[2])^2))))+(x>=[1])*([0]*TMath::Exp(-0.5*((x-[1])/[2])^2))", mean-3*sigma, mean+2*sigma);
               fitResoEbinshighest[i][ebin]     = new TF1(Form("fit_resohighest_%s%d", readNames[i].Data(), ebin), "gaus", mean-3*sigma, mean+2*sigma);
               if (!isEMCal && dirCal == 1)
                 fitResoEbinshighest[i][ebin]->SetParLimits(1, 0.6*mean, 1.2*mean);
@@ -408,11 +461,27 @@ void energyResolutionCalorimeters(
 //             fitResoEbins[i][ebin]->SetParLimits(0, 0.9*hist1DResoEbins[i][ebin]->GetMaximum(), 10*hist1DResoEbins[i][ebin]->GetMaximum());
 //             fitResoEbins[i][ebin]->SetParameter(0, hist1DResoEbins[i][ebin]->GetMaximum());
             } else  {
+//               fitOpt = "L0RME";
               fitResoEbinshighest[i][ebin]    = new TF1(Form("fit_resohighest_%s%d", readNames[i].Data(), ebin), "crystalball", mean-3*sigma, mean+2*sigma);
-              fitResoEbinshighest[i][ebin]->SetParameters(1*hist1DResoEbinshighests[i][ebin]->GetMaximum(),hist1DResoEbinshighests[i][ebin]->GetMean(),0.5*hist1DResoEbinshighests[i][ebin]->GetRMS(),0.2*hist1DResoEbinshighests[i][ebin]->GetRMS(),1*hist1DResoEbinshighests[i][ebin]->GetRMS());
-
+              fitResoEbinshighest[i][ebin]->SetParameters(1*hist1DResoEbinshighests[i][ebin]->GetMaximum(),hist1DResoEbinshighests[i][ebin]->GetMean(),0.5*hist1DResoEbinshighests[i][ebin]->GetRMS(),1.6,1.5);
+              if (dirCal == 2){
+                fitResoEbinshighest[i][ebin]->SetParLimits(3, 1.4, 1.8);
+                fitResoEbinshighest[i][ebin]->SetParLimits(4, 0.8, 2.5);
+              } else if (dirCal == 1){
+                fitResoEbinshighest[i][ebin]->SetParLimits(3, 0.1, 1.8);
+                fitResoEbinshighest[i][ebin]->SetParLimits(4, 1, 8);
+              } else {
+                fitResoEbinshighest[i][ebin]->SetParLimits(3, 0.1, 1.8);
+                fitResoEbinshighest[i][ebin]->SetParLimits(4, 1, 10);
+              }
+              if (mean-0.2 > fitRange[0])
+                fitRange[0]  = mean-0.2;
+              if (fitRange[0] > 0.8)
+                fitRange[0] = 0.8;
+              if (mean+0.15 < fitRange[1])
+              fitRange[1]  = mean+0.15;
             }
-            hist1DResoEbinshighests[i][ebin]->Fit(fitResoEbinshighest[i][ebin],"L0RMEQ","",mean-1*sigma, mean+1.2*sigma);
+            hist1DResoEbinshighests[i][ebin]->Fit(fitResoEbinshighest[i][ebin],fitOpt,"",fitRange[0], fitRange[1]);
 //             hist1DResoEbins[i][ebin]->Fit(fitResoEbins[i][ebin],"L0RME", "", fitResoEbins[i][ebin]->GetParameter(1)-0.5*fitResoEbins[i][ebin]->GetParameter(2), fitResoEbins[i][ebin]->GetParameter(1)+1*fitResoEbins[i][ebin]->GetParameter(2));
 
             mean     = fitResoEbinshighest[i][ebin]->GetParameter(1);
@@ -430,28 +499,38 @@ void energyResolutionCalorimeters(
               Double_t relEN = fitResoEbinshighest[i][ebin]->GetParError(4)/ fitResoEbinshighest[i][ebin]->GetParameter(4);
               fwhmErr = fwhm*TMath::Sqrt(relEM*relEM+relES*relES+relEL*relEL+relEN*relEN);              
             }
+            if (sigmaErr/sigma > 0.5){
+              sigma = -1;
+            }
+            if (fwhmErr/fwhm > 0.5){
+              fwhm = -1;
+            }
+              
           }
           Double_t reso     = sigma/mean;
           Double_t resoErr  = TMath::Sqrt(TMath::Power(sigmaErr/sigma,2)+TMath::Power(meanErr/mean,2));
           Double_t resoF    = fwhm/mean;
           Double_t resoFErr = TMath::Sqrt(TMath::Power(fwhmErr/fwhm,2)+TMath::Power(meanErr/mean,2));
 
+          if (sigma > 0){
+            histResoEVsEhighest[i]->SetBinContent(histResoEVsEhighest[i]->FindBin(partE[ebin]),  100*reso);
+            histResoEVsEhighest[i]->SetBinError(histResoEVsEhighest[i]->FindBin(partE[ebin]), resoErr);
+            histResoEVs1oEhighest[i]->SetBinContent(histResoEVs1oEhighest[i]->FindBin(1./TMath::Sqrt(partE[ebin])),100*reso);
+            histResoEVs1oEhighest[i]->SetBinError(histResoEVs1oEhighest[i]->FindBin(1./TMath::Sqrt(partE[ebin])),resoErr);
+            histSigmaEVsEhighest[i]->SetBinContent(histResoEVsEhighest[i]->FindBin(partE[ebin]), sigma);
+            histSigmaEVsEhighest[i]->SetBinError(histResoEVsEhighest[i]->FindBin(partE[ebin]), sigmaErr);
+            histMeanEVsEhighest[i]->SetBinContent(histResoEVsEhighest[i]->FindBin(partE[ebin]), mean);
+            histMeanEVsEhighest[i]->SetBinError(histResoEVsEhighest[i]->FindBin(partE[ebin]), meanErr);
+          }
+          if (fwhm > 0){
+            histResoFEVsEhighest[i]->SetBinContent(histResoFEVsEhighest[i]->FindBin(partE[ebin]),  100*resoF);
+            histResoFEVsEhighest[i]->SetBinError(histResoFEVsEhighest[i]->FindBin(partE[ebin]), resoFErr);
+            histResoFEVs1oEhighest[i]->SetBinContent(histResoFEVs1oEhighest[i]->FindBin(1./TMath::Sqrt(partE[ebin])),100*resoF);
+            histResoFEVs1oEhighest[i]->SetBinError(histResoFEVs1oEhighest[i]->FindBin(1./TMath::Sqrt(partE[ebin])),resoFErr);
+            histFWHMEVsEhighest[i]->SetBinContent(histResoEVsEhighest[i]->FindBin(partE[ebin]), fwhm);
+            histFWHMEVsEhighest[i]->SetBinError(histResoEVsEhighest[i]->FindBin(partE[ebin]), fwhmErr);        
+          }
           
-          histResoEVsEhighest[i]->SetBinContent(histResoEVsEhighest[i]->FindBin(partE[ebin]),  100*reso);
-          histResoEVsEhighest[i]->SetBinError(histResoEVsEhighest[i]->FindBin(partE[ebin]), resoErr);
-          histResoEVs1oEhighest[i]->SetBinContent(histResoEVs1oEhighest[i]->FindBin(1./TMath::Sqrt(partE[ebin])),100*reso);
-          histResoEVs1oEhighest[i]->SetBinError(histResoEVs1oEhighest[i]->FindBin(1./TMath::Sqrt(partE[ebin])),resoErr);
-          histResoFEVsEhighest[i]->SetBinContent(histResoFEVsEhighest[i]->FindBin(partE[ebin]),  100*resoF);
-          histResoFEVsEhighest[i]->SetBinError(histResoFEVsEhighest[i]->FindBin(partE[ebin]), resoFErr);
-          histResoFEVs1oEhighest[i]->SetBinContent(histResoFEVs1oEhighest[i]->FindBin(1./TMath::Sqrt(partE[ebin])),100*resoF);
-          histResoFEVs1oEhighest[i]->SetBinError(histResoFEVs1oEhighest[i]->FindBin(1./TMath::Sqrt(partE[ebin])),resoFErr);
-
-          histMeanEVsEhighest[i]->SetBinContent(histResoEVsEhighest[i]->FindBin(partE[ebin]), mean);
-          histMeanEVsEhighest[i]->SetBinError(histResoEVsEhighest[i]->FindBin(partE[ebin]), meanErr);
-          histSigmaEVsEhighest[i]->SetBinContent(histResoEVsEhighest[i]->FindBin(partE[ebin]), sigma);
-          histSigmaEVsEhighest[i]->SetBinError(histResoEVsEhighest[i]->FindBin(partE[ebin]), sigmaErr);
-          histFWHMEVsEhighest[i]->SetBinContent(histResoEVsEhighest[i]->FindBin(partE[ebin]), fwhm);
-          histFWHMEVsEhighest[i]->SetBinError(histResoEVsEhighest[i]->FindBin(partE[ebin]), fwhmErr);
         } else {
           useE[i][ebin] = 0;
         }
@@ -465,13 +544,12 @@ void energyResolutionCalorimeters(
         histResoFEVsEEta[i][etbin]       = new TH1F(Form("h_%sresof_E_Eta_%d", readNames[i].Data(), etbin), "", 401, -0.25, 200.25);
         histResoFEVs1oEEta[i][etbin]     = new TH1F(Form("h_%sresof_1oE_Eta_%d", readNames[i].Data(), etbin), "", 1000, 0., 4.);
         // loading higest energy hist for particle
-        TString tempName2 = Form("%s/h_CRH_EhighestReso_%sE_Eta_%s_%s_%d",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data(), etbin );
-        if (isComb) tempName2 = Form("%s/h_CRH_EResoComb_%sE_Eta_%s_%s_%d",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data(), etbin );
+        TString tempName2 = Form("%s/h_CRH_EReso_%sEhighest_Eta_%s_%s_%d",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data(), etbin );
+        if (isComb) tempName2 = Form("%s/h_CRH_EResoCombHighest_%sE_Eta_%s_%s_%d",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data(), etbin );
 //         cout << tempName2 << endl;
 
         hist2DResoEEta[i][etbin]    = (TH2D*)inputFile->Get(tempName2.Data());
         if (!hist2DResoEEta[i][etbin]) continue;
-
         if (hist2DResoEEta[i][etbin]->GetEntries() > 0){
           hist2DResoEEta[i][etbin]->Sumw2();
           for (int ebin = 0; ebin < nEne; ebin++){
@@ -486,7 +564,6 @@ void energyResolutionCalorimeters(
               useEta[i][etbin]         = 1;
               
               Double_t meanEta     = FindLargestBin1DHist(hist1DResoEbinsEta[i][ebin][etbin], 0.5, 1.9);
-//               Double_t meanEta     = hist1DResoEbinsEta[i][ebin][etbin]->GetMean();
               Double_t meanEtaErr  = hist1DResoEbinsEta[i][ebin][etbin]->GetMeanError();
 //               Double_t sigmaEta    = hist1DResoEbinsEta[i][ebin][etbin]->GetStdDev();
 //               Double_t sigmaEtaErr = hist1DResoEbinsEta[i][ebin][etbin]->GetStdDevError();
@@ -494,30 +571,48 @@ void energyResolutionCalorimeters(
               Double_t sigmaEtaErr  = hist1DResoEbinsEta[i][ebin][etbin]->GetRMSError();
               Double_t fwhmEta      = hist1DResoEbinsEta[i][ebin][etbin]->GetRMS();
               Double_t fwhmEtaErr   = hist1DResoEbinsEta[i][ebin][etbin]->GetRMSError();
-
+              Double_t fitRange[2]  = {meanEta - 1*sigmaEta, meanEta + 1.2*sigmaEta};
+              
               if (doFitting){
+                TString fitOpt = "L0RMEQ";
                 hist1DResoEbinsEta[i][ebin][etbin]->Rebin(rebinRes);
                 if (i > 1){
                   fitResoEbinsEta[i][ebin][etbin]     = new TF1(Form("fit_reso_%s%d_%d", readNames[i].Data(), ebin, etbin), "gaus", meanEta-3*sigmaEta, meanEta+2*sigmaEta);
-  //                 fitResoEbinsEta[i][ebin][etbin]     = new TF1(Form("fit_reso_%s%d_%d", readNames[i].Data(), ebin, etbin), "(x<[1])*([0]*(TMath::Exp(-0.5*((x-[1])/[2])^2)+TMath::Exp((x-[1])/[3])*(1.-TMath::Exp(-0.5*((x-[1])/[2])^2))))+(x>=[1])*([0]*TMath::Exp(-0.5*((x-[1])/[2])^2))", meanEta-3*sigmaEta, meanEta+2*sigmaEta);
                   
                   fitResoEbinsEta[i][ebin][etbin]->SetParLimits(1, 0.6*meanEta, 1.2*meanEta);
                   fitResoEbinsEta[i][ebin][etbin]->SetParameter(1, meanEta);
                   fitResoEbinsEta[i][ebin][etbin]->SetParLimits(2, 0.7*sigmaEta, sigmaEta);
                   fitResoEbinsEta[i][ebin][etbin]->SetParameter(2, sigmaEta);
-  //                 fitResoEbinsEta[i][ebin][etbin]->SetParLimits(0, 0.9*hist1DResoEbinsEta[i][ebin][etbin]->GetMaximum(), 10*hist1DResoEbinsEta[i][ebin][etbin]->GetMaximum());
-  //                 fitResoEbinsEta[i][ebin][etbin]->SetParameter(0, hist1DResoEbinsEta[i][ebin][etbin]->GetMaximum());
                   fitResoEbinsEta[i][ebin][etbin]->SetParLimits(1, 0.6*fitResoEbins[i][ebin]->GetParameter(1), 1.4*fitResoEbins[i][ebin]->GetParameter(1));
                   fitResoEbinsEta[i][ebin][etbin]->SetParameter(1, fitResoEbins[i][ebin]->GetParameter(1));
                   fitResoEbinsEta[i][ebin][etbin]->SetParLimits(2, 0.6*fitResoEbins[i][ebin]->GetParameter(2), 1.4*fitResoEbins[i][ebin]->GetParameter(2));
                   fitResoEbinsEta[i][ebin][etbin]->SetParameter(2, fitResoEbins[i][ebin]->GetParameter(2));                
                 } else  {
+//                   fitOpt = "L0RME";
                   fitResoEbinsEta[i][ebin][etbin]    = new TF1(Form("fit_reso_%s%d_%d", readNames[i].Data(), ebin, etbin), "crystalball", meanEta-3*sigmaEta, meanEta+2*sigmaEta);
-                  fitResoEbinsEta[i][ebin][etbin]->SetParameters(1*hist1DResoEbinsEta[i][ebin][etbin]->GetMaximum(),hist1DResoEbinsEta[i][ebin][etbin]->GetMean(),0.5*hist1DResoEbinsEta[i][ebin][etbin]->GetRMS(),0.2*hist1DResoEbinsEta[i][ebin][etbin]->GetRMS(),1*hist1DResoEbinshighests[i][ebin]->GetRMS());
-                  
+                  fitResoEbinsEta[i][ebin][etbin]->SetParameters(1*hist1DResoEbinsEta[i][ebin][etbin]->GetMaximum(),hist1DResoEbinsEta[i][ebin][etbin]->GetMean(),0.5*hist1DResoEbinsEta[i][ebin][etbin]->GetRMS(),1.6,1.5);
+                  fitResoEbinsEta[i][ebin][etbin]->SetParLimits(1, 0.6*meanEta, 1.2*meanEta);
+                  if (dirCal == 2){
+                    fitResoEbinsEta[i][ebin][etbin]->SetParLimits(2, 0.01*sigmaEta, 1.1*sigmaEta);
+                    fitResoEbinsEta[i][ebin][etbin]->SetParLimits(3, 1.2, 2);
+                    fitResoEbinsEta[i][ebin][etbin]->SetParLimits(4, 0.5, 6);
+                  } else if (dirCal == 1){
+                    fitResoEbinsEta[i][ebin][etbin]->SetParLimits(2, 0.01*sigmaEta, 1.1*sigmaEta);
+                    fitResoEbinsEta[i][ebin][etbin]->SetParLimits(3, 0.2, 2);
+                    fitResoEbinsEta[i][ebin][etbin]->SetParLimits(4, 0.5, 9);                    
+                  } else if (dirCal == 0){
+                    fitResoEbinsEta[i][ebin][etbin]->SetParLimits(1, 0.6*meanEta, 1.3*meanEta);
+                    fitResoEbinsEta[i][ebin][etbin]->SetParLimits(3, 0.2, 2);
+                    fitResoEbinsEta[i][ebin][etbin]->SetParLimits(4, 0.5, 9);                    
+                  }
+                  if (meanEta-0.2 > fitRange[0])
+                    fitRange[0]  = meanEta-0.2;
+                  if (fitRange[0] > 0.8)
+                    fitRange[0] = 0.8;
+                  if (meanEta+0.15 < fitRange[1])
+                  fitRange[1]  = meanEta+0.15;
                 }
-                hist1DResoEbinsEta[i][ebin][etbin]->Fit(fitResoEbinsEta[i][ebin][etbin],"L0RMEQ","", meanEta-1*sigmaEta, meanEta+1.2*sigmaEta);
-//                 hist1DResoEbinsEta[i][ebin][etbin]->Fit(fitResoEbinsEta[i][ebin][etbin],"L0RMEQ", "", fitResoEbinsEta[i][ebin][etbin]->GetParameter(1)-1*fitResoEbinsEta[i][ebin][etbin]->GetParameter(2), fitResoEbinsEta[i][ebin][etbin]->GetParameter(1)+1.5*fitResoEbinsEta[i][ebin][etbin]->GetParameter(2));
+                hist1DResoEbinsEta[i][ebin][etbin]->Fit(fitResoEbinsEta[i][ebin][etbin],fitOpt,"", fitRange[0], fitRange[1]);
 //                 cout << "particle: " << i <<  " eta bin: " << etbin << " \t ebin: "<< ebin<< "\t" << fitResoEbinsEta[i][ebin][etbin]->GetChisquare()/fitResoEbinsEta[i][ebin][etbin]->GetNDF() << endl;
                 meanEta     = fitResoEbinsEta[i][ebin][etbin]->GetParameter(1);
                 meanEtaErr  = fitResoEbinsEta[i][ebin][etbin]->GetParError(1);
@@ -533,6 +628,14 @@ void energyResolutionCalorimeters(
                   Double_t relEL = fitResoEbinsEta[i][ebin][etbin]->GetParError(3)/ fitResoEbinsEta[i][ebin][etbin]->GetParameter(3);
                   Double_t relEN = fitResoEbinsEta[i][ebin][etbin]->GetParError(4)/ fitResoEbinsEta[i][ebin][etbin]->GetParameter(4);
                   fwhmEtaErr = fwhmEta*TMath::Sqrt(relEM*relEM+relES*relES+relEL*relEL+relEN*relEN);
+                  if (fwhmEtaErr/fwhmEta > 0.5 ){
+                    fwhmEta     = -1;
+                    fwhmEtaErr  = 0;
+                  }
+                  if (sigmaEtaErr/sigmaEta > 0.5 ){
+                    sigmaEta     = -1;
+                    sigmaEtaErr  = 0;
+                  }
                 }
               }
               Double_t resoEta     = sigmaEta/meanEta;
@@ -540,21 +643,24 @@ void energyResolutionCalorimeters(
               Double_t resoFEta     = fwhmEta/meanEta;
               Double_t resoFEtaErr  = TMath::Sqrt(TMath::Power(fwhmEtaErr/fwhmEta,2)+TMath::Power(meanEtaErr/meanEta,2));
 
-              histResoEVsEEta[i][etbin]->SetBinContent(histResoEVsEEta[i][etbin]->FindBin(partE[ebin]), 100*resoEta);
-              histResoEVsEEta[i][etbin]->SetBinError(histResoEVsEEta[i][etbin]->FindBin(partE[ebin]), resoEtaErr);
-              histResoEVs1oEEta[i][etbin]->SetBinContent(histResoEVs1oEEta[i][etbin]->FindBin(1./TMath::Sqrt(partE[ebin])), 100*resoEta);
-              histResoEVs1oEEta[i][etbin]->SetBinError(histResoEVs1oEEta[i][etbin]->FindBin(1./TMath::Sqrt(partE[ebin])), resoEtaErr);
-              histResoFEVsEEta[i][etbin]->SetBinContent(histResoFEVsEEta[i][etbin]->FindBin(partE[ebin]), 100*resoFEta);
-              histResoFEVsEEta[i][etbin]->SetBinError(histResoFEVsEEta[i][etbin]->FindBin(partE[ebin]), resoFEtaErr);
-              histResoFEVs1oEEta[i][etbin]->SetBinContent(histResoFEVs1oEEta[i][etbin]->FindBin(1./TMath::Sqrt(partE[ebin])), 100*resoFEta);
-              histResoFEVs1oEEta[i][etbin]->SetBinError(histResoFEVs1oEEta[i][etbin]->FindBin(1./TMath::Sqrt(partE[ebin])), resoFEtaErr);
-
-              histMeanEVsEEta[i][etbin]->SetBinContent(histResoEVsEEta[i][etbin]->FindBin(partE[ebin]), meanEta);
-              histMeanEVsEEta[i][etbin]->SetBinError(histResoEVsEEta[i][etbin]->FindBin(partE[ebin]), meanEtaErr);
-              histSigmaEVsEEta[i][etbin]->SetBinContent(histResoEVsEEta[i][etbin]->FindBin(partE[ebin]), sigmaEta);
-              histSigmaEVsEEta[i][etbin]->SetBinError(histResoEVsEEta[i][etbin]->FindBin(partE[ebin]), sigmaEtaErr);
-              histFWHMEVsEEta[i][etbin]->SetBinContent(histResoEVsEEta[i][etbin]->FindBin(partE[ebin]), fwhmEta);
-              histFWHMEVsEEta[i][etbin]->SetBinError(histResoEVsEEta[i][etbin]->FindBin(partE[ebin]), fwhmEtaErr);
+              if (sigmaEta >0) {
+                histResoEVsEEta[i][etbin]->SetBinContent(histResoEVsEEta[i][etbin]->FindBin(partE[ebin]), 100*resoEta);
+                histResoEVsEEta[i][etbin]->SetBinError(histResoEVsEEta[i][etbin]->FindBin(partE[ebin]), resoEtaErr);
+                histResoEVs1oEEta[i][etbin]->SetBinContent(histResoEVs1oEEta[i][etbin]->FindBin(1./TMath::Sqrt(partE[ebin])), 100*resoEta);
+                histResoEVs1oEEta[i][etbin]->SetBinError(histResoEVs1oEEta[i][etbin]->FindBin(1./TMath::Sqrt(partE[ebin])), resoEtaErr);
+                histMeanEVsEEta[i][etbin]->SetBinContent(histResoEVsEEta[i][etbin]->FindBin(partE[ebin]), meanEta);
+                histMeanEVsEEta[i][etbin]->SetBinError(histResoEVsEEta[i][etbin]->FindBin(partE[ebin]), meanEtaErr);
+                histSigmaEVsEEta[i][etbin]->SetBinContent(histResoEVsEEta[i][etbin]->FindBin(partE[ebin]), sigmaEta);
+                histSigmaEVsEEta[i][etbin]->SetBinError(histResoEVsEEta[i][etbin]->FindBin(partE[ebin]), sigmaEtaErr);
+              }
+              if (fwhmEta >0) {
+                histResoFEVsEEta[i][etbin]->SetBinContent(histResoFEVsEEta[i][etbin]->FindBin(partE[ebin]), 100*resoFEta);
+                histResoFEVsEEta[i][etbin]->SetBinError(histResoFEVsEEta[i][etbin]->FindBin(partE[ebin]), resoFEtaErr);
+                histResoFEVs1oEEta[i][etbin]->SetBinContent(histResoFEVs1oEEta[i][etbin]->FindBin(1./TMath::Sqrt(partE[ebin])), 100*resoFEta);
+                histResoFEVs1oEEta[i][etbin]->SetBinError(histResoFEVs1oEEta[i][etbin]->FindBin(1./TMath::Sqrt(partE[ebin])), resoFEtaErr);
+                histFWHMEVsEEta[i][etbin]->SetBinContent(histResoEVsEEta[i][etbin]->FindBin(partE[ebin]), fwhmEta);
+                histFWHMEVsEEta[i][etbin]->SetBinError(histResoEVsEEta[i][etbin]->FindBin(partE[ebin]), fwhmEtaErr); 
+              }
             } else {
               useEEta[i][ebin][etbin] = 0;
             }
@@ -595,19 +701,20 @@ void energyResolutionCalorimeters(
   for (Int_t i = 0; i < nParticles; i++){
     if (usePart[i]){
       nActivePart++;
+      nActivePartAll++;
       cout <<  labelPart[i] << "\t min E \t" << minEPart[i] << "\t max E\t"<< maxEPart[i] << endl ;
     }
   }
-  TLegend* legendResYRECAL    = GetAndSetLegend2(0.14, 0.14, 0.6, 0.14+(2*0.85*textSizeLabelsRel),0.85*textSizeLabelsPixel, 1, "", 43, 0.15);
+  TLegend* legendResYRECAL    = GetAndSetLegend2(0.14, 0.14, 0.6, 0.14+(2*0.88*textSizeLabelsRel),0.85*textSizeLabelsRel, 1, "", 42, 0.15);
   legendResYRECAL->AddEntry(graphReqEM, "YR requirement EM","f");
   legendResYRECAL->AddEntry((TObject*)0, Form("#sigma/#it{E} =  (%1.0f-%1.0f)/#sqrt{#it{E}} #oplus (%1.0f-%1.0f)", sqrtETermECal[dirCal][0], sqrtETermECal[dirCal][1], linTermECal[dirCal][0], linTermECal[dirCal][1]),"");
-  TLegend* legendResYR1oEECal = GetAndSetLegend2(0.58, 0.14, 0.97, 0.14+(2*0.85*textSizeLabelsRel),0.85*textSizeLabelsPixel, 1, "", 43, 0.15);
+  TLegend* legendResYR1oEECal = GetAndSetLegend2(0.55, 0.14, 0.97, 0.14+(2*0.88*textSizeLabelsRel),0.85*textSizeLabelsRel, 1, "", 42, 0.15);
   legendResYR1oEECal->AddEntry(graphReq1oEEM, "YR requirement EM","f");
   legendResYR1oEECal->AddEntry((TObject*)0, Form("#sigma/#it{E} =  (%1.0f-%1.0f)/#sqrt{#it{E}} #oplus (%1.0f-%1.0f)", sqrtETermECal[dirCal][0], sqrtETermECal[dirCal][1], linTermECal[dirCal][0], linTermECal[dirCal][1]),"");
-  TLegend* legendResYRHCAL    = GetAndSetLegend2(0.14, 0.14, 0.6, 0.14+(2*0.85*textSizeLabelsRel),0.85*textSizeLabelsPixel, 1, "", 43, 0.15);
+  TLegend* legendResYRHCAL    = GetAndSetLegend2(0.14, 0.14, 0.6, 0.14+(2*0.88*textSizeLabelsRel),0.85*textSizeLabelsRel, 1, "", 42, 0.15);
   legendResYRHCAL->AddEntry(graphReqHad, "YR requirement Had","f");
   legendResYRHCAL->AddEntry((TObject*)0, Form("#sigma/#it{E} =  (%1.0f-%1.0f)/#sqrt{#it{E}} #oplus (%1.0f-%1.0f)", sqrtETermHCal[dirCal][0], sqrtETermHCal[dirCal][1], linTermHCal[dirCal][0], linTermHCal[dirCal][1]),"");
-  TLegend* legendResYR1oEHCal = GetAndSetLegend2(0.58, 0.14, 0.97, 0.14+(2*0.85*textSizeLabelsRel),0.85*textSizeLabelsPixel, 1, "", 43, 0.15);
+  TLegend* legendResYR1oEHCal = GetAndSetLegend2(0.55, 0.14, 0.97, 0.14+(2*0.88*textSizeLabelsRel),0.85*textSizeLabelsRel, 1, "", 42, 0.15);
   legendResYR1oEHCal->AddEntry(graphReq1oEHad, "YR requirement Had","f");
   legendResYR1oEHCal->AddEntry((TObject*)0, Form("#sigma/#it{E} =  (%1.0f-%1.0f)/#sqrt{#it{E}} #oplus (%1.0f-%1.0f)", sqrtETermHCal[dirCal][0], sqrtETermHCal[dirCal][1], linTermHCal[dirCal][0], linTermHCal[dirCal][1]),"");
 
@@ -677,7 +784,7 @@ void energyResolutionCalorimeters(
       Double_t etaMaxCurr = partEtaCalo[etbin+1];
       split_canvas(cPNG, Form("cPNG%d_%d",i,etbin), nActiveEpart[i]);
       Int_t padnum =0;
-      std::cout << etaMinCurr << "\t" << etaMaxCurr << std::endl;
+//       std::cout << etaMinCurr << "\t" << etaMaxCurr << std::endl;
         
       for(Int_t ebin=0; ebin< nEne; ebin++){
         if (!useEEta[i][ebin][etbin]) continue;
@@ -789,31 +896,19 @@ void energyResolutionCalorimeters(
       histResoDummy->GetYaxis()->SetRangeUser(0, maxResPerHad[dirCal]);
     histResoDummy->Draw();
 
-    TLegend* legendResLabE  = GetAndSetLegend2(0.14, 0.95-0.85*textSizeLabelsRel, 0.35, 0.95,0.85*textSizeLabelsPixel, 1, "", 43, 0.2);
+    TLegend* legendResLabE  = GetAndSetLegend2(0.14, 0.95-0.85*textSizeLabelsRel, 0.35, 0.95,0.85*textSizeLabelsRel, 1, "", 42, 0.2);
 
     DrawGammaSetMarker(histResoEVsE[i], markerStylePart[i], markerSizePart[i], colorPart[i], colorPart[i]);
     histResoEVsE[i]->Draw("same,p");
-//     fitResoE[i] = new TF1(Form("fit_reso_%sE", readNames[i].Data()), "[0]+([1]/TMath::Sqrt(x)))", minEPart[i],maxEPart[i]);
-    fitResoE[i] = new TF1(Form("fit_reso_%sE", readNames[i].Data()), "[0]+([1]/TMath::Sqrt(x))+([2]/x)", resFitEM[dirCal][0], resFitEM[dirCal][1]);
-    fitResoE[i]->SetParLimits(0,0.,20);
-    fitResoE[i]->SetParLimits(1,0.,90);
-    fitResoE[i]->SetParameter(2,0.01);
-    fitResoE[i]->SetParLimits(2,0.,0.3);
-    histResoEVsE[i]->Fit(fitResoE[i],"RMNE");
-    fitResoE[i]->SetNpx(10000);
+    
+    fitResoE[i] = CreateFitE (histResoEVsE[i], Form("fit_reso_%sE", readNames[i].Data()),resFitEM[dirCal][0], resFitEM[dirCal][1]);
     DrawGammaSetMarkerTF1(fitResoE[i], 3, 3, colorPart[i]+1);
     fitResoE[i]->SetRange(minEPart[i], maxEPart[i]);
     fitResoE[i]->Draw("same");
     if (i < 2){
       DrawGammaSetMarker(histResoFEVsE[i], markerStylePart[i], markerSizePart[i], colorPart[i]-6, colorPart[i]-6);
       histResoFEVsE[i]->Draw("same,p");
-      fitResoFE[i] = new TF1(Form("fit_resof_%sE", readNames[i].Data()), "[0]+([1]/TMath::Sqrt(x))+([2]/x)", resFitEM[dirCal][0], resFitEM[dirCal][1]);
-      fitResoFE[i]->SetParLimits(0,0.,20);
-      fitResoFE[i]->SetParLimits(1,0.,90);
-      fitResoFE[i]->SetParameter(2,0.01);
-      fitResoFE[i]->SetParLimits(2,0.,0.3);
-      histResoFEVsE[i]->Fit(fitResoFE[i],"RMNE");
-      fitResoFE[i]->SetNpx(10000);
+      fitResoFE[i] = CreateFitE (histResoFEVsE[i], Form("fit_resof_%sE", readNames[i].Data()),resFitEM[dirCal][0], resFitEM[dirCal][1]);
       DrawGammaSetMarkerTF1(fitResoFE[i], 3, 3, colorPart[i]-6);
       fitResoFE[i]->SetRange(minEPart[i], maxEPart[i]);
       fitResoFE[i]->Draw("same");
@@ -829,25 +924,14 @@ void energyResolutionCalorimeters(
 
     DrawGammaSetMarker(histResoEVsEhighest[i], markerStylePart[i], markerSizePart[i], colorPart[i]+2, colorPart[i]+2);
     histResoEVsEhighest[i]->Draw("same,p");
-    fitResoEhighest[i] = new TF1(Form("fit_resohighest_%sE", readNames[i].Data()), "[0]+([1]/TMath::Sqrt(x))+([2]/x)", resFitEM[dirCal][0],resFitEM[dirCal][1]);
-    fitResoEhighest[i]->SetParLimits(0,0.,20);
-    fitResoEhighest[i]->SetParLimits(1,0.,90);
-    fitResoEhighest[i]->SetParameter(2,0.01);
-    fitResoEhighest[i]->SetParLimits(2,0.,0.3);
-    histResoEVsEhighest[i]->Fit(fitResoEhighest[i],"RMNE");
+    fitResoEhighest[i] = CreateFitE (histResoEVsEhighest[i], Form("fit_resohighest_%sE", readNames[i].Data()),resFitEM[dirCal][0], resFitEM[dirCal][1]);
     DrawGammaSetMarkerTF1(fitResoEhighest[i], 7, 3, colorPart[i]+2);
     fitResoEhighest[i]->SetRange(minEPart[i], maxEPart[i]);
     fitResoEhighest[i]->Draw("same");
     if (i < 2){
       DrawGammaSetMarker(histResoFEVsEhighest[i], markerStylePart[i], markerSizePart[i], colorPart[i]-4, colorPart[i]-4);
       histResoFEVsEhighest[i]->Draw("same,p");
-      fitResoFEhighest[i] = new TF1(Form("fit_resohighestf_%sE", readNames[i].Data()), "[0]+([1]/TMath::Sqrt(x))+([2]/x)", resFitEM[dirCal][0], resFitEM[dirCal][1]);
-      fitResoFEhighest[i]->SetParLimits(0,0.,20);
-      fitResoFEhighest[i]->SetParLimits(1,0.,90);
-      fitResoFEhighest[i]->SetParameter(2,0.01);
-      fitResoFEhighest[i]->SetParLimits(2,0.,0.3);
-      histResoFEVsEhighest[i]->Fit(fitResoFEhighest[i],"RMNE");
-      fitResoFEhighest[i]->SetNpx(10000);
+      fitResoFEhighest[i] = CreateFitE (histResoFEVsEhighest[i], Form("fit_resohighestf_%sE", readNames[i].Data()),resFitEM[dirCal][0], resFitEM[dirCal][1]);
       DrawGammaSetMarkerTF1(fitResoFEhighest[i], 3, 3, colorPart[i]-4);
       fitResoFEhighest[i]->SetRange(minEPart[i], maxEPart[i]);
       fitResoFEhighest[i]->Draw("same");
@@ -858,10 +942,9 @@ void energyResolutionCalorimeters(
     legendResLabE->AddEntry(fitResoEhighest[i], Form("%s highest: #sigma/#it{E} =  %1.1f/#sqrt{#it{E}} #oplus %1.1f",labelPart[i].Data(), fitResoEhighest[i]->GetParameter(1),fitResoEhighest[i]->GetParameter(0)),"l");
     legendResLabE->Draw();
 
-    
     cReso->Print(Form("%s/Resolution_%sFittedWithHighest.%s", outputDir.Data(), readNames[i].Data(), suffix.Data()));
     histResoDummy->Draw();
-    TLegend* legendResEEta  = GetAndSetLegend2(0.14, 0.95-((nActiveEtapart[i]+1)*0.85*textSizeLabelsRel), 0.35, 0.95,0.85*textSizeLabelsPixel, 1, "", 43, 0.2);
+    TLegend* legendResEEta  = GetAndSetLegend2(0.14, 0.95-((nActiveEtapart[i]+1)*0.85*textSizeLabelsRel), 0.35, 0.95,0.85*textSizeLabelsRel, 1, "", 42, 0.2);
 
     if (i < 2)
       graphReqEM->Draw("same,e3");
@@ -910,12 +993,7 @@ void energyResolutionCalorimeters(
     TLegend* legendResLab1oE  = GetAndSetLegend2(0.14, 0.91-0.85*textSizeLabelsRel, 0.35, 0.91,0.85*textSizeLabelsPixel, 1, "", 43, 0.2);
     DrawGammaSetMarker(histResoEVs1oE[i], markerStylePart[i], markerSizePart[i], colorPart[i], colorPart[i]);
     histResoEVs1oE[i]->Draw("same,p");
-    fitReso1oE[i] = new TF1(Form("fit_reso_%s1oE", readNames[i].Data()), "[0]+[1]*x+[2]*TMath::Power(x,2)", resFit1oEEM[dirCal][0],resFit1oEEM[dirCal][1]); //+[2]*TMath::Power(x,2)
-    fitReso1oE[i]->SetParameter(2,0.01);
-    fitReso1oE[i]->SetParLimits(2,0.001, 0.3);
-
-    histResoEVs1oE[i]->Fit(fitReso1oE[i],"RMNE");
-    fitReso1oE[i]->SetNpx(10000);
+    fitReso1oE[i] = CreateFit1ovE (histResoEVs1oE[i], Form("fit_reso_%s1oE", readNames[i].Data()), resFit1oEEM[dirCal][0], resFit1oEEM[dirCal][0]);
     DrawGammaSetMarkerTF1(fitReso1oE[i], 3, 3, colorPart[i]+1);
     fitReso1oE[i]->SetRange(1/TMath::Sqrt(maxEPart[i]), 1/TMath::Sqrt(minEPart[i]));
     fitReso1oE[i]->Draw("same");
@@ -923,15 +1001,11 @@ void energyResolutionCalorimeters(
     if (i < 2){
       DrawGammaSetMarker(histResoFEVs1oE[i], markerStylePart[i], markerSizePart[i], colorPart[i]-6, colorPart[i]-6);
       histResoFEVs1oE[i]->Draw("same,p");
-      fitResoF1oE[i] = new TF1(Form("fit_resof_%s1oE", readNames[i].Data()), "[0]+[1]*x+[2]*TMath::Power(x,2)", resFit1oEEM[dirCal][0],resFit1oEEM[dirCal][1]); //+[2]*TMath::Power(x,2)
-      fitResoF1oE[i]->SetParameter(2,0.01);
-      fitResoF1oE[i]->SetParLimits(2,0.001, 0.3);
 
-      histResoFEVs1oE[i]->Fit(fitResoF1oE[i],"RMNE");
-      fitResoF1oE[i]->SetNpx(10000);
+      fitResoF1oE[i] = CreateFit1ovE (histResoFEVs1oE[i], Form("fit_resof_%s1oE", readNames[i].Data()), resFit1oEEM[dirCal][0], resFit1oEEM[dirCal][0]);
       DrawGammaSetMarkerTF1(fitResoF1oE[i], 3, 3, colorPart[i]-6);
       fitResoF1oE[i]->SetRange(1/TMath::Sqrt(maxEPart[i]), 1/TMath::Sqrt(minEPart[i]));
-      fitResoF1oE[i]->Draw("same"); 
+      fitResoF1oE[i]->Draw("same");
     }
 
     drawLatexAdd(Form("%s in %s", labelPart[i].Data() ,detLabel.Data()),0.14,0.92,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
@@ -943,10 +1017,7 @@ void energyResolutionCalorimeters(
 
     DrawGammaSetMarker(histResoEVs1oEhighest[i], markerStylePart[i], markerSizePart[i], colorPart[i]+2, colorPart[i]+2);
     histResoEVs1oEhighest[i]->Draw("same,p");
-    fitReso1oEhighest[i] = new TF1(Form("fit_resohighest_%s1oE", readNames[i].Data()), "[0]+[1]*x+[2]*TMath::Power(x,2)", resFit1oEEM[dirCal][0],resFit1oEEM[dirCal][1]); //+[2]*TMath::Power(x,2)
-    fitReso1oEhighest[i]->SetParameter(2,0.01);
-    fitReso1oEhighest[i]->SetParLimits(2,0.0, 0.3);
-    histResoEVs1oEhighest[i]->Fit(fitReso1oEhighest[i],"RMNE");
+    fitReso1oEhighest[i] = CreateFit1ovE (histResoEVs1oEhighest[i], Form("fit_resohighest_%s1oE", readNames[i].Data()), resFit1oEEM[dirCal][0], resFit1oEEM[dirCal][0]);
     DrawGammaSetMarkerTF1(fitReso1oEhighest[i], 7, 3, colorPart[i]+2);
     fitReso1oEhighest[i]->SetRange(1/TMath::Sqrt(maxEPart[i]), 1/TMath::Sqrt(minEPart[i]));
     fitReso1oEhighest[i]->Draw("same");
@@ -954,14 +1025,10 @@ void energyResolutionCalorimeters(
     if (i < 2){
       DrawGammaSetMarker(histResoFEVs1oEhighest[i], markerStylePart[i], markerSizePart[i], colorPart[i]-4, colorPart[i]-4);
       histResoFEVs1oEhighest[i]->Draw("same,p");
-      fitResoF1oEhighest[i] = new TF1(Form("fit_resofhighest_%s1oE", readNames[i].Data()), "[0]+[1]*x+[2]*TMath::Power(x,2)", resFit1oEEM[dirCal][0],resFit1oEEM[dirCal][1]); //+[2]*TMath::Power(x,2)
-      fitResoF1oEhighest[i]->SetParameter(2,0.01);
-      fitResoF1oEhighest[i]->SetParLimits(2,0.0, 0.3);
-      histResoFEVs1oEhighest[i]->Fit(fitResoF1oEhighest[i],"RMNE");
+      fitResoF1oEhighest[i] = CreateFit1ovE (histResoFEVs1oEhighest[i], Form("fit_resofhighest_%s1oE", readNames[i].Data()), resFit1oEEM[dirCal][0], resFit1oEEM[dirCal][0]);
       DrawGammaSetMarkerTF1(fitResoF1oEhighest[i], 7, 3, colorPart[i]-4);
       fitResoF1oEhighest[i]->SetRange(1/TMath::Sqrt(maxEPart[i]), 1/TMath::Sqrt(minEPart[i]));
-      fitResoF1oEhighest[i]->Draw("same");
-    
+      fitResoF1oEhighest[i]->Draw("same");    
     }  
       
     legendResLab1oE  = GetAndSetLegend2(0.14, 0.91-2*0.85*textSizeLabelsRel, 0.35, 0.91,0.85*textSizeLabelsPixel, 1, "", 43, 0.2);
@@ -1000,15 +1067,18 @@ void energyResolutionCalorimeters(
 
   if (isEMCal && nActivePart >2 ) nActivePart = 2;
     else nActivePart = nActivePart-1;
-
+  // remove all particles
+  nActivePartAll = nActivePartAll-1;
+    
   cout << nActivePart << endl;
-  TLegend* legendResYRCAL    = GetAndSetLegend2(0.56, 0.86-(nActivePart*0.85*textSizeLabelsRel), 0.97, 0.86-((4+nActivePart)*0.85*textSizeLabelsRel),0.85*textSizeLabelsPixel, 1, "", 43, 0.15);
+  TLegend* legendResYRCAL    = GetAndSetLegend2(0.12, 0.95-(4*0.85*textSizeLabelsRel), 0.45, 0.95, 0.85*textSizeLabelsRel, 1, "", 42, 0.15);
   legendResYRCAL->AddEntry(graphReqEM, "YR requirement EM","f");
   legendResYRCAL->AddEntry((TObject*)0, Form("#sigma/#it{E} =  (%1.0f-%1.0f)/#sqrt{#it{E}} #oplus (%1.0f-%1.0f)", sqrtETermECal[dirCal][0], sqrtETermECal[dirCal][1], linTermECal[dirCal]    
   [0], linTermECal[dirCal][1]),"");
   legendResYRCAL->AddEntry(graphReqHad, "YR requirement Had","f");
   legendResYRCAL->AddEntry((TObject*)0, Form("#sigma/#it{E} =  (%1.0f-%1.0f)/#sqrt{#it{E}} #oplus (%1.0f-%1.0f)", sqrtETermHCal[dirCal][0], sqrtETermHCal[dirCal][1], linTermHCal[dirCal][0], linTermECal[dirCal][1]),"");
-  TLegend* legendResYR1oECAL = GetAndSetLegend2(0.14,0.95-((nActivePart+1)*0.85*textSizeLabelsRel), 0.6, 0.95-((4+nActivePart+1)*0.85*textSizeLabelsRel),0.85*textSizeLabelsPixel, 1, "", 43, 0.15);
+  
+  TLegend* legendResYR1oECAL = GetAndSetLegend2(0.12,0.95-((nActivePart+1)*0.85*textSizeLabelsRel), 0.45, 0.95-((4+nActivePart+1)*0.85*textSizeLabelsRel),0.85*textSizeLabelsRel, 1, "", 42, 0.15);
   legendResYR1oECAL->AddEntry(graphReq1oEEM, "YR requirement EM","f");
   legendResYR1oECAL->AddEntry((TObject*)0, Form("#sigma/#it{E} =  (%1.0f-%1.0f)/#sqrt{#it{E}} #oplus (%1.0f-%1.0f)", sqrtETermECal[dirCal][0], sqrtETermECal[dirCal][1], linTermECal[dirCal][0], linTermECal[dirCal][1]),"");
   legendResYR1oECAL->AddEntry(graphReq1oEHad, "YR requirement Had","f");
@@ -1016,40 +1086,62 @@ void energyResolutionCalorimeters(
 
   
   TCanvas* cExampleBin = new TCanvas("cExampleBin","",0,0,1100,1000);
-  DrawGammaCanvasSettings( cExampleBin, 0.095, 0.01, 0.045, 0.105);
+  DrawGammaCanvasSettings( cExampleBin, 0.12, 0.01, 0.045, 0.105);
+
+    TH1D* histResoEbinshighestFitsExample[7] = {NULL};
+    TH1D* histResoEbinshighestExample[7]    = {NULL};
+    TString xAxislabel = "counts";
+    if (isSingleParticle) xAxislabel = "probability";
+    
+    for (Int_t i = 0; i <nParticles-1; i++){
+      if (!useE[i][exEbin]) continue;
+      histResoEbinshighestExample[i] = hist1DResoEbinshighests[i][exEbin];
+
+      if (fitResoEbinshighest[i][exEbin] && doFitting)
+        histResoEbinshighestFitsExample[i]  = (TH1D*)fitResoEbinshighest[i][exEbin]->GetHistogram();
+      for (Int_t k = 0; k < histResoEbinshighestFitsExample[i]->GetNbinsX()+1; k++)
+        histResoEbinshighestFitsExample[i]->SetBinError(k, 0);
+      
+      if (isSingleParticle){
+        if (histResoEbinshighestFitsExample[i]){
+          histResoEbinshighestFitsExample[i]->Scale(1./histResoEbinshighestExample[i]->GetEntries());
+          histResoEbinshighestExample[i]->Scale(1./histResoEbinshighestExample[i]->GetEntries());
+        }
+      }     
+      
+    }
   
     Float_t maximYRange = 0;
     for (Int_t i = 0; i <nParticles-1; i++){
       if (!useE[i][exEbin]) continue;
-      if (maximYRange < hist1DResoEbinshighests[i][exEbin]->GetMaximum())
-        maximYRange = hist1DResoEbinshighests[i][exEbin]->GetMaximum();
+      if (maximYRange < histResoEbinshighestExample[i]->GetMaximum())
+        maximYRange = histResoEbinshighestExample[i]->GetMaximum();
     }
-  
-  
-    TLegend* legendExamBin  = GetAndSetLegend2(0.14, 0.77-((nActivePart+2)/2*0.85*textSizeLabelsRel), 0.35, 0.77,0.85*textSizeLabelsPixel, 2, "", 43, 0.35);
+    
+    TLegend* legendExamBin  = GetAndSetLegend2(0.18, 0.82, 0.18+0.1*nActivePartAll, 0.82+(textSizeLabelsRel),textSizeLabelsRel, nActivePartAll, "", 42, 0.35);
     for (Int_t i = 0; i <nParticles-1; i++){
       if (!useE[i][exEbin]) continue;
-      SetStyleHistoTH1ForGraphs(hist1DResoEbinshighests[i][exEbin], "#it{E}^{rec}/#it{E}^{MC}", "counts",
-                                0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.9);
-      hist1DResoEbinshighests[i][exEbin]->GetXaxis()->SetRangeUser(0.,maxReso);
-      hist1DResoEbinshighests[i][exEbin]->GetYaxis()->SetRangeUser(0.,1.2*maximYRange);
+      SetStyleHistoTH1ForGraphs(histResoEbinshighestExample[i], "#it{E}^{rec}/#it{E}^{MC}", xAxislabel,
+                                0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1, 510, 505);
+      histResoEbinshighestExample[i]->GetXaxis()->SetRangeUser(0.,maxReso);
+      histResoEbinshighestExample[i]->GetYaxis()->SetRangeUser(0.,1.25*maximYRange);
       
-      DrawGammaSetMarker(hist1DResoEbinshighests[i][exEbin], markerStylePart[i], markerSizePart[i]*0.8, colorPart[i], colorPart[i]);
+      DrawGammaSetMarker(histResoEbinshighestExample[i], markerStylePart[i], markerSizePart[i]*0.8, colorPart[i], colorPart[i]);
       if (i == 0)
-        hist1DResoEbinshighests[i][exEbin]->Draw("p,e");
+        histResoEbinshighestExample[i]->Draw("p,e");
       else 
-        hist1DResoEbinshighests[i][exEbin]->Draw("p,e,same");
-      legendExamBin->AddEntry(hist1DResoEbinshighests[i][exEbin], labelPart[i], "p");
+        histResoEbinshighestExample[i]->Draw("p,e,same");
+      legendExamBin->AddEntry(histResoEbinshighestExample[i], labelPart[i], "p");
       
-      if (fitResoEbinshighest[i][exEbin] && doFitting ){
-        DrawGammaSetMarkerTF1( fitResoEbinshighest[i][exEbin], lineStylePart[i], 2, colorPart[i]);
-        fitResoEbinshighest[i][exEbin]->Draw("same");
+      if (histResoEbinshighestFitsExample[i] ){
+        DrawGammaSetMarker(histResoEbinshighestFitsExample[i], 0, 0, colorPart[i]+1, colorPart[i]+1, lineStylePart[i], 3);
+        histResoEbinshighestFitsExample[i]->Draw("lc,same");
       }
     }
     legendExamBin->Draw();
-    drawLatexAdd(perfLabel,0.14,0.88,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-    drawLatexAdd(Form("%s", detLabel.Data()),0.14,0.83,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-    drawLatexAdd(Form("%1.1f< #eta< %1.1f, #it{E} = %1.1f GeV", minEtaMax, maxEtaMax, partE[exEbin]),0.14,0.78,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+    drawLatexAdd(perfLabel,0.95,0.88,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("%s", detLabel.Data()),0.95,0.83,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("%1.1f< #eta< %1.1f, #it{E} = %1.1f GeV", minEtaMax, maxEtaMax, partE[exEbin]),0.17,0.88,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
     
   cExampleBin->Print(Form("%s/ExampleBin.%s", outputDir.Data(), suffix.Data()));
   
@@ -1068,9 +1160,9 @@ void energyResolutionCalorimeters(
     histResoDummy->GetYaxis()->SetRangeUser(0,maxResPerHad[dirCal]);
   histResoDummy->Draw();
   
-    if (doFitting && usePart[0])  nActivePart++;
-    if (doFitting && usePart[1])  nActivePart++;
-    TLegend* legendResPart  = GetAndSetLegend2(0.58, 0.86-(nActivePart*0.85*textSizeLabelsRel), 0.97, 0.86,0.85*textSizeLabelsPixel, 2, "", 43, 0.22);
+    if (doFitting && usePart[0] && isEMCal)  nActivePart++;
+    if (doFitting && usePart[1] && isEMCal)  nActivePart++;
+    TLegend* legendResPart  = GetAndSetLegend2(0.53, 0.80-(nActivePart*0.85*textSizeLabelsRel), 0.95, 0.80,0.85*textSizeLabelsRel, 2, "", 42, 0.22);
     for (Int_t i = 0; i <nParticles-1; i++){
       if (!usePart[i]) continue;
       if (i > 1 && isEMCal) continue;
@@ -1078,7 +1170,7 @@ void energyResolutionCalorimeters(
       histResoEVsE[i]->Draw("same,p");
       DrawGammaSetMarkerTF1(fitResoE[i], lineStylePart[i], 3, colorPart[i]+1);
       fitResoE[i]->Draw("same");
-      if (i < 2 && doFitting){
+      if (i < 2 && doFitting && isEMCal){
         DrawGammaSetMarker(histResoFEVsE[i], markerStylePart[i], markerSizePart[i]*0.8, colorPart[i]-6, colorPart[i]-6);
         histResoFEVsE[i]->Draw("same,p");
         DrawGammaSetMarkerTF1(fitResoFE[i], lineStylePart[i], 3, colorPart[i]-6);
@@ -1096,11 +1188,12 @@ void energyResolutionCalorimeters(
     legendResPart->Draw();
     drawLatexAdd(perfLabel,0.95,0.92,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     drawLatexAdd(Form("%s", detLabel.Data()),0.95,0.87,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-
+    drawLatexAdd(etaRangeFull,0.95,0.82,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    
   cReso->Print(Form("%s/Resolution_Fitted_allPart.%s", outputDir.Data(), suffix.Data()));
 
   histResoDummy->Draw();
-    TLegend* legendResPartHighest  = GetAndSetLegend2(0.58, 0.86-(nActivePart*0.85*textSizeLabelsRel), 0.97, 0.86,0.85*textSizeLabelsPixel, 2, "", 43, 0.22); 
+    TLegend* legendResPartHighest  = GetAndSetLegend2(0.53, 0.80-(nActivePart*0.85*textSizeLabelsRel), 0.95, 0.80,0.85*textSizeLabelsRel, 2, "", 42, 0.22); 
     for (Int_t i = 0; i <nParticles-1; i++){
       if (!usePart[i]) continue;
       if (i > 1 && isEMCal) continue;
@@ -1109,7 +1202,7 @@ void energyResolutionCalorimeters(
       DrawGammaSetMarkerTF1(fitResoEhighest[i], lineStylePart[i], 3, colorPart[i]+1);
       fitResoEhighest[i]->Draw("same");
       
-      if (i < 2 && doFitting){
+      if (i < 2 && doFitting && isEMCal){
         DrawGammaSetMarker(histResoFEVsEhighest[i], markerStylePart[i], markerSizePart[i]*0.8, colorPart[i]-6, colorPart[i]-6);
         histResoFEVsEhighest[i]->Draw("same,p");
         DrawGammaSetMarkerTF1(fitResoFEhighest[i], lineStylePart[i], 3, colorPart[i]-6);
@@ -1126,7 +1219,8 @@ void energyResolutionCalorimeters(
     legendResPartHighest->Draw();
     drawLatexAdd(perfLabel,0.95,0.92,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     drawLatexAdd(Form("%s", detLabel.Data()),0.95,0.87,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-
+    drawLatexAdd(etaRangeFull,0.95,0.82,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    
   cReso->Print(Form("%s/Resolution_FittedHighest_allPart.%s", outputDir.Data(), suffix.Data()));
 
   histResoDummy->Draw();
@@ -1143,7 +1237,7 @@ void energyResolutionCalorimeters(
       if (i > 1 && isEMCal) continue;
       histResoEVsEhighest[i]->Draw("same,p");
       fitResoEhighest[i]->Draw("same");
-      if (i < 2 && doFitting){
+      if (i < 2 && doFitting && isEMCal){
         histResoFEVsEhighest[i]->Draw("same,p");
         fitResoFEhighest[i]->Draw("same");
       }
@@ -1152,6 +1246,7 @@ void energyResolutionCalorimeters(
     legendResPartHighest->Draw();
     drawLatexAdd(perfLabel,0.95,0.92,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     drawLatexAdd(Form("%s", detLabel.Data()),0.95,0.87,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(etaRangeFull,0.95,0.82,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     if (isEMCal)
       legendResYRECAL->Draw();
     else 
@@ -1169,7 +1264,7 @@ void energyResolutionCalorimeters(
   histResoDummy->GetXaxis()->SetNoExponent();
   histResoDummy->GetYaxis()->SetNdivisions(505,kTRUE);
   histResoDummy->GetXaxis()->SetMoreLogLabels(kTRUE);
-    if (isEMCal) 
+  if (isEMCal) 
     histResoDummy->GetYaxis()->SetRangeUser(0,maxResPerEM[dirCal]);
   else 
     histResoDummy->GetYaxis()->SetRangeUser(0,maxResPerHad[dirCal]);
@@ -1177,7 +1272,7 @@ void energyResolutionCalorimeters(
   
   
   
-    TLegend* legendResPart1oE  = GetAndSetLegend2(0.14, 0.95-(nActivePart*0.85*textSizeLabelsRel), 0.6, 0.95,0.85*textSizeLabelsPixel, 2, "", 43, 0.2);
+    TLegend* legendResPart1oE  = GetAndSetLegend2(0.13, 0.95-(nActivePart*0.85*textSizeLabelsRel), 0.6, 0.95,0.85*textSizeLabelsRel, 2, "", 42, 0.2);
     for (Int_t i = 0; i <nParticles-1; i++){
       if (!usePart[i]) continue;
       if (i > 1 && isEMCal) continue;
@@ -1186,7 +1281,7 @@ void energyResolutionCalorimeters(
       DrawGammaSetMarkerTF1(fitReso1oE[i], lineStylePart[i], 3, colorPart[i]+1);
       fitReso1oE[i]->Draw("same");
       
-      if (i < 2 && doFitting){
+      if (i < 2 && doFitting && isEMCal){
         DrawGammaSetMarker(histResoFEVs1oE[i], markerStylePart[i], markerSizePart[i]*0.8, colorPart[i]-6, colorPart[i]-6);
         histResoFEVs1oE[i]->Draw("same,p");
         DrawGammaSetMarkerTF1(fitResoF1oE[i], lineStylePart[i], 3, colorPart[i]-6);
@@ -1203,12 +1298,13 @@ void energyResolutionCalorimeters(
     legendResPart1oE->Draw();
     drawLatexAdd(perfLabel,0.95,0.92,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     drawLatexAdd(Form("%s", detLabel.Data()),0.95,0.87,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(etaRangeFull,0.95,0.82,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
 
   cReso2->Print(Form("%s/Resolution_Fitted_1oE_AllPart.%s", outputDir.Data(), suffix.Data()));
 
   histResoDummy->Draw();
   
-    TLegend* legendResPartHighest1oE  = GetAndSetLegend2(0.14, 0.95-(nActivePart*0.85*textSizeLabelsRel), 0.6, 0.95,0.85*textSizeLabelsPixel, 2, "", 43, 0.2);
+    TLegend* legendResPartHighest1oE  = GetAndSetLegend2(0.12, 0.95-(nActivePart*0.85*textSizeLabelsRel), 0.6, 0.95,0.85*textSizeLabelsRel, 2, "", 42, 0.2);
     for (Int_t i = 0; i <nParticles-1; i++){
       if (!usePart[i]) continue;
       if (i > 1 && isEMCal) continue;
@@ -1216,7 +1312,7 @@ void energyResolutionCalorimeters(
       histResoEVs1oEhighest[i]->Draw("same,p");
       DrawGammaSetMarkerTF1(fitReso1oEhighest[i], lineStylePart[i], 3, colorPart[i]+1);
       fitReso1oEhighest[i]->Draw("same");
-      if (i < 2 && doFitting){
+      if (i < 2 && doFitting && isEMCal){
         DrawGammaSetMarker(histResoFEVs1oEhighest[i], markerStylePart[i], markerSizePart[i]*0.8, colorPart[i]-6, colorPart[i]-6);
         histResoFEVs1oEhighest[i]->Draw("same,p");
         DrawGammaSetMarkerTF1(fitResoF1oEhighest[i], lineStylePart[i], 3, colorPart[i]-6);
@@ -1233,6 +1329,7 @@ void energyResolutionCalorimeters(
     legendResPartHighest1oE->Draw();
     drawLatexAdd(perfLabel,0.95,0.92,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     drawLatexAdd(Form("%s", detLabel.Data()),0.95,0.87,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(etaRangeFull,0.95,0.82,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
 
   cReso2->Print(Form("%s/Resolution_FittedHighest_1oE_AllPart.%s", outputDir.Data(), suffix.Data()));
    
@@ -1250,7 +1347,7 @@ void energyResolutionCalorimeters(
       if (i > 1 && isEMCal) continue;
       histResoEVs1oEhighest[i]->Draw("same,p");
       fitReso1oEhighest[i]->Draw("same");
-      if (i < 2 && doFitting){
+      if (i < 2 && doFitting && isEMCal){
         histResoFEVs1oEhighest[i]->Draw("same,p");
         fitResoF1oEhighest[i]->Draw("same");
       }
@@ -1258,6 +1355,7 @@ void energyResolutionCalorimeters(
     legendResPartHighest1oE->Draw();
     drawLatexAdd(perfLabel,0.95,0.92,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     drawLatexAdd(Form("%s", detLabel.Data()),0.95,0.87,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(etaRangeFull,0.95,0.82,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     if (isEMCal)
       legendResYR1oEECal->Draw();
     else 

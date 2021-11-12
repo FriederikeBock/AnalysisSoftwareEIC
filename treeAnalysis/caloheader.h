@@ -67,8 +67,8 @@ const int maxcalo = 12;
 int calogeomindex[maxcalo] = {0};
 
 TString str_calorimeter[maxcalo] = {"FHCAL", "FEMC", "DRCALO", "EEMC", "CEMC", "EHCAL", "HCALIN", "HCALOUT", "LFHCAL", "EEMCG", "BECAL", "FOCAL"};
-int _combCalo[maxcalo]           = {kFEMC,  -1,     -1,       -1,      -1,      kEEMC,  kBECAL,   kHCALIN,    kFEMC,    -1,       -1,       -1};
-int _combCalo2[maxcalo]          = {-1,     -1,     -1,       -1,      -1,      -1,     -1,       kBECAL,     -1,       -1,       -1,       -1};
+int _combCalo[maxcalo]           = {kFEMC,  -1,     -1,       -1,      -1,      kEEMC,  kBECAL,   kBECAL,     kFEMC,    -1,       -1,       -1};
+int _combCalo2[maxcalo]          = {-1,     -1,     -1,       -1,      -1,      -1,     -1,       kHCALIN,    -1,       -1,       -1,       -1};
 int _caloTowersPhi[maxcalo]      = {0,       0,      0,        0,     100,      0,      64,       64,         0,        -1,       128,       0};
 const int _active_calo = 12;
 
@@ -272,6 +272,29 @@ void SetFwdCalorimeterPosition(int caloID, float zposin){
   }
 }
 
+float CorrectEtaPositionCalo (int caloID, float etarec){
+  switch(caloID){
+    case kDRCALO: 
+    case kFHCAL: 
+    case kFEMC:
+    case kEEMC:
+    case kEEMCG:
+    case kFOCAL:  
+    case kHCALIN: 
+    case kHCALOUT:
+    case kBECAL: 
+    case kCEMC: 
+      return etarec;
+    case kEHCAL:
+      return etarec+0.03;
+    case kLFHCAL:
+      return etarec-0.04;
+    default:
+      return etarec;
+  }
+}
+
+
 float* EtaPhiFromIndices(int ieta,int iphi,float energy = 0, int caloSelect = 0);
 
 
@@ -352,27 +375,6 @@ int ReturnProjectionIndexForCalorimeter(int caloID,  bool alternate){
   return -1;
 }
 
-int ReturnCalorimeterFromProjectionIndex(int projID){
-  switch (projID){
-    case 1: return kDRCALO;
-    case 5: return kFHCAL;
-    case 6: return kFEMC;
-    case 60: return kEHCAL;
-    case 61: return kEEMC;
-    case 62: return kHCALIN;
-    case 63: return kHCALOUT;
-    case 64: return kCEMC;
-    case 65: return kEEMCG;
-    case 67: return kLFHCAL;
-    case 66: return kBECAL;
-    case 85: return kFOCAL;
-    default:
-      // std::cout << "ReturnCalorimeterFromProjectionIndex: projID " << projID << " not defined, returning -1" << std::endl;
-      return -1;
-  }
-  return -1;
-}
-
 // ***********************************************************************************
 // matching windows for tracks to calo's going outward dX/dy for forward, dPhi/dEta for barrel
 // ***********************************************************************************
@@ -400,7 +402,7 @@ float ReturnTrackMatchingWindowForCalo(int caloID){
 // ***********************************************************************************
 // matching windows for Calo's going inward in dPhi
 // ***********************************************************************************
-float ReturnPhiCaloMatching(int caloID){
+float ReturnPhiCaloMatching(int caloID, int caloID2){
   switch (caloID){
     case kDRCALO: return 0.1;
     case kFHCAL: return 0.1;
@@ -408,10 +410,18 @@ float ReturnPhiCaloMatching(int caloID){
     case kEHCAL: return 0.1;
     case kEEMC: return 0.1;
     case kHCALIN: return 0.1;
-    case kHCALOUT: return 0.1;
+    case kHCALOUT: 
+      switch (caloID2){
+        case kBECAL:
+          return 0.08;
+        case kHCALIN:
+          return 0.02;
+        default:
+          return 0.1;
+      }
     case kCEMC: return 0.1;
     case kEEMCG: return 0.1;
-    case kLFHCAL: return 0.1;
+    case kLFHCAL: return 0.07;
     case kBECAL: return 0.05;
     case kFOCAL: return 0.1;
     default:
@@ -424,7 +434,7 @@ float ReturnPhiCaloMatching(int caloID){
 // ***********************************************************************************
 // matching windows for Calo's going inward in dEta
 // ***********************************************************************************
-float ReturnEtaCaloMatching(int caloID){
+float ReturnEtaCaloMatching(int caloID, int caloID2){
   switch (caloID){
     case kDRCALO: return 0.1;
     case kFHCAL: return 0.1;
@@ -432,7 +442,15 @@ float ReturnEtaCaloMatching(int caloID){
     case kEHCAL: return 0.1;
     case kEEMC: return 0.1;
     case kHCALIN: return 0.1;
-    case kHCALOUT: return 0.1;
+    case kHCALOUT: 
+      switch (caloID2){
+        case kBECAL:
+          return 0.05;
+        case kHCALIN:
+          return 0.02;
+        default:
+          return 0.1;
+      }
     case kCEMC: return 0.1;
     case kEEMCG: return 0.1;
     case kLFHCAL: return 0.1;
@@ -465,8 +483,9 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
         vecTwr += w_i.at(cellI)*vecTwrTmp;
         if(cellI==0 && ReturnFwdCalorimeterPosition(caloSelect))zHC=vecTwrTmp.Z();
     }
-    returnVariables[2]=vecTwr.Eta();
-    returnVariables[3]=vecTwr.Phi(); //(vecTwr.Phi()<0 ? vecTwr.Phi()+TMath::Pi() : vecTwr.Phi()-TMath::Pi());
+    // correct Eta position for average shift in calo 
+    returnVariables[2]= CorrectEtaPositionCalo(caloSelect, vecTwr.Eta());
+    returnVariables[3]= vecTwr.Phi(); //(vecTwr.Phi()<0 ? vecTwr.Phi()+TMath::Pi() : vecTwr.Phi()-TMath::Pi());
 //     std::cout << "X: "<< vecTwr.X() << "\t" << " Y: "<< vecTwr.Y() << "\t" << " Z: "<< vecTwr.Z() << "\t zHC: " <<  zHC << std::endl;
     if(IsForwardCalorimeter(caloSelect)){
       vecTwr*=abs(zHC/vecTwr.Z()); // wtot/Ntowers?

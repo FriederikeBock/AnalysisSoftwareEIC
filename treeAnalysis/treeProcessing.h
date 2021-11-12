@@ -39,10 +39,12 @@ enum calotype {
   kFOCAL          = 11
 };
 
-typedef struct {
+struct projStrct{
+  projStrct(): caloid(-1), eta_Calo(-1000), phi_Calo(-1000) {}
+  int caloid;
   float eta_Calo;
   float phi_Calo;
-} projStrct;
+} ;
 
 
 struct matchingCalStrct{
@@ -732,6 +734,28 @@ Int_t GetRegionFromIndex(int projindex)
   }
 }
 
+
+int ReturnCalorimeterFromProjectionIndex(int projID){
+  switch (projID){
+    case 1: return kDRCALO;
+    case 5: return kFHCAL;
+    case 6: return kFEMC;
+    case 60: return kEHCAL;
+    case 61: return kEEMC;
+    case 62: return kHCALIN;
+    case 63: return kHCALOUT;
+    case 64: return kCEMC;
+    case 65: return kEEMCG;
+    case 67: return kLFHCAL;
+    case 66: return kBECAL;
+    case 85: return kFOCAL;
+    default:
+      // std::cout << "ReturnCalorimeterFromProjectionIndex: projID " << projID << " not defined, returning -1" << std::endl;
+      return -1;
+  }
+  return -1;
+}
+
 Int_t ReturnIndexForwardLayer(Int_t layerID){
   for (Int_t i = 0; i < _maxProjectionLayers; i++){
     if (layerIndexHist[i] == layerID)
@@ -1001,6 +1025,9 @@ void prepareMCMatchInfo(){
     for(Int_t iproj=nCurrProj; iproj<_nProjections; iproj++){
       if (itrk != _track_ProjTrackID[iproj])
         continue;
+      if (_track_Proj_t[iproj] < 0)
+        continue;
+      
       double projectionR = TMath::Sqrt(_track_Proj_x[iproj]*_track_Proj_x[iproj]+_track_Proj_y[iproj]*_track_Proj_y[iproj]);       if(TMath::Abs(_track_Proj_t[iproj])< 2.e-20){
         if (verbosityBASE > 5) std::cout << iproj << "\t projection layer: "<< _track_ProjLayer[iproj] << "\t t: " << _track_Proj_t[iproj] 
                                             << "\t x: " << _track_Proj_x[iproj] << "\t y: " << _track_Proj_y[iproj] << "\t z: " << _track_Proj_z[iproj] << "\t r: " << projectionR << std::endl;
@@ -1031,14 +1058,18 @@ void prepareMCMatchInfo(){
       _track_RefProjID[itrk].push_back(iproj);
       
       projStrct tempProj;
-      if ( IsECalProjection(_track_ProjLayer[iproj], _useAlternateForProjections) && trackSource == 0 ){
-        TVector3 projvec(_track_Proj_true_x[iproj],_track_Proj_true_y[iproj],_track_Proj_true_z[iproj]);
+      if ( IsECalProjection(_track_ProjLayer[iproj], _useAlternateForProjections) && trackSource == 0  && _track_Proj_t[iproj] >= 0 ){
+        TVector3 projvec(_track_Proj_x[iproj],_track_Proj_y[iproj],_track_Proj_z[iproj]);
+//         TVector3 projvec(_track_Proj_true_x[iproj],_track_Proj_true_y[iproj],_track_Proj_true_z[iproj]);
+        tempProj.caloid   = ReturnCalorimeterFromProjectionIndex(_track_ProjLayer[iproj]);
         tempProj.eta_Calo = projvec.Eta();
         tempProj.phi_Calo = projvec.Phi();
         _mcpart_EcalProjs[(int)_track_trueID[itrk]].push_back(tempProj);
       }
-      if ( IsHCalProjection(_track_ProjLayer[iproj], _useAlternateForProjections) && trackSource == 0 ){
-        TVector3 projvec(_track_Proj_true_x[iproj],_track_Proj_true_y[iproj],_track_Proj_true_z[iproj]);
+      if ( IsHCalProjection(_track_ProjLayer[iproj], _useAlternateForProjections) && trackSource == 0 && _track_Proj_t[iproj] >= 0 ){
+        TVector3 projvec(_track_Proj_x[iproj],_track_Proj_y[iproj],_track_Proj_z[iproj]);
+//         TVector3 projvec(_track_Proj_true_x[iproj],_track_Proj_true_y[iproj],_track_Proj_true_z[iproj]);
+        tempProj.caloid   = ReturnCalorimeterFromProjectionIndex(_track_ProjLayer[iproj]);
         tempProj.eta_Calo = projvec.Eta();
         tempProj.phi_Calo = projvec.Phi();
         _mcpart_HcalProjs[(int)_track_trueID[itrk]].push_back(tempProj);

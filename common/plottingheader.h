@@ -534,11 +534,16 @@ void DrawGammaSetMarker(    TH1* histo1,
                             Style_t markerStyle,
                             Size_t markerSize,
                             Color_t markerColor,
-                            Color_t lineColor ) {
+                            Color_t lineColor,
+                            Style_t lineStyle = 1,
+                            Style_t lineWidth = 1
+                       ) {
   histo1->SetMarkerStyle(markerStyle);
   histo1->SetMarkerSize(markerSize);
   histo1->SetMarkerColor(markerColor);
   histo1->SetLineColor(lineColor);
+  histo1->SetLineStyle(lineStyle);
+  histo1->SetLineWidth(lineWidth);
   histo1->GetYaxis()->SetLabelFont(42);
   histo1->GetXaxis()->SetLabelFont(42);
   histo1->GetYaxis()->SetTitleFont(62);
