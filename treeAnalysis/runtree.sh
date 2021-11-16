@@ -98,13 +98,13 @@ maxevt=-1
     #input=/media/nschmidt/SSD/simulationOutputCADES/single_particle_productions/merged_output_TTLGEO_7_HITS_SimpleMultiPion/merged_output_TTLGEO_7_HITS_SimpleMultiPion.root
     input=/media/nschmidt/SSD/simulationOutputCADES/single_particle_productions/merged_TTLGEO_7_HITS_MultFix_PROJFIX_SimpleMultiPion/merged_TTLGEO_7_HITS_MultFix_PROJFIX_SimpleMultiPion.root
     geometry=/media/nschmidt/SSD/simulationOutputCADES/geometry.root
-    root -x -l -b -q 'treeProcessing.C+("'$input'","'$geometry'","CADES_SINGLEMULTIPION_TTLGEO7_EOP",'$maxevt',true,false  ,false,0)'
+    root -x -l -b -q 'treeProcessing.C+("'$input'","'$geometry'","CADES_SINGLEMULTIPION_TTLGEO7_EOP",'$maxevt',true,false  ,false,0,0,"anti-kt",0.5,30,false,false,false)'
 fi
 if [ $1 = "cades_singlemultielectron" ]; then
 maxevt=-1
-    input=/media/nschmidt/SSD/simulationOutputCADES/single_particle_productions/output_TTLGEO_7_HITS_MultFix_PROJFIX_SimpleMultiElectron/output_TTLGEO_7_HITS_MultFix_PROJFIX_SimpleMultiElectron.root
+    input=/media/nschmidt/SSD/simulationOutputCADES/single_particle_productions/output_TTLGEO_7_HITS_PROJFIX_SimpleMultiElectron/output_TTLGEO_7_HITS_PROJFIX_SimpleMultiElectron.root
     geometry=/media/nschmidt/SSD/simulationOutputCADES/geometry.root
-    root -x -l -b -q 'treeProcessing.C+("'$input'","'$geometry'","CADES_SINGLEMULTIELECTRON_TTLGEO7_EOP",'$maxevt',true,false  ,false,0)'
+    root -x -l -b -q 'treeProcessing.C+("'$input'","'$geometry'","CADES_SINGLEMULTIELECTRON_TTLGEO7_EOP",'$maxevt',true,false  ,false,0,0,"anti-kt",0.5,30,false,false,false)'
 fi
 
 if [ $1 = "centralsim_singleelectron" ]; then
