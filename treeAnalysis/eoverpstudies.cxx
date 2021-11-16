@@ -124,7 +124,7 @@ bool eoverpstudies( int primaryTrackSource = 0, bool runSpecialCuts = false){
           int trackIDMatched = -1;
           for (Int_t k = 0; k < (int)((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedTracks).size(); k++){
             double matching_R = 10000;
-            if(isFwd) matching_R = sqrt(pow((((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedTracks).at(k)).dX,2)+pow((((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedTracks).at(k)).dX,2));
+            if(isFwd) matching_R = sqrt(pow((((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedTracks).at(k)).dX,2)+pow((((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedTracks).at(k)).dY,2));
             else      matching_R = sqrt(pow((((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedTracks).at(k)).dEta,2)+pow((((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedTracks).at(k)).dPhi,2));
             if(matching_R < currR){
               currR = matching_R;
