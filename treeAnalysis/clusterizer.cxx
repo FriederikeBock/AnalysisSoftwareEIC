@@ -905,7 +905,7 @@ clustersStrct findMACluster(
         int deltaEta  = TMath::Abs(iEtaTwrAgg-iEtaTwr) ;
         bool neighbor = (deltaL+deltaPhi+deltaEta == 1);
         bool corner2D = (deltaL == 0 && deltaPhi == 1 && deltaEta == 1) || (deltaL == 1 && deltaPhi == 0 && deltaEta == 1) || (deltaL == 1 && deltaPhi == 1 && deltaEta == 0);          
-        // first condition asks for V3-like neighbors, while second condition also checks diagonally attached towers
+//         first condition asks for V3-like neighbors, while second condition also checks diagonally attached towers
         if(neighbor || corner2D ){
 
           // only aggregate towers with lower energy than current tower
@@ -1023,7 +1023,7 @@ void runclusterizer(
 
       // apply calibration if desired
       if(_doClusterECalibration){
-          tempstructC.cluster_E/=getCalibrationValue(tempstructC.cluster_E, caloEnum, clusterizerEnum);
+          tempstructC.cluster_E/=getCalibrationValue(tempstructC.cluster_E, caloEnum, clusterizerEnum, tempstructC.cluster_trueID);
           tempstructC.cluster_E*=getEnergySmearing( caloEnum, clusterizerEnum);
       }
       

@@ -14,7 +14,7 @@ Double_t maxResHad[3]         = {1.25, 1.85, 1.65};
 
 
 Double_t resFit1oEEM[3][2]    = {{1/TMath::Sqrt(20.), 1.45}, {-1, -1}, {-1, -1} };
-Double_t resFitEM[3][2]       = {{0.2, 20}, {-1, -1}, {-1, -1} };
+Double_t resFitEM[3][2]       = {{0.2, -1}, {-1, -1}, {-1, -1} };
 Double_t meanFitEM[3][2]      = {{10,-1}, { 10, -1}, {10, 20} };
 Double_t meanFitHad[3][2]     = {{10,-1}, { 10, -1}, {10, 20} };
 
@@ -242,8 +242,10 @@ void energyResolutionCalorimeters(
   TH1F* histResoEVs1oE[7]           = {NULL};
   TH1F* histResoFEVs1oE[7]          = {NULL};
   TF1* fitMeanE[7]                  = {NULL};
-  TF1* fitResoFE[7]                  = {NULL};
-  TF1* fitResoF1oE[7]                = {NULL};
+  TF1* fitMeanENL[7]                = {NULL};
+  TF1* fitMeanENL2[7]                = {NULL};
+  TF1* fitResoFE[7]                 = {NULL};
+  TF1* fitResoF1oE[7]               = {NULL};
   TF1* fitResoE[7]                  = {NULL};
   TF1* fitReso1oE[7]                = {NULL};
   TF1* fitResoEbins[7][nEne]        = {{NULL}};
@@ -879,6 +881,38 @@ void energyResolutionCalorimeters(
 
     cWidth->Print(Form("%s/Width_%sFittedWithHighest.%s", outputDir.Data(), readNames[i].Data(), suffix.Data()));
 
+    histWidthDummy->Draw("axis,same");
+    for (Int_t etbin = minEtaBinCaloDis[dirCal]; etbin < maxEtaBinCaloDis[dirCal]; etbin++){
+      if (!useEta[i][etbin]) continue;
+      DrawGammaSetMarker(histSigmaEVsEEta[i][etbin], markerStyleEta[etbin], markerSizeEta[etbin]*1.5, colorEta[etbin], colorEta[etbin]);
+      histSigmaEVsEEta[i][etbin]->Draw("same,p");
+//       legendResEEta->AddEntry(histSigmaEVsEEta[i][etbin],Form("%1.1f< #eta< %1.1f", partEtaCalo[etbin], partEtaCalo[etbin+1]),"p");
+    }
+    
+//     legendResEEta->Draw();
+    drawLatexAdd(perfLabel,0.95,0.92,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("%s in %s", labelPart[i].Data() ,detLabel.Data()),0.95,0.87,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    cWidth->Print(Form("%s/Width_%s_etaDep.%s", outputDir.Data(), readNames[i].Data(), suffix.Data()));
+
+    TH2F * histResoDummyMean2    = new TH2F("histResoDummyMean2","histResoDummyMean2",1000,0.3, 170,1000,0.2, 1.5);
+    SetStyleHistoTH2ForGraphs(histResoDummyMean2, "#it{E} (GeV)","#mu", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.81);
+    histResoDummyMean2->GetXaxis()->SetNoExponent();
+    histResoDummyMean2->GetYaxis()->SetNdivisions(505,kTRUE);
+    histResoDummyMean2->GetXaxis()->SetMoreLogLabels(kTRUE);
+    histResoDummyMean2->Draw();
+
+    for (Int_t etbin = minEtaBinCaloDis[dirCal]; etbin < maxEtaBinCaloDis[dirCal]; etbin++){
+      if (!useEta[i][etbin]) continue;
+      DrawGammaSetMarker(histMeanEVsEEta[i][etbin], markerStyleEta[etbin], markerSizeEta[etbin]*1.5, colorEta[etbin], colorEta[etbin]);
+      histMeanEVsEEta[i][etbin]->Draw("same,p");
+//       legendResEEta->AddEntry(histSigmaEVsEEta[i][etbin],Form("%1.1f< #eta< %1.1f", partEtaCalo[etbin], partEtaCalo[etbin+1]),"p");
+    }
+    
+//     legendResEEta->Draw();
+    drawLatexAdd(perfLabel,0.95,0.92,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("%s in %s", labelPart[i].Data() ,detLabel.Data()),0.95,0.87,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    cWidth->Print(Form("%s/Mean_%s_etaDep.%s", outputDir.Data(), readNames[i].Data(), suffix.Data()));
+    
     //*************************************************************************************
     // RESOLUTION PLOT
     //*************************************************************************************
@@ -1144,8 +1178,7 @@ void energyResolutionCalorimeters(
     drawLatexAdd(Form("%1.1f< #eta< %1.1f, #it{E} = %1.1f GeV", minEtaMax, maxEtaMax, partE[exEbin]),0.17,0.88,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
     
   cExampleBin->Print(Form("%s/ExampleBin.%s", outputDir.Data(), suffix.Data()));
-  
-  
+    
   TCanvas* cReso = new TCanvas("cReso","",0,0,1100,1000);
   cReso->SetLogx(1);
   DrawGammaCanvasSettings( cReso, 0.095, 0.01, 0.01, 0.105);
@@ -1396,16 +1429,29 @@ void energyResolutionCalorimeters(
     TLegend* legendResPartMu  = GetAndSetLegend2(0.13, 0.96-(nActivePart*0.85*textSizeLabelsRel), 0.43, 0.96,0.85*textSizeLabelsPixel, 2, "", 43, 0.22);
     for (Int_t i = 0; i <nParticles-1; i++){
       if (!usePart[i]) continue;
-      if (i > 1 && isEMCal) continue;
+//       if (i > 1 && isEMCal) continue;
       DrawGammaSetMarker(histMeanEVsE[i], markerStylePart[i], markerSizePart[i]*0.8, colorPart[i], colorPart[i]);
       histMeanEVsE[i]->Draw("same,p");
       fitMeanE[i] = new TF1(Form("fit_mean_%sE", readNames[i].Data()), "[0]", meanFitEM[dirCal][0], meanFitEM[dirCal][1]);
       histMeanEVsE[i]->Fit(fitMeanE[i],"RMNE");
-      fitMeanE[i]->SetNpx(10000);
       fitMeanE[i]->Draw("same");
+      Double_t paramsNL[5]= {0.965782, 0.017567, 0.0907133, 119.679, 79.7096};      
+      fitMeanENL[i] = new TF1(Form("fit_meanNL_%sE", readNames[i].Data()), "( [0] + [1] * TMath::Log(x) ) / ( 1 + ( [2] * TMath::Exp( ( x - [3] ) / [4] ) ) )", resFitEM[dirCal][0] , resFitEM[dirCal][1]);
+      fitMeanENL[i]->SetParameters(paramsNL);
+      histMeanEVsE[i]->Fit(fitMeanENL[i],"RMNE");
+      fitMeanENL[i]->Draw("same");
       DrawGammaSetMarkerTF1(fitMeanE[i], 3, 3, colorPart[i]+1);
       legendResPartMu->AddEntry(histMeanEVsE[i],Form("%s", labelPart[i].Data()),"p");
       legendResPartMu->AddEntry(fitMeanE[i],Form("#mu =  %1.2f",fitMeanE[i]->GetParameter(0)),"l");
+
+      fitMeanENL2[i] = new TF1(Form("fit_meanNL2_%sE", readNames[i].Data()),"[3]+[2] * TMath::Erf( (x-[0])/(TMath::Sqrt(2)*[1]))",resFitEM[dirCal][0] , resFitEM[dirCal][1]);
+      fitMeanENL2[i]->SetParameter(0,4.);
+      fitMeanENL2[i]->SetParameter(1,1.);
+      fitMeanENL2[i]->SetParameter(2,fitMeanE[i]->GetParameter(0)/2);
+      fitMeanENL2[i]->SetParameter(3,fitMeanE[i]->GetParameter(0)/2);
+      DrawGammaSetMarkerTF1(fitMeanENL2[i], 3, 3, colorPart[i]-6);
+      histMeanEVsE[i]->Fit(fitMeanENL2[i],"RMNE");
+      fitMeanENL2[i]->Draw("same");
     }
     legendResPartMu->Draw();
     drawLatexAdd(perfLabel,0.95,0.92,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);

@@ -58,8 +58,7 @@ void treeProcessing(
     } else { 
       std::cout << "using calorimeter projections for matching" << std::endl;
     }
-    bool runPi0Reco = true;
-
+    bool runPi0Reco = false;
     // load tree
     TChain *const tt_event = new TChain("event_tree");
     if (inFile.EndsWith(".root")) {                     // are we loading a single root tree?
@@ -321,13 +320,13 @@ void treeProcessing(
           for(Int_t iclus=0; iclus<(Int_t)_clusters_calo[kV1][fwdCaloID].size(); iclus++){
             (_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_trueID = GetCorrectMCArrayEntry((_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_trueID);
             if(_doClusterECalibration){
-              (_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_E/=getCalibrationValue((_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_E, fwdCaloID, kV1);
+              (_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_E/=getCalibrationValue((_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_E, fwdCaloID, kV1, (_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_trueID);
             }
           }
           for(Int_t iclus=0; iclus<(Int_t)_clusters_calo[kV1][kFEMC].size(); iclus++){
             (_clusters_calo[kV1][kFEMC].at(iclus)).cluster_trueID = GetCorrectMCArrayEntry((_clusters_calo[kV1][kFEMC].at(iclus)).cluster_trueID);
             if(_doClusterECalibration){
-              (_clusters_calo[kV1][kFEMC].at(iclus)).cluster_E/=getCalibrationValue((_clusters_calo[kV1][kFEMC].at(iclus)).cluster_E, kFEMC, kV1);
+              (_clusters_calo[kV1][kFEMC].at(iclus)).cluster_E/=getCalibrationValue((_clusters_calo[kV1][kFEMC].at(iclus)).cluster_E, kFEMC, kV1,(_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_trueID);
             }
           }
         }

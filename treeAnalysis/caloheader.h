@@ -68,7 +68,8 @@ int calogeomindex[maxcalo] = {0};
 
 TString str_calorimeter[maxcalo] = {"FHCAL", "FEMC", "DRCALO", "EEMC", "CEMC", "EHCAL", "HCALIN", "HCALOUT", "LFHCAL", "EEMCG", "BECAL", "FOCAL"};
 int _combCalo[maxcalo]           = {kFEMC,  -1,     -1,       -1,      -1,      kEEMC,  kBECAL,   kBECAL,     kFEMC,    -1,       -1,       -1};
-int _combCalo2[maxcalo]          = {-1,     -1,     -1,       -1,      -1,      -1,     -1,       kHCALIN,    -1,       -1,       -1,       -1};
+int _combCalo2[maxcalo]          = {-1,     -1,     -1,       -1,      -1,      -1,     -1,       -1,         -1,       -1,       -1,       -1};
+// int _combCalo2[maxcalo]          = {-1,     -1,     -1,       -1,      -1,      -1,     -1,       kHCALIN,    -1,       -1,       -1,       -1};
 int _caloTowersPhi[maxcalo]      = {0,       0,      0,        0,     100,      0,      64,       64,         0,        -1,       128,       0};
 const int _active_calo = 12;
 
@@ -607,31 +608,70 @@ bool loadClusterizerInput(
 
 }
 
-float getCalibrationValue(float clusterE, int caloEnum, int algoEnum){
+float getCalibrationValue(float clusterE, int caloEnum, int algoEnum, int MCtrueID){
   if(caloEnum == kFHCAL){
       return 1.0;
   } else if(caloEnum == kEEMC){
     if(algoEnum==kMA){
-      return 0.9;
+      return ( 2.21528e+00 + 7.34167e-02 * TMath::Log(clusterE) ) / ( 1 + ( 3.41200e-01 * TMath::Exp( ( clusterE + 4.66905e+02 ) / 3.10970e+02 ) ) );
     } else {
       return 0.9;
     }
+    return 1;
   } else if(caloEnum == kBECAL){
     if(algoEnum==kMA){
-      return 0.9;//0.93-0.0053*clusterE;
+      float corrFac1  = ( 5.91169e+06 + 1.54628e+05 * TMath::Log(clusterE) ) / ( 1 + ( 2.14932e+06 * TMath::Exp( ( clusterE + 1.22185e+02 ) / 1.09576e+02 ) ) );
+        return corrFac1;        
+//       float tempE     = clusterE/corrFac1;
+//       float corrFac2  = ( 3.31323e+08 + 2.45195e+06 * TMath::Log(clusterE) ) / ( 1 + ( 1.47392e+08 * TMath::Exp( ( clusterE + 2.99068e+02 ) / 3.69747e+02 ) ) );
+//       return clusterE /tempE/ corrFac2;
     } else {
       return 0.9;
     }
+    return 1;
   } else if(caloEnum == kFEMC){
-    return 1.0;
+      return ( 1.85096e+00  + 4.56917e-02 * TMath::Log(clusterE) ) / ( 1 + ( 1.10960e+00 * TMath::Exp( ( clusterE - 7.27315e+01 ) / 4.39902e+02 ) ) );
+//     else 
+//       return 1/2.22*( 1.85096e+00  + 4.56917e-02 * TMath::Log(clusterE) ) / ( 1 + ( 1.10960e+00 * TMath::Exp( ( clusterE - 7.27315e+01 ) / 4.39902e+02 ) ) );
   } else if(caloEnum == kLFHCAL){
-    return 0.9;
+//     return 0.9;
+    float corrFac1  = (-3.85201e+02+3.86087e+02 * TMath::Erf( (clusterE+4.44436e+01)/(TMath::Sqrt(2)*1.32891e+01)));
+    return corrFac1;
+//     return tempE;
+//     return 1;
   } else if(caloEnum == kHCALOUT){
-    return 0.62;
+//     return 0.62;
+    float corrFac1  = ( -4.98500e+01+5.05334e+01 * TMath::Erf( (clusterE+6.01498e+01)/(TMath::Sqrt(2)*2.08632e+01)));
+    return corrFac1;
+    float tempE     = clusterE/corrFac1;
+    float corrFac2  = ( 9.74290e-01 - 7.99094e-04 * TMath::Log(tempE) ) / ( 1 + ( -6.64268e-02 * TMath::Exp( ( tempE - 1.32971e+01 ) / -3.23923e+01 ) ) );
+    return clusterE /tempE/ corrFac2;
+//     return tempE;
   } else if(caloEnum == kHCALIN){
     return 0.62;
   } else if(caloEnum == kEHCAL){
     return 0.37;
+  } else {
+    return 1;
+  }
+  return 1.0;
+}
+
+float getCorrectionFactorECal(float clusterE, int caloEnum, int algoEnum, int MCtrueID){
+  if(caloEnum == kFHCAL){
+      return 1.0;
+  } else if(caloEnum == kEEMC){
+    return 1;
+  } else if(caloEnum == kBECAL){
+    return 1;
+  } else if(caloEnum == kFEMC){
+    return 1;
+  } else if(caloEnum == kHCALOUT){
+    return 1;
+  } else if(caloEnum == kHCALIN){
+    return 1;
+  } else if(caloEnum == kEHCAL){
+    return 1;
   } else {
     return 1;
   }

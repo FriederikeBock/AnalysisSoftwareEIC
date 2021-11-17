@@ -118,7 +118,7 @@
   Size_t markerSizeEta[nEta+1]     = {1.5, 1.4, 1.9, 1.5, 1.8, 1.8, 1.5, 1.5, 1.4, 1.9,
                                  1.5, 1.8, 1.8, 1.5, 1.5, 1.5 };
 
-  const int nPhi = 16;
+  const int nPhi = 8;
   Double_t partPhi[nPhi+1]          = {0.};
   void SetPhiBins(){
     for (Int_t iPhi = 0; iPhi < nPhi+1; iPhi++){
@@ -127,13 +127,17 @@
     }
     std::cout << std::endl;
   } 
-  
-  Color_t colorPhi[nPhi+1]         = {kBlue+1, kBlue-6, kViolet+2, kViolet-5, kMagenta-6, kPink-9, kRed+1,  kOrange+7, kOrange, kYellow-6, 
-                                  kGreen+1, kGreen-5, kCyan+1, kCyan+3, kAzure+2,  kGray, kBlack };
-  Style_t markerStylePhi[nPhi+1]   = {24, 25, 27, 28, 30, 42, 46, 24, 25, 27, 
-                                 28, 30, 42, 46, 24, 25, 27};
-  Size_t markerSizePhi[nPhi+1]     = {1.5, 1.4, 1.9, 1.5, 1.8, 1.8, 1.5, 1.5, 1.4, 1.9,
-                                 1.5, 1.8, 1.8, 1.5, 1.5, 1.5, 1.5 };
+
+  Color_t colorPhi[nPhi+1]         = {kBlue+1, kViolet+2, kMagenta-6, kRed+1, kOrange+7, kYellow-6, kGreen+1, kCyan+1,  kBlack };
+  Style_t markerStylePhi[nPhi+1]   = {24, 25, 27, 28, 30, 42, 46, 24, 27};
+  Size_t markerSizePhi[nPhi+1]     = {1.5, 1.4, 1.9, 1.5, 1.8, 1.8, 1.5, 1.5, 1.5};
+
+//   Color_t colorPhi[nPhi+1]         = {kBlue+1, kBlue-6, kViolet+2, kViolet-5, kMagenta-6, kPink-9, kRed+1,  kOrange+7, kOrange, kYellow-6, 
+//                                   kGreen+1, kGreen-5, kCyan+1, kCyan+3, kAzure+2,  kGray, kBlack };
+//   Style_t markerStylePhi[nPhi+1]   = {24, 25, 27, 28, 30, 42, 46, 24, 25, 27, 
+//                                  28, 30, 42, 46, 24, 25, 27};
+//   Size_t markerSizePhi[nPhi+1]     = {1.5, 1.4, 1.9, 1.5, 1.8, 1.8, 1.5, 1.5, 1.4, 1.9,
+//                                  1.5, 1.8, 1.8, 1.5, 1.5, 1.5, 1.5 };
                                  
 //   Color_t colorEta[20]         = {kBlue+1, kBlue-6, kViolet+2, kViolet-5, kMagenta+1, kMagenta-6, kPink-5, kPink-9, kRed+1, kRed-7, 
 //                                   kOrange+7, kOrange, kYellow-6, kSpring+5, kGreen+1, kGreen-5, kCyan+1, kCyan+3, kAzure+2, kBlack };
