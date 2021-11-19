@@ -185,7 +185,6 @@ void plotClustersEndCapCalo(
   }
 
   
-  
   h_IEtaIPhiMapEvt       = new TH2F("h_IEtaIPhiMapEvt", "",  towersx+1, -0.5, towersx+0.5, towersy+1, -0.5, towersy+0.5);
   h_IEtaIPhiMapEvt->Sumw2();
   h_IEtaIPhiMapEvt_Ecut  = new TH2F("h_IEtaIPhiMapEvt_Ecut", "",  towersx+1, -0.5, towersx+0.5, towersy+1, -0.5, towersy+0.5);
@@ -345,7 +344,7 @@ void plotClustersEndCapCalo(
     
   float maxSeedEnergy = 0;
   for (int it = 0; it < (int)rec_clusters.size(); it++){
-    cout << "filling hist for cluster: "  << nclusters << "\t E: " << rec_clusters.at(it).cluster_E << "\t seed E: " << rec_clusters.at(it).cluster_seed<<  endl;
+    cout << "filling hist for cluster: "  << it << "\t E: " << rec_clusters.at(it).cluster_E << "\t seed E: " << rec_clusters.at(it).cluster_seed<<  endl;
     for (int tic = 0; tic < (int)(rec_clusters.at(it).cluster_towers).size(); tic++){
       int iEtaTwr = rec_clusters.at(it).cluster_towers.at(tic).tower_iEta;
       int iPhiTwr = rec_clusters.at(it).cluster_towers.at(tic).tower_iPhi;
