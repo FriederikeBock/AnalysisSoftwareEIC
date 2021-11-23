@@ -128,8 +128,13 @@ void treeProcessing(
     auto eventObservables = EventObservables();
     std::map<std::string, JetObservables> jetObservables;
     // And PDF related settings
-    std::vector<std::string> nPDFNames = {"ep", "EPPS16nlo_CT14nlo_Au197"};
+    std::vector<std::string> nPDFNames = {
+        "ep",
+        "EPPS16nlo_CT14nlo_Au197",
+        //"nNNPDF20_nlo_as_0118_Au197",
+    };
     bool useNPDFVariations = true;
+    std::cout << "Use nPDF variations? " << std::boolalpha << useNPDFVariations << "\n";
     auto pdfs = createPDFContainers(nPDFNames, useNPDFVariations);
     TRandom3 eASelector(0);
     if (_do_jetfinding) {

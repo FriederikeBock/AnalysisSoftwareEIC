@@ -67,6 +67,9 @@ struct PDFContainer {
 
 const std::map<std::string, NPDFInfo> nuclearPDFInfo = {
     {"EPPS16nlo_CT14nlo_Au197", NPDFInfo{"CT14nlo", 97}},
+    //{"nNNPDF20_nlo_as_0118_Au197", NPDFInfo{"NNPDF31_nnlo_as_0118", 250}},
+    // Per note from Florian, the appropriate reference for nNNPDF20 is the proton bound PDF
+    {"nNNPDF20_nlo_as_0118_Au197", NPDFInfo{"nNNPDF20_nlo_as_0118_p_A197_Z79", 250}},
 };
 
 std::map<std::string, std::shared_ptr<PDFContainer>> createPDFContainers(const std::vector<std::string> & pdfNames, bool useNPDFVariations)
