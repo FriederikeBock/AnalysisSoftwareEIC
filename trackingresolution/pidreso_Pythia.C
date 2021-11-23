@@ -820,13 +820,8 @@ void pidreso_Pythia(
   // 1/beta plots in regions for different particle type
   //*****************************************************************************
   for (Int_t pid = 0; pid < 6; pid++){
-    if (pid == 0){
-      gStyle->SetPalette(kGreyScale);
-      TColor::InvertPalette();      
-    } else {
-      SetPlotStyle();
-    }
     for (Int_t eR = 0; eR < 3; eR++){
+      SetPlotStyle();
       if (!h_betaSmearT0_p_Region[pid][eR]) continue;
       cSingle2D->cd();
       cSingle2D->SetLogx();
@@ -876,9 +871,41 @@ void pidreso_Pythia(
         
       cSingle2D->cd();
       cSingle2D->SaveAs(Form("%s/BetaPWithT0_%s_Bin_%s.%s", outputDirOverview.Data(), partName[pid].Data(), nameOutEtaRange[eR].Data(), suffix.Data()));
+      
+      if (pid == 0){
+        gStyle->SetPalette(kGreyScale);
+        TColor::InvertPalette();      
+        
+        cSingle2D->cd();
+        cSingle2D->SetLogx();
+          h_betaSmearT0_p_Region[pid][eR]->Draw("colz");
+      
+          TLegend* legendPIDSummary   = GetAndSetLegend2(0.85 - 0.07*4, 0.91-(nLinesCol+3)*0.85*textSizeLabelsRel, 0.85, 0.91-(nLinesCol+4)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel, 4, "", 42, 0.5);
+          
+          for (Int_t id = 1; id < 6; id++){
+            if (id == 2) continue;
+            DrawGammaSetMarkerTGraphErr(   g_betaMeanSmearT0_p_Region[id][eR], 0, 0, colorPID[id], colorPID[id], 3, kFALSE, 0, kFALSE, lineStylePID[id]);
+            g_betaMeanSmearT0_p_Region[id][eR]->Draw("same, cx");
+            DrawGammaSetMarkerTGraphErr(   g_betaSigmaUpSmearT0_p_Region[id][eR], 0, 0, colorPID[id]+1, colorPID[id]+1, 1, kFALSE, 0, kFALSE, lineStylePID[id]);
+            g_betaSigmaUpSmearT0_p_Region[id][eR]->Draw("same, cx");
+            DrawGammaSetMarkerTGraphErr(   g_betaSigmaDownSmearT0_p_Region[id][eR], 0, 0, colorPID[id]+1, colorPID[id]+1, 1, kFALSE, 0, kFALSE, lineStylePID[id]);
+            g_betaSigmaDownSmearT0_p_Region[id][eR]->Draw("same, cx");
+            legendPIDSummary->AddEntry(g_betaMeanSmearT0_p_Region[id][eR], partLabel[id], "l");
+          }
+          legendPIDSummary->Draw();
+        
+          drawLatexAdd(Form("%1.1f < #eta < %1.1f",etaMin,etaMax),0.85,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          drawLatexAdd("w/ t_{0}",0.85, 0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          drawLatexAdd(perfLabel,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          drawLatexAdd(collisionSystem,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.91-2*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+          
+        cSingle2D->cd();
+        cSingle2D->SaveAs(Form("%s/BetaPWithT0_%s_Bin_%s_BW.%s", outputDirOverview.Data(), partName[pid].Data(), nameOutEtaRange[eR].Data(), suffix.Data()));
+      }
     }
-    cSingle2D->SetLogx(kFALSE);
   }
+  cSingle2D->SetLogx(kFALSE);
   
   //*****************************************************************************
   // 1/beta plots in nominal acceptance
