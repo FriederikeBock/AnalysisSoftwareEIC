@@ -624,12 +624,15 @@ void DrawGammaSetMarkerTGraphErr(   TGraphErrors* graph,
                                     Width_t lineWidth       = 1,
                                     Bool_t boxes            = kFALSE,
                                     Color_t fillColor       = 0,
-                                    Bool_t isHollow         = kFALSE) {
+                                    Bool_t isHollow         = kFALSE,
+                                    Style_t lineStyle       = 1
+                                ) {
   graph->SetMarkerStyle(markerStyle);
   graph->SetMarkerSize(markerSize);
   graph->SetMarkerColor(markerColor);
   graph->SetLineColor(lineColor);
   graph->SetLineWidth(lineWidth);
+  graph->SetLineStyle(lineStyle);
   if (boxes){
     graph->SetFillColor(fillColor);
     if (fillColor!=0){
@@ -773,6 +776,9 @@ void SetPlotStyle() {
 
   TColor::CreateGradientColorTable(nRGBs, stops, red, green, blue, nCont);
   gStyle->SetNumberContours(nCont);
+  
+//   gStyle->SetPalette(kBird);
+  
 }
 
 //__________________________________________________________________________________________________________

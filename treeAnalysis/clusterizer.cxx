@@ -24,7 +24,6 @@ bool _doClusterECalibration = true;
 //**************************************************************************************************************
 //**************************************************************************************************************
 // ANCHOR track/projection matching function
-// TODO at some point we might want E/p
 //**************************************************************************************************************
 //**************************************************************************************************************
 std::vector<matchingStrct> isClusterMatched(  clustersStrct tempcluster, 
@@ -974,7 +973,6 @@ void runclusterizer(
   while (!input_towers.empty()) {
     cluster_towers.clear();
     clslabels.clear();
-    
     clustersStrct tempstructC;
     // always start with highest energetic tower
     if(input_towers.at(0).tower_E > seedE){
@@ -1037,8 +1035,10 @@ void runclusterizer(
         h_clusterizer_nonagg_towers[caloEnum][clusterizerEnum]->Fill(input_towers.size(),input_towers.at(ait).tower_E);
       }
       input_towers.clear();
+      
     }
   }
+  
   if (verbosityCLS > 3) std::cout<< "finished this event for " << str_clusterizer[clusterizerEnum].Data() << std::endl;
   
   std::sort(_clusters_calo[clusterizerEnum][caloEnum].begin(), _clusters_calo[clusterizerEnum][caloEnum].end(), &acompareCl);    

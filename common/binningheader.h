@@ -23,14 +23,38 @@
                                       42., 44., 46., 48., 50., 52., 54., 56., 58., 60.,         // 130
                                       65., 70., 75., 80., 85., 90., 95., 100., 110., 120.,      // 140
                                       130., 140., 150., 160., 170., 180., 190., 200., 250.};    // 149
-                                       
+  const Int_t nBinsPFine           = 167;
+  Double_t binningPFine[168]      = { 0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09,  //10
+                                      0.1, 0.12, 0.14, 0.16, 0.18, 0.2, 0.22, 0.24, 0.26, 0.28,  //20 
+                                      0.3, 0.32, 0.34, 0.36, 0.38, 0.4, 0.42, 0.44, 0.46, 0.48,  //30
+                                      0.5, 0.525, 0.55, 0.575, 0.6, 0.625, 0.65, 0.675, 0.7, 0.725, //40
+                                      0.75, 0.775, 0.8, 0.825, 0.85, 0.875,  0.9, 0.95, 1.0, 1.05,  // 50
+                                      1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,         // 60
+                                      2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0,         // 70
+                                      3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0,         // 80
+                                      4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5.0,         // 90
+                                      5.25, 5.5, 5.75, 6.0, 6.25, 6.5, 6.75, 7.0, 7.25, 7.5,    // 100
+                                      7.75, 8.0, 8.25, 8.5, 8.75, 9.0, 9.25, 9.5, 9.75, 10.0,   // 110
+                                      10.5, 11., 11.5, 12., 12.5, 13., 13.5, 14., 14.5, 15.0,   // 120
+                                      15.5, 16., 16.5, 17., 17.5, 18., 18.5, 19., 19.5, 20.,    // 130
+                                      21., 22., 23., 24., 25., 26., 27., 28., 29., 30.,         // 140
+                                      31., 32., 33., 34., 35., 36., 37., 38., 39., 40.,         // 150
+                                      42., 44., 46., 48., 50., 52., 54., 56., 58., 60.,         // 160
+                                      65., 70., 75., 80., 85., 90., 95., 100.};                 // 168
+
+  void testBinning(Double_t* binning, Int_t nBins){
+    for (Int_t bin = 0; bin < nBins; bin++){
+      if (binning[bin] > binning[bin+1]) std::cout << "This is wrong!! : " <<  binning[bin] << "\t" << binning[bin+1] << std::endl;
+    }
+  }
+                                      
   const Int_t nCuts               = 12;
   const Int_t nPID                = 6;
   const Int_t nResoSt             = 5;
   
   TString nameCuts[nCuts]            = {"N", "L3", "L3F", "LI", "LIF", "BE", "BEF", "AE", "AEF", "T", "LI2", "LI3" };
   TString nameResoAdd[5]          = {"All", "woT", "wT","LI", "LS"};
-  TString nameAddBeta[4]          = {"", "AEMC", "LI3", "LI3AEMC"};
+  TString nameAddBeta[4]          = {"", "BT", "3PT", "3PTV"};
   
   TString labelCuts[12]           = { "no track cuts", "at least 3 hits", "#leq 3 hits & ( 1^{st} | 2^{nd} layer)", "only tracker", "only tracker & ( 1^{st} | 2^{nd} layer)", 
                                       "tracker & only LGAD before ECal", "tracker & only LGAD before ECal & ( 1^{st} | 2^{nd} layer)", "tracker & LGAD after ECal", "tracker & only LGAD after ECal & ( 1^{st} | 2^{nd} layer)", "any timing hit", 
@@ -48,6 +72,7 @@
   const static Double_t partPt[]     = {0., 0.5, 1.0,  2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 
                                       9.0, 10.0, 15.0, 20.0};
   const Int_t nP                   = 25;
+  const Int_t nPLow                = 21;
   const static Double_t partP[]    = {0., 0.1, 0.2, 0.3, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0,
                                       5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 12.0, 15., 20.0, 30.0,
                                       40.0, 50., 75., 100., 150, 200. };
@@ -148,6 +173,7 @@
   Color_t colorPID[nPID]          = {kBlack, kRed+1, kGreen+2, kCyan+2, kBlue+1, kOrange};
   Style_t markerStylePID[nPID]    = {20, 24, 25, 27, 28, 30};
   Size_t markerSizePID[nPID]      = {1.5, 1.4, 1.5, 1.9, 1.6, 1.8};
+  Size_t lineStylePID[nPID]       = {1, 7, 3, 8, 9, 6};
   
   TString nameOutEtaRange[3]   = {"backward", "central", "forward"};
   TString labelEtaRange[3]     = {"     e-going", "     barrel", "     h-going"};
@@ -155,8 +181,8 @@
   Int_t maxEtaBin[3]           = {4, 8, 13};
   Int_t maxNEtaBins[3]         = {4, 5,  4};
     
-  Int_t minEtaBinFull[3]       = {0, 4,  9};
-  Int_t maxEtaBinFull[3]       = {5, 8, 14};
+  Int_t minEtaBinFull[3]       = {0, 5,  9};
+  Int_t maxEtaBinFull[3]       = {5, 9, 14};
   Int_t maxNEtaBinsFull[3]     = {6, 5,  6};
   Int_t minEtaBinCalo[3]       = {0, 4,  9};
   Int_t maxEtaBinCalo[3]       = {6, 11, 15};

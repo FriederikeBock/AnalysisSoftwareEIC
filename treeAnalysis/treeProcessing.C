@@ -25,6 +25,7 @@
 #include "trackmatchingstudies.cxx"
 #include "eoverpstudies.cxx"
 #include "pi0studies.cxx"
+#include "tofpid.cxx"
 
 void treeProcessing(
     TString inFile              = "",
@@ -123,7 +124,9 @@ void treeProcessing(
     // main event loop
     bool tooSmallDeltaEta = false;
     
-    for (Long64_t i=0; i<nEntriesTree;i++) {
+    // use this if you wanna start at a specific event for debug
+    Long64_t startEvent = 0;
+    for (Long64_t i=startEvent; i<nEntriesTree;i++) {
         // load current event
         tt_event->GetEntry(i);
         _nEventsTree++;
@@ -184,7 +187,6 @@ void treeProcessing(
         // obtain labels for different track sources
         prepareMCMatchInfo();
 
-        
         // run clusterizers normal calos
         for (int cal = 0; cal < maxcalo; cal++){
           if(do_reclus && nTowers[cal] > 0 && caloEnabled[cal]){
@@ -232,6 +234,7 @@ void treeProcessing(
         // }
         if(tracksEnabled) hitstudies(primaryTrackSource);
 
+        if (tracksEnabled) tofpidhistos();
         
                 // ANCHOR Track loop variables:
         // float* _track_ID[itrk]
@@ -580,6 +583,10 @@ void treeProcessing(
     if(tracksEnabled){
       std::cout << "running trackingefficiencyhistosSave" << std::endl;
       trackingefficiencyhistosSave();
+    }
+    if(tracksEnabled){
+      std::cout << "running tofpidhistosSave" << std::endl;
+      tofpidhistosSave();
     }
     if(tracksEnabled) {
       std::cout << "running trackingresolutionhistosSave" << std::endl;

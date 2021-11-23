@@ -134,6 +134,10 @@ void caloresolutionhistos(){
         
         // get MC particle ID
         int mcID = (_clusters_calo[ialgo][icalo].at(iclus)).cluster_trueID;
+        if (mcID < 0){
+          std::cout << "Something is bananas for this cluster! algo: " << ialgo << "\tcalo\t" << icalo << "\t icl\t" << iclus << std::endl;
+          continue;
+        }
         // loop over MC particles and find particle type
         int pClass = -1;
         int nTry  = 0;
@@ -451,8 +455,10 @@ void caloresolutionhistos(){
       
         if(verbosityCRH>1){
           std::cout << "cluster: " << icalo << "\t i:" << iclus <<"\t" << (_clusters_calo[ialgo][icalo].at(iclus)).cluster_E << std::endl;
-          if (b1stCalo) std::cout << "cluster 1: " << _combCalo[icalo] << "\t i:" << clIDE<<"\t" << (_clusters_calo[ialgo][_combCalo[icalo]].at(clIDE)).cluster_E << std::endl;
-          if (b2ndCalo) std::cout << "cluster 2" << _combCalo2[icalo] << "\t i:" << clIDH<<"\t" << (_clusters_calo[ialgo][_combCalo2[icalo]].at(clIDH)).cluster_E << std::endl;
+          if (b1stCalo && clIDE > -1) 
+            std::cout << "cluster 1: " << _combCalo[icalo] << "\t i:" << clIDE<<"\t" << (_clusters_calo[ialgo][_combCalo[icalo]].at(clIDE)).cluster_E << std::endl;
+          if (b2ndCalo && clIDH > -1) 
+            std::cout << "cluster 2" << _combCalo2[icalo] << "\t i:" << clIDH<<"\t" << (_clusters_calo[ialgo][_combCalo2[icalo]].at(clIDH)).cluster_E << std::endl;
         }
 
         float mcEta                  = _mcpart_Eta[currMCID];
