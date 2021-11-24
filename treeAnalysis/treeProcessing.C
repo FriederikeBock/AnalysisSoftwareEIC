@@ -1,12 +1,15 @@
 
+#include <algorithm>
+#include <iostream>
+#include <fstream>
+
 #include <TROOT.h>
 #include <TString.h>
 #include <TSystem.h>
 #include <TChain.h>
 #include <TMath.h>
+#include <TRandom3.h>
 #include <TVector3.h>
-#include <iostream>
-#include <fstream>
 
 #include "../common/binningheader.h"
 #include "../common/plottingheader.h"
@@ -24,17 +27,6 @@
 #include "hitstudies.cxx"
 #include "trackmatchingstudies.cxx"
 #include "pi0studies.cxx"
-
-#include <TROOT.h>
-#include <TString.h>
-#include <TSystem.h>
-#include <TChain.h>
-#include <TRandom3.h>
-#include <TVector3.h>
-
-#include <algorithm>
-#include <iostream>
-#include <fstream>
 
 using std::cout;
 using std::endl;
