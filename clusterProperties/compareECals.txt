@@ -1,0 +1,3 @@
+/media/nschmidt/local/AnalysisSoftwareEIC/treeAnalysis/treeProcessing/CADES_SINGLEMULTIPIONELEC_TTLGEO7_Match/output_CS.root EEMC 0 EEMC
+/media/nschmidt/local/AnalysisSoftwareEIC/treeAnalysis/treeProcessing/CADES_SINGLEMULTIPIONELEC_TTLGEO7_Match/output_CS.root BECAL 1 BEMC
+/media/nschmidt/local/AnalysisSoftwareEIC/treeAnalysis/treeProcessing/CADES_SINGLEMULTIPIONELEC_TTLGEO7_Match/output_CS.root FEMC 2 FEMC
