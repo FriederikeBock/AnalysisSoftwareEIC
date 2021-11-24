@@ -13,33 +13,33 @@
 
 #include <LHAPDF/LHAPDF.h>
 
-enum class EtaRegion_t {
+enum class RapidityRegion_t {
     forward,
     midRapidity,
     backward,
 };
 
 struct RegionSpec {
-    double etaMin;
-    double etaMax;
+    double rapMin;
+    double rapMax;
     std::string name;
 };
 
 // Yeah, this is global. It's not great, but so it goes.
-const std::map<EtaRegion_t, RegionSpec> regions = {
-    {EtaRegion_t::forward, RegionSpec{1.5, 3.5, "forward"}},
-    {EtaRegion_t::midRapidity, RegionSpec{-1.5, 1.5, "mid_rapidity"}},
-    {EtaRegion_t::backward, RegionSpec{-3.5, -1.5, "backward"}},
+const std::map<RapidityRegion_t, RegionSpec> regions = {
+    {RapidityRegion_t::forward, RegionSpec{1.5, 3.5, "forward"}},
+    {RapidityRegion_t::midRapidity, RegionSpec{-1.5, 1.5, "mid_rapidity"}},
+    {RapidityRegion_t::backward, RegionSpec{-3.5, -1.5, "backward"}},
 };
 
-RegionSpec findRegion(double eta) {
+RegionSpec findRegion(double rapidity) {
     //for (auto && [region, r] : regions) {
     for (auto & v : regions) {
-        if (eta > v.second.etaMin && eta < v.second.etaMax) {
+        if (rapidity > v.second.rapMin && rapidity < v.second.rapMax) {
             return v.second;
         }
     }
-    throw std::runtime_error("Could not find eta region");
+    throw std::runtime_error("Could not find rapidity region");
 }
 
 enum class JetType_t {
@@ -379,7 +379,7 @@ void fillJetObservables(JetObservables & observables,
     for (auto & j : jets) {
         // Acceptance
         // Fiducial jet cut
-        if (std::abs(j.eta()) > (3.5 - jetR)) {
+        if (std::abs(j.rapidity()) > (3.5 - jetR)) {
             continue;
         }
 
@@ -389,11 +389,11 @@ void fillJetObservables(JetObservables & observables,
             continue;
         }
 
-        auto region = findRegion(j.eta());
+        auto region = findRegion(j.rapidity());
 
         // Check fiducial acceptance for the region. If outside, then continue
         // Skip for now, since I'm not sure it makes sense in the way that it does for say, ALICE
-        /*if (j.eta() > (region.etaMax - jetR) || j.eta() > (region.etaMin + jetR)) {
+        /*if (j.rapidity() > (region.rapMax - jetR) || j.rapidity() > (region.rapMin + jetR)) {
             continue;
         }*/
 
