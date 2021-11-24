@@ -634,6 +634,8 @@ int main( int argc, char* argv[] )
     double jetR                 = 0.5;
     double tracked_jet_max_pT   = 30;
     bool removeTracklets        = false;
+    bool brokenProjections      = false;
+    bool isSingleParticleProd   = false;
 
     // Import main call arguments
         TString import;
@@ -694,7 +696,9 @@ int main( int argc, char* argv[] )
             jetAlgorithm,
             jetR,
             tracked_jet_max_pT,
-            removeTracklets
+            removeTracklets,
+            brokenProjections,
+            isSingleParticleProd
         );
     return 0;
 

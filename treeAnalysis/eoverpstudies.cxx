@@ -107,10 +107,12 @@ bool eoverpstudies( int primaryTrackSource = 0, bool runSpecialCuts = false){
         // if(((_clusters_calo[ialgo][icalo].at(iclus)).cluster_M02<0.1))continue;
         if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta < minEtaCurCalo || (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta > maxEtaCurCalo) continue;
         if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_NTowers < 2) continue;
+        if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_M02 > 1.0) continue;
 
         for(Int_t iclus2=0; iclus2<(Int_t)_clusters_calo[ialgo][icalo].size(); iclus2++){
           if( iclus == iclus2) continue;
           if ( (_clusters_calo[ialgo][icalo].at(iclus2)).cluster_NTowers<2) continue;
+          if((_clusters_calo[ialgo][icalo].at(iclus2)).cluster_M02 > 1.0) continue;
           if ( mcID == (_clusters_calo[ialgo][icalo].at(iclus2)).cluster_trueID  ) {
             if ( (_clusters_calo[ialgo][icalo].at(iclus)).cluster_E < (_clusters_calo[ialgo][icalo].at(iclus2)).cluster_E  ){
               isHighestForPart = false;

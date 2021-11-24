@@ -91,13 +91,13 @@ void energyResolutionCalorimeters(
       detLabel  = "FEMC, w/ mat. infront";
     }
   } else if (caloName.BeginsWith("BECAL") ){
-    detLabel      = "BECAL (Sci-glass)";
+    detLabel      = "BEMC (Sci-glass)";
     caloNameRead  = "BECAL";
     isEMCal       = 1;
     exEtabin      = 7;
     dirCal        = 1;
     if (caloName.CompareTo("BECAL-wMat") == 0){
-      detLabel  = "BECAL, w/ mat. infront";
+      detLabel  = "BEMC, w/ mat. infront";
     }
   } else if (caloName.BeginsWith("LFHCAL") ){
     detLabel      = "LFHCAL";
@@ -123,21 +123,21 @@ void energyResolutionCalorimeters(
       isComb      = 1;
     }
   } else if (caloName.BeginsWith("CHCAL") ){
-    detLabel      = "oHCAL, iHCal infront";
+    detLabel      = "OHCAL, IHCal infront";
     caloNameRead  = "HCALOUT";
     exEtabin      = 2;
     dirCal        = 1;
     if (caloName.CompareTo("CHCAL-comb") == 0){
-      detLabel    = "oHCAL+iHCal+BECAL";
+      detLabel    = "OHCAL+IHCal+BECAL";
       isComb      = 1;
     }
   } else if (caloName.BeginsWith("HCALIN") ){
-    detLabel      = "iHCal";
+    detLabel      = "IHCal";
     caloNameRead  = "HCALIN";
     exEtabin      = 2;
     dirCal        = 1;
     if (caloName.CompareTo("HCALIN-wMat") == 0){
-      detLabel  = "iHCal-w/ mat infront";
+      detLabel  = "IHCal-w/ mat infront";
     }
   } 
   minEtaMax     = nominalEtaRegion[dirCal][0];

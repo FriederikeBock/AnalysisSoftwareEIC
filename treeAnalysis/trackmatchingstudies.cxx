@@ -14,6 +14,9 @@ TH1F*  h_TMstudies_clusSpec_Eta[_active_calo][_active_algo][nEta+1];            
 TH1F*  h_TMstudies_clusSpec_Matched[_active_calo][_active_algo];                // [calorimeter_enum][algorithm_enum]
 TH1F*  h_TMstudies_clusSpec_Matched_Eta[_active_calo][_active_algo][nEta+1];    // [calorimeter_enum][algorithm_enum]
 TH1F*  h_TMstudies_clusSpec_MatchedCalo[_active_calo][_active_algo];            // [calorimeter_enum][algorithm_enum]
+TH1F*  h_TMstudies_clusSpec_MatchedCalo_Eta[_active_calo][_active_algo][nEta+1];            // [calorimeter_enum][algorithm_enum]
+TH1F*  h_TMstudies_clusSpec_MatchedTrackAndCalo[_active_calo][_active_algo];            // [calorimeter_enum][algorithm_enum]
+TH1F*  h_TMstudies_clusSpec_MatchedTrackAndCalo_Eta[_active_calo][_active_algo][nEta+1];    // [calorimeter_enum][algorithm_enum]
 
 TH2F*  h_TMstudies_2D_delta[_active_calo][_active_algo];                        // [calorimeter_enum][algorithm_enum]
 TH2F*  h_TMstudies_dx_vsEta[_active_calo][_active_algo];                        // [calorimeter_enum][algorithm_enum]
@@ -74,12 +77,14 @@ bool trackmatchingstudies( int primaryTrackSource = 0){
         if (IsHCALCalorimeter(icalo)){
           h_TMstudies_clusSpec_MatchedCalo[icalo][ialgo] = new TH1F(Form("h_TMstudies_clusSpec_MatchedCalo_%s_%s", str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), 
                                                                     "", 120,0,60);
+          h_TMstudies_clusSpec_MatchedTrackAndCalo[icalo][ialgo] = new TH1F(Form("h_TMstudies_clusSpec_MatchedTrackAndCalo_%s_%s", str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), 
+                                                                    "", 120,0,60);
           
           if (_combCalo[icalo] != -1){
             if (caloEnabled[_combCalo[icalo]]){
               h_TMstudiesCalo_2D_delta[icalo][_combCalo[icalo]][ialgo]    = new TH2F(Form("h_TMstudiesCalo_2D_delta_%s_%s_%s",str_calorimeter[icalo].Data(),
                                                                                      str_calorimeter[_combCalo[icalo]].Data(), str_clusterizer[ialgo].Data()), "", 
-                                                                                     nbins2Ddelta, min2Ddeltahist, max2Ddeltahist, nbins2Ddelta, min2Ddeltahist, max2Ddeltahist);
+                                                                                     200, -0.25, 0.25, 200, -0.25, 0.25);
               h_TMstudiesCalo_dEta_vsEta[icalo][_combCalo[icalo]][ialgo]  = new TH2F(Form("h_TMstudiesCalo_dEta_vsEta_%s_%s_%s", str_calorimeter[icalo].Data(),
                                                                                     str_calorimeter[_combCalo[icalo]].Data(), str_clusterizer[ialgo].Data()), "", 
                                                                                     200, -0.25, 0.25, 
@@ -138,6 +143,12 @@ bool trackmatchingstudies( int primaryTrackSource = 0){
                                                                                           str_calorimeter[icalo].Data(), str_calorimeter[_combCalo[icalo]].Data(),
                                                                                           str_clusterizer[ialgo].Data()), "", nBinsP, binningP,
                                                                                           200, -0.25, 0.25);
+
+                h_TMstudies_clusSpec_MatchedCalo_Eta[icalo][ialgo][et]  = new TH1F(Form("h_TMstudies_clusSpec_MatchedCalo_Eta_%1.1f_%1.1f_%s_%s", etaMin, etaMax, str_calorimeter[icalo].Data(),
+                                                                                          str_clusterizer[ialgo].Data()), "", 120, 0, 60);
+
+                h_TMstudies_clusSpec_MatchedTrackAndCalo_Eta[icalo][ialgo][et]  = new TH1F(Form("h_TMstudies_clusSpec_MatchedTrackAndCalo_Eta_%1.1f_%1.1f_%s_%s", etaMin, etaMax, str_calorimeter[icalo].Data(),
+                                                                                          str_clusterizer[ialgo].Data()), "", 120, 0, 60);
               }
             }
             if (_combCalo2[icalo] != -1){
@@ -150,6 +161,12 @@ bool trackmatchingstudies( int primaryTrackSource = 0){
                                                                                           str_calorimeter[icalo].Data(), str_calorimeter[_combCalo2[icalo]].Data(),
                                                                                           str_clusterizer[ialgo].Data()), "", nBinsP, binningP,
                                                                                           200, -0.25, 0.25);
+
+                h_TMstudies_clusSpec_MatchedCalo_Eta[icalo][ialgo][et]  = new TH1F(Form("h_TMstudies_clusSpec_MatchedCalo_Eta_%1.1f_%1.1f_%s_%s", etaMin, etaMax, str_calorimeter[icalo].Data(),
+                                                                                          str_clusterizer[ialgo].Data()), "", 120, 0, 60);
+
+                h_TMstudies_clusSpec_MatchedTrackAndCalo_Eta[icalo][ialgo][et]  = new TH1F(Form("h_TMstudies_clusSpec_MatchedTrackAndCalo_Eta_%1.1f_%1.1f_%s_%s", etaMin, etaMax, str_calorimeter[icalo].Data(),
+                                                                                          str_clusterizer[ialgo].Data()), "", 120, 0, 60);
               }
             }
           }
@@ -246,6 +263,15 @@ bool trackmatchingstudies( int primaryTrackSource = 0){
           }
           if ((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedECals.size() > 0){
             h_TMstudies_clusSpec_MatchedCalo[icalo][ialgo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E);
+            if(et >= minEtaBinCalo[caloDir] && et<maxEtaBinCalo[caloDir]){
+              h_TMstudies_clusSpec_MatchedCalo_Eta[icalo][ialgo][et]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E);
+            }
+            if ((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedTracks.size() > 0){
+              h_TMstudies_clusSpec_MatchedTrackAndCalo[icalo][ialgo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E);
+              if(et >= minEtaBinCalo[caloDir] && et<maxEtaBinCalo[caloDir]){
+                h_TMstudies_clusSpec_MatchedTrackAndCalo_Eta[icalo][ialgo][et]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E);
+              }
+            }
           }
         }
       }
@@ -275,6 +301,7 @@ void trackmatchingstudiesSave(){
       if(h_TMstudies_clusSpec[icalo][ialgo])h_TMstudies_clusSpec[icalo][ialgo]->Write();
       if(h_TMstudies_clusSpec_Matched[icalo][ialgo])h_TMstudies_clusSpec_Matched[icalo][ialgo]->Write();
       if(h_TMstudies_clusSpec_MatchedCalo[icalo][ialgo])h_TMstudies_clusSpec_MatchedCalo[icalo][ialgo]->Write();
+      if(h_TMstudies_clusSpec_MatchedTrackAndCalo[icalo][ialgo])h_TMstudies_clusSpec_MatchedTrackAndCalo[icalo][ialgo]->Write();
       if(h_TMstudies_2D_clus[icalo][ialgo]) h_TMstudies_2D_clus[icalo][ialgo]->Write();
       
       if(h_TMstudies_2D_delta[icalo][ialgo]) h_TMstudies_2D_delta[icalo][ialgo]->Write();
@@ -291,6 +318,8 @@ void trackmatchingstudiesSave(){
       for (Int_t et = minEtaBinCalo[caloDir]; et<maxEtaBinCalo[caloDir]; et++){
         if(h_TMstudies_clusSpec_Eta[icalo][ialgo][et])        h_TMstudies_clusSpec_Eta[icalo][ialgo][et]->Write();
         if(h_TMstudies_clusSpec_Matched_Eta[icalo][ialgo][et])h_TMstudies_clusSpec_Matched_Eta[icalo][ialgo][et]->Write();
+        if(h_TMstudies_clusSpec_MatchedCalo_Eta[icalo][ialgo][et])h_TMstudies_clusSpec_MatchedCalo_Eta[icalo][ialgo][et]->Write();
+        if(h_TMstudies_clusSpec_MatchedTrackAndCalo_Eta[icalo][ialgo][et])h_TMstudies_clusSpec_MatchedTrackAndCalo_Eta[icalo][ialgo][et]->Write();
 
         if(h_TMstudies_dx_vsClsE[icalo][ialgo][et])           h_TMstudies_dx_vsClsE[icalo][ialgo][et]->Write();
         if(h_TMstudies_dy_vsClsE[icalo][ialgo][et])           h_TMstudies_dy_vsClsE[icalo][ialgo][et]->Write();

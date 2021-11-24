@@ -44,8 +44,9 @@ void eoverpstudies_YR(
   gROOT->SetStyle("Plain");
   StyleSettingsThesis();
   TString collisionSystem           = "e-p, #sqrt{#it{s}} = 100 GeV";
-  TString perfLabel                 = "ECCE G4 simulation";
-  
+  TString perfLabel                 = "#it{#bf{ECCE}} simulation";
+  TString dateForOutput                       = ReturnDateStringForOutput();
+
 
   Color_t colorPID_light[nPID]          = {kGray+1, kRed-6, kGreen-6, kCyan-6, kBlue+1, kOrange};
   Color_t colorPID_light2[nPID]         = {kGray+2, kRed-2, kGreen-2, kCyan-6, kBlue+1, kOrange};
@@ -73,8 +74,8 @@ void eoverpstudies_YR(
   const int Nusefilltrue = 2;
   TString str_EoverP_FillTrue[Nusefilltrue] = {"recP","trueP"};
   
-  TString outputDir                 = Form("plotsEoverP");
-  if(doFitting) outputDir+="Fitting";
+  TString outputDir                 = Form("plotsEoverP/%s",dateForOutput.Data());
+  // if(doFitting) outputDir+="Fitting";
   gSystem->Exec("mkdir -p "+outputDir);
 
   TFile* inputFilePion                      = new TFile(inputFileNamePion.Data());
@@ -568,7 +569,7 @@ cout << "meow" << endl;
   canvasMergingFraction->SetLogx(1);
 
   TH2F * histo2DAccEff;
-  histo2DAccEff                = new TH2F("histo2DAccEff", "histo2DAccEff",1000, 0.51, 49, 1000, 1, 99999 );
+  histo2DAccEff                = new TH2F("histo2DAccEff", "histo2DAccEff",1000, 0.51, 39, 1000, 1, 99999 );
   SetStyleHistoTH2ForGraphs( histo2DAccEff, "#it{p}_{track} (GeV/#it{c})", "#pi^{#pm}  rejection",
                           0.85*textSizeLabelsRel, textSizeLabelsRel, 0.85*textSizeLabelsRel, textSizeLabelsRel, 0.9, 1, 510, 510);//(#times #epsilon_{pur})
   histo2DAccEff->GetYaxis()->SetLabelOffset(0.001);
@@ -815,10 +816,14 @@ cout << "meow" << endl;
   TGraphAsymmErrors* graphElectronEfficiency[Nusefilltrue][maxcalo][nEta+1]={{{NULL}}};
   TGraphAsymmErrors* graphElectronEfficiency_fwhm[Nusefilltrue][maxcalo][nEta+1]={{{NULL}}};
   TH2F * histoDummyEffi;
-  histoDummyEffi                = new TH2F("histoDummyEffi", "histoDummyEffi",1000, 0.41, 34.9, 1000, 0, 1.29 );
+  histoDummyEffi                = new TH2F("histoDummyEffi", "histoDummyEffi",1000, 0.51, 39, 1000, 0, 1.29 );
   SetStyleHistoTH2ForGraphs( histoDummyEffi, "#it{p}_{track} (GeV/#it{c})", "electron survival probability",
                           0.85*textSizeLabelsRel, textSizeLabelsRel, 0.85*textSizeLabelsRel, textSizeLabelsRel, 0.9, 1, 510, 510);//(#times #epsilon_{pur})
     // histoDummyEffi->GetYaxis()->SetRangeUser(1,30999);
+  histoDummyEffi->GetYaxis()->SetLabelOffset(0.001);
+  // histoDummyEffi->GetXaxis()->SetLabelOffset(-0.01);
+  histoDummyEffi->GetXaxis()->SetNoExponent();
+  histoDummyEffi->GetXaxis()->SetMoreLogLabels(kTRUE);
   histoDummyEffi->DrawCopy();
   legendPi0Merge1           = GetAndSetLegend2(0.65, 0.14, 0.90, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
   legendPi0Merge2           = GetAndSetLegend2(0.75, 0.14, 0.90, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
@@ -863,8 +868,8 @@ cout << "meow" << endl;
   // drawLatexAdd(caloName[icalo].Data(),0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
   // drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
 
-  DrawGammaLines(0.41, 34.9, 1,1,2,kGray+1, 2);
-  DrawGammaLines(0.41, 34.9, 0.95,0.95,2,kGray, 5);
+  DrawGammaLines(0.51, 39, 1,1,2,kGray+1, 2);
+  DrawGammaLines(0.51, 39, 0.95,0.95,2,kGray, 5);
 
 
   canvaseleceffi->Update();
@@ -876,7 +881,7 @@ cout << "meow" << endl;
   // canvasEPcutValue->SetLogy(1);
   canvasEPcutValue->SetLogx(1);
   TH2F * histoEPcutValue;
-  histoEPcutValue                = new TH2F("histoEPcutValue", "histoEPcutValue",1000, 0.51, 49, 1000, 0.5, 1.19 );
+  histoEPcutValue                = new TH2F("histoEPcutValue", "histoEPcutValue",1000, 0.51, 39, 1000, 0.5, 1.19 );
   SetStyleHistoTH2ForGraphs( histoEPcutValue, "#it{p}_{track,true} (GeV/#it{c})", "#it{E}/#it{p} cut value",
                           0.85*textSizeLabelsRel, textSizeLabelsRel, 0.85*textSizeLabelsRel, textSizeLabelsRel, 0.9, 1, 510, 510);//(#times #epsilon_{pur})
   histoEPcutValue->GetYaxis()->SetLabelOffset(0.001);
@@ -938,7 +943,7 @@ cout << "meow" << endl;
   // drawLatexAdd(caloName[icalo].Data(),0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
   // drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
 
-  DrawGammaLines(0.51, 49, 1,1,2,kGray+1, 2);
+  DrawGammaLines(0.51, 39, 1,1,2,kGray+1, 2);
 
 
   canvasEPcutValue->Update();
@@ -996,7 +1001,7 @@ cout << "meow" << endl;
   // drawLatexAdd(caloName[icalo].Data(),0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
   // drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
 
-  DrawGammaLines(0.51, 49, 1,1,2,kGray+1, 2);
+  DrawGammaLines(0.51, 39, 1,1,2,kGray+1, 2);
 
 
   canvasEPcutValue->Update();

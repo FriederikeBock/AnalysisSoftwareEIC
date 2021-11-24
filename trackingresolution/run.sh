@@ -2,7 +2,7 @@
 #root resolutionJETS.C
 if [ $1 == "Nico" ]; then
 basepath=/media/nschmidt/local/AnalysisSoftwareEIC/treeAnalysis/treeProcessing_centralProduction_raymond
-trkrid=1
+trkrid=0
 
 #root -x -l -q -b 'trackingeffi.C("'$basepath'/production-singleElectron-p-0-to-20/output_TRKEFF.root","pdf","elec-centprod",'$trkrid')'
 #root -x -l -q -b 'trackingeffi.C("'$basepath'/production-singlePion-p-0-to-20/output_TRKEFF.root","pdf","pion-centprod",'$trkrid')'
@@ -11,18 +11,21 @@ trkrid=1
 #root -x -l -q -b 'trackingeffi.C("'$basepath'/cades-singlePion-p-0.3-to-20-geoOption5/output_TRKEFF.root","pdf","pion-geo5",'$trkrid')'
 #root -x -l -q -b 'trackingeffi.C("'$basepath'/cades-singlePion-p-0.3-to-20-geoOption6/output_TRKEFF.root","pdf","pion-geo6",'$trkrid')'
 
-root -x -l -q -b 'trackingeffi.C("'$basepath'/cades-pythia8-10x100-q2-1-to-100-geoOption5/output_TRKEFF.root","pdf","pythia-centprod-geo5-q2-1-100",'$trkrid')'
-root -x -l -q -b 'trackingeffi.C("'$basepath'/cades-pythia8-10x100-q2-1-to-100-geoOption6/output_TRKEFF.root","pdf","pythia-centprod-geo6-q2-1-100",'$trkrid')'
-root -x -l -q -b 'trackingeffi.C("'$basepath'/cades-pythia8-10x100-q2-100-geoOption5/output_TRKEFF.root","pdf","pythia-centprod-geo5-q2-100",'$trkrid')'
-root -x -l -q -b 'trackingeffi.C("'$basepath'/cades-pythia8-10x100-q2-100-geoOption6/output_TRKEFF.root","pdf","pythia-centprod-geo6-q2-100",'$trkrid')'
-root -x -l -q -b 'trackingeffi.C("'$basepath'/cades-singleElectron-p-0.3-to-20-geoOption5/output_TRKEFF.root","pdf","elec-geo5",'$trkrid')'
-root -x -l -q -b 'trackingeffi.C("'$basepath'/cades-singleElectron-p-0.3-to-20-geoOption6/output_TRKEFF.root","pdf","elec-geo6",'$trkrid')'
-root -x -l -q -b 'trackingeffi.C("'$basepath'/cades-singlePion-p-0.3-to-20-geoOption5/output_TRKEFF.root","pdf","pion-geo5",'$trkrid')'
-root -x -l -q -b 'trackingeffi.C("'$basepath'/cades-singlePion-p-0.3-to-20-geoOption6/output_TRKEFF.root","pdf","pion-geo6",'$trkrid')'
-root -x -l -q -b 'trackingeffi.C("'$basepath'/production-singleElectron-p-0-to-20/output_TRKEFF.root","pdf","elec-centprod",'$trkrid')'
-root -x -l -q -b 'trackingeffi.C("'$basepath'/production-singlePion-p-0-to-20/output_TRKEFF.root","pdf","pion-centprod",'$trkrid')'
-root -x -l -q -b 'trackingeffi.C("'$basepath'/production-pythia8-10x100-q2-1-to-100/output_TRKEFF.root","pdf","pythia-centprod-q2-1-100",'$trkrid')'
-root -x -l -q -b 'trackingeffi.C("'$basepath'/production-pythia8-10x100-q2-100/output_TRKEFF.root","pdf","pythia-centprod-q2-100",'$trkrid')'
+root -x -l -q -b 'trackingeffi.C("/media/nschmidt/local/AnalysisSoftwareEIC/treeAnalysis/treeProcessing/CADES_SINGLEMULTIPIONELEC_TTLGEO7_Match/output_TRKEFF.root","pdf","singlepionelec_projfix",'$trkrid')'
+#root -x -l -q -b 'trackingeffi.C("/media/nschmidt/local/AnalysisSoftwareEIC/treeAnalysis/treeProcessing/CADES_SINGLEMULTIPION_TTLGEO7_Match/output_TRKEFF.root","pdf","singleelec_projfix",'$trkrid')'
+
+#root -x -l -q -b 'trackingeffi.C("'$basepath'/cades-pythia8-10x100-q2-1-to-100-geoOption5/output_TRKEFF.root","pdf","pythia-centprod-geo5-q2-1-100",'$trkrid')'
+#root -x -l -q -b 'trackingeffi.C("'$basepath'/cades-pythia8-10x100-q2-1-to-100-geoOption6/output_TRKEFF.root","pdf","pythia-centprod-geo6-q2-1-100",'$trkrid')'
+#root -x -l -q -b 'trackingeffi.C("'$basepath'/cades-pythia8-10x100-q2-100-geoOption5/output_TRKEFF.root","pdf","pythia-centprod-geo5-q2-100",'$trkrid')'
+#root -x -l -q -b 'trackingeffi.C("'$basepath'/cades-pythia8-10x100-q2-100-geoOption6/output_TRKEFF.root","pdf","pythia-centprod-geo6-q2-100",'$trkrid')'
+#root -x -l -q -b 'trackingeffi.C("'$basepath'/cades-singleElectron-p-0.3-to-20-geoOption5/output_TRKEFF.root","pdf","elec-geo5",'$trkrid')'
+#root -x -l -q -b 'trackingeffi.C("'$basepath'/cades-singleElectron-p-0.3-to-20-geoOption6/output_TRKEFF.root","pdf","elec-geo6",'$trkrid')'
+#root -x -l -q -b 'trackingeffi.C("'$basepath'/cades-singlePion-p-0.3-to-20-geoOption5/output_TRKEFF.root","pdf","pion-geo5",'$trkrid')'
+#root -x -l -q -b 'trackingeffi.C("'$basepath'/cades-singlePion-p-0.3-to-20-geoOption6/output_TRKEFF.root","pdf","pion-geo6",'$trkrid')'
+#root -x -l -q -b 'trackingeffi.C("'$basepath'/production-singleElectron-p-0-to-20/output_TRKEFF.root","pdf","elec-centprod",'$trkrid')'
+#root -x -l -q -b 'trackingeffi.C("'$basepath'/production-singlePion-p-0-to-20/output_TRKEFF.root","pdf","pion-centprod",'$trkrid')'
+#root -x -l -q -b 'trackingeffi.C("'$basepath'/production-pythia8-10x100-q2-1-to-100/output_TRKEFF.root","pdf","pythia-centprod-q2-1-100",'$trkrid')'
+#root -x -l -q -b 'trackingeffi.C("'$basepath'/production-pythia8-10x100-q2-100/output_TRKEFF.root","pdf","pythia-centprod-q2-100",'$trkrid')'
 
 # trkrid=2
 # trksource=0
