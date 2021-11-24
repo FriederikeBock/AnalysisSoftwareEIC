@@ -391,7 +391,7 @@ void fillJetObservables(JetObservables & observables,
 
         auto region = findRegion(j.eta());
 
-        // Check fiducial acceptnace for the region. If outside, then continue
+        // Check fiducial acceptance for the region. If outside, then continue
         // Skip for now, since I'm not sure it makes sense in the way that it does for say, ALICE
         /*if (j.eta() > (region.etaMax - jetR) || j.eta() > (region.etaMin + jetR)) {
             continue;
@@ -426,7 +426,7 @@ void fillJetObservables(JetObservables & observables,
                                 << "\n";
 
                         // Print particles to help with debugging
-                        // NOTE: Only do it once if there are many variations - otherewise it would get overwhelming quickly
+                        // NOTE: Only do it once if there are many variations - otherwise it would get overwhelming quickly
                         if (i == 0) {
                             printParticles();
                         }

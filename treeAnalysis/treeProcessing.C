@@ -49,7 +49,7 @@ void treeProcessing(
     std::string jetAlgorithm    = "anti-kt",
     std::vector<double> jetRParameters = {0.3, 0.5, 0.8, 1.0},
     double tracked_jet_max_pT   = 30,
-    bool brokenProjections      = true,               // use this to true with outputs for prod4, newer output swtich it to false
+    bool brokenProjections      = true,               // use this to true with outputs for prod4, newer output switch it to false
     bool isSingleParticleProd   = false
 ){
     // make output directory
@@ -63,7 +63,7 @@ void treeProcessing(
     if (brokenProjections){
       _useAlternateForProjections = brokenProjections;
       std::cout << "calorimeter projections not available, using projections in TTL for matching" << std::endl;
-    } else { 
+    } else {
       std::cout << "using calorimeter projections for matching" << std::endl;
     }
     bool runPi0Reco = false;
@@ -161,7 +161,7 @@ void treeProcessing(
     _nEventsTree=0;
     // main event loop
     bool tooSmallDeltaEta = false;
-    
+
     // use this if you wanna start at a specific event for debug
     Long64_t startEvent = 0;
     for (Long64_t i=startEvent; i<nEntriesTree;i++) {
@@ -189,7 +189,7 @@ void treeProcessing(
             }
             // if(_mcpart_PDG[imc]==111) cout << "pi0 found (" << _mcpart_ID[imc] << ") with mother: " << _mcpart_PDG[motherid] << " (" <<  _mcpart_ID_parent[imc] << ")" << endl;
         }
-        
+
         if (verbosity > 0){
           for(int imc=0; imc<_nMCPart; imc++){
             std::cout << "MC part: \t" << imc << "\t E = " << _mcpart_E[imc] << "\tEta: " << _mcpart_Eta[imc]<< "\tPhi: " << _mcpart_Phi[imc]<<  std::endl;
@@ -217,7 +217,7 @@ void treeProcessing(
                                   _nTowers_EHCAL, _nTowers_HCALIN, _nTowers_HCALOUT, _nTowers_LFHCAL, _nTowers_EEMCG,
                                   _nTowers_BECAL  };
 
-        
+
         for(Int_t itrk=0; itrk<_nTracks; itrk++){
             _track_trueID[itrk] = GetCorrectMCArrayEntry(_track_trueID[itrk]);
             // if(verbosity>1) std::cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk] << "\tand X = " << _track_px[itrk] << " cm" << std::endl;
@@ -249,7 +249,7 @@ void treeProcessing(
           runclusterizer(kV1, kDRCALO, seedE[kDRCALO], aggE[kDRCALO], primaryTrackSource);
         }
         if((do_reclus) && verbosity>1) std::cout << "done with clusterization!" << std::endl;
-        
+
         // set clusters matched to respective track for direct accessing
         SetClustersMatchedToTracks();
         // do calo-calo matching
@@ -260,7 +260,7 @@ void treeProcessing(
             }
           }
         }
-        
+
         // ANCHOR Hits loop variables:
         // float* _hits_x[ihit]
         // float* _hits_y[ihit]
