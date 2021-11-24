@@ -93,11 +93,18 @@ fi
 
 
 
-if [ $1 = "centralsim_singlepion" ]; then
-maxevt=10000
-    input=/media/nschmidt/local/EIC_running/singlePion/eval_00000/DST_General_particleGun_singlePion_merged_eval.root
-    geometry=/media/nschmidt/local/EIC_running/singlePion/eval_00000/geometry2ndCampaign.root
-    #root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CENTRALSIM_SINGLEPION",true,false  ,true,true,'$maxevt',0,false,0)'
+if [ $1 = "cades_singlemultipion" ]; then
+maxevt=-1
+    #input=/media/nschmidt/SSD/simulationOutputCADES/single_particle_productions/merged_output_TTLGEO_7_HITS_SimpleMultiPion/merged_output_TTLGEO_7_HITS_SimpleMultiPion.root
+    input=/media/nschmidt/SSD/simulationOutputCADES/single_particle_productions/merged_TTLGEO_7_HITS_MultFix_PROJFIX_SimpleMultiPion/merged_TTLGEO_7_HITS_MultFix_PROJFIX_SimpleMultiPion.root
+    geometry=/media/nschmidt/SSD/simulationOutputCADES/geometry.root
+    root -x -l -b -q 'treeProcessing.C+("'$input'","'$geometry'","CADES_SINGLEMULTIPION_TTLGEO7_EOP",'$maxevt',true,false  ,false,0,0,"anti-kt",0.5,30,false,false,false)'
+fi
+if [ $1 = "cades_singlemultielectron" ]; then
+maxevt=-1
+    input=/media/nschmidt/SSD/simulationOutputCADES/single_particle_productions/output_TTLGEO_7_HITS_PROJFIX_SimpleMultiElectron/output_TTLGEO_7_HITS_PROJFIX_SimpleMultiElectron.root
+    geometry=/media/nschmidt/SSD/simulationOutputCADES/geometry.root
+    root -x -l -b -q 'treeProcessing.C+("'$input'","'$geometry'","CADES_SINGLEMULTIELECTRON_TTLGEO7_EOP",'$maxevt',true,false  ,false,0,0,"anti-kt",0.5,30,false,false,false)'
 fi
 
 if [ $1 = "centralsim_singleelectron" ]; then
@@ -127,12 +134,31 @@ fi
 
 
 if [ $1 = "centralsim_pythia_TTL8" ]; then
-maxevt=10000
+maxevt=1000 #-1 #10000
     input="/media/nschmidt/SSD/simulationOutputEIC/ECCESimulations/output_TTLGEO_8_HITS_Jets_pythia8_ep-10x100-q2-100.root"
     geometry="/media/nschmidt/local/EIC_running/singleElectron/eval_00000/geometry2ndCampaign.root"
     #input="/Users/ins/Downloads/singleElec_merged/DST_General_particleGun_singleElectron_merged_eval.root"
     #geometry="/Users/ins/Downloads/singleElec_merged/geometry2ndCampaign.root"
-    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CENTRALSIM_PYTHIA_TTL8",'$maxevt',true,false  ,false,false,0)'
+    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CENTRALSIM_PYTHIA_TTL8_EoP",'$maxevt',true,false  ,false,true,0)'
+fi
+
+
+if [ $1 = "centralsim_pythia_TTL8_MB" ]; then
+maxevt=-1 #-1 #10000
+    input="/media/nschmidt/SSD/simulationOutputEIC/ECCESimulations/output_TTLGEO_8_HITS_Jets_pythia8_ep-10x100-q2-1-to-100.root"
+    geometry="/media/nschmidt/local/EIC_running/singleElectron/eval_00000/geometry2ndCampaign.root"
+    #input="/Users/ins/Downloads/singleElec_merged/DST_General_particleGun_singleElectron_merged_eval.root"
+    #geometry="/Users/ins/Downloads/singleElec_merged/geometry2ndCampaign.root"
+    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","CENTRALSIM_PYTHIA_TTL8_EoP_MB",'$maxevt',true,false  ,false,true,0)'
+fi
+
+if [ $1 = "cadessim_pythia_TTL7_MB" ]; then
+maxevt=-1 #-1 #10000
+    input="/media/nschmidt/SSD/simulationOutputCADES/pythia_productions/merged_output_TTLGEO_7_P6_MB_phpythia6_ep18x275_MB/merged_output_TTLGEO_7_P6_MB_phpythia6_ep18x275_MB.root"
+    geometry="/media/nschmidt/SSD/simulationOutputCADES/geometry.root"
+    #input="/Users/ins/Downloads/singleElec_merged/DST_General_particleGun_singleElectron_merged_eval.root"
+    #geometry="/Users/ins/Downloads/singleElec_merged/geometry2ndCampaign.root"
+    root -x -l -b -q 'treeProcessing.C+("'$input'","'$geometry'","CADESSIM_PYTHIA_TTL7_MB",'$maxevt',true,false  ,false,0)'
 fi
 
 
@@ -157,11 +183,11 @@ fi
 
 if [ $1 = "pi0_sim_TTL7" ]; then
 maxevt=-1
-    input="/media/nschmidt/local/EIC_running/ECCE/ECCE_TTLGEO_7_add_HITS_pi0_SimplePiZero/mergedECCE.root"
+    input="/media/nschmidt/SSD/simulationOutputCADES/single_particle_productions/merged_output_TTLGEO_7_HITS_SimplePiZero/merged_output_TTLGEO_7_HITS_SimplePiZero.root"
     geometry="/media/nschmidt/local/EIC_running/ECCE/ECCE_TTLGEO_7_add_HITS_pi0_SimplePiZero/geometry.root"
     #input="/Users/ins/Downloads/singleElec_merged/DST_General_particleGun_singleElectron_merged_eval.root"
     #geometry="/Users/ins/Downloads/singleElec_merged/geometry2ndCampaign.root"
-    root -x -l -b -q 'treeProcessing.C("'$input'","'$geometry'","Pi0SIM_TTL8",'$maxevt',true,false  ,false,true,0)'
+    root -x -l -b -q 'treeProcessing.C+("'$input'","'$geometry'","Pi0SIM_TTL7",'$maxevt',true,false  ,false,0)'
 fi
 
 

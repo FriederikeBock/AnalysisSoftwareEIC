@@ -212,7 +212,7 @@ void plotGeometry3D(
           continue;
         }
       } else if (caloIndex == -2){ // HCALs
-        if (_calogeom_ID == 0 || _calogeom_ID == 2 || _calogeom_ID == 5|| _calogeom_ID == 6 || _calogeom_ID == 7 || _calogeom_ID == 8){
+        if (_calogeom_ID == 0 || _calogeom_ID == 2 || _calogeom_ID == 6 || _calogeom_ID == 7 || _calogeom_ID == 8){ // _calogeom_ID == 5||
           cout << "found calo: "<< _calogeom_ID << "\t"<< _calogeom_towers_N << endl;
           for (Long64_t itow=0; itow<_calogeom_towers_N;itow++) {
             if (_calogeom_towers_x[itow] < minX)

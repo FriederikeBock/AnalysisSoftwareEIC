@@ -16,12 +16,17 @@ const int _maxNTowersCalo = 5000000;
 const int _maxNclusters = 100;
 const int _maxNclustersCentral = 2000;
 const int _maxNTracks = 200;
-const int _maxNProjections = 2000;
+const int _maxNProjections = 20000;
 const int _maxNMCPart = 100000;
 const int _maxNHepmcp = 1000;
-int verbosityBASE = 2;
-
+int verbosityBASE = 0;
+bool _useAlternateForProjections = false;
 float _nEventsTree;
+// TOF resolution
+double sigmat             = 20e-3; // ns
+// random number generator
+TRandom3 r3;
+
 
 enum calotype {
   kFHCAL          = 0,
@@ -38,9 +43,44 @@ enum calotype {
   kFOCAL          = 11
 };
 
+struct projStrct{
+  projStrct(): caloid(-1), eta_Calo(-1000), phi_Calo(-1000) {}
+  int caloid;
+  float eta_Calo;
+  float phi_Calo;
+} ;
+
+
+struct matchingCalStrct{
+  matchingCalStrct(): caloid(-1), id(-1), dPhi(-1000), dEta(-1000), dX(-1000), dY(-1000) {}
+  int caloid;
+  int id;
+  float dPhi;
+  float dEta;
+  float dX;
+  float dY;
+} ;
+
+struct tofStrct{
+  tofStrct(): pathlength(0), recTime(0), genTime(0) {}
+  tofStrct(float pl, float rT, float gT, bool iPE){
+    pathlength  = pl;
+    recTime     = rT;
+    genTime     = gT;
+    isProbEScat = iPE;
+  }
+  float pathlength;
+  float recTime;
+  float genTime;
+  bool isProbEScat;
+} ;
+
+
+
 bool caloEnabled[20]      = {0};
 bool tracksEnabled        = 0;
 bool vertexEnabled        = 0;
+bool hepMCavailable       = 0;
 bool xSectionEnabled      = 0;
 
 // Event level info
@@ -50,7 +90,7 @@ int _n_generator_accepted;
 
 // track hits
 int _nHitsLayers;
-int* _hits_layerID              = new int[_maxNHits];
+int* _hits_layerID         = new int[_maxNHits];
 float* _hits_x             = new float[_maxNHits];
 float* _hits_y             = new float[_maxNHits];
 float* _hits_z             = new float[_maxNHits];
@@ -59,63 +99,63 @@ float* _hits_edep          = new float[_maxNHits];
 
 // towers
 int _nTowers_CEMC;
-float* _tower_CEMC_E            = new float[_maxNTowersCentral];
+float* _tower_CEMC_E          = new float[_maxNTowersCentral];
 int* _tower_CEMC_iEta         = new int[_maxNTowersCentral];
 int* _tower_CEMC_iPhi         = new int[_maxNTowersCentral];
 int* _tower_CEMC_trueID       = new int[_maxNTowersCentral];
 
 // towers
 int _nTowers_EEMC;
-float* _tower_EEMC_E            = new float[_maxNTowersCentral];
+float* _tower_EEMC_E          = new float[_maxNTowersCentral];
 int* _tower_EEMC_iEta         = new int[_maxNTowersCentral];
 int* _tower_EEMC_iPhi         = new int[_maxNTowersCentral];
 int* _tower_EEMC_trueID       = new int[_maxNTowersCentral];
 
 // towers
 int _nTowers_EEMCG;
-float* _tower_EEMCG_E            = new float[_maxNTowersCentral];
+float* _tower_EEMCG_E          = new float[_maxNTowersCentral];
 int* _tower_EEMCG_iEta         = new int[_maxNTowersCentral];
 int* _tower_EEMCG_iPhi         = new int[_maxNTowersCentral];
 int* _tower_EEMCG_trueID       = new int[_maxNTowersCentral];
 
 // towers
 int _nTowers_EHCAL;
-float* _tower_EHCAL_E            = new float[_maxNTowersCentral];
+float* _tower_EHCAL_E          = new float[_maxNTowersCentral];
 int* _tower_EHCAL_iEta         = new int[_maxNTowersCentral];
 int* _tower_EHCAL_iPhi         = new int[_maxNTowersCentral];
 int* _tower_EHCAL_trueID       = new int[_maxNTowersCentral];
 
 // towers
 int _nTowers_HCALIN;
-float* _tower_HCALIN_E            = new float[_maxNTowersCentral];
+float* _tower_HCALIN_E          = new float[_maxNTowersCentral];
 int* _tower_HCALIN_iEta         = new int[_maxNTowersCentral];
 int* _tower_HCALIN_iPhi         = new int[_maxNTowersCentral];
 int* _tower_HCALIN_trueID       = new int[_maxNTowersCentral];
 
 // towers
 int _nTowers_HCALOUT;
-float* _tower_HCALOUT_E            = new float[_maxNTowersCentral];
+float* _tower_HCALOUT_E          = new float[_maxNTowersCentral];
 int* _tower_HCALOUT_iEta         = new int[_maxNTowersCentral];
 int* _tower_HCALOUT_iPhi         = new int[_maxNTowersCentral];
 int* _tower_HCALOUT_trueID       = new int[_maxNTowersCentral];
 
 // towers
 int _nTowers_DRCALO;
-float* _tower_DRCALO_E            = new float[_maxNTowersDR];
+float* _tower_DRCALO_E          = new float[_maxNTowersDR];
 int* _tower_DRCALO_iEta         = new int[_maxNTowersDR];
 int* _tower_DRCALO_iPhi         = new int[_maxNTowersDR];
 int* _tower_DRCALO_trueID       = new int[_maxNTowersDR];
 
 // towers
 int _nTowers_FOCAL;
-float* _tower_FOCAL_E            = new float[_maxNTowersDR];
+float* _tower_FOCAL_E          = new float[_maxNTowersDR];
 int* _tower_FOCAL_iEta         = new int[_maxNTowersDR];
 int* _tower_FOCAL_iPhi         = new int[_maxNTowersDR];
 int* _tower_FOCAL_trueID       = new int[_maxNTowersDR];
 
 // towers
 int _nTowers_LFHCAL;
-float* _tower_LFHCAL_E            = new float[_maxNTowersDR];
+float* _tower_LFHCAL_E          = new float[_maxNTowersDR];
 int* _tower_LFHCAL_iEta         = new int[_maxNTowersDR];
 int* _tower_LFHCAL_iPhi         = new int[_maxNTowersDR];
 int* _tower_LFHCAL_iL           = new int[_maxNTowersDR];
@@ -123,39 +163,39 @@ int* _tower_LFHCAL_trueID       = new int[_maxNTowersDR];
 
 // towers
 int _nTowers_BECAL;
-float* _tower_BECAL_E            = new float[_maxNTowersDR];
+float* _tower_BECAL_E          = new float[_maxNTowersDR];
 int* _tower_BECAL_iEta         = new int[_maxNTowersDR];
 int* _tower_BECAL_iPhi         = new int[_maxNTowersDR];
 int* _tower_BECAL_trueID       = new int[_maxNTowersDR];
 
 // towers
 int _nTowers_FHCAL;
-float* _tower_FHCAL_E            = new float[_maxNTowers];
+float* _tower_FHCAL_E          = new float[_maxNTowers];
 int* _tower_FHCAL_iEta         = new int[_maxNTowers];
 int* _tower_FHCAL_iPhi         = new int[_maxNTowers];
 int* _tower_FHCAL_trueID       = new int[_maxNTowers];
 
 // towers
 int _nTowers_FEMC;
-float* _tower_FEMC_E             = new float[_maxNTowers];
+float* _tower_FEMC_E           = new float[_maxNTowers];
 int* _tower_FEMC_iEta          = new int[_maxNTowers];
 int* _tower_FEMC_iPhi          = new int[_maxNTowers];
 int* _tower_FEMC_trueID        = new int[_maxNTowers];
 
 // clusters
 int _nclusters_FHCAL;
-float* _clusters_FHCAL_E            = new float[_maxNclusters];
-float* _clusters_FHCAL_Eta         = new float[_maxNclusters];
-float* _clusters_FHCAL_Phi         = new float[_maxNclusters];
-int* _clusters_FHCAL_NTower         = new int[_maxNclusters];
+float* _clusters_FHCAL_E          = new float[_maxNclusters];
+float* _clusters_FHCAL_Eta        = new float[_maxNclusters];
+float* _clusters_FHCAL_Phi        = new float[_maxNclusters];
+int* _clusters_FHCAL_NTower       = new int[_maxNclusters];
 int* _clusters_FHCAL_trueID       = new int[_maxNclusters];
 
 // clusters
 int _nclusters_FEMC;
-float* _clusters_FEMC_E             = new float[_maxNclusters];
-float* _clusters_FEMC_Eta          = new float[_maxNclusters];
-float* _clusters_FEMC_Phi          = new float[_maxNclusters];
-int* _clusters_FEMC_NTower          = new int[_maxNclusters];
+float* _clusters_FEMC_E           = new float[_maxNclusters];
+float* _clusters_FEMC_Eta         = new float[_maxNclusters];
+float* _clusters_FEMC_Phi         = new float[_maxNclusters];
+int* _clusters_FEMC_NTower        = new int[_maxNclusters];
 int* _clusters_FEMC_trueID        = new int[_maxNclusters];
 
 // vertex
@@ -178,6 +218,9 @@ std::array<int, _maxNTracks> _track_nTTL{{}};
 std::array<int, _maxNTracks> _track_nTrL{{}};
 std::array<bool, _maxNTracks> _track_hasIL{{}};
 std::array<bool, _maxNTracks> _track_hasOL{{}};
+std::array<matchingCalStrct, _maxNTracks> _track_matchECal{{}};
+std::array<matchingCalStrct, _maxNTracks> _track_matchHCal{{}};
+std::array<std::vector<tofStrct>, _maxNTracks> _track_TOFmeas;
 
 int _nProjections;
 float* _track_ProjTrackID                 = new float[_maxNProjections];
@@ -204,6 +247,8 @@ float* _mcpart_Eta                = new float[_maxNMCPart];
 float* _mcpart_Phi                = new float[_maxNMCPart];
 int* _mcpart_BCID                 = new int[_maxNMCPart];
 std::array<std::vector<int>, _maxNMCPart> _mcpart_RecTrackIDs;
+std::array<std::vector<projStrct>, _maxNMCPart> _mcpart_EcalProjs;
+std::array<std::vector<projStrct>, _maxNMCPart> _mcpart_HcalProjs;
 
 // HepMC particles
 int _nHepmcp;
@@ -211,6 +256,7 @@ int _hepmcp_procid;
 float _hepmcp_x1;
 float _hepmcp_x2;
 float _hepmcp_Q2;
+//float* _hepmcp_ID_parent = new float[_maxNHepmcp];
 int* _hepmcp_status = new int[_maxNHepmcp];
 int* _hepmcp_PDG = new int[_maxNHepmcp];
 float* _hepmcp_E = new float[_maxNHepmcp];
@@ -450,12 +496,14 @@ void SetBranchAddressesTree(TTree* inputTree){
     inputTree->SetBranchAddress("mcpart_BCID",     _mcpart_BCID);
 
     if (inputTree->GetBranchStatus("nHepmcp") ){
+      hepMCavailable = 1;
       inputTree->SetBranchAddress("nHepmcp", &_nHepmcp);
       inputTree->SetBranchAddress("hepmcp_procid", &_hepmcp_procid);
       inputTree->SetBranchAddress("hepmcp_x1", &_hepmcp_x1);
       inputTree->SetBranchAddress("hepmcp_x2", &_hepmcp_x2);
       inputTree->SetBranchAddress("hepmcp_Q2", &_hepmcp_Q2);
 
+      //    inputTree->SetBranchAddress("hepmcp_ID_parent", _hepmcp_ID_parent, "hepmcp_ID_parent[nHepmcp]/F");
       inputTree->SetBranchAddress("hepmcp_status", _hepmcp_status);
       inputTree->SetBranchAddress("hepmcp_PDG", _hepmcp_PDG);
       inputTree->SetBranchAddress("hepmcp_E", _hepmcp_E);
@@ -467,6 +515,7 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("hepmcp_m2", _hepmcp_m2);
     }
 }
+
 
 
 //__________________________________________________________________________________________________________
@@ -490,16 +539,7 @@ Int_t layerIndexHist[32]  =  { 0, 1, 2, 3, 4, 7,        // TTLs
                                  6, 60, 61, 62, 63, 66, 67 // calo's
 };
 
-// void ResetLayerIndexForward(){
-//   if (!_is_ALLSILICON){
-//     layerIndexHist[0]  = 50;
-//     layerIndexHist[1]  = 51;
-//     layerIndexHist[2]  = 52;
-//     layerIndexHist[3]  = 53;
-//     layerIndexHist[4]  = 54;
-//   }
-// }
-
+//__________________________________________________________________________________________________________
 TString GetProjectionNameFromIndex(int projindex)
 {
   switch (projindex){
@@ -579,7 +619,6 @@ TString GetProjectionNameFromIndex(int projindex)
     case 131:    return "EGEM_1";
 
     // calorimeters
-    case 5:    return "FHCAL";
     case 6:    return "FEMC";
     case 60:   return "EHCAL";
     case 61:   return "EEMC";
@@ -588,7 +627,9 @@ TString GetProjectionNameFromIndex(int projindex)
     case 64:   return "CEMC";
     case 65:   return "EEMC_glass_0";
     case 66:   return "BECAL";
-    case 67:   return "LFHCAL";
+    case 5:    //return "FHCAL";
+    case 67:   
+      return "LFHCAL";
     case 140:  return "LFHCAL_0";
     case 141:  return "LFHCAL_1";
     case 142:  return "LFHCAL_2";
@@ -602,6 +643,19 @@ TString GetProjectionNameFromIndex(int projindex)
   }
 }
 
+//__________________________________________________________________________________________________________
+Int_t GetRegionFromEta(float etaMC){
+  if (etaMC > nominalEtaRegion[0][0] && etaMC < nominalEtaRegion[0][1] )
+    return 0;
+  else if (etaMC > nominalEtaRegion[1][0] && etaMC < nominalEtaRegion[1][1] )
+    return 1;
+  else if (etaMC > nominalEtaRegion[2][0] && etaMC < nominalEtaRegion[2][1] )
+    return 2;
+  else 
+    return -1;
+}
+
+//__________________________________________________________________________________________________________
 Int_t GetRegionFromIndex(int projindex)
 {
   switch (projindex){
@@ -704,6 +758,31 @@ Int_t GetRegionFromIndex(int projindex)
   }
 }
 
+//__________________________________________________________________________________________________________
+int ReturnCalorimeterFromProjectionIndex(int projID){
+  switch (projID){
+    case 1: return kDRCALO;
+//     case 5: return kFHCAL;
+    case 6: return kFEMC;
+    case 60: return kEHCAL;
+    case 61: return kEEMC;
+    case 62: return kHCALIN;
+    case 63: return kHCALOUT;
+    case 64: return kCEMC;
+    case 65: return kEEMCG;
+    case 67: 
+    case 5: 
+      return kLFHCAL;
+    case 66: return kBECAL;
+    case 85: return kFOCAL;
+    default:
+      // std::cout << "ReturnCalorimeterFromProjectionIndex: projID " << projID << " not defined, returning -1" << std::endl;
+      return -1;
+  }
+  return -1;
+}
+
+//__________________________________________________________________________________________________________
 Int_t ReturnIndexForwardLayer(Int_t layerID){
   for (Int_t i = 0; i < _maxProjectionLayers; i++){
     if (layerIndexHist[i] == layerID)
@@ -712,7 +791,7 @@ Int_t ReturnIndexForwardLayer(Int_t layerID){
   return -1;
 }
 
-
+//__________________________________________________________________________________________________________
 Bool_t HasFirstTwoLayers(Int_t layerID){
   if (_is_ALLSILICON){
     switch (layerID){
@@ -746,6 +825,7 @@ Bool_t HasFirstTwoLayers(Int_t layerID){
   return kFALSE;
 }
 
+//__________________________________________________________________________________________________________
 Bool_t IsTrackerLayer(Int_t layerID){
   if (_is_ALLSILICON){
     switch (layerID){
@@ -820,6 +900,7 @@ Bool_t IsTrackerLayer(Int_t layerID){
   return kFALSE;
 }
 
+//__________________________________________________________________________________________________________
 Bool_t IsCaloProjection(Int_t layerID){
   switch (layerID){
     case 5:
@@ -847,6 +928,67 @@ Bool_t IsCaloProjection(Int_t layerID){
   return kFALSE;
 }
 
+//__________________________________________________________________________________________________________
+Bool_t IsECalProjection(Int_t layerID, bool alternate = false){
+  if (!alternate){
+    switch (layerID){  
+      case 6: 
+      case 61: 
+      case 64:
+      case 65:
+      case 66:
+        return kTRUE;
+      default:
+        return kFALSE;
+    }
+  } else {
+    switch (layerID){      
+      case 0:     
+      case 3:     
+      case 7:     
+        return kTRUE;
+      default:
+        return kFALSE;
+    }
+  }
+  return kFALSE;
+}
+
+//__________________________________________________________________________________________________________
+Bool_t IsHCalProjection(Int_t layerID, bool alternate = false){
+  if (!alternate){
+    switch (layerID){  
+      case 5: 
+      case 60: 
+      case 62:
+      case 63:
+      case 67:
+      case 140:
+      case 141:
+      case 142:
+      case 143:
+      case 144:
+      case 145:
+      case 146:
+      case 147:
+          return kTRUE;
+      default:
+        return kFALSE;
+    }
+  } else {
+    switch (layerID){      
+      case 0:     
+      case 3:     
+      case 7:     
+        return kTRUE;
+      default:
+        return kFALSE;
+    }
+  }
+  return kFALSE;
+}
+
+//__________________________________________________________________________________________________________
 Bool_t IsFarForwardProjection(Int_t layerID){
   switch (layerID){
     case 70:
@@ -864,6 +1006,7 @@ Bool_t IsFarForwardProjection(Int_t layerID){
   return kFALSE;
 }
 
+//__________________________________________________________________________________________________________
 Bool_t HasTimingLayer(Int_t layerID){
   switch (layerID){
     case 0:
@@ -892,6 +1035,95 @@ int GetCorrectMCArrayEntry(float objectTrueID){
   return -1;
 }
 
+//__________________________________________________________________________________________________________
+bool  GetMaxCoordinateCalo( float &maxcoord, int caloID){
+  switch (caloID){
+    case kDRCALO: 
+      maxcoord = 262.+ 15.;
+      return kFALSE;
+    case kFHCAL: 
+      maxcoord = 262.+ 15.;
+      return kFALSE;
+    case kFEMC: 
+      maxcoord = 182.655 + 15.;
+      return kFALSE;
+    case kEHCAL: 
+      maxcoord = 260 + 15;
+      return kFALSE;
+    case kEEMC: 
+      maxcoord = 61. + 6.;
+      return kFALSE;
+    case kHCALIN:
+      maxcoord = 230;
+      return kTRUE;
+    case kHCALOUT:
+      maxcoord = 350;
+      return kTRUE;
+    case kCEMC: 
+      maxcoord = 230;
+      return kTRUE;
+    case kEEMCG: 
+      maxcoord = 67.;
+      return kFALSE;
+    case kLFHCAL: 
+      maxcoord = 262.+ 15.;
+      return kFALSE;
+    case kBECAL: 
+      maxcoord = 230;
+      return kTRUE;
+    case kFOCAL:
+      maxcoord = 262.+ 15.;
+      return kFALSE;
+    default:
+      return kFALSE;
+  }
+  return kFALSE;
+}
+
+//__________________________________________________________________________________________________________
+bool  GetMinCoordinateCalo( float &mincoord, int caloID){
+  switch (caloID){
+    case kDRCALO: 
+      mincoord = 262.+ 15.;
+      return kFALSE;
+    case kFHCAL: 
+      mincoord = 262.+ 15.;
+      return kFALSE;
+    case kFEMC: 
+      mincoord = 182.655 + 15.;
+      return kFALSE;
+    case kEHCAL: 
+      mincoord = 260 + 15;
+      return kFALSE;
+    case kEEMC: 
+      mincoord = 61. + 6.;
+      return kFALSE;
+    case kHCALIN:
+      mincoord = -305;
+      return kTRUE;
+    case kHCALOUT:
+      mincoord = -305;
+      return kTRUE;
+    case kCEMC: 
+      mincoord = -305;
+      return kTRUE;
+    case kEEMCG: 
+      mincoord = 67.;
+      return kFALSE;
+    case kLFHCAL: 
+      mincoord = 262.+ 15.;
+      return kFALSE;
+    case kBECAL: 
+      mincoord = -305;
+      return kTRUE;
+    case kFOCAL:
+      mincoord = 262.+ 15.;
+      return kFALSE;
+    default:
+      return kFALSE;
+  }
+  return kFALSE;
+}
 
 // **********************************************************************************************
 // ****************** create vectors for matching diff rec tracks to MC part ********************
@@ -912,45 +1144,94 @@ void prepareMCMatchInfo(){
   for(Int_t itrk=0; itrk<_nTracks; itrk++){
     if (verbosityBASE > 2) std::cout << "current track: " << itrk <<std::endl;
     unsigned short trackSource = _track_source[itrk];
+    TVector3 trackVecP(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
     for(Int_t iproj=nCurrProj; iproj<_nProjections; iproj++){
       if (itrk != _track_ProjTrackID[iproj])
         continue;
-      double projectionR = TMath::Sqrt(_track_Proj_x[iproj]*_track_Proj_x[iproj]+_track_Proj_y[iproj]*_track_Proj_y[iproj]);       if(TMath::Abs(_track_Proj_t[iproj])< 2.e-20){
-        if (verbosityBASE > 5) std::cout << iproj << "\t projection layer: "<< _track_ProjLayer[iproj] << "\t t: " << _track_Proj_t[iproj]
+      if (_track_Proj_t[iproj] < 0)
+        continue;
+      double projectionR = TMath::Sqrt(_track_Proj_x[iproj]*_track_Proj_x[iproj]+_track_Proj_y[iproj]*_track_Proj_y[iproj]);      
+      if(TMath::Abs(_track_Proj_t[iproj])< 2.e-20){
+        if (verbosityBASE > 5) std::cout << iproj << "\t projection layer: "<< _track_ProjLayer[iproj] << "\t t: " << _track_Proj_t[iproj] 
                                             << "\t x: " << _track_Proj_x[iproj] << "\t y: " << _track_Proj_y[iproj] << "\t z: " << _track_Proj_z[iproj] << "\t r: " << projectionR << std::endl;
 
         continue;
       }
       if (verbosityBASE > 2) std::cout << iproj << "\t projection layer: "<< _track_ProjLayer[iproj] << "\t t: " << _track_Proj_t[iproj]
                                             << "\t x: " << _track_Proj_x[iproj] << "\t y: " << _track_Proj_y[iproj] << "\t z: " << _track_Proj_z[iproj] << "\t r: " << projectionR << std::endl;
-      _track_hasTTL[itrk]     = (_track_hasTTL[itrk] || HasTimingLayer(_track_ProjLayer[iproj]));
       if (HasTimingLayer(_track_ProjLayer[iproj])){
-        _track_nTTL[itrk]++;
         _track_Proj_Clas[iproj] = 2;
       }
-      if (verbosityBASE > 3) std::cout << "timing layer count: " << _track_nTTL[itrk] << std::endl;
       if (IsTrackerLayer(_track_ProjLayer[iproj])){
-        _track_nTrL[itrk]++;
         _track_Proj_Clas[iproj] = 1;
       }
       if (HasFirstTwoLayers(_track_ProjLayer[iproj])){
         _track_Proj_Clas[iproj] = 4;
       }
       if (IsCaloProjection(_track_ProjLayer[iproj])){
+        float minVal = 0;
+        float maxVal = 0;
+        int calID    = ReturnCalorimeterFromProjectionIndex(_track_ProjLayer[iproj]); 
+        bool useZ = GetMinCoordinateCalo( minVal, calID);
+        GetMaxCoordinateCalo( maxVal, calID);
+        if (useZ){
+          if ( !(_track_Proj_z[iproj] > minVal && _track_Proj_z[iproj] < maxVal)) continue;
+        } else {
+          
+          if ( projectionR > maxVal ) continue;
+        } 
         _track_Proj_Clas[iproj] = 5;
       }
       if (IsFarForwardProjection(_track_ProjLayer[iproj])){
         _track_Proj_Clas[iproj] = 6;
       }
-      _track_RefProjID[itrk].push_back(iproj);
-      nCurrProj = iproj;
-    }
+      if (_track_Proj_Clas[iproj] < 5){
+        if (IsTrackerLayer(_track_ProjLayer[iproj]) && _track_Proj_true_t[iproj] != 0 ){
+          _track_nTrL[itrk]++;
+        }
+        if (HasTimingLayer(_track_ProjLayer[iproj]) && _track_Proj_true_t[iproj] != 0 ){
+          _track_nTTL[itrk]++;
+          _track_hasTTL[itrk]     = (_track_hasTTL[itrk] || HasTimingLayer(_track_ProjLayer[iproj]));
+          
+          // check whether this is an electron in the backward or barrel with momentum > 3 GeV => assume that's the scattered electron
+          bool isProbEScat = false;
+          if ((int)_track_trueID[itrk] > -1){
+            if ( (fabs(_mcpart_PDG[(int)_track_trueID[itrk]]) == 11 && trackVecP.Eta() < 0.5 && trackVecP.Mag() > 3))
+              isProbEScat = true;
+          }
+          // tof construct
+          tofStrct tempTOF = tofStrct(_track_Proj_t[iproj], r3.Gaus(_track_Proj_true_t[iproj], sigmat), _track_Proj_true_t[iproj], isProbEScat );
+          _track_TOFmeas[itrk].push_back(tempTOF);
+        } 
+      }
+      if (verbosityBASE > 3) std::cout << "timing layer count: " << _track_nTTL[itrk] << std::endl;
+      if ( (_track_Proj_Clas[iproj] < 4 && _track_Proj_true_t[iproj] > 1e-3) ||  _track_Proj_Clas[iproj] == 5 || _track_Proj_Clas[iproj] == 6  )
+        _track_RefProjID[itrk].push_back(iproj);
+      
+      if (_track_Proj_Clas[iproj] == 5 && (int)_track_trueID[itrk] > 0){
+        projStrct tempProj;
+        if ( IsECalProjection(_track_ProjLayer[iproj], _useAlternateForProjections) && trackSource == 0  && _track_Proj_t[iproj] >= 0  ){
+          TVector3 projvec(_track_Proj_x[iproj],_track_Proj_y[iproj],_track_Proj_z[iproj]);
+          tempProj.caloid   = ReturnCalorimeterFromProjectionIndex(_track_ProjLayer[iproj]);
+          tempProj.eta_Calo = projvec.Eta();
+          tempProj.phi_Calo = projvec.Phi();
+          _mcpart_EcalProjs[(int)_track_trueID[itrk]].push_back(tempProj);
+        }
 
+        if ( IsHCalProjection(_track_ProjLayer[iproj], _useAlternateForProjections) && trackSource == 0 && _track_Proj_t[iproj] >= 0 ){
+          TVector3 projvec(_track_Proj_x[iproj],_track_Proj_y[iproj],_track_Proj_z[iproj]);
+          tempProj.caloid   = ReturnCalorimeterFromProjectionIndex(_track_ProjLayer[iproj]);
+          tempProj.eta_Calo = projvec.Eta();
+          tempProj.phi_Calo = projvec.Phi();
+          _mcpart_HcalProjs[(int)_track_trueID[itrk]].push_back(tempProj);
+        }
+      }
+      nCurrProj = iproj;      
+    }
     if (trackSource == 1 )
       _track_hasOL[itrk] = (_track_hasOL[itrk] || true);
     if (trackSource == 2 )
       _track_hasIL[itrk]   = (_track_hasIL[itrk] || true);
-
     if ((int)_track_trueID[itrk] < 0) continue;
     if (_mcpart_RecTrackIDs[(int)_track_trueID[itrk]].size() > 1){
       if (verbosityBASE > 2) std::cout << "identified multiple tracks for: " << (int)_track_trueID[itrk] << " current track id: " << itrk << std::endl;
@@ -966,6 +1247,9 @@ void prepareMCMatchInfo(){
     }
     if (verbosityBASE > 2) std::cout << "found: " << _track_RefProjID[itrk].size() << "\t projections " << std::endl;
 
+    _track_matchECal[itrk] = matchingCalStrct();
+    _track_matchHCal[itrk] = matchingCalStrct();
+
   }
 }
 
@@ -979,6 +1263,14 @@ void clearMCRecMatchVectors(){
       _mcpart_RecTrackIDs[imc].clear();
       _mcpart_RecTrackIDs[imc].resize(0);
     }
+    if (_mcpart_EcalProjs[imc].size() > 0){
+       _mcpart_EcalProjs[imc].clear();
+      _mcpart_EcalProjs[imc].resize(0);
+    }
+    if (_mcpart_HcalProjs[imc].size() > 0){
+       _mcpart_HcalProjs[imc].clear();
+      _mcpart_HcalProjs[imc].resize(0);
+    }
   }
 
   for(Int_t itrk=0; itrk<_nTracks; itrk++){
@@ -991,6 +1283,11 @@ void clearMCRecMatchVectors(){
       _track_RefProjID[itrk].clear();
       _track_RefProjID[itrk].resize(0);
     }
+    if (_track_TOFmeas[itrk].size() > 0){
+       _track_TOFmeas[itrk].clear();
+      _track_TOFmeas[itrk].resize(0);
+    }
+    
   }
   for (Int_t iproj=0; iproj<_nProjections; iproj++){
     _track_Proj_Clas[iproj] = 0;

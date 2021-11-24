@@ -26,7 +26,9 @@
 #include "trackingefficiency.cxx"
 #include "hitstudies.cxx"
 #include "trackmatchingstudies.cxx"
+#include "eoverpstudies.cxx"
 #include "pi0studies.cxx"
+#include "tofpid.cxx"
 
 using std::cout;
 using std::endl;
@@ -40,14 +42,15 @@ void treeProcessing(
     bool do_reclus              = true,
     bool do_jetfinding          = false,
     bool runCaloRes             = true,
-    bool doCalibration          = false,
     Int_t verbosity             = 0,
     // Defaults to tracking from all layers.
     unsigned short primaryTrackSource = 0,
     bool removeTracklets        = false,
     std::string jetAlgorithm    = "anti-kt",
     std::vector<double> jetRParameters = {0.3, 0.5, 0.8, 1.0},
-    double tracked_jet_max_pT   = 30
+    double tracked_jet_max_pT   = 30,
+    bool brokenProjections      = true,               // use this to true with outputs for prod4, newer output swtich it to false
+    bool isSingleParticleProd   = false
 ){
     // make output directory
     TString dateForOutput = ReturnDateStr();
@@ -56,9 +59,14 @@ void treeProcessing(
     gSystem->Exec("mkdir -p "+outputDir + "/etaphi");
 
     if(do_jetfinding) _do_jetfinding = true;
-
-    bool runPi0Reco = true;
-
+    // switch projection layer to most appropriate
+    if (brokenProjections){
+      _useAlternateForProjections = brokenProjections;
+      std::cout << "calorimeter projections not available, using projections in TTL for matching" << std::endl;
+    } else { 
+      std::cout << "using calorimeter projections for matching" << std::endl;
+    }
+    bool runPi0Reco = false;
     // load tree
     // NOTE: This relies on pythia6 or pythia8 being in the filename + path, but that seems to be a reasonable assumption
     bool isPythia6 = false;
@@ -106,7 +114,6 @@ void treeProcessing(
     std::cout << std::boolalpha
               << "Analyzing pythia6? " << isPythia6 << "\n"
               << "Analyzing pythia8? " << isPythia8 << "\n";
-    _doClusterECalibration    = doCalibration;
     if(_doClusterECalibration){
         std::cout << "clusters will be energy-corrected and subsequently smeared to meet testbeam constant term!" << std::endl;
     }
@@ -153,7 +160,11 @@ void treeProcessing(
 
     _nEventsTree=0;
     // main event loop
-    for (Long64_t i=0; i<nEntriesTree;i++) {
+    bool tooSmallDeltaEta = false;
+    
+    // use this if you wanna start at a specific event for debug
+    Long64_t startEvent = 0;
+    for (Long64_t i=startEvent; i<nEntriesTree;i++) {
         // load current event
         tt_event->GetEntry(i);
         _nEventsTree++;
@@ -172,12 +183,13 @@ void treeProcessing(
             _mcpart_Phi[imc]=truevec.Phi();
             int motherid = 0;
             for(Int_t imc2=0; imc2<_nMCPart; imc2++){
-                if(_mcpart_ID[imc2]==_mcpart_ID_parent[imc]){
-                    motherid=imc2;
-                }
+              if(_mcpart_ID[imc2]==_mcpart_ID_parent[imc]){
+                  motherid=imc2;
+              }
             }
             // if(_mcpart_PDG[imc]==111) cout << "pi0 found (" << _mcpart_ID[imc] << ") with mother: " << _mcpart_PDG[motherid] << " (" <<  _mcpart_ID_parent[imc] << ")" << endl;
         }
+        
         if (verbosity > 0){
           for(int imc=0; imc<_nMCPart; imc++){
             std::cout << "MC part: \t" << imc << "\t E = " << _mcpart_E[imc] << "\tEta: " << _mcpart_Eta[imc]<< "\tPhi: " << _mcpart_Phi[imc]<<  std::endl;
@@ -188,9 +200,30 @@ void treeProcessing(
           }
         }
 
+        if (isSingleParticleProd){
+          for (Int_t imc=0; imc<_nMCPart; imc++){
+            for (Int_t imc2=imc; imc2<_nMCPart; imc2++){
+              if (TMath::Abs(_mcpart_Eta[imc] - _mcpart_Eta[imc2]) < 1.)
+                tooSmallDeltaEta = true;
+            }
+          }
+          if (tooSmallDeltaEta){
+            if (verbosity>0) std::cout << "eta gap too small for single particle simulations" << std::endl;
+            continue;
+          }
+        }
+
         Int_t nTowers[maxcalo] = {_nTowers_FHCAL, _nTowers_FEMC, _nTowers_DRCALO, _nTowers_EEMC, _nTowers_CEMC,
                                   _nTowers_EHCAL, _nTowers_HCALIN, _nTowers_HCALOUT, _nTowers_LFHCAL, _nTowers_EEMCG,
                                   _nTowers_BECAL  };
+
+        
+        for(Int_t itrk=0; itrk<_nTracks; itrk++){
+            _track_trueID[itrk] = GetCorrectMCArrayEntry(_track_trueID[itrk]);
+            // if(verbosity>1) std::cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk] << "\tand X = " << _track_px[itrk] << " cm" << std::endl;
+        }
+        // obtain labels for different track sources
+        prepareMCMatchInfo();
 
         // run clusterizers normal calos
         for (int cal = 0; cal < maxcalo; cal++){
@@ -216,15 +249,18 @@ void treeProcessing(
           runclusterizer(kV1, kDRCALO, seedE[kDRCALO], aggE[kDRCALO], primaryTrackSource);
         }
         if((do_reclus) && verbosity>1) std::cout << "done with clusterization!" << std::endl;
-
-
-        for(Int_t itrk=0; itrk<_nTracks; itrk++){
-            _track_trueID[itrk] = GetCorrectMCArrayEntry(_track_trueID[itrk]);
-            // if(verbosity>1) std::cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk] << "\tand X = " << _track_px[itrk] << " cm" << std::endl;
+        
+        // set clusters matched to respective track for direct accessing
+        SetClustersMatchedToTracks();
+        // do calo-calo matching
+        for (int cal = 0; cal < maxcalo; cal++){
+          if(do_reclus && nTowers[cal] > 0 && caloEnabled[cal]){
+            for (int algo = 0; algo < _active_algo; algo++){
+              MatchClustersWithOtherCalos( cal, algo );
+            }
+          }
         }
-        // obtain labels for different track sources
-        prepareMCMatchInfo();
-
+        
         // ANCHOR Hits loop variables:
         // float* _hits_x[ihit]
         // float* _hits_y[ihit]
@@ -235,6 +271,8 @@ void treeProcessing(
         //     if(verbosity>1) std::cout << "\tHIT: hit " << ihit << "\tin layer " << _hits_layerID[ihit] << "\twith X = " << _hits_x[ihit] << " cm" << std::endl;
         // }
         if(tracksEnabled) hitstudies(primaryTrackSource);
+
+        if (tracksEnabled) tofpidhistos();
 
         // ANCHOR Track loop variables:
         // float* _track_ID[itrk]
@@ -332,13 +370,13 @@ void treeProcessing(
           for(Int_t iclus=0; iclus<(Int_t)_clusters_calo[kV1][fwdCaloID].size(); iclus++){
             (_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_trueID = GetCorrectMCArrayEntry((_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_trueID);
             if(_doClusterECalibration){
-              (_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_E/=getCalibrationValue((_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_E, fwdCaloID, kV1);
+              (_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_E/=getCalibrationValue((_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_E, fwdCaloID, kV1, (_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_trueID);
             }
           }
           for(Int_t iclus=0; iclus<(Int_t)_clusters_calo[kV1][kFEMC].size(); iclus++){
             (_clusters_calo[kV1][kFEMC].at(iclus)).cluster_trueID = GetCorrectMCArrayEntry((_clusters_calo[kV1][kFEMC].at(iclus)).cluster_trueID);
             if(_doClusterECalibration){
-              (_clusters_calo[kV1][kFEMC].at(iclus)).cluster_E/=getCalibrationValue((_clusters_calo[kV1][kFEMC].at(iclus)).cluster_E, kFEMC, kV1);
+              (_clusters_calo[kV1][kFEMC].at(iclus)).cluster_E/=getCalibrationValue((_clusters_calo[kV1][kFEMC].at(iclus)).cluster_E, kFEMC, kV1,(_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_trueID);
             }
           }
         }
@@ -632,7 +670,8 @@ void treeProcessing(
           caloresolutionhistos();
           if(verbosity>1) std::cout << "loop done ... next event" << std::endl;
         }
-        if(tracksEnabled) trackmatchingstudies();
+        if(tracksEnabled) trackmatchingstudies(primaryTrackSource);
+        if(tracksEnabled && addOutputName.Contains("EOP")) eoverpstudies(primaryTrackSource);
 
         clearClusterVectors();
         clearMCRecMatchVectors();
@@ -676,6 +715,10 @@ void treeProcessing(
       std::cout << "running trackingefficiencyhistosSave" << std::endl;
       trackingefficiencyhistosSave();
     }
+    if(tracksEnabled){
+      std::cout << "running tofpidhistosSave" << std::endl;
+      tofpidhistosSave();
+    }
     if(tracksEnabled) {
       std::cout << "running trackingresolutionhistosSave" << std::endl;
       trackingresolutionhistosSave();
@@ -694,6 +737,7 @@ void treeProcessing(
     if(tracksEnabled) {
       std::cout << "running trackmatchingstudiesSave" << std::endl;
       trackmatchingstudiesSave();
+      if(addOutputName.Contains("EOP"))eoverpstudiesSave();
     }
     std::cout << "running clusterizerSave" << std::endl;
     clusterizerSave();
@@ -715,7 +759,6 @@ int main( int argc, char* argv[] )
     bool do_reclus              = true;
     bool do_jetfinding          = false;
     bool runCaloRes             = true;
-    bool doCalibration          = false;
     Int_t verbosity             = 0;
     // Defaults to tracking from all layers.
     unsigned short primaryTrackSource = 0;
@@ -748,11 +791,6 @@ int main( int argc, char* argv[] )
             if( import.EqualTo("kTRUE") || import.EqualTo("true") )  runCaloRes = kTRUE;
             if( import.EqualTo("kFALSE") || import.EqualTo("false") )  runCaloRes = kFALSE;
         }
-        if( argc >  8 ) { // UseTHnSparse
-            import = argv[8];
-            if( import.EqualTo("kTRUE") || import.EqualTo("true") )  doCalibration = kTRUE;
-            if( import.EqualTo("kFALSE") || import.EqualTo("false") )  doCalibration = kFALSE;
-        }
         if( argc >  9 ) {
           std::istringstream sstr(argv[9]);
           sstr >> verbosity;
@@ -784,7 +822,6 @@ int main( int argc, char* argv[] )
         do_reclus,
         do_jetfinding,
         runCaloRes,
-        doCalibration,
         verbosity,
         primaryTrackSource,
         removeTracklets,

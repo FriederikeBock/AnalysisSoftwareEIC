@@ -4,7 +4,7 @@ Int_t verbosityTRKEFF = 0;
 
 // ANCHOR create histograms globally
 const int nPart_TRKEFF = 5;
-const unsigned int nTrackSources = 3;
+const unsigned int nTrackSources = 4;
 TString str_TRKEFF_mcparticles[nPart_TRKEFF+1] = {"electron", "cpion", "proton", "ckaon", "muon", "all"};
 int int_TRKEFF_mcparticles_PDG[nPart_TRKEFF] = {11 /*e*/,211  /*pi*/,  2212/*p*/,  321/*K*/,  13/*mu*/};
 
@@ -132,12 +132,13 @@ void trackingefficiency(){
   // see if true reco. track was found
   for(Int_t itrk=0; itrk<(Int_t)_nTracks; itrk++){
     unsigned short trackSource = _track_source[itrk];
+    if (trackSource >= (unsigned short)nTrackSources) continue;
     TVector3 recpartvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
     TVector3 mcpartvec(_mcpart_px[(int)_track_trueID[itrk]],_mcpart_py[(int)_track_trueID[itrk]],_mcpart_pz[(int)_track_trueID[itrk]]);
     // std::cout << itrk << std::endl;
     float receta = recpartvec.Eta();
     float trueeta = mcpartvec.Eta();
-    if (verbosityTRKEFF) std::cout << "\tTRKTRUEID " << (int)_track_trueID[itrk] << "\tPDG: " << _mcpart_PDG[(int)_track_trueID[itrk]] << "\tpT: " <<   TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)) << "\tEta " << receta << std::endl;
+    if (verbosityTRKEFF) std::cout << "\tTRKTRUEID " << (int)_track_trueID[itrk] << "\tPDG: " << _mcpart_PDG[(int)_track_trueID[itrk]] << "\tpT: " <<   TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)) << "\tEta " << receta << "\t track source\t" << trackSource << std::endl;
     float pt = recpartvec.Pt();
     float truept = mcpartvec.Pt();
     float pmom = recpartvec.Mag();
@@ -228,6 +229,9 @@ void trackingresolution(){
   // =======================================================================
   Int_t nCurrProj = 0;
   for(Int_t itrk=0; itrk<_nTracks; itrk++){
+    unsigned short trackSource = _track_source[itrk];
+    if (trackSource >= (unsigned short)nTrackSources) continue;
+
     TVector3 recpartvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
     TVector3 mcpartvec(_mcpart_px[(int)_track_trueID[itrk]],_mcpart_py[(int)_track_trueID[itrk]],_mcpart_pz[(int)_track_trueID[itrk]]);
     float receta    = recpartvec.Eta();
@@ -239,7 +243,6 @@ void trackingresolution(){
     float truept    = mcpartvec.Pt();
     float pmom      = recpartvec.Mag();
     float truepmom  = mcpartvec.Mag();
-    unsigned short trackSource = _track_source[itrk];
 
     Int_t parIdx = 5;
     if(abs(_mcpart_PDG[(int)_track_trueID[itrk]]) == 11)   parIdx = 0;
@@ -415,12 +418,14 @@ void trackingcomparison() {
   // First, iterate once over track sources and track index
   for (unsigned int iOuterTrk = 0; iOuterTrk < (unsigned int)_nTracks; ++iOuterTrk) {
     int iOuterTrkSource = _track_source[iOuterTrk];
+    if (iOuterTrkSource >= (int)nTrackSources) continue;
     if (verbosityTRKEFF > 3)std::cout << "outer track: "<< iOuterTrk << std::endl;
     if ((int)_track_trueID[iOuterTrk] < 0) continue;
     if (_mcpart_RecTrackIDs[(int)_track_trueID[iOuterTrk]].size() > 1){
       for (int rtr = 0; rtr < (int)_mcpart_RecTrackIDs[(int)_track_trueID[iOuterTrk]].size(); rtr++){
         int iInnerTrk = _mcpart_RecTrackIDs[(int)_track_trueID[iOuterTrk]].at(rtr);
         int iInnerTrkSource = _track_source[iInnerTrk];
+        if (iInnerTrkSource >= (int)nTrackSources) continue;
         if ( _track_source[iOuterTrk] >= iInnerTrkSource ) continue;
 
         TVector3 outerVec(_track_px[iOuterTrk], _track_py[iOuterTrk], _track_pz[iOuterTrk]);

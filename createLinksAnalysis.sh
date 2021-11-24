@@ -18,6 +18,7 @@ ln -s $EICANA/treeAnalysis/*.cxx treeAnalysis/
 ln -s $EICANA/treeAnalysis/*.C treeAnalysis/
 ln -s $EICANA/treeAnalysis/*.sh treeAnalysis/
 ln -s $EICANA/clusterProperties/*.C clusterProperties/
+ln -s $EICANA/clusterProperties/*.sh clusterProperties/
 ln -s $EICANA/visualizationGeomAndClusters/*.C visualizationGeomAndClusters/
 ln -s $EICANA/visualizationGeomAndClusters/*.sh visualizationGeomAndClusters/
 ln -s $EICANA/resolutionCalo/*.C resolutionCalo/

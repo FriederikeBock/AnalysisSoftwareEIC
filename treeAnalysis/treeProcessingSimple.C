@@ -32,12 +32,21 @@ void treeProcessingSimple(
     bool doCalibration          = false,              //  
     Int_t verbosity             = 0,                  //
     // Defaults to tracking from all layers.
-    unsigned short primaryTrackSource = 0             //
+    unsigned short primaryTrackSource = 0,             //
+    bool brokenProjections      = true                 // use this to true with outputs for prod4, newer output swtich it to false       
 ){
     // make output directory
     TString dateForOutput = ReturnDateStr();
     outputDir = Form("treeProcessingSimple/%s",addOutputName.Data());
     gSystem->Exec("mkdir -p "+outputDir);
+
+    // switch projection layer to most appropriate
+    if (brokenProjections){
+      _useAlternateForProjections = brokenProjections;
+      std::cout << "calorimeter projections not available, using projections in TTL for matching" << std::endl;
+    } else { 
+      std::cout << "using calorimeter projections for matching" << std::endl;
+    }
 
     // load tree
     TChain *const tt_event = new TChain("event_tree");
@@ -122,6 +131,15 @@ void treeProcessingSimple(
                                   _nTowers_EHCAL, _nTowers_HCALIN, _nTowers_HCALOUT, _nTowers_LFHCAL, _nTowers_EEMCG,
                                   _nTowers_BECAL  };
 
+      
+        // Reset array entries for true ID
+        for(Int_t itrk=0; itrk<_nTracks; itrk++){
+          _track_trueID[itrk] = GetCorrectMCArrayEntry(_track_trueID[itrk]);
+          if(verbosity>2) std::cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk] << "\tand X = " << _track_px[itrk] << " cm" << std::endl;
+        }
+        // obtain labels for different track sources
+        prepareMCMatchInfo();
+      
         // run clusterizers normal calos
         for (int cal = 0; cal < maxcalo; cal++){
           if(do_reclus && nTowers[cal] > 0 && caloEnabled[cal]){
@@ -133,22 +151,16 @@ void treeProcessingSimple(
         }
         if((do_reclus) && verbosity>1) cout << "done with clusterization!" << endl;
 
-    
-        // Reset array entries for true ID
-        for(Int_t itrk=0; itrk<_nTracks; itrk++){
-          _track_trueID[itrk] = GetCorrectMCArrayEntry(_track_trueID[itrk]);
-          if(verbosity>2) std::cout << "\tTrack: track " << itrk << "\twith true ID " << _track_trueID[itrk] << "\tand X = " << _track_px[itrk] << " cm" << std::endl;
-        }
-        // obtain labels for different track sources
-        prepareMCMatchInfo();
-
-        
+        // load correct clusterizer output also for centrally stored clusters, where appropriate
         for (Int_t icalo = 0; icalo < maxcalo; icalo++){
           for (Int_t ialgo = 0; ialgo < maxAlgo; ialgo++){
             if (loadClusterizerInput(ialgo, icalo) && verbosity>2) std::cout << str_calorimeter[icalo].Data() << "\t" << ialgo << endl;
           }
         }
-
+        // set clusters matched to respective track for direct accessing
+        SetClustersMatchedToTracks();
+        
+        
         
         // simple TM validation
         if(tracksEnabled) trackmatchingstudies();

@@ -62,8 +62,8 @@
 #   root -x -q -l -b 'plot3DTowerstree.C+("/media/fbock/2fba62ae-79f7-469c-bca3-385d6f6261da/eic-outputs/LFHCAL/additional/1000_LFHCAL-SingleKaon_100GeV/G4EICDetector_eventtree.root","pdf","SingleKaon",100,'$i',true)'
 # done
 # 
-for i in {0..10};
+for i in {0..400};
 do 
-  root -x -q -l -b 'plot3DTowerstree.C+("/media/fbock/2fba62ae-79f7-469c-bca3-385d6f6261da/eic-outputs/ForwardCalos/1000_FWDCal-SingleElectron_30GeV/G4EICDetector_eventtree.root","pdf","SingleElectron",30,'$i',true,", FEMC infront")'
-  root -x -q -l -b 'plot3DTowerstree.C+("/media/fbock/2fba62ae-79f7-469c-bca3-385d6f6261da/eic-outputs/ForwardCalos/1000_FWDCal-SinglePion_30GeV/G4EICDetector_eventtree.root","pdf","SinglePion",30,'$i',true,", FEMC infront")'
+#   root -b -x -l -q 'plot3DTowerstree.C("/media/fbock/Samsung_T5/simulationOutputEIC/ECCE2ndCampaign/pythia8/ep-18x275-q2-100/eval_00002/DST_HFandJets_pythia8_ep-18x275-q2-100_000_2202000_02000_g4event_eval.root","/media/fbock/Samsung_T5/simulationOutputEIC/ECCE2ndCampaign/geometry2ndCampaign.root","pdf","PythiaQ2_100",-1,'$i')'
+  root -b -x -l -q 'plot3DTowerstree.C("/media/fbock/Samsung_T5/simulationOutputEIC/ECCE2ndCampaign/particleGun/singlePion/eval_00001/singlepi.root","/media/fbock/Samsung_T5/simulationOutputEIC/ECCE2ndCampaign/geometry2ndCampaign.root","pdf","SinglePion",-1,'$i')'
 done

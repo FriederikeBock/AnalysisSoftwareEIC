@@ -2,36 +2,53 @@
 #define CALOHEADER_H
 
 // ANCHOR basic struct for towers in clusterizer
-typedef struct {
+struct towersStrct{
+  towersStrct(): tower_E(0), tower_iEta(-1), tower_iPhi(-1), tower_iL(-1), tower_trueID(-10000) {}
   float tower_E;
   int tower_iEta;
   int tower_iPhi;
   int tower_iL;
   int tower_trueID;
-} towersStrct;
+} ;
 
-typedef struct {
+struct matchingStrct {
+  matchingStrct(): id(-1), dPhi(-1000), dEta(-1000), dX(-1000), dY(-1000) {}
+  int id;
+  float dPhi;
+  float dEta;
+  float dX;
+  float dY;
+};
+
+struct clustersStrct{
+  clustersStrct(): cluster_E(0.), cluster_seed(0.), cluster_Eta(-10.), cluster_Phi(-10.), cluster_X(0.) , cluster_Y(0.), cluster_Z(0.), cluster_M02(0.), cluster_M20(0.), cluster_isMatched(false), cluster_isMatchedECal(false), cluster_isMatchedHCal(false), cluster_NTowers(0), cluster_trueID(-10000), cluster_NtrueID(0) {}
   float cluster_E;
   float cluster_seed;
   float cluster_Eta;
   float cluster_Phi;
-  float cluster_Z;
   float cluster_X;
   float cluster_Y;
+  float cluster_Z;
   float cluster_M02;
   float cluster_M20;
   bool cluster_isMatched;
-  std::vector<int> cluster_matchedTrackIDs;
+  bool cluster_isMatchedECal;
+  bool cluster_isMatchedHCal;
   int cluster_NTowers;
   int cluster_trueID;
   int cluster_NtrueID;
-} clustersStrct;
+  std::vector<matchingStrct> cluster_matchedTracks;
+  std::vector<matchingCalStrct> cluster_matchedECals;
+  std::vector<matchingCalStrct> cluster_matchedHCals;
+  std::vector<towersStrct> cluster_towers;
+} ;
 
-typedef struct {
+struct occuranceStrct{
+  occuranceStrct(): particle_ID(-10000), highest_E(0.), nClusters(0) {}
   int particle_ID;
   float highest_E;
   int nClusters;
-} occuranceStrct;
+} ;
 
 // enum calotype {
 //   kFHCAL         = 0,
@@ -50,8 +67,9 @@ const int maxcalo = 12;
 int calogeomindex[maxcalo] = {0};
 
 TString str_calorimeter[maxcalo] = {"FHCAL", "FEMC", "DRCALO", "EEMC", "CEMC", "EHCAL", "HCALIN", "HCALOUT", "LFHCAL", "EEMCG", "BECAL", "FOCAL"};
-int _combCalo[maxcalo]           = {kFEMC,  -1,     -1,       -1,      -1,      kEEMC,  kBECAL,   kHCALIN,    kFEMC,    -1,       -1,       -1};
-int _combCalo2[maxcalo]          = {-1,     -1,     -1,       -1,      -1,      -1,     -1,       kBECAL,     -1,       -1,       -1,       -1};
+int _combCalo[maxcalo]           = {kFEMC,  -1,     -1,       -1,      -1,      kEEMC,  kBECAL,   kBECAL,     kFEMC,    -1,       -1,       -1};
+int _combCalo2[maxcalo]          = {-1,     -1,     -1,       -1,      -1,      -1,     -1,       -1,         -1,       -1,       -1,       -1};
+// int _combCalo2[maxcalo]          = {-1,     -1,     -1,       -1,      -1,      -1,     -1,       kHCALIN,    -1,       -1,       -1,       -1};
 int _caloTowersPhi[maxcalo]      = {0,       0,      0,        0,     100,      0,      64,       64,         0,        -1,       128,       0};
 const int _active_calo = 12;
 
@@ -78,6 +96,7 @@ float aggE[maxcalo]   = {0.1,   0.005, 0.05,  0.01, 0.1,  0.1,  0.05,   0.1,    
 
 // TString str_clusterizer[7] = {"V1", "V3", "3x3", "5x5", "C3", "C5", "MA"};
 TString str_clusterizer[7] = {"MA", "V3", "V1", "5x5", "C5", "C3", "3x3"};
+// TString str_clusterizer[7] = {"V3", "V3", "V1", "5x5", "C5", "C3", "3x3"};
 const int maxAlgo = 7;
 const int _active_algo = 1;
 
@@ -254,6 +273,29 @@ void SetFwdCalorimeterPosition(int caloID, float zposin){
   }
 }
 
+float CorrectEtaPositionCalo (int caloID, float etarec){
+  switch(caloID){
+    case kDRCALO: 
+    case kFHCAL: 
+    case kFEMC:
+    case kEEMC:
+    case kEEMCG:
+    case kFOCAL:  
+    case kHCALIN: 
+    case kHCALOUT:
+    case kBECAL: 
+    case kCEMC: 
+      return etarec;
+    case kEHCAL:
+      return etarec+0.03;
+    case kLFHCAL:
+      return etarec-0.04;
+    default:
+      return etarec;
+  }
+}
+
+
 float* EtaPhiFromIndices(int ieta,int iphi,float energy = 0, int caloSelect = 0);
 
 
@@ -305,7 +347,7 @@ int ReturnProjectionIndexForCalorimeter(int caloID,  bool alternate){
       case kHCALOUT: return 63;
       case kCEMC: return 64;
       case kEEMCG: return 65;
-      case kLFHCAL: return 67;
+      case kLFHCAL: return 5;
       case kBECAL: return 66;
       case kFOCAL: return 85;
       default:
@@ -334,27 +376,9 @@ int ReturnProjectionIndexForCalorimeter(int caloID,  bool alternate){
   return -1;
 }
 
-int ReturnCalorimeterFromProjectionIndex(int projID){
-  switch (projID){
-    case 1: return kDRCALO;
-    case 5: return kFHCAL;
-    case 6: return kFEMC;
-    case 60: return kEHCAL;
-    case 61: return kEEMC;
-    case 62: return kHCALIN;
-    case 63: return kHCALOUT;
-    case 64: return kCEMC;
-    case 65: return kEEMCG;
-    case 67: return kLFHCAL;
-    case 66: return kBECAL;
-    case 85: return kFOCAL;
-    default:
-      // std::cout << "ReturnCalorimeterFromProjectionIndex: projID " << projID << " not defined, returning -1" << std::endl;
-      return -1;
-  }
-  return -1;
-}
-
+// ***********************************************************************************
+// matching windows for tracks to calo's going outward dX/dy for forward, dPhi/dEta for barrel
+// ***********************************************************************************
 float ReturnTrackMatchingWindowForCalo(int caloID){
   switch (caloID){
     case kDRCALO: return 5;
@@ -371,6 +395,70 @@ float ReturnTrackMatchingWindowForCalo(int caloID){
     case kFOCAL: return 3;
     default:
       std::cout << "ReturnTrackMatchingWindowForCalo: caloID " << caloID << " not defined, returning -1" << std::endl;
+      return -1;
+  }
+  return -1;
+}
+
+// ***********************************************************************************
+// matching windows for Calo's going inward in dPhi
+// ***********************************************************************************
+float ReturnPhiCaloMatching(int caloID, int caloID2){
+  switch (caloID){
+    case kDRCALO: return 0.1;
+    case kFHCAL: return 0.1;
+    case kFEMC: return 0.1;
+    case kEHCAL: return 0.1;
+    case kEEMC: return 0.1;
+    case kHCALIN: return 0.1;
+    case kHCALOUT: 
+      switch (caloID2){
+        case kBECAL:
+          return 0.08;
+        case kHCALIN:
+          return 0.02;
+        default:
+          return 0.1;
+      }
+    case kCEMC: return 0.1;
+    case kEEMCG: return 0.1;
+    case kLFHCAL: return 0.07;
+    case kBECAL: return 0.05;
+    case kFOCAL: return 0.1;
+    default:
+      std::cout << "ReturnPhiCaloMatching: caloID " << caloID << " not defined, returning -1" << std::endl;
+      return -1;
+  }
+  return -1;
+}
+
+// ***********************************************************************************
+// matching windows for Calo's going inward in dEta
+// ***********************************************************************************
+float ReturnEtaCaloMatching(int caloID, int caloID2){
+  switch (caloID){
+    case kDRCALO: return 0.1;
+    case kFHCAL: return 0.1;
+    case kFEMC: return 0.1;
+    case kEHCAL: return 0.1;
+    case kEEMC: return 0.1;
+    case kHCALIN: return 0.1;
+    case kHCALOUT: 
+      switch (caloID2){
+        case kBECAL:
+          return 0.05;
+        case kHCALIN:
+          return 0.02;
+        default:
+          return 0.1;
+      }
+    case kCEMC: return 0.1;
+    case kEEMCG: return 0.1;
+    case kLFHCAL: return 0.1;
+    case kBECAL: return 0.05;
+    case kFOCAL: return 0.1;
+    default:
+      std::cout << "ReturnEtaCaloMatching: caloID " << caloID << " not defined, returning -1" << std::endl;
       return -1;
   }
   return -1;
@@ -396,8 +484,9 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
         vecTwr += w_i.at(cellI)*vecTwrTmp;
         if(cellI==0 && ReturnFwdCalorimeterPosition(caloSelect))zHC=vecTwrTmp.Z();
     }
-    returnVariables[2]=vecTwr.Eta();
-    returnVariables[3]=vecTwr.Phi(); //(vecTwr.Phi()<0 ? vecTwr.Phi()+TMath::Pi() : vecTwr.Phi()-TMath::Pi());
+    // correct Eta position for average shift in calo 
+    returnVariables[2]= CorrectEtaPositionCalo(caloSelect, vecTwr.Eta());
+    returnVariables[3]= vecTwr.Phi(); //(vecTwr.Phi()<0 ? vecTwr.Phi()+TMath::Pi() : vecTwr.Phi()-TMath::Pi());
 //     std::cout << "X: "<< vecTwr.X() << "\t" << " Y: "<< vecTwr.Y() << "\t" << " Z: "<< vecTwr.Z() << "\t zHC: " <<  zHC << std::endl;
     if(IsForwardCalorimeter(caloSelect)){
       vecTwr*=abs(zHC/vecTwr.Z()); // wtot/Ntowers?
@@ -412,19 +501,19 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
     float delta_eta_phi[4] = {0};
     int supModLeadingCell = -1;
     for(int cellI=0; cellI<(int)cluster_towers.size(); cellI++){
-        int iphi=cluster_towers.at(cellI).tower_iPhi;
-        int ieta=cluster_towers.at(cellI).tower_iEta;
-        delta_phi_phi[1] += (w_i.at(cellI)*iphi*iphi)/w_tot;
-        delta_phi_phi[2] += (w_i.at(cellI)*iphi)/w_tot;
-        delta_phi_phi[3] += (w_i.at(cellI)*iphi)/w_tot;
+      int iphi=cluster_towers.at(cellI).tower_iPhi;
+      int ieta=cluster_towers.at(cellI).tower_iEta;
+      delta_phi_phi[1] += (w_i.at(cellI)*iphi*iphi)/w_tot;
+      delta_phi_phi[2] += (w_i.at(cellI)*iphi)/w_tot;
+      delta_phi_phi[3] += (w_i.at(cellI)*iphi)/w_tot;
 
-        delta_eta_eta[1] += (w_i.at(cellI)*ieta*ieta)/w_tot;
-        delta_eta_eta[2] += (w_i.at(cellI)*ieta)/w_tot;
-        delta_eta_eta[3] += (w_i.at(cellI)*ieta)/w_tot;
+      delta_eta_eta[1] += (w_i.at(cellI)*ieta*ieta)/w_tot;
+      delta_eta_eta[2] += (w_i.at(cellI)*ieta)/w_tot;
+      delta_eta_eta[3] += (w_i.at(cellI)*ieta)/w_tot;
 
-        delta_eta_phi[1] += (w_i.at(cellI)*ieta*iphi)/w_tot;
-        delta_eta_phi[2] += (w_i.at(cellI)*iphi)/w_tot;
-        delta_eta_phi[3] += (w_i.at(cellI)*ieta)/w_tot;
+      delta_eta_phi[1] += (w_i.at(cellI)*ieta*iphi)/w_tot;
+      delta_eta_phi[2] += (w_i.at(cellI)*iphi)/w_tot;
+      delta_eta_phi[3] += (w_i.at(cellI)*ieta)/w_tot;
     }
     delta_phi_phi[0] = delta_phi_phi[1] - (delta_phi_phi[2] * delta_phi_phi[3]);
     delta_eta_eta[0] = delta_eta_eta[1] - (delta_eta_eta[2] * delta_eta_eta[3]);
@@ -519,25 +608,72 @@ bool loadClusterizerInput(
 
 }
 
-float getCalibrationValue(float clusterE, int caloEnum, int algoEnum){
+float getCalibrationValue(float clusterE, int caloEnum, int algoEnum, int MCtrueID){
   if(caloEnum == kFHCAL){
       return 1.0;
   } else if(caloEnum == kEEMC){
     if(algoEnum==kMA){
-      return 0.9;
+      return ( 2.21528e+00 + 7.34167e-02 * TMath::Log(clusterE) ) / ( 1 + ( 3.41200e-01 * TMath::Exp( ( clusterE + 4.66905e+02 ) / 3.10970e+02 ) ) );
     } else {
-      return 1.0;
+      return 0.9;
     }
+    return 1;
   } else if(caloEnum == kBECAL){
     if(algoEnum==kMA){
-      return 0.9;//0.93-0.0053*clusterE;
+      float corrFac1  = ( 5.91169e+06 + 1.54628e+05 * TMath::Log(clusterE) ) / ( 1 + ( 2.14932e+06 * TMath::Exp( ( clusterE + 1.22185e+02 ) / 1.09576e+02 ) ) );
+        return corrFac1;        
+//       float tempE     = clusterE/corrFac1;
+//       float corrFac2  = ( 3.31323e+08 + 2.45195e+06 * TMath::Log(clusterE) ) / ( 1 + ( 1.47392e+08 * TMath::Exp( ( clusterE + 2.99068e+02 ) / 3.69747e+02 ) ) );
+//       return clusterE /tempE/ corrFac2;
     } else {
-      return 1.0;
+      return 0.9;
     }
+    return 1;
   } else if(caloEnum == kFEMC){
-    return 1.0;
+      return ( 1.85096e+00  + 4.56917e-02 * TMath::Log(clusterE) ) / ( 1 + ( 1.10960e+00 * TMath::Exp( ( clusterE - 7.27315e+01 ) / 4.39902e+02 ) ) );
+//     else 
+//       return 1/2.22*( 1.85096e+00  + 4.56917e-02 * TMath::Log(clusterE) ) / ( 1 + ( 1.10960e+00 * TMath::Exp( ( clusterE - 7.27315e+01 ) / 4.39902e+02 ) ) );
+  } else if(caloEnum == kLFHCAL){
+//     return 0.9;
+    float corrFac1  = (-3.85201e+02+3.86087e+02 * TMath::Erf( (clusterE+4.44436e+01)/(TMath::Sqrt(2)*1.32891e+01)));
+    return corrFac1;
+//     return tempE;
+//     return 1;
+  } else if(caloEnum == kHCALOUT){
+//     return 0.62;
+    float corrFac1  = ( -4.98500e+01+5.05334e+01 * TMath::Erf( (clusterE+6.01498e+01)/(TMath::Sqrt(2)*2.08632e+01)));
+    return corrFac1;
+    float tempE     = clusterE/corrFac1;
+    float corrFac2  = ( 9.74290e-01 - 7.99094e-04 * TMath::Log(tempE) ) / ( 1 + ( -6.64268e-02 * TMath::Exp( ( tempE - 1.32971e+01 ) / -3.23923e+01 ) ) );
+    return clusterE /tempE/ corrFac2;
+//     return tempE;
+  } else if(caloEnum == kHCALIN){
+    return 0.62;
+  } else if(caloEnum == kEHCAL){
+    return 0.37;
   } else {
-    return 1.0;
+    return 1;
+  }
+  return 1.0;
+}
+
+float getCorrectionFactorECal(float clusterE, int caloEnum, int algoEnum, int MCtrueID){
+  if(caloEnum == kFHCAL){
+      return 1.0;
+  } else if(caloEnum == kEEMC){
+    return 1;
+  } else if(caloEnum == kBECAL){
+    return 1;
+  } else if(caloEnum == kFEMC){
+    return 1;
+  } else if(caloEnum == kHCALOUT){
+    return 1;
+  } else if(caloEnum == kHCALIN){
+    return 1;
+  } else if(caloEnum == kEHCAL){
+    return 1;
+  } else {
+    return 1;
   }
   return 1.0;
 }
