@@ -5,11 +5,6 @@
 void split_canvas(TCanvas* &cPNG, TString canvName, Int_t numInputs);
 
 
-Double_t maxResPerEM[3]       = {8.5, 10.5, 17.5};
-Double_t maxResPerHad[3]      = {62, 82, 72};
-Double_t maxResEM[3]          = {1.125, 1.175, 1.205};
-Double_t maxResHad[3]         = {1.25, 1.85, 1.65};
-
 void energyResolutionCalorimeters_comparePlot(
                             TString configInputFiles  = "file.txt",
                             TString addName           = "",
@@ -142,6 +137,8 @@ void energyResolutionCalorimeters_comparePlot(
       }
       graphReqEM[idir]->SetPoint(i, partE[i], (min+max)/2 );
       graphReqEM[idir]->SetPointError(i, 0.05, TMath::Abs(min-max)/2 );
+      // graphReq1oEEM[idir]->SetPoint(i, 1/TMath::Sqrt(partE[i]), (max*0.99) );
+      // graphReq1oEEM[idir]->SetPointError(i, 0.005, (max*0.01) );
       graphReq1oEEM[idir]->SetPoint(i, 1/TMath::Sqrt(partE[i]), (min+max)/2 );
       graphReq1oEEM[idir]->SetPointError(i, 0.005, TMath::Abs(min-max)/2 );
       
@@ -153,14 +150,23 @@ void energyResolutionCalorimeters_comparePlot(
       }
       graphReqHad[idir]->SetPoint(i, partE[i], (min+max)/2 );
       graphReqHad[idir]->SetPointError(i, 0.05, TMath::Abs(min-max)/2 );
+      // graphReq1oEHad[idir]->SetPoint(i, 1/TMath::Sqrt(partE[i]), (max) );
+      // graphReq1oEHad[idir]->SetPointError(i, 0.005, 0 );
+      // graphReq1oEHad[idir]->SetPoint(i, 1/TMath::Sqrt(partE[i]), (max*0.99) );
+      // graphReq1oEHad[idir]->SetPointError(i, 0.005, (max*0.01) );
       graphReq1oEHad[idir]->SetPoint(i, 1/TMath::Sqrt(partE[i]), (min+max)/2 );
       graphReq1oEHad[idir]->SetPointError(i, 0.005, TMath::Abs(min-max)/2 );
     }
+    graphReqEM[idir]->Sort();
     graphReq1oEEM[idir]->Sort();
-    DrawGammaSetMarkerTGraphErr(  graphReqEM[idir], 0, 0, kBlue-10, kBlue-10, 1, kTRUE, kBlue-10, kFALSE);
-    DrawGammaSetMarkerTGraphErr(  graphReq1oEEM[idir], 0, 0, kBlue-10, kBlue-10, 1, kTRUE, kBlue-10, kFALSE);
-    DrawGammaSetMarkerTGraphErr(  graphReqHad[idir], 0, 0, kGray, kGray, 1, kTRUE, kGray, kFALSE);
-    DrawGammaSetMarkerTGraphErr(  graphReq1oEHad[idir], 0, 0, kGray, kGray, 1, kTRUE, kGray, kFALSE);
+    graphReqHad[idir]->Sort();
+    graphReq1oEHad[idir]->Sort();
+    while (graphReq1oEHad[idir]->GetX()[graphReq1oEHad[idir]->GetN()-1] > 1 )graphReq1oEHad[idir]->RemovePoint(graphReq1oEHad[idir]->GetN()-1);
+
+    DrawGammaSetMarkerTGraphErr(  graphReqEM[idir], 0, 0, colorSet_light2[idir], colorSet_light2[idir], 2, kTRUE, colorSet_light2[idir], kFALSE);
+    DrawGammaSetMarkerTGraphErr(  graphReq1oEEM[idir], 0, 0, colorSet_light2[idir], colorSet_light2[idir], 2, kTRUE, colorSet_light2[idir], kFALSE);
+    DrawGammaSetMarkerTGraphErr(  graphReqHad[idir], 0, 0, colorSet_light2[idir], colorSet_light2[idir], 2, kTRUE, colorSet_light2[idir], kFALSE);
+    DrawGammaSetMarkerTGraphErr(  graphReq1oEHad[idir], 0, 0, colorSet_light2[idir], colorSet_light2[idir], 2, kTRUE, colorSet_light2[idir], kFALSE);
   }
 
 
@@ -168,13 +174,13 @@ void energyResolutionCalorimeters_comparePlot(
 
   TCanvas* cReso2 = new TCanvas("cReso2","",0,0,1100,1000);
   DrawGammaCanvasSettings( cReso2, 0.095, 0.01, 0.01, 0.105);
-  TH2F* histResoDummy                           = new TH2F("histResoDummy","histResoDummy",1000,0, 1.5,1000,0, 50);
+  TH2F* histResoDummy                           = new TH2F("histResoDummy","histResoDummy",1000,0, 1.5,1000,0, 200);
   SetStyleHistoTH2ForGraphs(histResoDummy, "1 / #sqrt{#it{E} (GeV)}","#sigma / #it{E} (%)", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.81);
   histResoDummy->GetXaxis()->SetNoExponent();
   histResoDummy->GetYaxis()->SetNdivisions(505,kTRUE);
   histResoDummy->GetXaxis()->SetMoreLogLabels(kTRUE);
   // TLegend* legendPtResM  = GetAndSetLegend2(0.14, 0.72-(nSets*textSizeLabelsRel), 0.34, 0.72,textSizeLabelsPixel, 1, "", 43, 0.15);
-  TLegend* legendPtResM  = GetAndSetLegend2(0.65, 0.14, 0.95, 0.14+(nSets*textSizeLabelsRel),textSizeLabelsPixel, 1, "", 43, 0.15);
+  TLegend* legendPtResM  = GetAndSetLegend2(0.14,addName.Contains("HCal") ? 0.95-((2*nSets)*textSizeLabelsRel) :  0.95-(2*nSets*textSizeLabelsRel), 0.55, 0.95,textSizeLabelsPixel, 1, "", 43, 0.15);
   
 
   for (Int_t pid = 1; pid < nPID; pid++){
@@ -182,42 +188,66 @@ void energyResolutionCalorimeters_comparePlot(
     if(!currPIDavail[pid]) continue;
     // histoDummyEffiE->Draw();
       legendPtResM->Clear();
-      if(pid==1)legendPtResM  = GetAndSetLegend2(0.74, 0.15, 0.94, 0.15+(nSets*textSizeLabelsRel),textSizeLabelsPixel, 1, "", 43, 0.15);
+      // if(pid==1)legendPtResM  = GetAndSetLegend2(0.74, 0.15, 0.94, 0.15+(nSets*textSizeLabelsRel),textSizeLabelsPixel, 1, "", 43, 0.15);
 
-      histResoDummy->GetYaxis()->SetRangeUser(0,maxResPerEM[2]);
-      if(addName.Contains("HCal"))histResoDummy->GetYaxis()->SetRangeUser(0,maxResPerHad[2]);
+      histResoDummy->GetYaxis()->SetRangeUser(0,21);
+      if(addName.Contains("HCal"))histResoDummy->GetYaxis()->SetRangeUser(0,139);
+      if(addName.Contains("HCal"))histResoDummy->GetXaxis()->SetRangeUser(0,1.02);
       histResoDummy->Draw();
 
-    TLegend* legendResLabE  = GetAndSetLegend2(0.14, 0.95-0.85*textSizeLabelsRel, 0.35, 0.95,0.85*textSizeLabelsRel, 1, "", 42, 0.2);
-
+    // TLegend* legendResLabE  = GetAndSetLegend2(0.14, 0.95-0.85*textSizeLabelsRel, 0.35, 0.95,0.85*textSizeLabelsRel, 1, "", 42, 0.2);
+    bool iindexplotted[3] = {false};
     for (Int_t iSet = 0; iSet < nSets; iSet++){
-      if(addName.Contains("HCal"))graphReq1oEHad[dirCal[iSet]]->Draw("same,e3");
-      else graphReq1oEEM[dirCal[iSet]]->Draw("same,e3");
+      if(!iindexplotted[dirCal[iSet]]){
+        DrawGammaSetMarkerTGraphErr(  graphReq1oEEM[dirCal[iSet]], 0, 0, getCaloColor(labels[iSet],true), getCaloColor(labels[iSet],true), 2, kTRUE, getCaloColor(labels[iSet],true), kFALSE);
+        DrawGammaSetMarkerTGraphErr(  graphReq1oEHad[dirCal[iSet]], 0, 0, getCaloColor(labels[iSet],true), getCaloColor(labels[iSet],true), 2, kTRUE, getCaloColor(labels[iSet],true), kFALSE);
+        if(addName.Contains("HCal")){
+          //  if(!labels[iSet].Contains("IHCAL")) graphReq1oEHad[dirCal[iSet]]->Draw("same,c,X0");
+          //  if(!labels[iSet].Contains("IHCAL")) 
+          //  graphReq1oEHad[dirCal[iSet]]->Draw("same,e3");
+          if(labels[iSet].Contains("OHCAL"))graphReq1oEHad[dirCal[iSet]]->SetFillStyle(3544);
+          graphReq1oEHad[dirCal[iSet]]->Draw("same,e3");
+        } else{
+          if(labels[iSet].Contains("FEMC"))graphReq1oEEM[dirCal[iSet]]->SetFillStyle(3545);
+          if(labels[iSet].Contains("BEMC"))graphReq1oEEM[dirCal[iSet]]->SetFillStyle(3754);
+          // if(!labels[iSet].Contains("BEMC"))
+          graphReq1oEEM[dirCal[iSet]]->Draw("same,e3");
+          // if(dirCal[iSet]==1) iindexplotted[2] = true;
+        }
+        iindexplotted[dirCal[iSet]] = true;
+      }
+      
     }
+       
     for (Int_t iSet = 0; iSet < nSets; iSet++){
       cout << "\t" << calo[iSet].Data() << endl;
 // sigma resolution
-      DrawGammaSetMarker(h_particle_reso_1oEhighest[iSet][pid], markerStyleSet[iSet], markerSizeSet[iSet], colorSet[iSet], colorSet[iSet]);
+      DrawGammaSetMarker(h_particle_reso_1oEhighest[iSet][pid], markerStyleSet[iSet], markerSizeSet[iSet], getCaloColor(labels[iSet]), getCaloColor(labels[iSet]));
       h_particle_reso_1oEhighest[iSet][pid]->Draw("same,p");
-      DrawGammaSetMarkerTF1(fit_resohighest_particle_1oE[iSet][pid], 3, 3, colorSet[iSet]);
-      fit_resohighest_particle_1oE[iSet][pid]->Draw("same");
+      DrawGammaSetMarkerTF1(fit_resohighest_particle_1oE[iSet][pid], lineStylePID[iSet+1], 3, getCaloColor(labels[iSet])-3);
+      if(!labels[iSet].Contains("IHCAL"))fit_resohighest_particle_1oE[iSet][pid]->Draw("same");
 
-      // fwhm resolution
-      DrawGammaSetMarker(h_particle_resof_1oEhighest[iSet][pid], markerStyleSet2[iSet], markerSizeSet[iSet], colorSet_light[iSet], colorSet_light[iSet]);
-      h_particle_resof_1oEhighest[iSet][pid]->Draw("same,p");
-      // DrawGammaSetMarkerTF1(fit_resofhighest_particle_1oE[iSet][pid], 3, 3, colorSet_light[iSet]);
-      // fit_resofhighest_particle_1oE[iSet][pid]->Draw("same");
-      // legendResLabE->AddEntry(fit_resohighest_particle_1oE[iSet], Form("%s: #sigma/#it{E} =  %1.1f/#sqrt{#it{E}} #oplus %1.1f",labelPart[pid].Data(), fit_resohighest_particle_1oE[iSet]->GetParameter(1),fit_resohighest_particle_1oE[iSet]->GetParameter(0)),"l");
-      
-    }    
-    // drawLatexAdd(perfLabel,0.95,0.92,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    // drawLatexAdd(Form("%s in %s", labelPart[pid].Data() ,detLabel.Data()),0.95,0.87,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    legendResLabE->Draw();
+      if(addName.Contains("HCal")){
+        if(!labels[iSet].Contains("IHCAL"))legendPtResM->AddEntry(graphReq1oEHad[dirCal[iSet]], Form("YR Requirement %s",labels[iSet].Data()),"f");
+      } else {
+        legendPtResM->AddEntry(graphReq1oEEM[dirCal[iSet]], Form("YR Requirement %s",labels[iSet].Data()),"f");
+      }
+      if(labels[iSet].Contains("IHCAL"))legendPtResM->AddEntry(h_particle_reso_1oEhighest[iSet][pid], Form("%s",labels[iSet].Data()),"p");
+      else legendPtResM->AddEntry(fit_resohighest_particle_1oE[iSet][pid], Form("%s: #sigma/#it{E} =  %1.1f/#sqrt{#it{E}} #oplus %1.1f",labels[iSet].Data(), fit_resohighest_particle_1oE[iSet][pid]->GetParameter(1),fit_resohighest_particle_1oE[iSet][pid]->GetParameter(0)),"l");
+    }
+    drawLatexAdd(labelEnergy.Data(),0.95,0.92,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("single %s", labelPart[pid].Data()),0.95,0.87,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    legendPtResM->Draw();
 
     cReso2->Print(Form("%s/Resolution_%sFitted.%s", outputDir.Data(), readNames[pid].Data(), suffix.Data()));
 
   }
 
+      // fwhm resolution
+      // DrawGammaSetMarker(h_particle_resof_1oEhighest[iSet][pid], markerStyleSet2[iSet], markerSizeSet[iSet], colorSet_light[iSet], colorSet_light[iSet]);
+      // h_particle_resof_1oEhighest[iSet][pid]->Draw("same,p");
+      // DrawGammaSetMarkerTF1(fit_resofhighest_particle_1oE[iSet][pid], 3, 3, colorSet_light[iSet]);
+      // fit_resofhighest_particle_1oE[iSet][pid]->Draw("same");
 
 
 
