@@ -218,13 +218,17 @@ void energyResolutionCalorimeters_comparePlot(
       }
       
     }
-       
+    TGraphErrors* dummyGraph[maxNSets] = {nullptr};
     for (Int_t iSet = 0; iSet < nSets; iSet++){
       cout << "\t" << calo[iSet].Data() << endl;
 // sigma resolution
       DrawGammaSetMarker(h_particle_reso_1oEhighest[iSet][pid], markerStyleSet[iSet], markerSizeSet[iSet], getCaloColor(labels[iSet]), getCaloColor(labels[iSet]));
+      dummyGraph[iSet] = new TGraphErrors(h_particle_reso_1oEhighest[iSet][pid]);
+      DrawGammaSetMarkerTGraph(dummyGraph[iSet], markerStyleSet[iSet], markerSizeSet[iSet], getCaloColor(labels[iSet]), getCaloColor(labels[iSet]));
+      dummyGraph[iSet]->SetLineStyle(lineStylePID[iSet+1]);
+      dummyGraph[iSet]->SetLineWidth(3);
       h_particle_reso_1oEhighest[iSet][pid]->Draw("same,p");
-      DrawGammaSetMarkerTF1(fit_resohighest_particle_1oE[iSet][pid], lineStylePID[iSet+1], 3, getCaloColor(labels[iSet])-3);
+      DrawGammaSetMarkerTF1(fit_resohighest_particle_1oE[iSet][pid], lineStylePID[iSet+1], 3, getCaloColor(labels[iSet]));
       if(!labels[iSet].Contains("IHCAL"))fit_resohighest_particle_1oE[iSet][pid]->Draw("same");
 
       if(addName.Contains("HCal")){
@@ -233,7 +237,7 @@ void energyResolutionCalorimeters_comparePlot(
         legendPtResM->AddEntry(graphReq1oEEM[dirCal[iSet]], Form("YR Requirement %s",labels[iSet].Data()),"f");
       }
       if(labels[iSet].Contains("IHCAL"))legendPtResM->AddEntry(h_particle_reso_1oEhighest[iSet][pid], Form("%s",labels[iSet].Data()),"p");
-      else legendPtResM->AddEntry(fit_resohighest_particle_1oE[iSet][pid], Form("%s: #sigma/#it{E} =  %1.1f/#sqrt{#it{E}} #oplus %1.1f",labels[iSet].Data(), fit_resohighest_particle_1oE[iSet][pid]->GetParameter(1),fit_resohighest_particle_1oE[iSet][pid]->GetParameter(0)),"l");
+      else legendPtResM->AddEntry(dummyGraph[iSet], Form("%s: #sigma/#it{E} =  %1.1f/#sqrt{#it{E}} #oplus %1.1f",labels[iSet].Data(), fit_resohighest_particle_1oE[iSet][pid]->GetParameter(1),fit_resohighest_particle_1oE[iSet][pid]->GetParameter(0)),"pl");
     }
     drawLatexAdd(labelEnergy.Data(),0.95,0.92,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     drawLatexAdd(Form("single %s", labelPart[pid].Data()),0.95,0.87,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);

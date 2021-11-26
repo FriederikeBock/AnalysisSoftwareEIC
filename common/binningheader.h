@@ -206,10 +206,10 @@
   Size_t markerSizeClus[nClus]      = {1.5, 1.4, 1.5, 1.9, 1.6, 1.8, 1.5};
 
   const int nCaloPlot = 6;
-  Color_t colorCaloPlot[nCaloPlot]        = { kBlue+2 /*EEMC*/, kRed+2 /*BEMC*/, kYellow+2 /*iHCAL*/, kOrange+2 /*OHCAL*/,
-                                              kSpring+2 /*FEMC*/, kGreen+2 /*LFHCAL*/};
-  Color_t colorCaloPlot_light[nCaloPlot]  = { kBlue-8 /*EEMC*/, kRed-8 /*BEMC*/, kYellow-8 /*iHCAL*/, kOrange-8 /*OHCAL*/,
-                                              kSpring+5 /*FEMC*/, kGreen-8 /*LFHCAL*/};
+  Color_t colorCaloPlot[nCaloPlot]        = { kBlue+2 /*EEMC*/, kRed+1 /*BEMC*/, kYellow+2 /*iHCAL*/, kOrange-2 /*OHCAL*/,
+                                              kGreen+2 /*FEMC*/, kCyan+2 /*LFHCAL*/};
+  Color_t colorCaloPlot_light[nCaloPlot]  = { kBlue-8 /*EEMC*/, kRed-8 /*BEMC*/, kYellow-8 /*iHCAL*/, kOrange-9 /*OHCAL*/,
+                                              kGreen-8 /*FEMC*/, kCyan-8 /*LFHCAL*/};
   Color_t getCaloColor(TString caloName = "", bool getlight = false){
     if(!caloName.CompareTo("EEMC"))       return getlight ? colorCaloPlot_light[0] : colorCaloPlot[0];
     else if(!caloName.CompareTo("BEMC"))  return getlight ? colorCaloPlot_light[1] : colorCaloPlot[1];
