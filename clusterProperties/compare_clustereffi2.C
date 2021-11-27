@@ -83,7 +83,7 @@ void compare_clustereffi2(
       in >> inputFilesNames[nSets] >> calo[nSets] >> region[nSets]>> labels[nSets];
       std::cout << nSets << "\t"<< inputFilesNames[nSets].Data() << "\t"<< calo[nSets].Data()<< "\t"<< labels[nSets].Data() <<std::endl;
       labels[nSets].ReplaceAll("_"," ");
-      // gSystem->Exec("mkdir -p "+outputDir+"/"+labels[nSets]+"MA");
+      colorSet[nSets] = getCaloColor(calo[nSets]);
       nSets++;
   }
   cout<<"=========================="<<endl;
@@ -111,112 +111,60 @@ void compare_clustereffi2(
       h_cluster_NClMean_MCE[iSet]  = (TH1D*)inputFiles[iSet]->Get(Form("ClusterEfficiencyProjections_%s/h_CS_NClMean_%s_MCE", calo[iSet].Data(), "MA"));
   }
 
-  TCanvas* cReso = new TCanvas("cReso","",0,0,1100,800);
+  TCanvas* cReso = new TCanvas("cReso","",0,0,900,800);
   DrawGammaCanvasSettings( cReso, 0.085, 0.025, 0.02, 0.105);
   cReso->SetLogx();
 
   TH2F* histoDummyEffiE   = new TH2F("histoDummyEffiE","histoDummyEffiE",1000,0.15, 100,1000,0.0, 1.35);
   SetStyleHistoTH2ForGraphs(histoDummyEffiE, "#it{E} (GeV)","#varepsilon", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.87);
   histoDummyEffiE->GetXaxis()->SetNoExponent();
+  histoDummyEffiE->GetXaxis()->SetRangeUser(0.15,50);
   histoDummyEffiE->GetYaxis()->SetNdivisions(510,kTRUE);
   histoDummyEffiE->GetXaxis()->SetMoreLogLabels(kTRUE);
   TH2F* histoDummyEffiMCE   = new TH2F("histoDummyEffiMCE","histoDummyEffiMCE",1000,0.15, 100,1000,0.0, 1.35);
   SetStyleHistoTH2ForGraphs(histoDummyEffiMCE, "#it{E}^{MC} (GeV)","#varepsilon_{TM}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,1.3*textSizeSinglePad, 0.9,0.57);
   histoDummyEffiMCE->GetXaxis()->SetNoExponent();
+  histoDummyEffiMCE->GetXaxis()->SetRangeUser(0.15,50);
   histoDummyEffiMCE->GetYaxis()->SetNdivisions(510,kTRUE);
   histoDummyEffiMCE->GetXaxis()->SetMoreLogLabels(kTRUE);
   TLegend* legendPtResM  = GetAndSetLegend2(0.14, 0.72-(nSets*textSizeLabelsRel), 0.34, 0.72,textSizeLabelsPixel, 1, "", 43, 0.15);
-  // TLegend* legendPtResM  = GetAndSetLegend2(0.65, 0.14, 0.95, 0.14+(nSets*textSizeLabelsRel),textSizeLabelsPixel, 1, "", 43, 0.15);
-  
-  // for(Int_t iEta=minEtaBinFull[2]; iEta<maxEtaBinFull[2]+1;iEta++){
-  //   // 1D PLOT
-  //     Double_t etaMin = partEta[minEtaBinCaloDis[region]];
-  //     Double_t etaMax = partEta[maxEtaBinCaloDis[region]];
-  //     if (iEta < maxEtaBinCaloDis[region]){
-  //       etaMin = partEta[iEta];
-  //       etaMax = partEta[iEta+1];
-  //     }
 
-      for (Int_t pid = 1; pid < nPID; pid++){
-        if(!currPIDavail[pid]) continue;
-        // histoDummyEffiE->Draw();
-          legendPtResM->Clear();
-          if(pid==1)legendPtResM  = GetAndSetLegend2(0.74, 0.15, 0.94, 0.15+(nSets*textSizeLabelsRel),textSizeLabelsPixel, 1, "", 43, 0.15);
-        //   for(Int_t iSet=0; iSet<nSets;iSet++){
-        //     DrawGammaSetMarker(h_effi_rec_E[iSet][pid][iEta], markerStyleSet[iSet], markerSizeSet[iSet], colorSet[iSet], colorSet[iSet]);
-        //     h_effi_rec_E[iSet][pid][iEta]->Draw("same,p");
-        //     legendPtResM->AddEntry(h_effi_rec_E[iSet][pid][iEta],labels[iSet].Data(),"p");
-        //   }
-        //   legendPtResM->Draw();
-        //   drawLatexAdd(collisionSystem,0.14,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        //   if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.14, 0.91-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);    
-        //   drawLatexAdd(Form("%s in %1.1f<#it{#eta}<%1.1f", partLabel[pid].Data(), etaMin,etaMax),0.14, 0.91-nLinesCol*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        //   drawLatexAdd(Form("%s, %s clusterizer", calo[iSet].Data(), "MA"),0.14, 0.91-(nLinesCol+1)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        // cReso->Print(Form("%s/%s%s/%s_ClusterEfficiency_E_%d_%d.%s", outputDir.Data(), calo[iSet].Data(), "MA", partName[pid].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
+  for (Int_t pid = 1; pid < nPID; pid++){
+    if(!currPIDavail[pid]) continue;
+    // histoDummyEffiE->Draw();
+      legendPtResM->Clear();
+    if(pid==1 && addName.Contains("ECal")) legendPtResM  = GetAndSetLegend2(0.8, 0.935-(nSets*textSizeLabelsRel), 0.94, 0.935,textSizeLabelsPixel, 1, "", 43, 0.25);
+    if(pid==1 && addName.Contains("HCal")) legendPtResM  = GetAndSetLegend2(0.75, 0.935-(nSets*textSizeLabelsRel), 0.94, 0.935,textSizeLabelsPixel, 1, "", 43, 0.25);
     
-        
-        // histoDummyEffiMCE->Draw();
-        //   for(Int_t iSet=0; iSet<nSets;iSet++){
-        //     DrawGammaSetMarker(h_effi_rec_MCE[iSet][pid][iEta], markerStyleSet[iSet], markerSizeSet[iSet], colorSet[iSet], colorSet[iSet]);
-        //     h_effi_rec_MCE[iSet][pid][iEta]->Draw("same,p");
-        //   }
-        //   legendPtResM->Draw();
-        //   drawLatexAdd(collisionSystem,0.14,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        //   if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.14, 0.91-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);    
-        //   drawLatexAdd(Form("%s in %1.1f<#it{#eta}<%1.1f", partLabel[pid].Data(), etaMin,etaMax),0.14, 0.91-nLinesCol*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        //   drawLatexAdd(Form("%s, %s clusterizer", calo[iSet].Data(), "MA"),0.14, 0.91-(nLinesCol+1)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        // cReso->Print(Form("%s/%s%s/%s_ClusterEfficiency_MCE_%d_%d.%s", outputDir.Data(), calo[iSet].Data(), "MA", partName[pid].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
-        
-        // histoDummyEffiE->Draw();
-        //   for(Int_t iSet=0; iSet<nSets;iSet++){
-        //     DrawGammaSetMarker(h_effi_recSE_E[iSet][pid][iEta], markerStyleSet[iSet], markerSizeSet[iSet], colorSet[iSet], colorSet[iSet]);
-        //     h_effi_recSE_E[iSet][pid][iEta]->Draw("same,p");
-        //   }
-        //   legendPtResM->Draw();
-        //   drawLatexAdd(collisionSystem,0.14,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        //   if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.14, 0.91-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);    
-        //   drawLatexAdd(Form("%s in %1.1f<#it{#eta}<%1.1f", partLabel[pid].Data(), etaMin,etaMax),0.14, 0.91-nLinesCol*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        //   drawLatexAdd(Form("%s, %s clusterizer, single entry", calo[iSet].Data(), "MA"),0.14, 0.91-(nLinesCol+1)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        // cReso->Print(Form("%s/%s%s/%s_ClusterEfficiencySE_E_%d_%d.%s", outputDir.Data(), calo[iSet].Data(), "MA", partName[pid].Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
-    
-        
-        histoDummyEffiMCE->Draw();
-        DrawGammaLines(0.15, 100, 1,1,2,kGray+1, 2);
-          for(Int_t iSet=0; iSet<nSets;iSet++){
-            DrawGammaSetMarker(h_TMeffi_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]], markerStyleSet[iSet], markerSizeSet[iSet], colorSet[iSet], colorSet[iSet]);
-            h_TMeffi_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]]->Draw("same,p");
-            legendPtResM->AddEntry(h_TMeffi_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]],labels[iSet].Data(),"p");
-          }
-          legendPtResM->Draw();
-          drawLatexAdd(labelEnergy,0.14,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-          if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.14, 0.91-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);    
-          drawLatexAdd(Form("single %s", partLabel[pid].Data()),0.14, 0.91-(nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-          drawLatexAdd(Form("#varepsilon_{TM} = N_{clus}^{matched} / N_{tracks}^{in acc.}"),0.14, 0.91-(1+nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-          // drawLatexAdd(Form("%s in %1.1f<#it{#eta}<%1.1f", partLabel[pid].Data(), partEta[minEtaBinCaloDis[region[iSet]]],partEta[maxEtaBinCaloDis[region[iSet]]]),0.14, 0.91-nLinesCol*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-          // drawLatexAdd(Form("%s, %s clusterizer, single entry", addName.Data(), "MA"),0.14, 0.91-(nLinesCol+1)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-
-        cReso->Print(Form("%s/%s_ClusterEfficiencySE_MCE.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
-        
-        
-        histoDummyEffiMCE->Draw();
-        DrawGammaLines(0.15, 100, 1,1,2,kGray+1, 2);
-          for(Int_t iSet=0; iSet<nSets;iSet++){
-            DrawGammaSetMarker(h_TMeffiCls_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]], markerStyleSet[iSet], markerSizeSet[iSet], colorSet[iSet], colorSet[iSet]);
-            h_TMeffiCls_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]]->Draw("same,p");
-            // legendPtResM->AddEntry(h_TMeffiCls_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]],labels[iSet].Data(),"p");
-          }
-          legendPtResM->Draw();
-          drawLatexAdd(labelEnergy,0.14,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-          if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.14, 0.91-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);    
-          drawLatexAdd(Form("single %s", partLabel[pid].Data()),0.14, 0.91-(nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-          drawLatexAdd(Form("#varepsilon_{TM} = N_{clus}^{matched} / N_{clus}"),0.14, 0.91-(1+nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-          // drawLatexAdd(Form("%s in %1.1f<#it{#eta}<%1.1f", partLabel[pid].Data(), partEta[minEtaBinCaloDis[region[iSet]]],partEta[maxEtaBinCaloDis[region[iSet]]]),0.14, 0.91-nLinesCol*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-          // drawLatexAdd(Form("%s, %s clusterizer, single entry", addName.Data(), "MA"),0.14, 0.91-(nLinesCol+1)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-
-        cReso->Print(Form("%s/%s_ClusterEfficiencyClusterSE_MCE.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
-        
+    histoDummyEffiMCE->Draw();
+    DrawGammaLines(0.15, 50, 1,1,2,kGray+1, 2);
+      for(Int_t iSet=0; iSet<nSets;iSet++){
+        DrawGammaSetMarker(h_TMeffi_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]], markerStyleSet[iSet], markerSizeSet[iSet], colorSet[iSet], colorSet[iSet]);
+        h_TMeffi_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]]->Draw("same,p");
+        legendPtResM->AddEntry(h_TMeffi_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]],labels[iSet].Data(),"p");
       }
-  // }
-  
+      legendPtResM->Draw();
+      drawLatexAdd(labelEnergy,0.14,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.14, 0.91-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);    
+      drawLatexAdd(Form("single %s", partLabel[pid].Data()),0.14, 0.91-(nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      drawLatexAdd(Form("#varepsilon_{TM} = N_{clus}^{matched} / N_{tracks}^{in acc.}"),0.14, 0.91-(1+nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
 
+    cReso->Print(Form("%s/%s_ClusterTMEfficiencySE_MCE.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
+    
+    
+    histoDummyEffiMCE->Draw();
+    DrawGammaLines(0.15, 50, 1,1,2,kGray+1, 2);
+      for(Int_t iSet=0; iSet<nSets;iSet++){
+        DrawGammaSetMarker(h_TMeffiCls_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]], markerStyleSet[iSet], markerSizeSet[iSet], colorSet[iSet], colorSet[iSet]);
+        h_TMeffiCls_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]]->Draw("same,p");
+        // legendPtResM->AddEntry(h_TMeffiCls_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]],labels[iSet].Data(),"p");
+      }
+      legendPtResM->Draw();
+      drawLatexAdd(labelEnergy,0.14,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.14, 0.91-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);    
+      drawLatexAdd(Form("single %s", partLabel[pid].Data()),0.14, 0.91-(nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      drawLatexAdd(Form("#varepsilon_{TM} = N_{clus}^{matched} / N_{clus}"),0.14, 0.91-(1+nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+
+    cReso->Print(Form("%s/%s_ClusterTMEfficiencyClusterSE_MCE.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
+  }
 }

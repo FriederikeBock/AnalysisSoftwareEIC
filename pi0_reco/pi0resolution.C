@@ -52,6 +52,7 @@ void pi0resolution(
   const int maxcalo = 3;
   // TString caloName[maxcalo+1] = {"FEMC", "EEMC", "BECAL", "Hybrid"};
   TString caloName[maxcalo+1] = { "EEMC", "BECAL", "FEMC", "Hybrid"};
+  TString caloNamePlot[maxcalo+1] = { "EEMC", "BEMC", "FEMC", "Hybrid"};
   bool caloactive[maxcalo] = {false};
   Double_t mass_pi0PDG = 0.1349770;
 
@@ -59,7 +60,7 @@ void pi0resolution(
   gROOT->SetStyle("Plain");
   StyleSettingsThesis();
   TString collisionSystem           = "e-p, #sqrt{#it{s}} = 100 GeV";
-  TString perfLabel                 = "ECCE G4 simulation";
+  TString perfLabel                 = "#it{#bf{ECCE}} simulation";
   
   if (collisionsSys.CompareTo("PythiaMB") == 0){
     collisionSystem   = "e-p: 18#times 275 GeV";
@@ -266,12 +267,12 @@ void pi0resolution(
       TLatex Tl1;
       Tl1.SetTextSize(0.035);
       Tl1.DrawLatex(0.55*energymax,0.04,perfLabel);
-      Tl1.DrawLatex(0.55*energymax,0.03,Form("Calorimeter: %s ", caloName[icalo].Data()));
+      Tl1.DrawLatex(0.55*energymax,0.03,Form("Calorimeter: %s ", caloNamePlot[icalo].Data()));
       Tl1.DrawLatex(0.55*energymax,0.02,Form("Clusterization type: %s ", clusterizerName.Data()));
       Tl1.DrawLatex(0.55*energymax,0.01,"#pi ^{0} #rightarrow #gamma #gamma");
       Tl1.Draw();
       
-      Minvpi02D->Print(Form("%s/Mass_vs_E_%s_%s.%s", outputDir.Data(), caloName[icalo].Data(), clusterizerName.Data(), suffix.Data()));
+      Minvpi02D->Print(Form("%s/Mass_vs_E_%s_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(), suffix.Data()));
 
       cout << "\tMass_vs_E plot saved" << endl;
       if(!allcaloplotted){
@@ -398,7 +399,7 @@ void pi0resolution(
           TLatex Tl;
           Tl.SetTextSize(0.1);
           Tl.DrawLatex(0.03,0.9,perfLabel);
-          Tl.DrawLatex(0.03,0.7,Form("Calorimeter: %s ", caloName[icalo].Data()));
+          Tl.DrawLatex(0.03,0.7,Form("Calorimeter: %s ", caloNamePlot[icalo].Data()));
           Tl.DrawLatex(0.03,0.5,Form("Clusterization type: %s ", clusterizerName.Data()));
           Tl.DrawLatex(0.03,0.3,"#pi ^{0} #rightarrow #gamma #gamma");
 
@@ -432,7 +433,7 @@ void pi0resolution(
         }
       }
 
-      mass2D->Print(Form("%s/Mass_%s_%s.%s", outputDir.Data(), caloName[icalo].Data(), clusterizerName.Data(), suffix.Data()));
+      mass2D->Print(Form("%s/Mass_%s_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(), suffix.Data()));
 
 
       if(!allcalofitted){
@@ -554,7 +555,7 @@ void pi0resolution(
       TLatex Tl3;
       Tl3.SetTextSize(0.035);
       Tl3.DrawLatex(2,0.18,perfLabel);
-      Tl3.DrawLatex(2,0.17,Form("Calorimeter: %s ", caloName[icalo].Data()));
+      Tl3.DrawLatex(2,0.17,Form("Calorimeter: %s ", caloNamePlot[icalo].Data()));
       Tl3.DrawLatex(2,0.16,Form("Clusterization type: %s ", clusterizerName.Data()));
       Tl3.DrawLatex(2,0.14,"#pi ^{0} #rightarrow #gamma #gamma");
       Tl3.Draw();
@@ -567,7 +568,7 @@ void pi0resolution(
       histSigmaEVsMinv[icalo]->Draw("e,p");
       
       
-      fitresults->Print(Form("%s/Mean_Width_%s_%s.%s", outputDir.Data(), caloName[icalo].Data(), clusterizerName.Data(), suffix.Data()));
+      fitresults->Print(Form("%s/Mean_Width_%s_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(), suffix.Data()));
     }
 
 
@@ -626,7 +627,7 @@ void pi0resolution(
 
   TH2F * histo2DAllPi0FWHM    = new TH2F("histo2DAllPi0FWHM","histo2DAllPi0FWHM", 20, minPtPi0,maxPtPi0woMerged ,1000., -30, 40);
   SetStyleHistoTH2ForGraphs(histo2DAllPi0FWHM, "#it{E} (GeV)", "Peak width (MeV/#it{c}^{2})", 0.85*textsizeLabelsWidth, textsizeLabelsWidth,
-                            0.85*textsizeLabelsWidth, textsizeLabelsWidth, 0.8,0.28/(textsizeFacWidth*margin),512,505,42,42);//#it{p}_{T} (GeV/#it{c})
+                            0.85*textsizeLabelsWidth, textsizeLabelsWidth, 0.8,0.28/(textsizeFacWidth*margin),512,505,62,42);//#it{p}_{T} (GeV/#it{c})
   histo2DAllPi0FWHM->GetYaxis()->SetRangeUser(0.1,19.5);//24.5);
   histo2DAllPi0FWHM->GetYaxis()->SetMoreLogLabels(kTRUE);
   histo2DAllPi0FWHM->GetYaxis()->SetNdivisions(505);
@@ -635,9 +636,13 @@ void pi0resolution(
   histo2DAllPi0FWHM->GetYaxis()->SetTickLength(0.026);
   histo2DAllPi0FWHM->DrawCopy();
 
-  Color_t colorDet[maxcalo+1]                          = {kBlack, kRed+2, kBlue+2, kGreen+2};//, kGreen+3, kCyan+2, kViolet, kMagenta+2,  kRed-2, kBlue-2,kOrange+2,kSpring+2};
-  Style_t markerStyleDet[maxcalo+1]   = {20, 47, 28, 34};//, 28, 30, 42, 46, 24, 25, 27, 28, 30};
-  Size_t markerSizeDet[maxcalo+1]     = {2.5, 3, 3 , 3};//, 1.5, 1.8, 1.8, 1.5, 1.5, 1.4, 1.9,1.5, 1.8 };
+  Color_t colorDet[maxcalo+1];
+  colorDet[0] = getCaloColor("EEMC", false);
+  colorDet[1] = getCaloColor("BEMC", false);
+  colorDet[2] = getCaloColor("FEMC", false);
+  colorDet[3] = kBlack;
+  Style_t markerStyleDet[maxcalo+1]   = {20, 47, 33, 25};//, 28, 30, 42, 46, 24, 25, 27, 28, 30};
+  Size_t markerSizeDet[maxcalo+1]     = {2.5, 3, 3 , 2.5};//, 1.5, 1.8, 1.8, 1.5, 1.5, 1.4, 1.9,1.5, 1.8 };
   TGraphAsymmErrors* graphPi0FWHMMeV[maxcalo+1];
   for (Int_t icalo = 0; icalo < maxcalo; icalo++){
     if(caloactive[icalo]){
@@ -731,7 +736,7 @@ void pi0resolution(
         graphPi0Mass[icalo]->Draw("p,same,e");
         // DrawGammaSetMarkerTGraphAsym(graphPi0TrueMass[i], markerStyleDetMC[i], markerSizeDetMC[i]*0.55, colorDetMC[i] , colorDetMC[i]);
         // graphPi0TrueMass[i]->Draw("p,same,e");
-        legendMassWidth->AddEntry(graphPi0Mass[icalo],caloName[icalo].Data(),"p");
+        legendMassWidth->AddEntry(graphPi0Mass[icalo],caloNamePlot[icalo].Data(),"p");
       }
     }
   }
@@ -991,7 +996,7 @@ void pi0resolution(
         h_Pi0_mergedfraction[icalo] = (TH1F*)h_Pi0Spec_mergedclus[icalo]->Clone(Form("mergedfrachisto_%d",icalo));
         // h_Pi0_mergedfraction[icalo]->Divide(h_Pi0Spec_total[icalo]);
         h_Pi0_mergedfraction[icalo]->Divide(h_Pi0_mergedfraction[icalo],h_Pi0Spec_total[icalo], 1, 1,"B" );
-          DrawGammaSetMarker(h_Pi0_mergedfraction[icalo], markerStylePID[icalo], 1.2*markerSizePID[icalo], colorPID[icalo] , colorPID[icalo]);
+          DrawGammaSetMarker(h_Pi0_mergedfraction[icalo], markerStyleDet[icalo], 1.2*markerSizeDet[icalo], colorDet[icalo] , colorDet[icalo]);
           if(icalo==1)h_Pi0_mergedfraction[icalo]->GetXaxis()->SetRangeUser(2,50);
           if(icalo==0 || icalo==2)h_Pi0_mergedfraction[icalo]->GetXaxis()->SetRangeUser(5,50);
           h_Pi0_mergedfraction[icalo]->Draw("same,p,e");
@@ -1001,7 +1006,7 @@ void pi0resolution(
   TLegend* legendPi0Merge           = GetAndSetLegend2(0.45, 0.13, 0.95, 0.13+(1*textSizeLabelsRel),0.9*textSizeLabelsPixel,3);
   for (Int_t icalo = maxcalo-1; icalo > -1; icalo--){
       if(h_Pi0Spec_mergedclus[icalo]){
-          legendPi0Merge->AddEntry(h_Pi0_mergedfraction[icalo],caloName[icalo].Data(),"p");
+          legendPi0Merge->AddEntry(h_Pi0_mergedfraction[icalo],caloNamePlot[icalo].Data(),"p");
       }
   }
   legendPi0Merge->Draw();

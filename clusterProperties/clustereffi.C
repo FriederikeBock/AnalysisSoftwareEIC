@@ -75,7 +75,7 @@ void clustereffi(
   if (!collisionsSys.Contains("Single")){
     enableRecE = 1;
   }
-  Int_t nClusProcess = 3;
+  Int_t nClusProcess = 1;
   
   TString outputDir                 = Form("plots/%s/ClusterEffi%s",dateForOutput.Data(),addLabel.Data());
   gSystem->Exec("mkdir -p "+outputDir);
