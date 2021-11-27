@@ -6,6 +6,7 @@ int verbosityTOF = 0;
 //----------------------------------------------------------------------------
 // define histos
 //----------------------------------------------------------------------------
+TH1D *h_TPH_NEvents;
 bool bHistTOFCreated    = false;
 TH2F* h_TPH_InvGenBeta_Eta_p[4][nPID][nEta+1]             = {{{NULL}}};
 TH2F* h_TPH_InvBeta_Eta_p[4][nPID][nEta+1]                = {{{NULL}}};
@@ -24,10 +25,15 @@ TString nameLayerTTL[3]   = {"ETTL", "CTTL", "FTTL"};
 
 TH2D *h_TPH_InitT0VsNtrk[nSces];
 TH2D *h_TPH_InitT0VsNttlhit[nSces];
+TH2D *h_TPH_MCT0VsNtrk[nSces];
+TH2D *h_TPH_InitT0DiffVsNtrk[nSces];
+TH2D *h_TPH_InitT0DiffVsNttlhit[nSces];
 TH2D *h_TPH_NttlhitVsNtrk_wInitT0[nSces];
 TH2D *h_TPH_NttlhitVsNtrk_wFinalT0[nSces];
 TH2D *h_TPH_T0VsNtrk[nSces];
 TH2D *h_TPH_T0VsNttlhit[nSces];
+TH2D *h_TPH_T0DiffVsNtrk[nSces];
+TH2D *h_TPH_T0DiffVsNttlhit[nSces];
 TH2D *h_TPH_InitDbetaVsP_pi[nSces];
 TH2D *h_TPH_InitDbetaVsP_k[nSces];
 TH2D *h_TPH_InitDbetaVsP_p[nSces];
@@ -45,6 +51,7 @@ const double c                  = 29.9792458; // cm/ns
 
 const Int_t nIterT = 4; //4
 TH2D *h_TPH_T0VsIter;
+TH2D *h_TPH_T0DiffVsIter;
 TH2D *h_TPH_UPartIter;
 
 
@@ -71,20 +78,26 @@ void tofpidhistos(){
   if (!bHistTOFCreated){
     testBinning(binningPFine, nBinsPFine);
     
+    h_TPH_NEvents       = new TH1D("h_TPH_NEvents", "; ; # events", 3, -0.5, 2.5);
     h_TPH_T0VsIter      = new TH2D("h_T0VsIter", "; Iter; T_{0} (ns)", nSces*nIterT, -0.5, nSces*nIterT-0.5, 500, -0.5, 0.5);
+    h_TPH_T0DiffVsIter  = new TH2D("h_T0DiffVsIter", "; Iter; T_{0} - T_{MC} (ns)", nSces*nIterT, -0.5, nSces*nIterT-0.5, 500, -0.5, 0.5);
     h_TPH_UPartIter     = new TH2D("h_TPH_UsedParticlesVsIter", "; Iter; N_{particles}", nSces*nIterT, -0.5, nSces*nIterT-0.5, 50, 0, 50);
     for(int sc=0; sc<nSces; sc++){
       h_TPH_InitT0VsNtrk[sc]    = new TH2D(Form("h_InitT0VsNtrk_%s", sceName[sc].Data()), "; N_{trk}; Initial T_{0} (ns)", 100, 0, 100, 500, -0.5, 0.5);
       h_TPH_InitT0VsNttlhit[sc] = new TH2D(Form("h_InitT0VsNttlhit_%s", sceName[sc].Data()), ";  N_{trk w/ TTL}; Initial T_{0} (ns)", 100, 0, 100, 500, -0.5, 0.5);
-      
-      
-      
       h_TPH_NttlhitVsNtrk_wInitT0[sc]  = new TH2D(Form("h_NttlhitVsNtrk_wInitT0_%s", sceName[sc].Data()), "; N_{trk}; N_{trk w/ TTL}", 100, 0, 100, 100, 0, 100);
       h_TPH_NttlhitVsNtrk_wFinalT0[sc] = new TH2D(Form("h_NttlhitVsNtrk_wFinalT0_%s", sceName[sc].Data()), "; N_{trk}; N_{trk w/ TTL}", 100, 0, 100, 100, 0, 100);
-
       h_TPH_T0VsNtrk[sc]          = new TH2D(Form("h_T0VsNtrk_%s", sceName[sc].Data()), "; N_{trk}; Final T_{0} (ns)", 100, 0, 100, 500, -0.5, 0.5);
       h_TPH_T0VsNttlhit[sc]       = new TH2D(Form("h_T0VsNttlhit_%s", sceName[sc].Data()), "; N_{trk w/ TTL}; Final T_{0} (ns)", 100, 0, 100, 500, -0.5, 0.5);
-
+      if (extendTimingInfo){
+        h_TPH_MCT0VsNtrk[sc]          = new TH2D(Form("h_MCT0VsNtrk_%s", sceName[sc].Data()), "; N_{trk}; T_{MC} (ns)", 100, 0, 100, 500, -0.5, 0.5);
+        h_TPH_InitT0DiffVsNtrk[sc]    = new TH2D(Form("h_InitT0DiffVsNtrk_%s", sceName[sc].Data()), "; N_{trk}; Initial T_{0}- T_{MC} (ns)", 100, 0, 100, 500, -0.5, 0.5);
+        h_TPH_InitT0DiffVsNttlhit[sc] = new TH2D(Form("h_InitT0DiffVsNttlhit_%s", sceName[sc].Data()), ";  N_{trk w/ TTL}; Initial T_{0} - T_{MC} (ns)", 100, 0, 100, 500, -0.5, 0.5);
+        h_TPH_T0DiffVsNtrk[sc]          = new TH2D(Form("h_T0DiffVsNtrk_%s", sceName[sc].Data()), "; N_{trk}; Final T_{0} (ns) - T_{MC} (ns)", 100, 0, 100, 500, -0.5, 0.5);
+        h_TPH_T0DiffVsNttlhit[sc]       = new TH2D(Form("h_T0DiffVsNttlhit_%s", sceName[sc].Data()), "; N_{trk w/ TTL}; Final T_{0} -  T_{MC} (ns)", 100, 0, 100, 500, -0.5, 0.5);
+        
+      }
+      
       h_TPH_InitDbetaVsP_pi[sc]   = new TH2D(Form("h_InitDbetaVsP_pi_%s", sceName[sc].Data()), "#pi; p (GeV); 1/#beta - 1/#beta_{#pi}", 300, 0, 15, 500, -0.5, 0.5);
       h_TPH_InitDbetaVsP_k[sc]    = new TH2D(Form("h_InitDbetaVsP_k_%s", sceName[sc].Data()), "K; p (GeV); 1/#beta - 1/#beta_{k}", 300, 0, 15, 500, -0.5, 0.5);
       h_TPH_InitDbetaVsP_p[sc]    = new TH2D(Form("h_InitDbetaVsP_p_%s", sceName[sc].Data()), "P; p (GeV); 1/#beta - 1/#beta_{p}", 300, 0, 15, 500, -0.5, 0.5);
@@ -95,7 +108,7 @@ void tofpidhistos(){
     }
     
     for (Int_t dir = 0; dir < 3; dir++){
-      h_TPH_BetaVsP_T0[dir] = new TH2D(Form("h_BetaVsP_T0_%s", nameLayerTTL[dir].Data()), Form ("%s; p (GeV); 1/#beta", nameLayerTTL[dir].Data()), nBinsPFine, binningPFine, 600, 0.9, 1.5);
+      h_TPH_BetaVsP_T0[dir] = new TH2D(Form("h_BetaVsP_T0_%s", nameLayerTTL[dir].Data()), Form ("%s; p (GeV); 1/#beta", nameLayerTTL[dir].Data()), nBinsPFine, binningPFine, 1000, 0.9, 1.7);
       for (Int_t id = 0; id < nPID; id++){
         h_TPH_DbetaVsP_wT0[id][dir]    = new TH2D(Form("h_DbetaVsP_wT0_%s_%s", nameLayerTTL[dir].Data(), partName[id].Data()), 
                                                     Form("%s %s; p_{MC} (GeV); 1/#beta - 1/#beta_{ident}", nameLayerTTL[dir].Data(), partName[id].Data()),  nBinsPFine, binningPFine, 500, -0.1, 0.1);
@@ -131,7 +144,7 @@ void tofpidhistos(){
                                                   nBinsPFine, binningPFine, 300, 0.9, 1.5);
           h_TPH_InvSmearAndT0Beta_Eta_p[e][id][et]    = new TH2F(Form("h_InvSmearAndT0Beta%s_Eta_p_%s_%d", nameAddBeta[e].Data(),partName[id].Data(), et), 
                                                   Form("%1.1f < #eta < %1.1f; #it{p}_{MC} (GeV/c); 1/#beta_{smear}", etaMin, etaMax), 
-                                                  nBinsPFine, binningPFine, 300, 0.9, 1.5);
+                                                  nBinsPFine, binningPFine, 1000, 0.9, 1.7);
           h_TPH_Res_InvBeta_Eta_p[e][id][et]     = new TH2F(Form("h_Res_InvBeta%s_Eta_p_%s_%d", nameAddBeta[e].Data(),partName[id].Data(), et), 
                                                   Form("%1.1f < #eta < %1.1f; #it{p}_{MC} (GeV/c); (1/#beta_{rec} - 1/#beta_{MC})/(1/#beta_{MC}) ", etaMin, etaMax), 
                                                   nBinsPFine, binningPFine, 500, -0.1, 0.1);
@@ -148,6 +161,8 @@ void tofpidhistos(){
   }
   float mT0[nIterT];
   for(int it=0; it<nIterT; it++) mT0[it] = -9999;
+  
+  h_TPH_NEvents->Fill(0);
   
   // fixed mass assumptions
   float mElectron = TDatabasePDG::Instance()->GetParticle(11)->Mass();
@@ -198,6 +213,7 @@ void tofpidhistos(){
     scEIdx  = 0;
     mT0[0]  = mT0[0]/nScatElect;
     h_TPH_UPartIter->Fill(0., nScatElect);
+    h_TPH_NEvents->Fill(1);
   } else {
     //----------------------------------------------------------------------------
     // NO! assume all particles are pions and determine starttime from that
@@ -227,6 +243,7 @@ void tofpidhistos(){
       scEIdx = 1;
       mT0[0] = mT0[0] / nTracksWTime;
       h_TPH_UPartIter->Fill(nIterT, nTracksWTime);
+      h_TPH_NEvents->Fill(2);
     }
   }
 
@@ -235,6 +252,11 @@ void tofpidhistos(){
   if(scEIdx > -1){
     h_TPH_InitT0VsNtrk[scEIdx]->Fill(nTracksF, mT0[0]);
     h_TPH_InitT0VsNttlhit[scEIdx]->Fill(nTracksWTime, mT0[0]);
+    if (extendTimingInfo){
+      h_TPH_MCT0VsNtrk[scEIdx]->Fill(nTracksF, _hepmcp_vtx_t);
+      h_TPH_InitT0DiffVsNtrk[scEIdx]->Fill(nTracksF, mT0[0]-_hepmcp_vtx_t);
+      h_TPH_InitT0DiffVsNttlhit[scEIdx]->Fill(nTracksWTime, mT0[0]-_hepmcp_vtx_t);
+    }
   }
   //----------------------------------------------------------------------------
   // try to improve start time reso with iterative PID
@@ -383,7 +405,10 @@ void tofpidhistos(){
     }
   }
   for (Int_t it=0; it<nIterT; it++){
-    if(mT0[it] > -9999) h_TPH_T0VsIter->Fill(scEIdx*nIterT+it, mT0[it]);
+    if(mT0[it] > -9999){
+      h_TPH_T0VsIter->Fill(scEIdx*nIterT+it, mT0[it]);
+      if (extendTimingInfo) h_TPH_T0DiffVsIter->Fill(scEIdx*nIterT+it, mT0[it]-_hepmcp_vtx_t);
+    }
   }
   // fill controll hists for T0 vs track numbers 
   if(mT0[0] > -9999){
@@ -393,6 +418,11 @@ void tofpidhistos(){
   if(mFinalT0 > -9999){
     h_TPH_T0VsNtrk[scEIdx]->Fill(nTracksF, mFinalT0);
     h_TPH_T0VsNttlhit[scEIdx]->Fill(nTracksWTime, mFinalT0);
+    if (extendTimingInfo){
+      h_TPH_T0DiffVsNtrk[scEIdx]->Fill(nTracksF, mFinalT0-_hepmcp_vtx_t);
+      h_TPH_T0DiffVsNttlhit[scEIdx]->Fill(nTracksWTime, mFinalT0-_hepmcp_vtx_t);
+      
+    }
   }
   
 //   cout << __LINE__ << endl;
@@ -436,8 +466,14 @@ void tofpidhistos(){
     // calculate average 1/\beta for multiple measurements per track
     //*************************************************************
     for (int tl = 0; tl < int(_track_TOFmeas[itrk].size()); tl++){
-      beta[1] += c*_track_TOFmeas[itrk].at(tl).genTime/_track_TOFmeas[itrk].at(tl).pathlength; 
-      beta[2] += c*_track_TOFmeas[itrk].at(tl).recTime/_track_TOFmeas[itrk].at(tl).pathlength; 
+      if (extendTimingInfo){
+        beta[1] += c*(_track_TOFmeas[itrk].at(tl).genTime-_hepmcp_vtx_t)/_track_TOFmeas[itrk].at(tl).pathlength; 
+        beta[2] += c*(_track_TOFmeas[itrk].at(tl).recTime-_hepmcp_vtx_t)/_track_TOFmeas[itrk].at(tl).pathlength; 
+      } else {
+        beta[1] += c*_track_TOFmeas[itrk].at(tl).genTime/_track_TOFmeas[itrk].at(tl).pathlength; 
+        beta[2] += c*_track_TOFmeas[itrk].at(tl).recTime/_track_TOFmeas[itrk].at(tl).pathlength; 
+      }
+      
       if (mFinalT0 > -9999) beta[3] += c*(_track_TOFmeas[itrk].at(tl).recTime-mFinalT0)/_track_TOFmeas[itrk].at(tl).pathlength; 
     }
     float betaRec = sqrt(recP*recP + mass*mass)/recP;
@@ -582,16 +618,23 @@ void tofpidhistosSave(){
 
   // define output file
   TFile* fileOutput = new TFile(Form("%s/output_TOF.root",outputDir.Data()),"RECREATE");
-
+  h_TPH_NEvents->Write();
   h_TPH_T0VsIter->Write();
+  h_TPH_T0DiffVsIter->Write();
   h_TPH_UPartIter->Write();
   for (int sc = 0; sc < nSces; sc++){
     if (h_TPH_InitT0VsNtrk[sc]) h_TPH_InitT0VsNtrk[sc]->Write();
     if (h_TPH_InitT0VsNttlhit[sc]) h_TPH_InitT0VsNttlhit[sc]->Write();
+    if (h_TPH_MCT0VsNtrk[sc]) h_TPH_MCT0VsNtrk[sc]->Write();
+    if (h_TPH_InitT0DiffVsNtrk[sc]) h_TPH_InitT0DiffVsNtrk[sc]->Write();
+    if (h_TPH_InitT0DiffVsNttlhit[sc]) h_TPH_InitT0DiffVsNttlhit[sc]->Write();
+    
     if (h_TPH_NttlhitVsNtrk_wInitT0[sc]) h_TPH_NttlhitVsNtrk_wInitT0[sc]->Write();
     if (h_TPH_NttlhitVsNtrk_wFinalT0[sc]) h_TPH_NttlhitVsNtrk_wFinalT0[sc]->Write();
     if (h_TPH_T0VsNtrk[sc]) h_TPH_T0VsNtrk[sc]->Write();
     if (h_TPH_T0VsNttlhit[sc]) h_TPH_T0VsNttlhit[sc]->Write();
+    if (h_TPH_T0DiffVsNtrk[sc]) h_TPH_T0DiffVsNtrk[sc]->Write();
+    if (h_TPH_T0DiffVsNttlhit[sc]) h_TPH_T0DiffVsNttlhit[sc]->Write();
     if (h_TPH_InitDbetaVsP_pi[sc]) h_TPH_InitDbetaVsP_pi[sc]->Write();
     if (h_TPH_InitDbetaVsP_k[sc]) h_TPH_InitDbetaVsP_k[sc]->Write();
     if (h_TPH_InitDbetaVsP_p[sc]) h_TPH_InitDbetaVsP_p[sc]->Write();

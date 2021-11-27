@@ -171,6 +171,7 @@
 //   Size_t markerSizeEta[20]     = {1.5, 1.4, 1.9, 1.5, 1.8, 1.8, 1.5, 1.5, 1.4, 1.9,
 //                                  1.5, 1.8, 1.8, 1.5, 1.5, 1.4, 1.9, 1.5, 1.8, 1.5 };
   Color_t colorPID[nPID]          = {kBlack, kRed+1, kGreen+2, kCyan+2, kBlue+1, kOrange};
+  Color_t colorPIDdarker[nPID]    = {kBlack, kRed+2, kGreen+3, kCyan+3, kBlue+2, kOrange-2};
   Style_t markerStylePID[nPID]    = {20, 24, 25, 27, 28, 30};
   Size_t markerSizePID[nPID]      = {1.5, 1.4, 1.5, 1.9, 1.6, 1.8};
   Size_t lineStylePID[nPID]       = {1, 7, 3, 8, 9, 6};
@@ -180,7 +181,11 @@
   Int_t minEtaBin[3]           = {1, 4, 10};
   Int_t maxEtaBin[3]           = {4, 8, 13};
   Int_t maxNEtaBins[3]         = {4, 5,  4};
-    
+
+  Int_t minEtaBinTTL[3]        = {2, 6, 10};
+  Int_t maxEtaBinTTL[3]        = {4, 9, 12};
+  Int_t maxNEtaBinsTTL[3]      = {4, 5,  4};
+
   Int_t minEtaBinFull[3]       = {0, 5,  9};
   Int_t maxEtaBinFull[3]       = {5, 9, 14};
   Int_t maxNEtaBinsFull[3]     = {6, 5,  6};

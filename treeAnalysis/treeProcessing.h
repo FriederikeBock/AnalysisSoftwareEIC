@@ -80,6 +80,7 @@ struct tofStrct{
 bool caloEnabled[20]      = {0};
 bool tracksEnabled        = 0;
 bool vertexEnabled        = 0;
+bool extendTimingInfo     = 0;
 bool hepMCavailable       = 0;
 bool xSectionEnabled      = 0;
 
@@ -202,6 +203,9 @@ int* _clusters_FEMC_trueID        = new int[_maxNclusters];
 float _vertex_x;
 float _vertex_y;
 float _vertex_z;
+float _vertex_true_x;
+float _vertex_true_y;
+float _vertex_true_z;
 
 // tracks
 int _nTracks;
@@ -210,6 +214,9 @@ float* _track_trueID             = new float[_maxNTracks];
 float* _track_px                 = new float[_maxNTracks];
 float* _track_py                 = new float[_maxNTracks];
 float* _track_pz                 = new float[_maxNTracks];
+float* _track_x                  = new float[_maxNTracks];
+float* _track_y                  = new float[_maxNTracks];
+float* _track_z                  = new float[_maxNTracks];
 unsigned short* _track_source             = new unsigned short[_maxNTracks];
 std::array<std::vector<int>, _maxNTracks> _track_RefProjID;
 // Initializes all elements to 0
@@ -229,6 +236,9 @@ float* _track_Proj_x             = new float[_maxNProjections];
 float* _track_Proj_y             = new float[_maxNProjections];
 float* _track_Proj_z             = new float[_maxNProjections];
 float* _track_Proj_t             = new float[_maxNProjections];
+float* _track_Proj_px             = new float[_maxNProjections];
+float* _track_Proj_py             = new float[_maxNProjections];
+float* _track_Proj_pz             = new float[_maxNProjections];
 float* _track_Proj_true_x             = new float[_maxNProjections];
 float* _track_Proj_true_y             = new float[_maxNProjections];
 float* _track_Proj_true_z             = new float[_maxNProjections];
@@ -243,6 +253,9 @@ float* _mcpart_E                  = new float[_maxNMCPart];
 float* _mcpart_px                 = new float[_maxNMCPart];
 float* _mcpart_py                 = new float[_maxNMCPart];
 float* _mcpart_pz                 = new float[_maxNMCPart];
+float* _mcpart_x                 = new float[_maxNMCPart];
+float* _mcpart_y                 = new float[_maxNMCPart];
+float* _mcpart_z                 = new float[_maxNMCPart];
 float* _mcpart_Eta                = new float[_maxNMCPart];
 float* _mcpart_Phi                = new float[_maxNMCPart];
 int* _mcpart_BCID                = new int[_maxNMCPart];
@@ -252,6 +265,10 @@ std::array<std::vector<projStrct>, _maxNMCPart> _mcpart_HcalProjs;
 
 int _nHepmcp;
 int _hepmcp_procid;
+float _hepmcp_vtx_x;
+float _hepmcp_vtx_y;
+float _hepmcp_vtx_z;
+float _hepmcp_vtx_t;
 float _hepmcp_x1;
 float _hepmcp_x2;
 float _hepmcp_Q2;
@@ -319,6 +336,9 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("tracks_px",            _track_px);
       inputTree->SetBranchAddress("tracks_py",            _track_py);
       inputTree->SetBranchAddress("tracks_pz",            _track_pz);
+      inputTree->SetBranchAddress("tracks_x",             _track_x);
+      inputTree->SetBranchAddress("tracks_y",             _track_y);
+      inputTree->SetBranchAddress("tracks_z",             _track_z);
       inputTree->SetBranchAddress("tracks_trueID",        _track_trueID);
       inputTree->SetBranchAddress("tracks_source",        _track_source);
       
@@ -330,6 +350,9 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("track_TLP_y",           _track_Proj_y);
       inputTree->SetBranchAddress("track_TLP_z",           _track_Proj_z);
       inputTree->SetBranchAddress("track_TLP_t",           _track_Proj_t);
+      inputTree->SetBranchAddress("track_TLP_px",          _track_Proj_px);
+      inputTree->SetBranchAddress("track_TLP_py",          _track_Proj_py);
+      inputTree->SetBranchAddress("track_TLP_pz",          _track_Proj_pz);
       inputTree->SetBranchAddress("track_TLP_true_x",      _track_Proj_true_x);
       inputTree->SetBranchAddress("track_TLP_true_y",      _track_Proj_true_y);
       inputTree->SetBranchAddress("track_TLP_true_z",      _track_Proj_true_z);
@@ -483,22 +506,36 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("vertex_x",                     &_vertex_x);
       inputTree->SetBranchAddress("vertex_y",                     &_vertex_y);
       inputTree->SetBranchAddress("vertex_z",                     &_vertex_z);
+      inputTree->SetBranchAddress("vertex_true_x",                &_vertex_true_x);
+      inputTree->SetBranchAddress("vertex_true_y",                &_vertex_true_y);
+      inputTree->SetBranchAddress("vertex_true_z",                &_vertex_true_z);
     }
     // MC particles
-    inputTree->SetBranchAddress("nMCPart",       &_nMCPart);
-    inputTree->SetBranchAddress("mcpart_ID",     _mcpart_ID);
-    inputTree->SetBranchAddress("mcpart_ID_parent",     _mcpart_ID_parent);
-    inputTree->SetBranchAddress("mcpart_PDG",    _mcpart_PDG);
-    inputTree->SetBranchAddress("mcpart_E",      _mcpart_E);
-    inputTree->SetBranchAddress("mcpart_px",     _mcpart_px);
-    inputTree->SetBranchAddress("mcpart_py",     _mcpart_py);
-    inputTree->SetBranchAddress("mcpart_pz",     _mcpart_pz);
-    inputTree->SetBranchAddress("mcpart_BCID",     _mcpart_BCID);
+    inputTree->SetBranchAddress("nMCPart",          &_nMCPart);
+    inputTree->SetBranchAddress("mcpart_ID",        _mcpart_ID);
+    inputTree->SetBranchAddress("mcpart_ID_parent", _mcpart_ID_parent);
+    inputTree->SetBranchAddress("mcpart_PDG",       _mcpart_PDG);
+    inputTree->SetBranchAddress("mcpart_E",         _mcpart_E);
+    inputTree->SetBranchAddress("mcpart_px",        _mcpart_px);
+    inputTree->SetBranchAddress("mcpart_py",        _mcpart_py);
+    inputTree->SetBranchAddress("mcpart_pz",        _mcpart_pz);
+    inputTree->SetBranchAddress("mcpart_BCID",      _mcpart_BCID);
+    if (inputTree->GetBranchStatus("mcpart_x") ){
+      extendTimingInfo = 1;
+      inputTree->SetBranchAddress("mcpart_x",         _mcpart_x);
+      inputTree->SetBranchAddress("mcpart_y",         _mcpart_y);
+      inputTree->SetBranchAddress("mcpart_z",         _mcpart_z);
+    }
+    
 
     if (inputTree->GetBranchStatus("nHepmcp") ){
       hepMCavailable = 1;
       inputTree->SetBranchAddress("nHepmcp", &_nHepmcp);
       inputTree->SetBranchAddress("hepmcp_procid", &_hepmcp_procid);
+      inputTree->SetBranchAddress("hepmcp_vtx_x", &_hepmcp_vtx_x);
+      inputTree->SetBranchAddress("hepmcp_vtx_y", &_hepmcp_vtx_y);
+      inputTree->SetBranchAddress("hepmcp_vtx_z", &_hepmcp_vtx_z);
+      inputTree->SetBranchAddress("hepmcp_vtx_t", &_hepmcp_vtx_t);
       inputTree->SetBranchAddress("hepmcp_x1", &_hepmcp_x1);
       inputTree->SetBranchAddress("hepmcp_x2", &_hepmcp_x2);
       inputTree->SetBranchAddress("hepmcp_Q2", &_hepmcp_Q2);
@@ -1148,10 +1185,11 @@ void prepareMCMatchInfo(){
     for(Int_t iproj=nCurrProj; iproj<_nProjections; iproj++){
       if (itrk != _track_ProjTrackID[iproj])
         continue;
-      if (_track_Proj_t[iproj] < 0)
+      if (_track_Proj_t[iproj] < 0 )
         continue;
       double projectionR = TMath::Sqrt(_track_Proj_x[iproj]*_track_Proj_x[iproj]+_track_Proj_y[iproj]*_track_Proj_y[iproj]);      
-      if(TMath::Abs(_track_Proj_t[iproj])< 2.e-20){
+      double hit3d = TMath::Sqrt(_track_Proj_true_x[iproj]*_track_Proj_true_x[iproj]+_track_Proj_true_y[iproj]*_track_Proj_true_y[iproj]+_track_Proj_true_z[iproj]*_track_Proj_true_z[iproj]);      
+      if(TMath::Abs(_track_Proj_true_t[iproj])< 2.e-20){
         if (verbosityBASE > 5) std::cout << iproj << "\t projection layer: "<< _track_ProjLayer[iproj] << "\t t: " << _track_Proj_t[iproj] 
                                             << "\t x: " << _track_Proj_x[iproj] << "\t y: " << _track_Proj_y[iproj] << "\t z: " << _track_Proj_z[iproj] << "\t r: " << projectionR << std::endl;
 
@@ -1186,22 +1224,55 @@ void prepareMCMatchInfo(){
         _track_Proj_Clas[iproj] = 6;
       }
       if (_track_Proj_Clas[iproj] < 5){
-        if (IsTrackerLayer(_track_ProjLayer[iproj]) && _track_Proj_true_t[iproj] != 0 ){
+        if (IsTrackerLayer(_track_ProjLayer[iproj]) && _track_Proj_true_t[iproj] != 0 && hit3d > 0.1){
           _track_nTrL[itrk]++;
         }
-        if (HasTimingLayer(_track_ProjLayer[iproj]) && _track_Proj_true_t[iproj] != 0 ){
-          _track_nTTL[itrk]++;
-          _track_hasTTL[itrk]     = (_track_hasTTL[itrk] || HasTimingLayer(_track_ProjLayer[iproj]));
+        if (HasTimingLayer(_track_ProjLayer[iproj]) && _track_Proj_true_t[iproj] != 0 && hit3d > 0.1){
           
+          // correct path length for geometry and vertex effects
+          float corrPathTTL       = TMath::Sqrt(pow(_track_Proj_true_x[iproj],2) + pow(_track_Proj_true_y[iproj],2) + pow(_track_Proj_true_z[iproj],2)) - 
+                                    TMath::Sqrt(pow(_track_Proj_x[iproj],2) + pow( _track_Proj_y[iproj],2) + pow(_track_Proj_z[iproj],2));
+          float corrPathVtx       = 0;
+          if ((int)_track_trueID[itrk] > -1 && extendTimingInfo){
+            // point of closest approach - MC origin
+            corrPathVtx            = TMath::Sqrt(pow(_track_x[itrk],2) + pow( _track_y[itrk],2) + pow(_track_z[itrk],2)) - 
+                                     TMath::Sqrt(pow(_mcpart_x[(int)_track_trueID[itrk]],2) + pow(_mcpart_y[(int)_track_trueID[itrk]],2) + pow(_mcpart_z[(int)_track_trueID[itrk]],2));
+          }
+          Float_t pathlengthcorr  = _track_Proj_t[iproj] + corrPathTTL + corrPathVtx; // 
+          
+          if (TMath::Abs(corrPathTTL) > 5 && verbosityBASE > 3){
+            float_t Rproj = TMath::Sqrt(_track_Proj_x[iproj]*_track_Proj_x[iproj] + _track_Proj_y[iproj]*_track_Proj_y[iproj]  ) ;
+            float_t Rtrue = TMath::Sqrt(_track_Proj_true_x[iproj]*_track_Proj_true_x[iproj] + _track_Proj_true_y[iproj]*_track_Proj_true_y[iproj] ) ;
+            std::cout << "layer ID: "<< _track_ProjLayer[iproj] << "\t p\t" << trackVecP.Mag() << "\t path length org: " << _track_Proj_t[iproj] << "\t TTL corr \t" <<  corrPathTTL << "\t Vtx corr \t"<< corrPathVtx << " corrected path length "<< pathlengthcorr << " \t eta \t " << trackVecP.Eta() << std::endl;
+          
+            std::cout <<  "\t\t projection: " << _track_Proj_x[iproj] << "\t" << _track_Proj_y[iproj] << "\t" <<  _track_Proj_z[iproj] << "\t R " << Rproj << 
+                          "\t\t hit: " << _track_Proj_true_x[iproj] << "\t" << _track_Proj_true_y[iproj] << "\t" <<  _track_Proj_true_z[iproj]  << "\t" <<  _track_Proj_true_t[iproj] << "\t R \t" << Rtrue << "\n\n"<< std::endl;
+          }
+          if ( TMath::Abs(corrPathVtx) > 3 && verbosityBASE > 3){
+            float_t Rproj = TMath::Sqrt(pow(_track_x[itrk],2) + pow( _track_y[itrk],2) + pow(_track_z[itrk],2));
+            float_t Rtrue = 0;
+            if ((int)_track_trueID[itrk] > -1 && extendTimingInfo){
+              Rtrue = TMath::Sqrt(pow(_mcpart_x[(int)_track_trueID[itrk]],2) + pow(_mcpart_y[(int)_track_trueID[itrk]],2) + pow(_mcpart_z[(int)_track_trueID[itrk]],2));
+              std::cout << "layer ID: "<< _track_ProjLayer[iproj] << "\t p\t" << trackVecP.Mag() << "\t path length org: " << _track_Proj_t[iproj] << "\t TTL corr \t" <<  corrPathTTL << "\t Vtx corr \t"<< corrPathVtx << " corrected path length "<< pathlengthcorr << " \t eta \t " << trackVecP.Eta() << "\n\n" << std::endl;
+              std::cout <<  "\t\t track start: " << _track_x[itrk] << "\t" << _track_y[itrk] << "\t" <<  _track_z[itrk] << 
+                          "\t\t true start: " << _mcpart_x[(int)_track_trueID[itrk]] << "\t" << _mcpart_y[(int)_track_trueID[itrk]] << "\t" <<  _mcpart_z[(int)_track_trueID[itrk]]  << "\t 3D R\t" << Rproj << "\t" << Rtrue << "\n\n"<< std::endl;
+            }
+          }
           // check whether this is an electron in the backward or barrel with momentum > 3 GeV => assume that's the scattered electron
           bool isProbEScat = false;
           if ((int)_track_trueID[itrk] > -1){
-            if ( (fabs(_mcpart_PDG[(int)_track_trueID[itrk]]) == 11 && trackVecP.Eta() < 0.5 && trackVecP.Mag() > 3))
+            if ( (fabs(_mcpart_PDG[(int)_track_trueID[itrk]]) == 11 && trackVecP.Eta() < 0.5 && trackVecP.Mag() > 1))
               isProbEScat = true;
           }
-          // tof construct
-          tofStrct tempTOF = tofStrct(_track_Proj_t[iproj], r3.Gaus(_track_Proj_true_t[iproj], sigmat), _track_Proj_true_t[iproj], isProbEScat );
-          _track_TOFmeas[itrk].push_back(tempTOF);
+          // only store tof info if vertex correction is smaller than 5cm, otherwise this is a secondary or something went terribly wrong otherwise
+          if (TMath::Abs(corrPathVtx) < 5){ 
+            _track_nTTL[itrk]++;
+            _track_hasTTL[itrk]     = (_track_hasTTL[itrk] || HasTimingLayer(_track_ProjLayer[iproj]));
+
+            // tof construct
+            tofStrct tempTOF = tofStrct(pathlengthcorr, r3.Gaus(_track_Proj_true_t[iproj], sigmat), _track_Proj_true_t[iproj], isProbEScat );
+            _track_TOFmeas[itrk].push_back(tempTOF);
+          }
         } 
       }
       if (verbosityBASE > 3) std::cout << "timing layer count: " << _track_nTTL[itrk] << std::endl;

@@ -105,6 +105,10 @@ void pidreso_Pythia(
   TH2F* h_T0VsNtrk[2]                     = {NULL};
   TH2F* h_InitT0VsNttl[2]                 = {NULL};
   TH2F* h_T0VsNttl[2]                     = {NULL};
+  TH2F* h_InitT0DiffVsNtrk[2]             = {NULL};
+  TH2F* h_T0DiffVsNtrk[2]                 = {NULL};
+  TH2F* h_InitT0DiffVsNttl[2]             = {NULL};
+  TH2F* h_T0DiffVsNttl[2]                 = {NULL};
   TH2F* h_NttlvsNtrk_initT0[2]            = {NULL};
   TH2F* h_NttlvsNtrk_T0[2]                = {NULL};
   
@@ -118,18 +122,40 @@ void pidreso_Pythia(
   TGraphErrors* g_betaSigmaUpSmearT0_p_Region[6][3]   = {NULL};
   TGraphErrors* g_betaSigmaDownSmearT0_p_Region[6][3] = {NULL};
   
+  Int_t nSlicesP                          = 5;
+  Float_t sliceP[5]                       = {0.3, 1.5, 2., 3., 4.5};
+  TH1D* hSliceBetaRegion[6][3][5]         = {{{NULL}}};
   
   bool enablePIDEta[6][nEta+1]            = {{0}};
   bool enablePIDEtaSmear[6][nEta+1]       = {{0}};
   Int_t nEvents                           = 0;
-  
+  Color_t colorIter[4]                    = {kGray+2, kBlue+1, kGreen+2, kRed+1};
+  Style_t styleMarkerIter[4]              = {24, 27, 28, 20};
+  Size_t sizeMarkerIter[4]                = {1.2, 1.7, 1.2, 1.3};
+    
   TFile* inputFile  = new TFile(inputFileName.Data());
+  
+  TH2D* h_T0VsIter              = (TH2D*)inputFile->Get("h_T0DiffVsIter");
+  TH1D* h_NEvents               = (TH1D*)inputFile->Get("h_TPH_NEvents");
+  nEvents = h_NEvents->GetBinContent(1);
+  TH2D* h_UPartIter             = (TH2D*)inputFile->Get("h_TPH_UsedParticlesVsIter");
+  Int_t nIter                   = 4;
+  TH1D* h_T0VsIterProj[2*nIter];
+  TH1D* h_UPartIterProj[2*nIter];
+  for (Int_t it = 0; it < 2*nIter; it++){
+    h_T0VsIterProj[it]          = (TH1D*)h_T0VsIter->ProjectionY(Form("h_V0VsIter_%i", it), it+1, it+1 ,"E");
+    h_UPartIterProj[it]         = (TH1D*)h_UPartIter->ProjectionY(Form("h_UPartIter_%i", it), it+1, it+1 ,"E");
+  }
+
   for (Int_t td = 0; td < 2; td++){
     h_InitT0VsNtrk[td]                    = (TH2F*)inputFile->Get(Form("h_InitT0VsNtrk_%s", readTimeDet[td].Data()));
-    nEvents += h_InitT0VsNtrk[td]->GetEntries();
     h_T0VsNtrk[td]                        = (TH2F*)inputFile->Get(Form("h_T0VsNtrk_%s", readTimeDet[td].Data()));
     h_InitT0VsNttl[td]                    = (TH2F*)inputFile->Get(Form("h_InitT0VsNttlhit_%s", readTimeDet[td].Data()));
     h_T0VsNttl[td]                        = (TH2F*)inputFile->Get(Form("h_T0VsNttlhit_%s", readTimeDet[td].Data()));
+    h_InitT0DiffVsNtrk[td]                = (TH2F*)inputFile->Get(Form("h_InitT0DiffVsNtrk_%s", readTimeDet[td].Data()));
+    h_T0DiffVsNtrk[td]                    = (TH2F*)inputFile->Get(Form("h_T0DiffVsNtrk_%s", readTimeDet[td].Data()));
+    h_InitT0DiffVsNttl[td]                = (TH2F*)inputFile->Get(Form("h_InitT0DiffVsNttlhit_%s", readTimeDet[td].Data()));
+    h_T0DiffVsNttl[td]                    = (TH2F*)inputFile->Get(Form("h_T0DiffVsNttlhit_%s", readTimeDet[td].Data()));
     h_NttlvsNtrk_initT0[td]               = (TH2F*)inputFile->Get(Form("h_NttlhitVsNtrk_wInitT0_%s", readTimeDet[td].Data()));
     h_NttlvsNtrk_T0[td]                   = (TH2F*)inputFile->Get(Form("h_NttlhitVsNtrk_wFinalT0_%s", readTimeDet[td].Data()));
     for (Int_t pidS = 0; pidS < 3; pidS++){
@@ -146,7 +172,7 @@ void pidreso_Pythia(
         continue;
       } else {
         enablePIDEta[pid][iEta] = true;
-        cout <<  "found: " << Form("h_Res_InvSmearBeta%s_Eta_p_%s_%d", readTrackClass.Data(), partName[pid].Data(), iEta) << endl;
+//         cout <<  "found: " << Form("h_Res_InvSmearBeta%s_Eta_p_%s_%d", readTrackClass.Data(), partName[pid].Data(), iEta) << endl;
       }
       h_beta_reso[pid][iEta]->Sumw2();
       h_mean_p_betaReso[pid][iEta] = new TH1D(Form("histBetaResol%s_%s_mean_%d", readTrackClass.Data(), partName[pid].Data(), iEta), 
@@ -186,8 +212,10 @@ void pidreso_Pythia(
       hResBetaVsPDet_wT0[eR][pid]       = (TH2F*)inputFile->Get(Form("h_DbetaVsP_wT0_%s_%s", readRegion[eR].Data(), partName[pid].Data()));
       hResBetaVsPDet_woT0[eR][pid]      = (TH2F*)inputFile->Get(Form("h_DbetaVsP_woT0_%s_%s", readRegion[eR].Data(), partName[pid].Data()));
       
-      for(Int_t iEta=minEtaBin[eR]; iEta<maxEtaBin[eR]+1;iEta++){
+      cout << "region " << eR << "adding " ;
+      for(Int_t iEta=minEtaBinTTL[eR]; iEta<maxEtaBinTTL[eR]+1;iEta++){
         if (!enablePIDEta[pid][iEta]) continue;
+        cout << iEta << "\t";
         if (!h_beta_p_Region[pid][eR]){
           h_beta_p_Region[pid][eR]      = (TH2F*)h_beta_p[pid][iEta]->Clone(Form("h_InvSmearBeta%s_Eta_p_%s_%s", readTrackClass.Data(), partName[pid].Data(), nameOutEtaRange[eR].Data()));
           h_beta_p_Region[pid][eR]->Sumw2();
@@ -208,8 +236,12 @@ void pidreso_Pythia(
           } else {
             h_betaSmearT0_p_Region[pid][eR]->Add(h_betaSmearT0_p[pid][iEta]);
           }
-        }
-        
+        } 
+      }
+      cout << endl;
+      cout << "eta range: " << partEta[minEtaBinTTL[eR]] << "\t" << partEta[maxEtaBinTTL[eR]+1] << endl;
+      for (Int_t pt = 0; pt < nSlicesP; pt++){
+        hSliceBetaRegion[pid][eR][pt] = (TH1D*)h_betaSmearT0_p_Region[pid][eR]->ProjectionY(Form("sliceP_%i_%i_%i", eR, pid, pt), h_betaSmearT0_p_Region[pid][eR]->GetXaxis()->FindBin(sliceP[pt]), h_betaSmearT0_p_Region[pid][eR]->GetXaxis()->FindBin(sliceP[pt]), "E");
       }
       if (pid == 1){
         TH2F* temp = (TH2F*)h_betaSmearT0_p_Region[pid][eR]->RebinX(4,Form("h_InvSmearT0Beta%s_Eta_p_%s_%s", readTrackClass.Data(), partName[pid].Data(), nameOutEtaRange[eR].Data()));
@@ -226,16 +258,30 @@ void pidreso_Pythia(
         Int_t bins = 0;
         for (Int_t iPt = 1; iPt < h_betaSmearT0_p_Region[pid][eR]->GetNbinsX() && bins < 500; iPt++ ){
           TH1D* tempProjec = (TH1D*)h_betaSmearT0_p_Region[pid][eR]->ProjectionY("dummy", iPt, iPt, "E");
-          if (tempProjec->GetEntries() > 10){
-            mean[bins]  = tempProjec->GetMean();
-            meanE[bins] = tempProjec->GetMeanError();
+          if (pid == 4 && (p[bins] < 0.55 || p[bins] > 2))
+            tempProjec->Rebin(4);
+          if (pid == 5 &&  p[bins] > 2)
+            tempProjec->Rebin(4);
+          if (pid == 1 &&  p[bins] < 1)
+            tempProjec->Rebin(4);
+          if (pid == 3 &&  p[bins] < 0.2)
+            tempProjec->Rebin(4);
+          if (tempProjec->GetEntries() > 50){
+            TF1* tempGauss = new TF1("tempGauss",  "gaus", 0.0905,1.495);
+            tempGauss->SetParameter(1,tempProjec->GetMean());
+            tempGauss->SetParameter(2,tempProjec->GetStdDev());
+            tempProjec->Fit(tempGauss,"QNRME+","",tempProjec->GetMean()-2*tempProjec->GetStdDev(),tempProjec->GetMean()+2*tempProjec->GetStdDev());
+            
+            mean[bins]  = tempGauss->GetParameter(1);
+            meanE[bins] = tempGauss->GetParError(1);
             p[bins]     = h_betaSmearT0_p_Region[pid][eR]->GetXaxis()->GetBinCenter(iPt);
             pE[bins]    = h_betaSmearT0_p_Region[pid][eR]->GetXaxis()->GetBinWidth(iPt)/2;
-            sigmaU[bins]  = mean[bins]+tempProjec->GetStdDev();
-            sigmaD[bins]  = mean[bins]-tempProjec->GetStdDev();
-            sigmaE[bins] = tempProjec->GetStdDevError();
-            if (pid == 4 && p[bins] < 0.45 ) continue;
-            if (pid == 5 && p[bins] < 0.8 ) continue;
+            sigmaU[bins]  = mean[bins]+3*tempGauss->GetParameter(2);
+            sigmaD[bins]  = mean[bins]-3*tempGauss->GetParameter(2);
+            sigmaE[bins] = tempGauss->GetParError(2);
+            if (pid == 3 && p[bins] < 0.14 ) continue;
+            if (pid == 4 && p[bins] < 0.48 ) continue;
+            if (pid == 5 && p[bins] < 0.85 ) continue;
             bins++;
           }
         }
@@ -592,8 +638,6 @@ void pidreso_Pythia(
       if (!h_betaGen_p_Region[pid][eR]) continue;
       cSingle2D->cd();
       cSingle2D->SetLogx(1);
-      Double_t etaMin = partEta[minEtaBin[eR]];
-      Double_t etaMax = partEta[maxEtaBin[eR]+1];
       SetStyleHistoTH2ForGraphs(h_betaGen_p_Region[pid][eR], "#it{p} (GeV/#it{c})", "1/#beta^{MC}", 
                                 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
       
@@ -603,7 +647,7 @@ void pidreso_Pythia(
         h_betaGen_p_Region[pid][eR]->GetXaxis()->SetRangeUser(0.1,50.);
         h_betaGen_p_Region[pid][eR]->Draw("colz");
       
-        drawLatexAdd(Form("%1.1f < #eta < %1.1f",etaMin,etaMax),0.14,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+        drawLatexAdd(Form("%1.1f < #eta < %1.1f",partEta[minEtaBinTTL[eR]],partEta[maxEtaBinTTL[eR]+1]), 0.14,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
         if (pid != 0) drawLatexAdd(Form("%s", partLabel[pid].Data()),0.14,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
         drawLatexAdd(perfLabel,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         drawLatexAdd(collisionSystem,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
@@ -668,8 +712,6 @@ void pidreso_Pythia(
       if (!h_betaTrack_p_Region[pid][eR]) continue;
       cSingle2D->cd();
       cSingle2D->SetLogx();
-      Double_t etaMin = partEta[minEtaBin[eR]];
-      Double_t etaMax = partEta[maxEtaBin[eR]+1];
       SetStyleHistoTH2ForGraphs(h_betaTrack_p_Region[pid][eR], "#it{p} (GeV/#it{c})",  "1/#beta^{path}", 
                                 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
       ScaleByBinWidth2D(h_betaTrack_p_Region[pid][eR]);
@@ -678,7 +720,7 @@ void pidreso_Pythia(
         h_betaTrack_p_Region[pid][eR]->GetXaxis()->SetRangeUser(0.07,50.);
         h_betaTrack_p_Region[pid][eR]->Draw("colz");
       
-        drawLatexAdd(Form("%1.1f < #eta < %1.1f",etaMin,etaMax),0.14,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+        drawLatexAdd(Form("%1.1f < #eta < %1.1f",partEta[minEtaBinTTL[eR]],partEta[maxEtaBinTTL[eR]+1]),0.14,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
         if (pid != 0) drawLatexAdd(Form("%s", partLabel[pid].Data()),0.14,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
         drawLatexAdd(perfLabel,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         drawLatexAdd(collisionSystem,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
@@ -742,8 +784,6 @@ void pidreso_Pythia(
       if (!h_beta_p_Region[pid][eR]) continue;
       cSingle2D->cd();
       cSingle2D->SetLogx();
-      Double_t etaMin = partEta[minEtaBin[eR]];
-      Double_t etaMax = partEta[maxEtaBin[eR]+1];
       SetStyleHistoTH2ForGraphs(h_beta_p_Region[pid][eR], "#it{p} (GeV/#it{c})",  "1/#beta^{rec}", 
                                 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
         ScaleByBinWidth2D(h_beta_p_Region[pid][eR]);
@@ -752,7 +792,7 @@ void pidreso_Pythia(
         h_beta_p_Region[pid][eR]->GetXaxis()->SetRangeUser(0.07,50.);
         h_beta_p_Region[pid][eR]->Draw("colz");
       
-        drawLatexAdd(Form("%1.1f < #eta < %1.1f",etaMin,etaMax),0.14,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+        drawLatexAdd(Form("%1.1f < #eta < %1.1f",partEta[minEtaBinTTL[eR]],partEta[maxEtaBinTTL[eR]+1]),0.14,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
         if (pid != 0) drawLatexAdd(Form("%s", partLabel[pid].Data()),0.14,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
         drawLatexAdd(perfLabel,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         drawLatexAdd(collisionSystem,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
@@ -833,6 +873,7 @@ void pidreso_Pythia(
   //       h_betaSmearT0_p_Region[pid][eR]->GetYaxis()->SetRangeUser(-0.02,0.02);
         h_betaSmearT0_p_Region[pid][eR]->GetZaxis()->SetRangeUser(0.9/5,h_betaSmearT0_p_Region[pid][eR]->GetMaximum()*5);
         h_betaSmearT0_p_Region[pid][eR]->GetXaxis()->SetRangeUser(0.07,50.);
+        h_betaSmearT0_p_Region[pid][eR]->GetYaxis()->SetRangeUser(0.9,1.5);
         h_betaSmearT0_p_Region[pid][eR]->Draw("colz");
      
         if (pid == 0){
@@ -860,7 +901,7 @@ void pidreso_Pythia(
           }
         }
         
-        drawLatexAdd(Form("%1.1f < #eta < %1.1f",etaMin,etaMax),0.85,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        drawLatexAdd(Form("%1.1f < #eta < %1.1f",partEta[minEtaBinTTL[eR]],partEta[maxEtaBinTTL[eR]+1]),0.85,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         if (pid != 0) 
           drawLatexAdd(Form("w/ t_{0}, %s", partLabel[pid].Data()),0.85,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         else
@@ -886,15 +927,15 @@ void pidreso_Pythia(
             if (id == 2) continue;
             DrawGammaSetMarkerTGraphErr(   g_betaMeanSmearT0_p_Region[id][eR], 0, 0, colorPID[id], colorPID[id], 3, kFALSE, 0, kFALSE, lineStylePID[id]);
             g_betaMeanSmearT0_p_Region[id][eR]->Draw("same, cx");
-            DrawGammaSetMarkerTGraphErr(   g_betaSigmaUpSmearT0_p_Region[id][eR], 0, 0, colorPID[id]+1, colorPID[id]+1, 1, kFALSE, 0, kFALSE, lineStylePID[id]);
+            DrawGammaSetMarkerTGraphErr(   g_betaSigmaUpSmearT0_p_Region[id][eR], 0, 0, colorPIDdarker[id], colorPIDdarker[id], 1, kFALSE, 0, kFALSE, lineStylePID[id]);
             g_betaSigmaUpSmearT0_p_Region[id][eR]->Draw("same, cx");
-            DrawGammaSetMarkerTGraphErr(   g_betaSigmaDownSmearT0_p_Region[id][eR], 0, 0, colorPID[id]+1, colorPID[id]+1, 1, kFALSE, 0, kFALSE, lineStylePID[id]);
+            DrawGammaSetMarkerTGraphErr(   g_betaSigmaDownSmearT0_p_Region[id][eR], 0, 0, colorPIDdarker[id], colorPIDdarker[id], 1, kFALSE, 0, kFALSE, lineStylePID[id]);
             g_betaSigmaDownSmearT0_p_Region[id][eR]->Draw("same, cx");
             legendPIDSummary->AddEntry(g_betaMeanSmearT0_p_Region[id][eR], partLabel[id], "l");
           }
           legendPIDSummary->Draw();
         
-          drawLatexAdd(Form("%1.1f < #eta < %1.1f",etaMin,etaMax),0.85,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          drawLatexAdd(Form("%1.1f < #eta < %1.1f",partEta[minEtaBinTTL[eR]],partEta[maxEtaBinTTL[eR]+1]),0.85,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
           drawLatexAdd("w/ t_{0}",0.85, 0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
           drawLatexAdd(perfLabel,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
           drawLatexAdd(collisionSystem,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
@@ -902,6 +943,30 @@ void pidreso_Pythia(
           
         cSingle2D->cd();
         cSingle2D->SaveAs(Form("%s/BetaPWithT0_%s_Bin_%s_BW.%s", outputDirOverview.Data(), partName[pid].Data(), nameOutEtaRange[eR].Data(), suffix.Data()));
+
+        cSingle2D->SetLogx(0);
+          h_betaSmearT0_p_Region[pid][eR]->GetXaxis()->SetRangeUser(0.,5.);
+          h_betaSmearT0_p_Region[pid][eR]->Draw("colz");
+      
+          for (Int_t id = 1; id < 6; id++){
+            if (id == 2) continue;
+            DrawGammaSetMarkerTGraphErr(   g_betaMeanSmearT0_p_Region[id][eR], 0, 0, colorPID[id], colorPID[id], 3, kFALSE, 0, kFALSE, lineStylePID[id]);
+            g_betaMeanSmearT0_p_Region[id][eR]->Draw("same, cx");
+            DrawGammaSetMarkerTGraphErr(   g_betaSigmaUpSmearT0_p_Region[id][eR], 0, 0, colorPIDdarker[id], colorPIDdarker[id], 1, kFALSE, 0, kFALSE, lineStylePID[id]);
+            g_betaSigmaUpSmearT0_p_Region[id][eR]->Draw("same, cx");
+            DrawGammaSetMarkerTGraphErr(   g_betaSigmaDownSmearT0_p_Region[id][eR], 0, 0, colorPIDdarker[id], colorPIDdarker[id], 1, kFALSE, 0, kFALSE, lineStylePID[id]);
+            g_betaSigmaDownSmearT0_p_Region[id][eR]->Draw("same, cx");
+          }
+          legendPIDSummary->Draw();
+        
+          drawLatexAdd(Form("%1.1f < #eta < %1.1f",partEta[minEtaBinTTL[eR]],partEta[maxEtaBinTTL[eR]+1]),0.85,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          drawLatexAdd("w/ t_{0}",0.85, 0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          drawLatexAdd(perfLabel,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          drawLatexAdd(collisionSystem,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.91-2*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+        cSingle2D->SaveAs(Form("%s/BetaPWithT0_%s_Bin_%s_BW_linX.%s", outputDirOverview.Data(), partName[pid].Data(), nameOutEtaRange[eR].Data(), suffix.Data()));
+
+        
       }
     }
   }
@@ -1215,7 +1280,6 @@ void pidreso_Pythia(
   //*****************************************************************************
   // plot T0 as function of nTracks
   //*****************************************************************************
-
   TCanvas* cTrackT0 = new TCanvas("cTrackT0","",0,0,1800,800);
   split_canvas(cTrackT0, "cTrackT0", 2, true);
   Int_t padnum = 0;
@@ -1246,32 +1310,33 @@ void pidreso_Pythia(
   cTrackT0->SaveAs(Form("%s/InitialT0_NTrack.%s", outputDir.Data(), suffix.Data()));
 
   padnum = 0;
+  Double_t maxNTracksZDiff = 0;
+  for (Int_t tl = 0; tl < 2; tl++){
+    if (h_InitT0DiffVsNtrk[tl]->GetMaximum() > maxNTracksZDiff) maxNTracksZDiff = h_InitT0DiffVsNtrk[tl]->GetMaximum();
+  }
+
   for (Int_t tl = 0; tl < 2; tl++){
     cTrackT0->cd(padnum+1);
-    DrawVirtualPadSettings( cTrackT0->cd(padnum+1), 0.11, 0.02, 0.03, 0.115);
-    cTrackT0->cd(padnum+1)->SetLogz(1);
-    SetStyleHistoTH2ForGraphs(h_InitT0VsNttl[tl], "#it{N}_{trk w/ TTL}", "#it{t}_{0, initial} (ns)", 
+    SetStyleHistoTH2ForGraphs(h_InitT0DiffVsNtrk[tl], "#it{N}_{trk}", "#it{t}_{0, initial} - #it{t}_{0, MC} (ns)", 
                               0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
-    h_InitT0VsNttl[tl]->Scale(1./nEvents);
-    h_InitT0VsNttl[tl]->GetXaxis()->SetRangeUser(0,50.);
-    h_InitT0VsNttl[tl]->GetZaxis()->SetRangeUser(0.9/nEvents,maxNTracksZ*1.2/nEvents);
-    h_InitT0VsNttl[tl]->Draw("col");
+    h_InitT0DiffVsNtrk[tl]->Scale(1./nEvents);
+    h_InitT0DiffVsNtrk[tl]->GetXaxis()->SetRangeUser(0,50.);
+    h_InitT0DiffVsNtrk[tl]->GetZaxis()->SetRangeUser(0.9/nEvents,maxNTracksZDiff*1.2/nEvents);
+    h_InitT0DiffVsNtrk[tl]->Draw("col");
     
     if(tl == 1)  drawLatexAdd(perfLabel,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
     if(tl == 0)  drawLatexAdd(collisionSystem,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
     if(tl == 0 && pTHard.CompareTo("") != 0 )  drawLatexAdd(pTHard,0.93,0.88-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);    
-    if (tl == 0)drawLatexAdd(Form("%1.2f%s events w/ scat. e^{-}", h_InitT0VsNttl[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
-    if (tl == 1)drawLatexAdd(Form("%1.2f%s events w/o scat. e^{-}", h_InitT0VsNttl[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if (tl == 0)drawLatexAdd(Form("%1.2f%s events w/ scat. e^{-}", h_InitT0DiffVsNtrk[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if (tl == 1)drawLatexAdd(Form("%1.2f%s events w/o scat. e^{-}", h_InitT0DiffVsNtrk[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
 
     padnum++;
   }
-  cTrackT0->SaveAs(Form("%s/InitialT0_NTrackTTL.%s", outputDir.Data(), suffix.Data()));
-  
+  cTrackT0->SaveAs(Form("%s/InitialT0Diff_NTrack.%s", outputDir.Data(), suffix.Data()));
+
   padnum = 0;
   for (Int_t tl = 0; tl < 2; tl++){
     cTrackT0->cd(padnum+1);
-    DrawVirtualPadSettings( cTrackT0->cd(padnum+1), 0.11, 0.02, 0.03, 0.115);
-    cTrackT0->cd(padnum+1)->SetLogz(1);
     SetStyleHistoTH2ForGraphs(h_T0VsNtrk[tl], "#it{N}_{trk}", "#it{t}_{0} (ns)", 
                               0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
     h_T0VsNtrk[tl]->Scale(1./nEvents);
@@ -1292,8 +1357,69 @@ void pidreso_Pythia(
   padnum = 0;
   for (Int_t tl = 0; tl < 2; tl++){
     cTrackT0->cd(padnum+1);
-    DrawVirtualPadSettings( cTrackT0->cd(padnum+1), 0.11, 0.02, 0.03, 0.115);
-    cTrackT0->cd(padnum+1)->SetLogz(1);
+    SetStyleHistoTH2ForGraphs(h_T0DiffVsNtrk[tl], "#it{N}_{trk}", "#it{t}_{0} - #it{t}_{0, MC} (ns)", 
+                              0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+    h_T0DiffVsNtrk[tl]->Scale(1./nEvents);
+    h_T0DiffVsNtrk[tl]->GetXaxis()->SetRangeUser(0,50.);
+    h_T0DiffVsNtrk[tl]->GetZaxis()->SetRangeUser(0.9/nEvents,maxNTracksZDiff*1.2/nEvents);
+    h_T0DiffVsNtrk[tl]->Draw("col");
+    
+    if(tl == 1)  drawLatexAdd(perfLabel,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if(tl == 0)  drawLatexAdd(collisionSystem,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if(tl == 0 && pTHard.CompareTo("") != 0 )  drawLatexAdd(pTHard,0.93,0.88-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);    
+    if (tl == 0)drawLatexAdd(Form("%1.2f%s events w/ scat. e^{-}", h_T0DiffVsNtrk[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if (tl == 1)drawLatexAdd(Form("%1.2f%s events w/o scat. e^{-}", h_T0DiffVsNtrk[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+
+    padnum++;
+  }
+  cTrackT0->SaveAs(Form("%s/T0Diff_NTrack.%s", outputDir.Data(), suffix.Data()));
+  
+  //*****************************************************************************
+  // plot T0 as function of nTracks with TTL
+  //*****************************************************************************
+  padnum = 0;
+  for (Int_t tl = 0; tl < 2; tl++){
+    cTrackT0->cd(padnum+1);
+    SetStyleHistoTH2ForGraphs(h_InitT0VsNttl[tl], "#it{N}_{trk w/ TTL}", "#it{t}_{0, initial} (ns)", 
+                              0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+    h_InitT0VsNttl[tl]->Scale(1./nEvents);
+    h_InitT0VsNttl[tl]->GetXaxis()->SetRangeUser(0,50.);
+    h_InitT0VsNttl[tl]->GetZaxis()->SetRangeUser(0.9/nEvents,maxNTracksZ*1.2/nEvents);
+    h_InitT0VsNttl[tl]->Draw("col");
+    
+    if(tl == 1)  drawLatexAdd(perfLabel,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if(tl == 0)  drawLatexAdd(collisionSystem,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if(tl == 0 && pTHard.CompareTo("") != 0 )  drawLatexAdd(pTHard,0.93,0.88-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);    
+    if (tl == 0)drawLatexAdd(Form("%1.2f%s events w/ scat. e^{-}", h_InitT0VsNttl[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if (tl == 1)drawLatexAdd(Form("%1.2f%s events w/o scat. e^{-}", h_InitT0VsNttl[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+
+    padnum++;
+  }
+  cTrackT0->SaveAs(Form("%s/InitialT0_NTrackTTL.%s", outputDir.Data(), suffix.Data()));
+
+  padnum = 0;
+  for (Int_t tl = 0; tl < 2; tl++){
+    cTrackT0->cd(padnum+1);
+    SetStyleHistoTH2ForGraphs(h_InitT0DiffVsNttl[tl], "#it{N}_{trk w/ TTL}", "#it{t}_{0, initial} - #it{t}_{0, MC}  (ns)", 
+                              0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+    h_InitT0DiffVsNttl[tl]->Scale(1./nEvents);
+    h_InitT0DiffVsNttl[tl]->GetXaxis()->SetRangeUser(0,50.);
+    h_InitT0DiffVsNttl[tl]->GetZaxis()->SetRangeUser(0.9/nEvents,maxNTracksZDiff*1.2/nEvents);
+    h_InitT0DiffVsNttl[tl]->Draw("col");
+    
+    if(tl == 1)  drawLatexAdd(perfLabel,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if(tl == 0)  drawLatexAdd(collisionSystem,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if(tl == 0 && pTHard.CompareTo("") != 0 )  drawLatexAdd(pTHard,0.93,0.88-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);    
+    if (tl == 0)drawLatexAdd(Form("%1.2f%s events w/ scat. e^{-}", h_InitT0DiffVsNttl[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if (tl == 1)drawLatexAdd(Form("%1.2f%s events w/o scat. e^{-}", h_InitT0DiffVsNttl[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+
+    padnum++;
+  }
+  cTrackT0->SaveAs(Form("%s/InitialT0Diff_NTrackTTL.%s", outputDir.Data(), suffix.Data()));
+  
+  padnum = 0;
+  for (Int_t tl = 0; tl < 2; tl++){
+    cTrackT0->cd(padnum+1);
     SetStyleHistoTH2ForGraphs(h_T0VsNttl[tl], "#it{N}_{trk w/ TTL}", "#it{t}_{0} (ns)", 
                               0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
     h_T0VsNttl[tl]->Scale(1./nEvents);
@@ -1310,14 +1436,168 @@ void pidreso_Pythia(
     padnum++;
   }
   cTrackT0->SaveAs(Form("%s/T0_NTrackTTL.%s", outputDir.Data(), suffix.Data()));
-  
+
+  padnum = 0;
+  for (Int_t tl = 0; tl < 2; tl++){
+    cTrackT0->cd(padnum+1);
+    SetStyleHistoTH2ForGraphs(h_T0DiffVsNttl[tl], "#it{N}_{trk w/ TTL}", "#it{t}_{0} - #it{t}_{0, MC} (ns)", 
+                              0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+    h_T0DiffVsNttl[tl]->Scale(1./nEvents);
+    h_T0DiffVsNttl[tl]->GetXaxis()->SetRangeUser(0,50.);
+    h_T0DiffVsNttl[tl]->GetZaxis()->SetRangeUser(0.9/nEvents,maxNTracksZDiff*1.2/nEvents);
+    h_T0DiffVsNttl[tl]->Draw("col");
+    
+    if(tl == 1)  drawLatexAdd(perfLabel,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if(tl == 0)  drawLatexAdd(collisionSystem,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if(tl == 0 && pTHard.CompareTo("") != 0 )  drawLatexAdd(pTHard,0.93,0.88-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);    
+    if (tl == 0)drawLatexAdd(Form("%1.2f%s events w/ scat. e^{-}", h_T0DiffVsNttl[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if (tl == 1)drawLatexAdd(Form("%1.2f%s events w/o scat. e^{-}", h_T0DiffVsNttl[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+
+    padnum++;
+  }
+  cTrackT0->SaveAs(Form("%s/T0Diff_NTrackTTL.%s", outputDir.Data(), suffix.Data()));
+
   //*****************************************************************************
-  // plot T0 as function of nTracks with TTL
+  // plot T0 initial different iterations
   //*****************************************************************************
+  padnum = 0;
+  for (Int_t tl = 0; tl < 2; tl++){
+    cTrackT0->cd(padnum+1);
+    DrawVirtualPadSettings( cTrackT0->cd(padnum+1), 0.1, 0.022, 0.02, 0.1);
+    cTrackT0->cd(padnum+1)->SetLogz(0);
+    cTrackT0->cd(padnum+1)->SetLogy(1);
+    
+    TLegend* legendIterT0 = GetAndSetLegend2(0.14, 0.905, 0.35, 0.905-nIter*0.85*textSizeSinglePad ,0.85*textSizeLabelsRel, 1, "", 42, 0.25);
+    
+    for (Int_t it = 0; it < nIter; it++){
+      if (it == 0){
+        SetStyleHistoTH1ForGraphs(h_T0VsIterProj[tl*nIter+it],"#it{t}_{0} - #it{t}_{MC} (ns)", "counts",
+                                  0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+        DrawGammaSetMarker(h_T0VsIterProj[tl*nIter+it], styleMarkerIter[it], sizeMarkerIter[it], colorIter[it], colorIter[it]);      
+//         h_T0VsIterProj[tl]->GetXaxis()->SetRangeUser(0,50.);
+        h_T0VsIterProj[tl*nIter+it]->GetYaxis()->SetRangeUser(10,nEvents/5);
+        h_T0VsIterProj[tl*nIter+it]->Draw("hist");
+        legendIterT0->AddEntry(h_T0VsIterProj[tl*nIter+it],Form("it %i, #sigma = %0.2f ps", it, h_T0VsIterProj[tl*nIter+it]->GetStdDev()*1000),"l");  
+        
+      } else if (it == nIter-1){
+        DrawGammaSetMarker(h_T0VsIterProj[tl*nIter+it], styleMarkerIter[it], sizeMarkerIter[it], colorIter[it], colorIter[it]);      
+        h_T0VsIterProj[tl*nIter+it]->Draw("pe,same");
+        legendIterT0->AddEntry(h_T0VsIterProj[tl*nIter+it],Form("it %i, #sigma = %0.2f ps", it, h_T0VsIterProj[tl*nIter+it]->GetStdDev()*1000),"p");  
+      } else {
+        DrawGammaSetMarker(h_T0VsIterProj[tl*nIter+it], styleMarkerIter[it], sizeMarkerIter[it], colorIter[it], colorIter[it]);      
+        h_T0VsIterProj[tl*nIter+it]->Draw("hist,same");
+        legendIterT0->AddEntry(h_T0VsIterProj[tl*nIter+it],Form("it %i, #sigma = %0.2f ps", it, h_T0VsIterProj[tl*nIter+it]->GetStdDev()*1000),"l");  
+      }
+    }    
+    h_T0VsIterProj[tl*nIter+0]->Draw("same,axis");
+    if(tl == 1){
+      drawLatexAdd(collisionSystem,0.93,0.91,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+      if(pTHard.CompareTo("") != 0 ){
+        drawLatexAdd(pTHard,0.93,0.91-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);    
+        drawLatexAdd(perfLabel,0.93,0.91-2*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+      } else {
+         drawLatexAdd(perfLabel,0.93,0.91-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+      }
+      drawLatexAdd("w/o scat. e^{-}",0.16, 0.91,textSizeSinglePad,kFALSE,kFALSE,kFALSE);
+    }
+    if (tl == 0){
+      drawLatexAdd("w/ scat. e^{-}",0.16, 0.91,textSizeSinglePad,kFALSE,kFALSE,kFALSE);
+    }
+    legendIterT0->Draw();
+
+    padnum++;
+  }
+  cTrackT0->SaveAs(Form("%s/InitialT0_Iterations.%s", outputDir.Data(), suffix.Data()));
+
+  //*****************************************************************************
+  // plot T0 as function of nTracks
+  //*****************************************************************************
+  TCanvas* cT0Ite = new TCanvas("cBetaSlice","",0,0,900,800);
+  DrawGammaCanvasSettings( cT0Ite, 0.1, 0.022, 0.02, 0.1);
+  cT0Ite->SetLogy(1);
   
+  TLegend* legendIterT0 = GetAndSetLegend2(0.14, 0.905, 0.35, 0.905-nIter*0.85*textSizeSinglePad ,0.85*textSizeLabelsRel, 1, "", 42, 0.25);
+    
+    for (Int_t it = 0; it < nIter; it++){
+      if (it == 0){
+        SetStyleHistoTH1ForGraphs(h_T0VsIterProj[it],"#it{t}_{0} - #it{t}_{MC} (ns)", "counts",
+                                  0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+        DrawGammaSetMarker(h_T0VsIterProj[it], styleMarkerIter[it], sizeMarkerIter[it], colorIter[it], colorIter[it]);      
+//         h_T0VsIterProj[tl]->GetXaxis()->SetRangeUser(0,50.);
+        h_T0VsIterProj[it]->GetYaxis()->SetRangeUser(10,nEvents/5);
+        h_T0VsIterProj[it]->Draw("hist");
+        legendIterT0->AddEntry(h_T0VsIterProj[it],Form("it %i, #sigma = %0.2f ps", it, h_T0VsIterProj[it]->GetStdDev()*1000),"l");  
+        
+      } else if (it == nIter-1){
+        DrawGammaSetMarker(h_T0VsIterProj[it], styleMarkerIter[it], sizeMarkerIter[it], colorIter[it], colorIter[it]);      
+        h_T0VsIterProj[it]->Draw("pe,same");
+        legendIterT0->AddEntry(h_T0VsIterProj[it],Form("it %i, #sigma = %0.2f ps", it, h_T0VsIterProj[it]->GetStdDev()*1000),"p");  
+      } else {
+        DrawGammaSetMarker(h_T0VsIterProj[it], styleMarkerIter[it], sizeMarkerIter[it], colorIter[it], colorIter[it]);      
+        h_T0VsIterProj[it]->Draw("hist,same");
+        legendIterT0->AddEntry(h_T0VsIterProj[it],Form("it %i, #sigma = %0.2f ps", it, h_T0VsIterProj[it]->GetStdDev()*1000),"l");  
+      }
+    }    
+    h_T0VsIterProj[0]->Draw("same,axis");
+    drawLatexAdd(collisionSystem,0.94,0.91,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if(pTHard.CompareTo("") != 0 ){
+      drawLatexAdd(pTHard,0.94,0.915-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);    
+      drawLatexAdd(perfLabel,0.94,0.91-2*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    } else {
+      drawLatexAdd(perfLabel,0.94,0.91-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    }
+    drawLatexAdd("w/ scat. e^{-}",0.16, 0.91,textSizeSinglePad,kFALSE,kFALSE,kFALSE);
+    legendIterT0->Draw();
+  cT0Ite->SaveAs(Form("%s/InitialT0_Iterations_WScatE.%s", outputDir.Data(), suffix.Data()));
+
+  //*****************************************************************************
+  // plot T0 as function of nTracks
+  //*****************************************************************************
+  TCanvas* cBetaSlice = new TCanvas("cBetaSlice","",0,0,900,800);
+  DrawGammaCanvasSettings( cBetaSlice, 0.1, 0.022, 0.02, 0.1);
+  cBetaSlice->SetLogy(1);
+    
+  for (Int_t eR = 0; eR <3 ; eR++){
+    for (Int_t sl = 0; sl < nSlicesP; sl++){
+      TLegend* legendSlice = GetAndSetLegend2(0.94 - 0.07*5, 0.91-(nLinesCol+4)*0.85*textSizeLabelsRel, 0.94, 0.91-(nLinesCol+5)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel, 5, "", 42, 0.5);
+      for (Int_t pid = 0; pid < 6; pid++){
+//         if (pid ==2 ) continue;
+        hSliceBetaRegion[pid][eR][sl]->Rebin(4);
+        if (pid == 0){
+          SetStyleHistoTH1ForGraphs(hSliceBetaRegion[pid][eR][sl],"1/#it{#beta}", "counts",
+                                    0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+          DrawGammaSetMarker(hSliceBetaRegion[pid][eR][sl], 0, 0, kGray+2, kGray+2);
+          hSliceBetaRegion[pid][eR][sl]->SetLineWidth(2);
+          hSliceBetaRegion[pid][eR][sl]->GetYaxis()->SetRangeUser(1,hSliceBetaRegion[pid][eR][sl]->GetMaximum()*2);
+          hSliceBetaRegion[pid][eR][sl]->Draw("hist");
+        } else {
+          DrawGammaSetMarker(hSliceBetaRegion[pid][eR][sl], 0, 0, colorPID[pid], colorPID[pid]);
+          hSliceBetaRegion[pid][eR][sl]->SetFillColorAlpha(colorPID[pid],0.5);
+          hSliceBetaRegion[pid][eR][sl]->Draw("hist,same");
+          legendSlice->AddEntry(hSliceBetaRegion[pid][eR][sl], partLabel[pid], "f");
+        }
+      }    
+      hSliceBetaRegion[0][eR][sl]->Draw("same,hist");
+      hSliceBetaRegion[0][eR][sl]->Draw("same,axis");
+      
+      drawLatexAdd(collisionSystem,0.93,0.91,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+      if(pTHard.CompareTo("") != 0 ){
+        drawLatexAdd(pTHard,0.93,0.91-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);    
+        drawLatexAdd(perfLabel,0.93,0.91-2*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+        drawLatexAdd(Form("%1.1f < #eta < %1.1f", partEta[minEtaBinTTL[eR]],partEta[maxEtaBinTTL[eR]+1]),0.93,0.91-3*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+        drawLatexAdd(Form("p = %0.1f GeV", sliceP[sl]),0.93,0.91-4*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+      } else {
+        drawLatexAdd(perfLabel,0.93,0.91-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+        drawLatexAdd(Form("%1.1f < #eta < %1.1f", partEta[minEtaBinTTL[eR]],partEta[maxEtaBinTTL[eR]+1]),0.93,0.91-2*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+        drawLatexAdd(Form("p = %0.1f GeV", sliceP[sl]),0.93,0.91-3*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+      }
+      legendSlice->Draw();  
+      cBetaSlice->SaveAs(Form("%s/BetaExampleSlice_%s_%d.%s", outputDirOverview.Data(), nameOutEtaRange[eR].Data(), sl, suffix.Data()));
+    }
+  }
   
 
-  
+
   //*****************************************************************************
   // Write output
   //*****************************************************************************
