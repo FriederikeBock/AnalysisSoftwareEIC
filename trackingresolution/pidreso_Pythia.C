@@ -883,9 +883,9 @@ void pidreso_Pythia(
             if (id == 2) continue;
             DrawGammaSetMarkerTGraphErr(   g_betaMeanSmearT0_p_Region[id][eR], 0, 0, colorPID[id], colorPID[id], 3, kFALSE, 0, kFALSE, lineStylePID[id]);
             g_betaMeanSmearT0_p_Region[id][eR]->Draw("same, cx");
-            DrawGammaSetMarkerTGraphErr(   g_betaSigmaUpSmearT0_p_Region[id][eR], 0, 0, colorPID[id]+1, colorPID[id]+1, 1, kFALSE, 0, kFALSE, lineStylePID[id]);
+            DrawGammaSetMarkerTGraphErr(   g_betaSigmaUpSmearT0_p_Region[id][eR], 0, 0, colorPID[id]+1, colorPID[id]+1, 2, kFALSE, 0, kFALSE, lineStylePID[id]);
             g_betaSigmaUpSmearT0_p_Region[id][eR]->Draw("same, cx");
-            DrawGammaSetMarkerTGraphErr(   g_betaSigmaDownSmearT0_p_Region[id][eR], 0, 0, colorPID[id]+1, colorPID[id]+1, 1, kFALSE, 0, kFALSE, lineStylePID[id]);
+            DrawGammaSetMarkerTGraphErr(   g_betaSigmaDownSmearT0_p_Region[id][eR], 0, 0, colorPID[id]+1, colorPID[id]+1, 2, kFALSE, 0, kFALSE, lineStylePID[id]);
             g_betaSigmaDownSmearT0_p_Region[id][eR]->Draw("same, cx");
             legendPIDSummary->AddEntry(g_betaMeanSmearT0_p_Region[id][eR], partLabel[id], "l");
           }
@@ -894,9 +894,9 @@ void pidreso_Pythia(
           if (g_betaMeanSmearT0_p_Region[pid][eR]){
             DrawGammaSetMarkerTGraphErr(   g_betaMeanSmearT0_p_Region[pid][eR], 0, 0, colorPID[pid], colorPID[pid], 3, kFALSE, 0, kFALSE, lineStylePID[pid]);
             g_betaMeanSmearT0_p_Region[pid][eR]->Draw("same, cx");
-            DrawGammaSetMarkerTGraphErr(   g_betaSigmaUpSmearT0_p_Region[pid][eR], 0, 0, colorPID[pid]+1, colorPID[pid]+1, 1, kFALSE, 0, kFALSE, lineStylePID[pid]);
+            DrawGammaSetMarkerTGraphErr(   g_betaSigmaUpSmearT0_p_Region[pid][eR], 0, 0, colorPID[pid]+1, colorPID[pid]+1, 2, kFALSE, 0, kFALSE, lineStylePID[pid]);
             g_betaSigmaUpSmearT0_p_Region[pid][eR]->Draw("same, cx");
-            DrawGammaSetMarkerTGraphErr(   g_betaSigmaDownSmearT0_p_Region[pid][eR], 0, 0, colorPID[pid]+1, colorPID[pid]+1, 1, kFALSE, 0, kFALSE, lineStylePID[pid]);
+            DrawGammaSetMarkerTGraphErr(   g_betaSigmaDownSmearT0_p_Region[pid][eR], 0, 0, colorPID[pid]+1, colorPID[pid]+1, 2, kFALSE, 0, kFALSE, lineStylePID[pid]);
             g_betaSigmaDownSmearT0_p_Region[pid][eR]->Draw("same, cx");
           }
         }
@@ -927,9 +927,9 @@ void pidreso_Pythia(
             if (id == 2) continue;
             DrawGammaSetMarkerTGraphErr(   g_betaMeanSmearT0_p_Region[id][eR], 0, 0, colorPID[id], colorPID[id], 3, kFALSE, 0, kFALSE, lineStylePID[id]);
             g_betaMeanSmearT0_p_Region[id][eR]->Draw("same, cx");
-            DrawGammaSetMarkerTGraphErr(   g_betaSigmaUpSmearT0_p_Region[id][eR], 0, 0, colorPIDdarker[id], colorPIDdarker[id], 1, kFALSE, 0, kFALSE, lineStylePID[id]);
+            DrawGammaSetMarkerTGraphErr(   g_betaSigmaUpSmearT0_p_Region[id][eR], 0, 0, colorPIDdarker[id], colorPIDdarker[id], 2, kFALSE, 0, kFALSE, lineStylePID[id]);
             g_betaSigmaUpSmearT0_p_Region[id][eR]->Draw("same, cx");
-            DrawGammaSetMarkerTGraphErr(   g_betaSigmaDownSmearT0_p_Region[id][eR], 0, 0, colorPIDdarker[id], colorPIDdarker[id], 1, kFALSE, 0, kFALSE, lineStylePID[id]);
+            DrawGammaSetMarkerTGraphErr(   g_betaSigmaDownSmearT0_p_Region[id][eR], 0, 0, colorPIDdarker[id], colorPIDdarker[id], 2, kFALSE, 0, kFALSE, lineStylePID[id]);
             g_betaSigmaDownSmearT0_p_Region[id][eR]->Draw("same, cx");
             legendPIDSummary->AddEntry(g_betaMeanSmearT0_p_Region[id][eR], partLabel[id], "l");
           }
@@ -952,9 +952,9 @@ void pidreso_Pythia(
             if (id == 2) continue;
             DrawGammaSetMarkerTGraphErr(   g_betaMeanSmearT0_p_Region[id][eR], 0, 0, colorPID[id], colorPID[id], 3, kFALSE, 0, kFALSE, lineStylePID[id]);
             g_betaMeanSmearT0_p_Region[id][eR]->Draw("same, cx");
-            DrawGammaSetMarkerTGraphErr(   g_betaSigmaUpSmearT0_p_Region[id][eR], 0, 0, colorPIDdarker[id], colorPIDdarker[id], 1, kFALSE, 0, kFALSE, lineStylePID[id]);
+            DrawGammaSetMarkerTGraphErr(   g_betaSigmaUpSmearT0_p_Region[id][eR], 0, 0, colorPIDdarker[id], colorPIDdarker[id], 2, kFALSE, 0, kFALSE, lineStylePID[id]);
             g_betaSigmaUpSmearT0_p_Region[id][eR]->Draw("same, cx");
-            DrawGammaSetMarkerTGraphErr(   g_betaSigmaDownSmearT0_p_Region[id][eR], 0, 0, colorPIDdarker[id], colorPIDdarker[id], 1, kFALSE, 0, kFALSE, lineStylePID[id]);
+            DrawGammaSetMarkerTGraphErr(   g_betaSigmaDownSmearT0_p_Region[id][eR], 0, 0, colorPIDdarker[id], colorPIDdarker[id], 2, kFALSE, 0, kFALSE, lineStylePID[id]);
             g_betaSigmaDownSmearT0_p_Region[id][eR]->Draw("same, cx");
           }
           legendPIDSummary->Draw();

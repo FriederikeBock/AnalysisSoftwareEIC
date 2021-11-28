@@ -23,7 +23,7 @@ int verbosityBASE = 0;
 bool _useAlternateForProjections = false;
 float _nEventsTree;
 // TOF resolution
-double sigmat             = 20e-3; // ns
+double sigmat             = 25e-3; // ns
 // random number generator
 TRandom3 r3;
 

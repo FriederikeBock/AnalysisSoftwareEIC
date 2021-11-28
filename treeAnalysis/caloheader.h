@@ -613,7 +613,8 @@ float getCalibrationValue(float clusterE, int caloEnum, int algoEnum, int MCtrue
       return 1.0;
   } else if(caloEnum == kEEMC){
     if(algoEnum==kMA){
-      return ( 2.21528e+00 + 7.34167e-02 * TMath::Log(clusterE) ) / ( 1 + ( 3.41200e-01 * TMath::Exp( ( clusterE + 4.66905e+02 ) / 3.10970e+02 ) ) );
+//       return ( 2.21528e+00 + 7.34167e-02 * TMath::Log(clusterE) ) / ( 1 + ( 3.41200e-01 * TMath::Exp( ( clusterE + 4.66905e+02 ) / 3.10970e+02 ) ) ); //2mm Carbon
+      return ( 2.21528e+00 + 7.34167e-02 * TMath::Log(clusterE) ) / ( 1 + ( 3.41200e-01 * TMath::Exp( ( clusterE + 4.66905e+02 ) / 3.10970e+02 ) ) )*1.04;  // 0.5mm Carbon
     } else {
       return 0.9;
     }
