@@ -32,7 +32,8 @@ void eoverpstudies_YR(
 ){  
   TString clusterizerName = "MA clusters";
   const int maxcalo = 3;
-  TString caloName[maxcalo+1] = {"EEMC", "BECAL", "FEMC", "Hybrid"};
+  TString caloName[maxcalo+1] = {"EEMC", "BECAL", "FEMC"};
+  TString caloNamePlot[maxcalo+1] = {"EEMC", "BEMC", "FEMC"};
   bool caloactive[maxcalo] = {false};
   Double_t mass_pi0PDG = 0.1349770;
   double eopcutvalue[maxcalo] = {0.8, 0.75, 0.77};
@@ -47,9 +48,17 @@ void eoverpstudies_YR(
   TString perfLabel                 = "#it{#bf{ECCE}} simulation";
   TString dateForOutput                       = ReturnDateStringForOutput();
 
-
-  Color_t colorPID_light[nPID]          = {kGray+1, kRed-6, kGreen-6, kCyan-6, kBlue+1, kOrange};
-  Color_t colorPID_light2[nPID]         = {kGray+2, kRed-2, kGreen-2, kCyan-6, kBlue+1, kOrange};
+  Color_t colorCalo[maxcalo];
+  colorCalo[0] = getCaloColor("EEMC", 0);
+  colorCalo[1] = getCaloColor("BEMC", 0);
+  colorCalo[2] = getCaloColor("FEMC", 0);
+  
+  Color_t colorCalo_light[maxcalo];
+  colorCalo_light[0] = getCaloColor("EEMC", 1);
+  colorCalo_light[1] = getCaloColor("BEMC", 1);
+  colorCalo_light[2] = getCaloColor("FEMC", 1);
+  
+  Color_t colorCalo_light2[nPID]         = {kBlue-2, kRed-2, kGreen-2, kCyan-6, kBlue+1, kOrange};
 
   if (collisionsSys.CompareTo("PythiaMB") == 0){
     collisionSystem   = "e-p: 18#times 275 GeV";
@@ -88,8 +97,10 @@ void eoverpstudies_YR(
   }
 
   //************************** Read data **************************************************
+//   const int nEne = 15;
+//   const static Double_t partE[]   = {   0.7, 1.0, 1.5, 2, 3, 4, 6, 10,15,20,25,  30,35,  40, 50};
   const int nEne = 15;
-  const static Double_t partE[]   = {   0.7, 1.0, 1.5, 2, 3, 4, 6, 10,15,20,25,  30,35,  40, 50};
+  const static Double_t partE[]   = {   0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 2, 3, 4, 6, 8, 10,15,20,25,  30};
   // double energymax = 40.;
   // const int nEne = 26;
   // const static Double_t partE[]   = {   0.7, 0.9, 1.2, 1.6, 2, 2.5, 3, 3.5, 4, 4.5,  5,
@@ -135,8 +146,8 @@ void eoverpstudies_YR(
   // for(int imatch=0;imatch<maxmatch;imatch++){
     for(int icalo=0;icalo<maxcalo;icalo++){
 
-      gSystem->Exec(Form("mkdir -p %s/%s/%s",outputDir.Data(), caloName[icalo].Data(), matchbasis[0].Data()));
-      gSystem->Exec(Form("mkdir -p %s/%s/%s",outputDir.Data(), caloName[icalo].Data(), matchbasis[1].Data()));
+      gSystem->Exec(Form("mkdir -p %s/%s/%s",outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[0].Data()));
+      gSystem->Exec(Form("mkdir -p %s/%s/%s",outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[1].Data()));
       cout << "processing " << caloName[icalo].Data() << endl;
       TString NameEP_hist_EpE = Form("%s/h_EoverP_pions_EoverP_E_%s_%s",caloName[icalo].Data(),matchbasis[imatch].Data(), caloName[icalo].Data() );
       // TString NameE_Minv = Form("%s/h_Etrue_Minv_%s_%s",caloName[icalo].Data(), caloName[icalo].Data(), clusterizerName.Data() );
@@ -186,7 +197,7 @@ void eoverpstudies_YR(
 
         drawLatexAdd(perfLabel.Data(),latexsideedge,latextopedge,textSizeLabelsRel,false,false,true);
         drawLatexAdd(collisionSystem.Data(),latexsideedge,latextopedge-0.05,textSizeLabelsRel,false,false,true);
-        drawLatexAdd(Form("Calorimeter: %s", caloName[icalo].Data()),latexsideedge,latextopedge-0.1,textSizeLabelsRel,false,false,true);      
+        drawLatexAdd(Form("Calorimeter: %s", caloNamePlot[icalo].Data()),latexsideedge,latextopedge-0.1,textSizeLabelsRel,false,false,true);      
         drawLatexAdd("true e^{-} tracks",0.17,latextopedge,textSizeLabelsRel,false,false,false);      
         Minvpi02D->Print(Form("%s/%s/%s/EoverP_vs_E_%s_%s_%s.%s", outputDir.Data(), caloName[icalo].Data(), matchbasis[imatch].Data(), caloName[icalo].Data(), clusterizerName.Data(), str_EoverP_FillTrue[ifilltrue].Data(),suffix.Data()));
       }
@@ -352,7 +363,7 @@ void eoverpstudies_YR(
           TLatex Tl;
           Tl.SetTextSize(0.1);
           Tl.DrawLatex(0.03,0.9,perfLabel);
-          Tl.DrawLatex(0.03,0.75,Form("Calorimeter: %s ", caloName[icalo].Data()));
+          Tl.DrawLatex(0.03,0.75,Form("Calorimeter: %s ", caloNamePlot[icalo].Data()));
           Tl.DrawLatex(0.03,0.6,Form("Clusterization type: %s ", clusterizerName.Data()));
           // Tl.DrawLatex(0.03,0.45,"#pi ^{0} #rightarrow #gamma #gamma");
           Tl.DrawLatex(0.03,0.45,Form("%1.2f < #eta < %1.1f", minEtaProj, maxEtaProj));
@@ -376,7 +387,7 @@ void eoverpstudies_YR(
         }
       }
       if(minEtaProj >= etarangemin[icalo] && maxEtaProj <= etarangemax[icalo])
-        mass2D->Print(Form("%s/%s/%s/EoP_bin_pions%s_%s_%2.1f_%s.%s", outputDir.Data(), caloName[icalo].Data(), matchbasis[imatch].Data(), caloName[icalo].Data(), clusterizerName.Data(), minEtaProj,str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
+        mass2D->Print(Form("%s/%s/%s/EoP_bin_pions%s_%s_%2.1f_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(), minEtaProj,str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
 
       mass2D = new TCanvas("mass2D","",0,0,1000,800);
       gStyle->SetTitleX(0.5);
@@ -393,7 +404,7 @@ void eoverpstudies_YR(
           TLatex Tl;
           Tl.SetTextSize(0.1);
           Tl.DrawLatex(0.03,0.9,perfLabel);
-          Tl.DrawLatex(0.03,0.75,Form("Calorimeter: %s ", caloName[icalo].Data()));
+          Tl.DrawLatex(0.03,0.75,Form("Calorimeter: %s ", caloNamePlot[icalo].Data()));
           Tl.DrawLatex(0.03,0.6,Form("Clusterization type: %s ", clusterizerName.Data()));
           // Tl.DrawLatex(0.03,0.45,"#pi ^{0} #rightarrow #gamma #gamma");
           Tl.DrawLatex(0.03,0.45,Form("%1.2f < #eta < %1.1f", minEtaProj, maxEtaProj));
@@ -426,9 +437,9 @@ void eoverpstudies_YR(
       }
 
       if(minEtaProj >= etarangemin[icalo] && maxEtaProj <= etarangemax[icalo])
-        mass2D->Print(Form("%s/%s/%s/EoP_bin_electrons%s_%s_%2.1f_%s.%s", outputDir.Data(), caloName[icalo].Data(), matchbasis[imatch].Data(), caloName[icalo].Data(), clusterizerName.Data(), minEtaProj,str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
+        mass2D->Print(Form("%s/%s/%s/EoP_bin_electrons%s_%s_%2.1f_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(), minEtaProj,str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
       if(ieta==nEta)
-        mass2D->Print(Form("%s/%s/%s/EoP_bin_electrons%s_%s_full_%s.%s", outputDir.Data(), caloName[icalo].Data(), matchbasis[imatch].Data(), caloName[icalo].Data(), clusterizerName.Data(),str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
+        mass2D->Print(Form("%s/%s/%s/EoP_bin_electrons%s_%s_full_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(),str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
       mass2D = new TCanvas("mass2D","",0,0,1000,800);
       gStyle->SetTitleX(0.5);
       gStyle->SetTitleAlign(23);
@@ -444,7 +455,7 @@ void eoverpstudies_YR(
           TLatex Tl;
           Tl.SetTextSize(0.1);
           Tl.DrawLatex(0.03,0.9,perfLabel);
-          Tl.DrawLatex(0.03,0.75,Form("Calorimeter: %s ", caloName[icalo].Data()));
+          Tl.DrawLatex(0.03,0.75,Form("Calorimeter: %s ", caloNamePlot[icalo].Data()));
           Tl.DrawLatex(0.03,0.6,Form("Clusterization type: %s ", clusterizerName.Data()));
           // Tl.DrawLatex(0.03,0.45,"#pi ^{0} #rightarrow #gamma #gamma");
           Tl.DrawLatex(0.03,0.45,Form("%1.2f < #eta < %1.1f", minEtaProj, maxEtaProj));
@@ -477,9 +488,9 @@ void eoverpstudies_YR(
       }
 
       if(minEtaProj >= etarangemin[icalo] && maxEtaProj <= etarangemax[icalo])
-      mass2D->Print(Form("%s/%s/%s/EoP_bin_pions_%s_%s_%2.1f_%s.%s", outputDir.Data(), caloName[icalo].Data(), matchbasis[imatch].Data(), caloName[icalo].Data(), clusterizerName.Data(), minEtaProj,str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
+      mass2D->Print(Form("%s/%s/%s/EoP_bin_pions_%s_%s_%2.1f_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(), minEtaProj,str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
       if(ieta==nEta)
-      mass2D->Print(Form("%s/%s/%s/EoP_bin_pions_%s_%s_full_%s.%s", outputDir.Data(), caloName[icalo].Data(), matchbasis[imatch].Data(), caloName[icalo].Data(), clusterizerName.Data(),str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
+      mass2D->Print(Form("%s/%s/%s/EoP_bin_pions_%s_%s_full_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(),str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
 
       mass2D = new TCanvas("mass2D","",0,0,2000,1600);
       gStyle->SetTitleX(0.5);
@@ -496,7 +507,7 @@ void eoverpstudies_YR(
           TLatex Tl;
           Tl.SetTextSize(0.1);
           Tl.DrawLatex(0.03,0.9,perfLabel);
-          Tl.DrawLatex(0.03,0.75,Form("Calorimeter: %s ", caloName[icalo].Data()));
+          Tl.DrawLatex(0.03,0.75,Form("Calorimeter: %s ", caloNamePlot[icalo].Data()));
           Tl.DrawLatex(0.03,0.6,Form("Clusterization type: %s ", clusterizerName.Data()));
           // Tl.DrawLatex(0.03,0.3,"#pi ^{0} #rightarrow #gamma #gamma");
           Tl.DrawLatex(0.03,0.45,Form("%1.2f < #eta < %1.1f", minEtaProj, maxEtaProj));
@@ -548,9 +559,9 @@ void eoverpstudies_YR(
       }
 
       if(minEtaProj >= etarangemin[icalo] && maxEtaProj <= etarangemax[icalo])
-        mass2D->Print(Form("%s/%s/%s/EoP_bin_electrons_and_pions_%s_%s_%2.1f_%s.%s", outputDir.Data(), caloName[icalo].Data(), matchbasis[imatch].Data(), caloName[icalo].Data(), clusterizerName.Data(), minEtaProj,str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
+        mass2D->Print(Form("%s/%s/%s/EoP_bin_electrons_and_pions_%s_%s_%2.1f_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(), minEtaProj,str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
       if(ieta==nEta)
-        mass2D->Print(Form("%s/%s/%s/EoP_bin_electrons_and_pions_%s_%s_full_%s.%s", outputDir.Data(), caloName[icalo].Data(), matchbasis[imatch].Data(), caloName[icalo].Data(), clusterizerName.Data(),str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
+        mass2D->Print(Form("%s/%s/%s/EoP_bin_electrons_and_pions_%s_%s_full_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(),str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
     }
   }
   }
@@ -625,7 +636,7 @@ cout << "meow" << endl;
       float toplegval = 0.90;
       drawLatexAdd(perfLabel.Data(),0.15,toplegval,textSizeLabelsRel,false,false,false);
       drawLatexAdd(collisionSystem.Data(),0.15,toplegval-0.05,textSizeLabelsRel,false,false,false);
-      drawLatexAdd(caloName[icalo].Data(),0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
+      drawLatexAdd(caloNamePlot[icalo].Data(),0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
       // drawLatexAdd("#pi^{#pm}  rej. = (#it{E}/#it{p})_{#pi}<1.6#sigma_{E} / (#it{E}/#it{p})_{#pi} > 0",0.15,toplegval-0.15,textSizeLabelsRel,false,false,false);
       // drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
 
@@ -633,7 +644,7 @@ cout << "meow" << endl;
 
 
       canvasMergingFraction->Update();
-      canvasMergingFraction->Print(Form("%s/EoP_pionrejection_%s_%s.%s",outputDir.Data(),caloName[icalo].Data(),str_EoverP_FillTrue[ifilltrue].Data(),suffix.Data()));
+      canvasMergingFraction->Print(Form("%s/EoP_pionrejection_%s_%s.%s",outputDir.Data(),caloNamePlot[icalo].Data(),str_EoverP_FillTrue[ifilltrue].Data(),suffix.Data()));
     }
 
     histo2DAccEff->DrawCopy();
@@ -641,21 +652,16 @@ cout << "meow" << endl;
     for (Int_t icalo = 0; icalo < maxcalo; icalo++){
       cout << nominalEtaRegion[icalo][0] << " < eta  < " << nominalEtaRegion[icalo][1];
       if(histPionRejection[ifilltrue][imatch][icalo][nEta]){
-        DrawGammaSetMarkerTGraphAsym(graphPionRejection[ifilltrue][icalo][nEta], markerStylePID[icalo], markerSizePID[icalo], colorPID[icalo] , colorPID[icalo]);
+        DrawGammaSetMarkerTGraphAsym(graphPionRejection[ifilltrue][icalo][nEta], markerStylePID[icalo], markerSizePID[icalo], colorCalo[icalo] , colorCalo[icalo]);
         graphPionRejection[ifilltrue][icalo][nEta]->Draw("samecx0");
       }
       cout << " done l:" << __LINE__ << endl;
-      legendPi0Merge->AddEntry(graphPionRejection[ifilltrue][icalo][nEta],Form("%s",caloName[icalo].Data()),"p");
+      legendPi0Merge->AddEntry(graphPionRejection[ifilltrue][icalo][nEta],Form("%s",caloNamePlot[icalo].Data()),"p");
     }
     legendPi0Merge->Draw();
     float toplegval = 0.90;
     drawLatexAdd(perfLabel.Data(),0.15,toplegval,textSizeLabelsRel,false,false,false);
     drawLatexAdd(collisionSystem.Data(),0.15,toplegval-0.05,textSizeLabelsRel,false,false,false);
-    // drawLatexAdd(caloName[icalo].Data(),0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
-    // drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
-
-    // DrawGammaLines(minPtPi0, maxPtPi0woMerged, 1,1,2,kGray+1, 2);
-
 
     canvasMergingFraction->Update();
     canvasMergingFraction->Print(Form("%s/EoP_pionrejection_AllCalo_%s.%s",outputDir.Data(),str_EoverP_FillTrue[ifilltrue].Data(),suffix.Data()));
@@ -674,24 +680,23 @@ cout << "meow" << endl;
   for (Int_t icalo = 0; icalo < maxcalo; icalo++){
     cout << nominalEtaRegion[icalo][0] << " < eta  < " << nominalEtaRegion[icalo][1];
     if(histPionRejection[1][imatch][icalo][nEta]){
-      DrawGammaSetMarkerTGraphAsym(graphPionRejection[1][icalo][nEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorPID[icalo] , colorPID[icalo]);
+      DrawGammaSetMarkerTGraphAsym(graphPionRejection[1][icalo][nEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorCalo[icalo] , colorCalo[icalo]);
       graphPionRejection[1][icalo][nEta]->SetLineStyle(icalo+1);
       graphPionRejection[1][icalo][nEta]->SetLineWidth(3);
       graphPionRejection[1][icalo][nEta]->Draw("samecx0");
     }
     cout << " done l:" << __LINE__ << endl;
     legendPi0Merge1->AddEntry(graphPionRejection[1][icalo][nEta]," ","l");
-    // legendPi0Merge->AddEntry(graphPionRejection[1][icalo][nEta],Form("%s",caloName[icalo].Data()),"p");
   }
   for (Int_t icalo = 0; icalo < maxcalo; icalo++){
     cout << nominalEtaRegion[icalo][0] << " < eta  < " << nominalEtaRegion[icalo][1];
     if(histPionRejection[0][imatch][icalo][nEta]){
-      DrawGammaSetMarkerTGraphAsym(graphPionRejection[0][icalo][nEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorPID[icalo] , colorPID[icalo]);
+      DrawGammaSetMarkerTGraphAsym(graphPionRejection[0][icalo][nEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorCalo[icalo] , colorCalo[icalo]);
       graphPionRejection[0][icalo][nEta]->Draw("samepe");
     }
     cout << " done l:" << __LINE__ << endl;
     legendPi0Merge2->AddEntry(graphPionRejection[0][icalo][nEta]," ","p");
-    legendPi0Merge3->AddEntry((TObject*)0,Form("%s",caloName[icalo].Data()),"");
+    legendPi0Merge3->AddEntry((TObject*)0,Form("%s",caloNamePlot[icalo].Data()),"");
   }
   legendPi0Merge1->Draw();
   legendPi0Merge2->Draw();
@@ -701,11 +706,6 @@ cout << "meow" << endl;
   drawLatexAdd("#it{p}_{true}",0.65,0.30,textSizeLabelsRel,false,false,false);
   drawLatexAdd(perfLabel.Data(),0.15,toplegval,textSizeLabelsRel,false,false,false);
   drawLatexAdd(collisionSystem.Data(),0.15,toplegval-0.05,textSizeLabelsRel,false,false,false);
-  // drawLatexAdd(caloName[icalo].Data(),0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
-  // drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
-
-  // DrawGammaLines(minPtPi0, maxPtPi0woMerged, 1,1,2,kGray+1, 2);
-
 
   canvasMergingFraction->Update();
   canvasMergingFraction->Print(Form("%s/EoP_pionrejection_AllCalo_truerec.%s",outputDir.Data(),suffix.Data()));
@@ -718,14 +718,13 @@ cout << "meow" << endl;
   for (Int_t icalo = 0; icalo < maxcalo; icalo++){
     cout << nominalEtaRegion[icalo][0] << " < eta  < " << nominalEtaRegion[icalo][1];
     if(histPionRejection[1][imatch][icalo][nEta]){
-      DrawGammaSetMarkerTGraphAsym(graphPionRejection[1][icalo][nEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorPID[icalo] , colorPID[icalo]);
+      DrawGammaSetMarkerTGraphAsym(graphPionRejection[1][icalo][nEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorCalo[icalo] , colorCalo[icalo]);
       graphPionRejection[1][icalo][nEta]->SetLineStyle(icalo+1);
       graphPionRejection[1][icalo][nEta]->SetLineWidth(3);
       graphPionRejection[1][icalo][nEta]->Draw("samecx0");
     }
     cout << " done l:" << __LINE__ << endl;
     legendPi0Merge1->AddEntry(graphPionRejection[1][icalo][nEta]," ","l");
-    // legendPi0Merge->AddEntry(graphPionRejection[1][icalo][nEta],Form("%s",caloName[icalo].Data()),"p");
   }
   for (Int_t icalo = 0; icalo < maxcalo; icalo++){
     cout << nominalEtaRegion[icalo][0] << " < eta  < " << nominalEtaRegion[icalo][1];
@@ -733,14 +732,14 @@ cout << "meow" << endl;
       graphPionRejection_95[1][icalo][nEta] = new TGraphAsymmErrors(histPionRejection_95[1][imatch][icalo][nEta]);
       while(graphPionRejection_95[1][icalo][nEta]->GetN()>0 && graphPionRejection_95[1][icalo][nEta]->GetY()[graphPionRejection_95[1][icalo][nEta]->GetN()-1] == -1) graphPionRejection_95[1][icalo][nEta]->RemovePoint(graphPionRejection_95[1][icalo][nEta]->GetN()-1);
       while(graphPionRejection_95[1][icalo][nEta]->GetN()>0 && graphPionRejection_95[1][icalo][nEta]->GetX()[graphPionRejection_95[1][icalo][nEta]->GetN()-1] > energymax_elec[icalo]) graphPionRejection_95[1][icalo][nEta]->RemovePoint(graphPionRejection_95[1][icalo][nEta]->GetN()-1);
-      DrawGammaSetMarkerTGraphAsym(graphPionRejection_95[1][icalo][nEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorPID_light[icalo] , colorPID_light[icalo]);
+      DrawGammaSetMarkerTGraphAsym(graphPionRejection_95[1][icalo][nEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorCalo_light[icalo] , colorCalo_light[icalo]);
       graphPionRejection_95[1][icalo][nEta]->SetLineStyle(icalo+1);
       graphPionRejection_95[1][icalo][nEta]->SetLineWidth(3);
       graphPionRejection_95[1][icalo][nEta]->Draw("samepeX0");
     }
     cout << " done l:" << __LINE__ << endl;
     legendPi0Merge2->AddEntry(graphPionRejection_95[1][icalo][nEta]," ","p");
-    legendPi0Merge3->AddEntry((TObject*)0,Form("%s",caloName[icalo].Data()),"");
+    legendPi0Merge3->AddEntry((TObject*)0,Form("%s",caloNamePlot[icalo].Data()),"");
   }
   legendPi0Merge1->Draw();
   legendPi0Merge2->Draw();
@@ -750,11 +749,6 @@ cout << "meow" << endl;
   drawLatexAdd("#epsilon_{95%}",0.75,0.30,textSizeLabelsRel,false,false,false);
   drawLatexAdd(perfLabel.Data(),0.15,toplegval,textSizeLabelsRel,false,false,false);
   drawLatexAdd(collisionSystem.Data(),0.15,toplegval-0.05,textSizeLabelsRel,false,false,false);
-  // drawLatexAdd(caloName[icalo].Data(),0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
-  // drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
-
-  // DrawGammaLines(minPtPi0, maxPtPi0woMerged, 1,1,2,kGray+1, 2);
-
 
   canvasMergingFraction->Update();
   canvasMergingFraction->Print(Form("%s/EoP_pionrejection_AllCalo_95comp.%s",outputDir.Data(),suffix.Data()));
@@ -766,14 +760,13 @@ cout << "meow" << endl;
   for (Int_t icalo = 0; icalo < maxcalo; icalo++){
     cout << nominalEtaRegion[icalo][0] << " < eta  < " << nominalEtaRegion[icalo][1];
     if(histPionRejection[1][imatch][icalo][nEta]){
-      DrawGammaSetMarkerTGraphAsym(graphPionRejection[1][icalo][nEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorPID[icalo] , colorPID[icalo]);
+      DrawGammaSetMarkerTGraphAsym(graphPionRejection[1][icalo][nEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorCalo[icalo] , colorCalo[icalo]);
       graphPionRejection[1][icalo][nEta]->SetLineStyle(icalo+1);
       graphPionRejection[1][icalo][nEta]->SetLineWidth(3);
       graphPionRejection[1][icalo][nEta]->Draw("samecx0");
     }
     cout << " done l:" << __LINE__ << endl;
     legendPi0Merge1->AddEntry(graphPionRejection[1][icalo][nEta]," ","l");
-    // legendPi0Merge->AddEntry(graphPionRejection[1][icalo][nEta],Form("%s",caloName[icalo].Data()),"p");
   }
   for (Int_t icalo = 0; icalo < maxcalo; icalo++){
     cout << nominalEtaRegion[icalo][0] << " < eta  < " << nominalEtaRegion[icalo][1];
@@ -781,14 +774,14 @@ cout << "meow" << endl;
       graphPionRejection_fwhm[1][icalo][nEta] = new TGraphAsymmErrors(histPionRejection_fwhm[1][imatch][icalo][nEta]);
       while(graphPionRejection_fwhm[1][icalo][nEta]->GetN()>0 && graphPionRejection_fwhm[1][icalo][nEta]->GetY()[graphPionRejection_fwhm[1][icalo][nEta]->GetN()-1] == -1) graphPionRejection_fwhm[1][icalo][nEta]->RemovePoint(graphPionRejection_fwhm[1][icalo][nEta]->GetN()-1);
       while(graphPionRejection_fwhm[1][icalo][nEta]->GetN()>0 && graphPionRejection_fwhm[1][icalo][nEta]->GetX()[graphPionRejection_fwhm[1][icalo][nEta]->GetN()-1] > energymax_elec[icalo]) graphPionRejection_fwhm[1][icalo][nEta]->RemovePoint(graphPionRejection_fwhm[1][icalo][nEta]->GetN()-1);
-      DrawGammaSetMarkerTGraphAsym(graphPionRejection_fwhm[1][icalo][nEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorPID_light[icalo] , colorPID_light[icalo]);
+      DrawGammaSetMarkerTGraphAsym(graphPionRejection_fwhm[1][icalo][nEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorCalo_light[icalo] , colorCalo_light[icalo]);
       graphPionRejection_fwhm[1][icalo][nEta]->SetLineStyle(icalo+1);
       graphPionRejection_fwhm[1][icalo][nEta]->SetLineWidth(3);
       graphPionRejection_fwhm[1][icalo][nEta]->Draw("samepeX0");
     }
     cout << " done l:" << __LINE__ << endl;
     legendPi0Merge2->AddEntry(graphPionRejection_fwhm[1][icalo][nEta]," ","p");
-    legendPi0Merge3->AddEntry((TObject*)0,Form("%s",caloName[icalo].Data()),"");
+    legendPi0Merge3->AddEntry((TObject*)0,Form("%s",caloNamePlot[icalo].Data()),"");
   }
   legendPi0Merge1->Draw();
   legendPi0Merge2->Draw();
@@ -798,11 +791,6 @@ cout << "meow" << endl;
   drawLatexAdd("#epsilon_{95%}",0.75,0.30,textSizeLabelsRel,false,false,false);
   drawLatexAdd(perfLabel.Data(),0.15,toplegval,textSizeLabelsRel,false,false,false);
   drawLatexAdd(collisionSystem.Data(),0.15,toplegval-0.05,textSizeLabelsRel,false,false,false);
-  // drawLatexAdd(caloName[icalo].Data(),0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
-  // drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
-
-  // DrawGammaLines(minPtPi0, maxPtPi0woMerged, 1,1,2,kGray+1, 2);
-
 
   canvasMergingFraction->Update();
   canvasMergingFraction->Print(Form("%s/EoP_pionrejection_AllCalo_fwhmcomp.%s",outputDir.Data(),suffix.Data()));
@@ -834,14 +822,13 @@ cout << "meow" << endl;
       graphElectronEfficiency[1][icalo][nEta] = new TGraphAsymmErrors(histElectronEfficiency[1][imatch][icalo][nEta]);
       while(graphElectronEfficiency[1][icalo][nEta]->GetN()>0 && graphElectronEfficiency[1][icalo][nEta]->GetY()[graphElectronEfficiency[1][icalo][nEta]->GetN()-1] == -1) graphElectronEfficiency[1][icalo][nEta]->RemovePoint(graphElectronEfficiency[1][icalo][nEta]->GetN()-1);
       while(graphElectronEfficiency[1][icalo][nEta]->GetN()>0 && graphElectronEfficiency[1][icalo][nEta]->GetX()[graphElectronEfficiency[1][icalo][nEta]->GetN()-1] > energymax_elec[icalo]) graphElectronEfficiency[1][icalo][nEta]->RemovePoint(graphElectronEfficiency[1][icalo][nEta]->GetN()-1);
-      DrawGammaSetMarkerTGraphAsym(graphElectronEfficiency[1][icalo][nEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorPID[icalo] , colorPID[icalo]);
+      DrawGammaSetMarkerTGraphAsym(graphElectronEfficiency[1][icalo][nEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorCalo[icalo] , colorCalo[icalo]);
       graphElectronEfficiency[1][icalo][nEta]->SetLineStyle(icalo+1);
       graphElectronEfficiency[1][icalo][nEta]->SetLineWidth(3);
       graphElectronEfficiency[1][icalo][nEta]->Draw("samepeX0");
     }
     cout << " done l:" << __LINE__ << endl;
     legendPi0Merge1->AddEntry(graphElectronEfficiency[1][icalo][nEta]," ","p");
-    // legendPi0Merge->AddEntry(graphElectronEfficiency[1][icalo][nEta],Form("%s",caloName[icalo].Data()),"p");
   }
   for (Int_t icalo = 0; icalo < maxcalo; icalo++){
     cout << nominalEtaRegion[icalo][0] << " < eta  < " << nominalEtaRegion[icalo][1];
@@ -849,14 +836,14 @@ cout << "meow" << endl;
       graphElectronEfficiency_fwhm[1][icalo][nEta] = new TGraphAsymmErrors(histElectronEfficiency_fwhm[1][imatch][icalo][nEta]);
       while(graphElectronEfficiency_fwhm[1][icalo][nEta]->GetN()>0 && graphElectronEfficiency_fwhm[1][icalo][nEta]->GetY()[graphElectronEfficiency_fwhm[1][icalo][nEta]->GetN()-1] == -1) graphElectronEfficiency_fwhm[1][icalo][nEta]->RemovePoint(graphElectronEfficiency_fwhm[1][icalo][nEta]->GetN()-1);
       while(graphElectronEfficiency_fwhm[1][icalo][nEta]->GetN()>0 && graphElectronEfficiency_fwhm[1][icalo][nEta]->GetX()[graphElectronEfficiency_fwhm[1][icalo][nEta]->GetN()-1] > energymax_elec[icalo]) graphElectronEfficiency_fwhm[1][icalo][nEta]->RemovePoint(graphElectronEfficiency_fwhm[1][icalo][nEta]->GetN()-1);
-      DrawGammaSetMarkerTGraphAsym(graphElectronEfficiency_fwhm[1][icalo][nEta], markerStyleCalo2[icalo], 1.5*markerSizeCalo[icalo], colorPID_light[icalo] , colorPID_light[icalo]);
+      DrawGammaSetMarkerTGraphAsym(graphElectronEfficiency_fwhm[1][icalo][nEta], markerStyleCalo2[icalo], 1.5*markerSizeCalo[icalo], colorCalo_light[icalo] , colorCalo_light[icalo]);
       graphElectronEfficiency_fwhm[1][icalo][nEta]->SetLineStyle(icalo+1);
       graphElectronEfficiency_fwhm[1][icalo][nEta]->SetLineWidth(3);
       graphElectronEfficiency_fwhm[1][icalo][nEta]->Draw("samepeX0");
     }
     cout << " done l:" << __LINE__ << endl;
     legendPi0Merge2->AddEntry(graphElectronEfficiency_fwhm[1][icalo][nEta]," ","p");
-    legendPi0Merge3->AddEntry((TObject*)0,Form("%s",caloName[icalo].Data()),"");
+    legendPi0Merge3->AddEntry((TObject*)0,Form("%s",caloNamePlot[icalo].Data()),"");
   }
   legendPi0Merge1->Draw();
   legendPi0Merge2->Draw();
@@ -865,8 +852,6 @@ cout << "meow" << endl;
   drawLatexAdd("#sigma",0.67,0.30,textSizeLabelsRel,false,false,false);
   drawLatexAdd(perfLabel.Data(),0.15,toplegval,textSizeLabelsRel,false,false,false);
   drawLatexAdd(collisionSystem.Data(),0.15,toplegval-0.05,textSizeLabelsRel,false,false,false);
-  // drawLatexAdd(caloName[icalo].Data(),0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
-  // drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
 
   DrawGammaLines(0.51, 39, 1,1,2,kGray+1, 2);
   DrawGammaLines(0.51, 39, 0.95,0.95,2,kGray, 5);
@@ -901,21 +886,21 @@ cout << "meow" << endl;
     int ifilltrue = 1;
     graphEPcutValue[1][icalo][iEta]   = new TGraphErrors(15,partE,EP_cut[ifilltrue][imatch][icalo][nEta]);
     while(graphEPcutValue[1][icalo][iEta]->GetN()>0 && graphEPcutValue[1][icalo][iEta]->GetX()[graphEPcutValue[1][icalo][iEta]->GetN()-1] >= energymax_elec[icalo]) graphEPcutValue[1][icalo][iEta]->RemovePoint(graphEPcutValue[1][icalo][iEta]->GetN()-1);
-    DrawGammaSetMarkerTGraph(graphEPcutValue[1][icalo][iEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorPID[icalo] , colorPID[icalo]);
+    DrawGammaSetMarkerTGraph(graphEPcutValue[1][icalo][iEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorCalo[icalo] , colorCalo[icalo]);
     graphEPcutValue[1][icalo][iEta]->SetLineStyle(icalo+1);
     graphEPcutValue[1][icalo][iEta]->SetLineWidth(3);
     graphEPcutValue[1][icalo][iEta]->Draw("samepe");
     
     graphEPcutValue_fwhm[1][icalo][iEta]   = new TGraphErrors(15,partE,EP_cut_FWHM[ifilltrue][imatch][icalo][nEta]);
     while(graphEPcutValue_fwhm[1][icalo][iEta]->GetN()>0 && graphEPcutValue_fwhm[1][icalo][iEta]->GetX()[graphEPcutValue_fwhm[1][icalo][iEta]->GetN()-1] >= energymax_elec[icalo]) graphEPcutValue_fwhm[1][icalo][iEta]->RemovePoint(graphEPcutValue_fwhm[1][icalo][iEta]->GetN()-1);
-    DrawGammaSetMarkerTGraph(graphEPcutValue_fwhm[1][icalo][iEta], markerStyleCalo2[icalo], 1.5*markerSizeCalo[icalo], colorPID_light[icalo] , colorPID_light[icalo]);
+    DrawGammaSetMarkerTGraph(graphEPcutValue_fwhm[1][icalo][iEta], markerStyleCalo2[icalo], 1.5*markerSizeCalo[icalo], colorCalo_light[icalo] , colorCalo_light[icalo]);
     graphEPcutValue_fwhm[1][icalo][iEta]->SetLineStyle(icalo+1);
     graphEPcutValue_fwhm[1][icalo][iEta]->SetLineWidth(3);
     graphEPcutValue_fwhm[1][icalo][iEta]->Draw("samepe");
     
     graphEPcutValue_95[1][icalo][iEta]   = new TGraphErrors(15,partE,EP_cut_95[ifilltrue][imatch][icalo][nEta]);
     while(graphEPcutValue_95[1][icalo][iEta]->GetN()>0 && graphEPcutValue_95[1][icalo][iEta]->GetX()[graphEPcutValue_95[1][icalo][iEta]->GetN()-1] >= energymax_elec[icalo]) graphEPcutValue_95[1][icalo][iEta]->RemovePoint(graphEPcutValue_95[1][icalo][iEta]->GetN()-1);
-    DrawGammaSetMarkerTGraph(graphEPcutValue_95[1][icalo][iEta], markerStyleCalo3[icalo], 1.5*markerSizeCalo[icalo], colorPID_light2[icalo] , colorPID_light2[icalo]);
+    DrawGammaSetMarkerTGraph(graphEPcutValue_95[1][icalo][iEta], markerStyleCalo3[icalo], 1.5*markerSizeCalo[icalo], colorCalo_light2[icalo] , colorCalo_light2[icalo]);
     graphEPcutValue_95[1][icalo][iEta]->SetLineStyle(icalo+1);
     graphEPcutValue_95[1][icalo][iEta]->SetLineWidth(3);
     graphEPcutValue_95[1][icalo][iEta]->Draw("samecx0");
@@ -924,24 +909,19 @@ cout << "meow" << endl;
     legendPi0Merge1->AddEntry(graphEPcutValue[1][icalo][iEta]," ","p");
     legendPi0Merge2->AddEntry(graphEPcutValue_fwhm[1][icalo][iEta]," ","p");
     legendPi0Merge3->AddEntry(graphEPcutValue_95[1][icalo][iEta]," ","l");
-    legendPi0Merge4->AddEntry((TObject*)0,Form("%s",caloName[icalo].Data()),"");
+    legendPi0Merge4->AddEntry((TObject*)0,Form("%s",caloNamePlot[icalo].Data()),"");
   }
 
   legendPi0Merge1->Draw();
   legendPi0Merge2->Draw();
   legendPi0Merge3->Draw();
   legendPi0Merge4->Draw();
-  // float toplegval = 0.90;
-  // drawLatexAdd("#it{p}_{rec}",0.75,0.30,textSizeLabelsRel,false,false,false);
-  // drawLatexAdd("#it{p}_{true}",0.65,0.30,textSizeLabelsRel,false,false,false);
+
   drawLatexAdd(perfLabel.Data(),0.15,toplegval,textSizeLabelsRel,false,false,false);
   drawLatexAdd(collisionSystem.Data(),0.15,toplegval-0.05,textSizeLabelsRel,false,false,false);
-  // drawLatexAdd("1.6#cdot",0.55,0.35,textSizeLabelsRel,false,false,false);
   drawLatexAdd("#sigma",0.52,0.30,textSizeLabelsRel,false,false,false);
   drawLatexAdd("#scale[0.75]{FWHM}",0.58,0.30,textSizeLabelsRel,false,false,false);
   drawLatexAdd("#epsilon_{95%}",0.70,0.30,textSizeLabelsRel,false,false,false);
-  // drawLatexAdd(caloName[icalo].Data(),0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
-  // drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
 
   DrawGammaLines(0.51, 39, 1,1,2,kGray+1, 2);
 
@@ -959,21 +939,21 @@ cout << "meow" << endl;
     int iEta = nEta;
     graphEPcutValue[0][icalo][iEta]   = new TGraphErrors(15,partE,EP_cut[0][imatch][icalo][nEta]);
     while(graphEPcutValue[0][icalo][iEta]->GetN()>0 && graphEPcutValue[0][icalo][iEta]->GetX()[graphEPcutValue[0][icalo][iEta]->GetN()-1] >= energymax_elec[icalo]) graphEPcutValue[0][icalo][iEta]->RemovePoint(graphEPcutValue[0][icalo][iEta]->GetN()-1);
-    DrawGammaSetMarkerTGraph(graphEPcutValue[0][icalo][iEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorPID[icalo] , colorPID[icalo]);
+    DrawGammaSetMarkerTGraph(graphEPcutValue[0][icalo][iEta], markerStyleCalo[icalo], 1.5*markerSizeCalo[icalo], colorCalo[icalo] , colorCalo[icalo]);
     graphEPcutValue[0][icalo][iEta]->SetLineStyle(icalo+1);
     graphEPcutValue[0][icalo][iEta]->SetLineWidth(3);
     graphEPcutValue[0][icalo][iEta]->Draw("samepe");
     
     graphEPcutValue_fwhm[0][icalo][iEta]   = new TGraphErrors(15,partE,EP_cut_FWHM[0][imatch][icalo][nEta]);
     while(graphEPcutValue_fwhm[0][icalo][iEta]->GetN()>0 && graphEPcutValue_fwhm[0][icalo][iEta]->GetX()[graphEPcutValue_fwhm[0][icalo][iEta]->GetN()-1] >= energymax_elec[icalo]) graphEPcutValue_fwhm[0][icalo][iEta]->RemovePoint(graphEPcutValue_fwhm[0][icalo][iEta]->GetN()-1);
-    DrawGammaSetMarkerTGraph(graphEPcutValue_fwhm[0][icalo][iEta], markerStyleCalo2[icalo], 1.5*markerSizeCalo[icalo], colorPID_light[icalo] , colorPID_light[icalo]);
+    DrawGammaSetMarkerTGraph(graphEPcutValue_fwhm[0][icalo][iEta], markerStyleCalo2[icalo], 1.5*markerSizeCalo[icalo], colorCalo_light[icalo] , colorCalo_light[icalo]);
     graphEPcutValue_fwhm[0][icalo][iEta]->SetLineStyle(icalo+1);
     graphEPcutValue_fwhm[0][icalo][iEta]->SetLineWidth(3);
     graphEPcutValue_fwhm[0][icalo][iEta]->Draw("samepe");
     
     graphEPcutValue_95[0][icalo][iEta]   = new TGraphErrors(15,partE,EP_cut_95[0][imatch][icalo][nEta]);
     while(graphEPcutValue_95[0][icalo][iEta]->GetN()>0 && graphEPcutValue_95[0][icalo][iEta]->GetX()[graphEPcutValue_95[0][icalo][iEta]->GetN()-1] >= energymax_elec[icalo]) graphEPcutValue_95[0][icalo][iEta]->RemovePoint(graphEPcutValue_95[0][icalo][iEta]->GetN()-1);
-    DrawGammaSetMarkerTGraph(graphEPcutValue_95[0][icalo][iEta], markerStyleCalo3[icalo], 1.5*markerSizeCalo[icalo], colorPID_light2[icalo] , colorPID_light2[icalo]);
+    DrawGammaSetMarkerTGraph(graphEPcutValue_95[0][icalo][iEta], markerStyleCalo3[icalo], 1.5*markerSizeCalo[icalo], colorCalo_light2[icalo] , colorCalo_light2[icalo]);
     graphEPcutValue_95[0][icalo][iEta]->SetLineStyle(icalo+1);
     graphEPcutValue_95[0][icalo][iEta]->SetLineWidth(3);
     graphEPcutValue_95[0][icalo][iEta]->Draw("samecx0");
@@ -982,24 +962,18 @@ cout << "meow" << endl;
     legendPi0Merge1->AddEntry(graphEPcutValue[0][icalo][iEta]," ","p");
     legendPi0Merge2->AddEntry(graphEPcutValue_fwhm[0][icalo][iEta]," ","p");
     legendPi0Merge3->AddEntry(graphEPcutValue_95[0][icalo][iEta]," ","l");
-    legendPi0Merge4->AddEntry((TObject*)0,Form("%s",caloName[icalo].Data()),"");
+    legendPi0Merge4->AddEntry((TObject*)0,Form("%s",caloNamePlot[icalo].Data()),"");
   }
 
   legendPi0Merge1->Draw();
   legendPi0Merge2->Draw();
   legendPi0Merge3->Draw();
   legendPi0Merge4->Draw();
-  // float toplegval = 0.90;
-  // drawLatexAdd("#it{p}_{rec}",0.75,0.30,textSizeLabelsRel,false,false,false);
-  // drawLatexAdd("#it{p}_{true}",0.65,0.30,textSizeLabelsRel,false,false,false);
   drawLatexAdd(perfLabel.Data(),0.15,toplegval,textSizeLabelsRel,false,false,false);
   drawLatexAdd(collisionSystem.Data(),0.15,toplegval-0.05,textSizeLabelsRel,false,false,false);
-  // drawLatexAdd("1.6#cdot",0.55,0.35,textSizeLabelsRel,false,false,false);
   drawLatexAdd("#sigma",0.52,0.30,textSizeLabelsRel,false,false,false);
   drawLatexAdd("#scale[0.75]{FWHM}",0.58,0.30,textSizeLabelsRel,false,false,false);
   drawLatexAdd("#epsilon_{95%}",0.70,0.30,textSizeLabelsRel,false,false,false);
-  // drawLatexAdd(caloName[icalo].Data(),0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
-  // drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
 
   DrawGammaLines(0.51, 39, 1,1,2,kGray+1, 2);
 
@@ -1062,16 +1036,10 @@ cout << "meow" << endl;
     legendExmplPlot->AddEntry(hElectronEoPplot,"e^{-} (true #it{p})","p");
     legendExmplPlot->AddEntry(hPionEoPplot_rec,"#pi^{-} (rec. #it{p})","p");
     legendExmplPlot->AddEntry(hElectronEoPplot_rec,"e^{-} (rec. #it{p})","p");
-    // legendPi0Merge3->AddEntry(graphPionRejection[1][icalo][iEta],Form("%s",caloName[icalo].Data()),"p");
 
     legendExmplPlot->Draw();
-    // float toplegval = 0.90;
-    // drawLatexAdd("#it{p}_{rec}",0.75,0.30,textSizeLabelsRel,false,false,false);
-    // drawLatexAdd("#it{p}_{true}",0.65,0.30,textSizeLabelsRel,false,false,false);
     drawLatexAdd(perfLabel.Data(),0.945,toplegval,textSizeLabelsRel,false,false,true);
-    // drawLatexAdd(collisionSystem.Data(),0.94,toplegval-0.05,textSizeLabelsRel,false,false,true);
-    // drawLatexAdd(collisionSystem.Data(),0.94,toplegval-0.05,textSizeLabelsRel,false,false,true);
-    drawLatexAdd(Form("%s, w/ mat. infront",caloName[icalo].Data()),0.945,toplegval-0.05,textSizeLabelsRel,false,false,true);
+    drawLatexAdd(Form("%s, w/ mat. infront",caloNamePlot[icalo].Data()),0.945,toplegval-0.05,textSizeLabelsRel,false,false,true);
     drawLatexAdd(Form("%1.1f< #it{#eta}< %1.1f, #it{E} = %1.1f GeV",nominalEtaRegion[icalo][0],nominalEtaRegion[icalo][1], (partE[exampleBinCalo[icalo]]+partE[exampleBinCalo[icalo]+1])/2),0.14,toplegval,textSizeLabelsRel,false,false,false);
 
     // DrawGammaLines(EP_cut[0][imatch][icalo][ieta][exampleBinCalo[icalo]], EP_cut[0][imatch][icalo][nEta][exampleBinCalo[icalo]], 0,0.1,2,kGray+1, 3);
@@ -1079,14 +1047,13 @@ cout << "meow" << endl;
 
 
     canvasExampleBin->Update();
-    canvasExampleBin->Print(Form("%s/EoP_ExampleBin_%s.%s",outputDir.Data(),caloName[icalo].Data(),suffix.Data()));
+    canvasExampleBin->Print(Form("%s/EoP_ExampleBin_%s.%s",outputDir.Data(),caloNamePlot[icalo].Data(),suffix.Data()));
   }
 
 
 
   TFile* fileOutput = new TFile(Form("%s/output_EoverP.root",outputDir.Data()),"RECREATE");
   for(int icalo=0;icalo<maxcalo;icalo++){
-    // if (!caloEnabled[icalo]) continue;
 
     fileOutput->mkdir(Form("%s",caloName[icalo].Data()));
     fileOutput->cd(Form("%s",caloName[icalo].Data()));
