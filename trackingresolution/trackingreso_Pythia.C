@@ -16,6 +16,7 @@ void trackingreso_Pythia(
   gROOT->SetStyle("Plain");
   StyleSettingsThesis();
   SetPlotStyle();
+  TString labelEnergy               = "#it{#bf{ECCE}} simulation";
   TString dateForOutput             = ReturnDateStringForOutput();
   TString readTrackClass            = "All";
   TString writeLabel                = "";
@@ -1091,4 +1092,64 @@ void trackingreso_Pythia(
   }
   outputFile->Write();
   outputFile->Close();
+  
+  TH2D* reso2D[nPID];
+  TGraphErrors* graph_tracks_sigma_p_resoP[nPID][nEta];
+
+  TCanvas* cReso4 = new TCanvas("cReso4","",0,0,1100,1000);
+  DrawGammaCanvasSettings( cReso4, 0.11, 0.16, 0.01, 0.105);
+
+  for (Int_t pid = 0; pid < 6; pid++){
+    reso2D[pid]       = new TH2D(Form("%s_reso_track", partName[pid].Data()), "", nEta, partEta, 2000, 0, 100);
+    for (Int_t iEta = 0; iEta < nEta; iEta++){
+      if (h_tracks_sigma_p_resoP[pid][iEta]){
+        h_tracks_sigma_p_resoP[pid][iEta]->Scale(100);
+        graph_tracks_sigma_p_resoP[pid][iEta] = new TGraphErrors(h_tracks_sigma_p_resoP[pid][iEta]);
+        RemoveZerosFromGraph(graph_tracks_sigma_p_resoP[pid][iEta]);
+        cout << partEta[iEta] << "\t" << partEta[iEta+1] << "\t" << partLabel[pid] << endl;
+        graph_tracks_sigma_p_resoP[pid][iEta]->Print();
+        if (graph_tracks_sigma_p_resoP[pid][iEta]->GetN() > 0){
+          for (Int_t k = 1; k < reso2D[pid]->GetNbinsY()+1; k++){
+            if (reso2D[pid]->GetYaxis()->GetBinCenter(k) < graph_tracks_sigma_p_resoP[pid][iEta]->GetX()[0]){
+              reso2D[pid]->Fill(partEta[iEta]+0.005, reso2D[pid]->GetYaxis()->GetBinCenter(k), graph_tracks_sigma_p_resoP[pid][iEta]->GetY()[0] );
+            } else if (reso2D[pid]->GetYaxis()->GetBinCenter(k) > graph_tracks_sigma_p_resoP[pid][iEta]->GetX()[graph_tracks_sigma_p_resoP[pid][iEta]->GetN()-1]){
+              reso2D[pid]->Fill(partEta[iEta]+0.005, reso2D[pid]->GetYaxis()->GetBinCenter(k), graph_tracks_sigma_p_resoP[pid][iEta]->GetY()[graph_tracks_sigma_p_resoP[pid][iEta]->GetN()-1] );
+            } else {
+              reso2D[pid]->Fill(partEta[iEta]+0.005, reso2D[pid]->GetYaxis()->GetBinCenter(k), graph_tracks_sigma_p_resoP[pid][iEta]->Eval(reso2D[pid]->GetYaxis()->GetBinCenter(k)) );
+            }
+            
+          }
+          for (Int_t k = 1; k < reso2D[pid]->GetNbinsY()+1; k++){
+            for (Int_t l = 1; l < reso2D[pid]->GetNbinsX()+1; l++){
+              reso2D[pid]->SetBinError(l, k, 0);
+            }
+          }
+        }
+      }
+    }
+    cReso4->cd();
+    cReso4->SetLogy();
+    cReso4->SetLogz();
+      SetStyleHistoTH2ForGraphs(reso2D[pid], "#eta","#it{p} (GeV/#it{c})", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1);
+      reso2D[pid]->SetZTitle("#sigma_{p}/p (%)");
+      reso2D[pid]->GetYaxis()->SetRangeUser(0.3,99);
+      reso2D[pid]->GetYaxis()->SetMoreLogLabels();
+      reso2D[pid]->GetZaxis()->SetMoreLogLabels();
+      reso2D[pid]->Draw("colz");
+      drawLatexAdd(labelEnergy.Data(),0.15,0.92,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      drawLatexAdd(Form("single %s", partLabel[pid].Data()),0.15,0.87,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+    
+    cReso4->Print(Form("%s/Resolution_%s_2D.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
+
+    
+  }
+  
+  TFile* summaryFile = new TFile(Form("%s/summaryResolution.root", outputDir.Data()),"RECREATE");
+  for (Int_t pid = 0; pid < 6; pid++){
+    if (reso2D[pid]->GetEntries() > 0){
+      reso2D[pid]->Write();
+    }
+  }
+  summaryFile->Write();
+  summaryFile->Close();
 }

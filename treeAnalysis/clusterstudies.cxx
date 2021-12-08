@@ -73,8 +73,8 @@ void clusterstudies(){
         
         int maxNTowers  = 100;
         if (icalo == kLFHCAL ) maxNTowers = 100*5;
-        float maxM02    = 2;
-        int maxNM02     = 100;
+        float maxM02    = 4;
+        int maxNM02     = 400;
         if (IsHCALCalorimeter(icalo)){
           maxM02      = 5;
           maxNM02     = 250;

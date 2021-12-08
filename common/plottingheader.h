@@ -312,96 +312,96 @@ void SetStyleHistoTH3ForGraphs( TH3* histo,
 }
 
 
-    //__________________________________________________________________________________________________________
-    void ReturnCorrectValuesForCanvasScaling(   Int_t sizeX,
-                                                Int_t sizeY,
-                                                Int_t nCols,
-                                                Int_t nRows,
-                                                Double_t leftMargin,
-                                                Double_t rightMargin,
-                                                Double_t upperMargin,
-                                                Double_t lowerMargin,
-                                                Double_t* arrayBoundariesX,
-                                                Double_t* arrayBoundariesY,
-                                                Double_t* relativeMarginsX,
-                                                Double_t* relativeMarginsY,
-                                                Bool_t verbose = kTRUE){
-        Int_t realsizeX             = sizeX- (Int_t)(sizeX*leftMargin)- (Int_t)(sizeX*rightMargin);
-        Int_t realsizeY             = sizeY- (Int_t)(sizeY*upperMargin)- (Int_t)(sizeY*lowerMargin);
+//__________________________________________________________________________________________________________
+void ReturnCorrectValuesForCanvasScaling(   Int_t sizeX,
+                                            Int_t sizeY,
+                                            Int_t nCols,
+                                            Int_t nRows,
+                                            Double_t leftMargin,
+                                            Double_t rightMargin,
+                                            Double_t upperMargin,
+                                            Double_t lowerMargin,
+                                            Double_t* arrayBoundariesX,
+                                            Double_t* arrayBoundariesY,
+                                            Double_t* relativeMarginsX,
+                                            Double_t* relativeMarginsY,
+                                            Bool_t verbose = kTRUE){
+  Int_t realsizeX             = sizeX- (Int_t)(sizeX*leftMargin)- (Int_t)(sizeX*rightMargin);
+  Int_t realsizeY             = sizeY- (Int_t)(sizeY*upperMargin)- (Int_t)(sizeY*lowerMargin);
 
-        Int_t nPixelsLeftColumn     = (Int_t)(sizeX*leftMargin);
-        Int_t nPixelsRightColumn    = (Int_t)(sizeX*rightMargin);
-        Int_t nPixelsUpperColumn    = (Int_t)(sizeY*upperMargin);
-        Int_t nPixelsLowerColumn    = (Int_t)(sizeY*lowerMargin);
+  Int_t nPixelsLeftColumn     = (Int_t)(sizeX*leftMargin);
+  Int_t nPixelsRightColumn    = (Int_t)(sizeX*rightMargin);
+  Int_t nPixelsUpperColumn    = (Int_t)(sizeY*upperMargin);
+  Int_t nPixelsLowerColumn    = (Int_t)(sizeY*lowerMargin);
 
-        Int_t nPixelsSinglePlotX    = (Int_t) (realsizeX/nCols);
-        Int_t nPixelsSinglePlotY    = (Int_t) (realsizeY/nRows);
-        if(verbose){
-            std::cout << realsizeX << "\t" << nPixelsSinglePlotX << std::endl;
-            std::cout << realsizeY << "\t" << nPixelsSinglePlotY << std::endl;
-            std::cout << nPixelsLeftColumn << "\t" << nPixelsRightColumn  << "\t" << nPixelsLowerColumn << "\t" << nPixelsUpperColumn << std::endl;
-        }
-        Int_t pixel = 0;
-        if(verbose)std::cout << "boundaries X" << std::endl;
-        for (Int_t i = 0; i < nCols+1; i++){
-            if (i == 0){
-                arrayBoundariesX[i] = 0.;
-                pixel = pixel+nPixelsLeftColumn+nPixelsSinglePlotX;
-            } else if (i == nCols){
-                arrayBoundariesX[i] = 1.;
-                pixel = pixel+nPixelsRightColumn;
-            } else {
-                arrayBoundariesX[i] = (Double_t)pixel/sizeX;
-                pixel = pixel+nPixelsSinglePlotX;
-            }
-            if(verbose)std::cout << i << "\t" << arrayBoundariesX[i] << "\t" << pixel<<std::endl;
-        }
-
-        if(verbose)std::cout << "boundaries Y" << std::endl;
-        pixel = sizeY;
-        for (Int_t i = 0; i < nRows+1; i++){
-            if (i == 0){
-                arrayBoundariesY[i] = 1.;
-                pixel = pixel-nPixelsUpperColumn-nPixelsSinglePlotY;
-            } else if (i == nRows){
-                arrayBoundariesY[i] = 0.;
-                pixel = pixel-nPixelsLowerColumn;
-            } else {
-                arrayBoundariesY[i] = (Double_t)pixel/sizeY;
-                pixel = pixel-nPixelsSinglePlotY;
-            }
-            if(verbose)std::cout << i << "\t" << arrayBoundariesY[i] <<"\t" << pixel<<std::endl;
-        }
-
-        relativeMarginsX[0]         = (Double_t)nPixelsLeftColumn/(nPixelsLeftColumn+nPixelsSinglePlotX);
-        relativeMarginsX[1]         = 0;
-        relativeMarginsX[2]         = (Double_t)nPixelsRightColumn/(nPixelsRightColumn+nPixelsSinglePlotX);;
-
-        relativeMarginsY[0]         = (Double_t)nPixelsUpperColumn/(nPixelsUpperColumn+nPixelsSinglePlotY);
-        relativeMarginsY[1]         = 0;
-        relativeMarginsY[2]         = (Double_t)nPixelsLowerColumn/(nPixelsLowerColumn+nPixelsSinglePlotY);;
-
-        return;
+  Int_t nPixelsSinglePlotX    = (Int_t) (realsizeX/nCols);
+  Int_t nPixelsSinglePlotY    = (Int_t) (realsizeY/nRows);
+  if(verbose){
+    std::cout << realsizeX << "\t" << nPixelsSinglePlotX << std::endl;
+    std::cout << realsizeY << "\t" << nPixelsSinglePlotY << std::endl;
+    std::cout << nPixelsLeftColumn << "\t" << nPixelsRightColumn  << "\t" << nPixelsLowerColumn << "\t" << nPixelsUpperColumn << std::endl;
+  }
+  Int_t pixel = 0;
+  if(verbose)std::cout << "boundaries X" << std::endl;
+  for (Int_t i = 0; i < nCols+1; i++){
+    if (i == 0){
+      arrayBoundariesX[i] = 0.;
+      pixel = pixel+nPixelsLeftColumn+nPixelsSinglePlotX;
+    } else if (i == nCols){
+      arrayBoundariesX[i] = 1.;
+      pixel = pixel+nPixelsRightColumn;
+    } else {
+      arrayBoundariesX[i] = (Double_t)pixel/sizeX;
+      pixel = pixel+nPixelsSinglePlotX;
     }
+    if(verbose)std::cout << i << "\t" << arrayBoundariesX[i] << "\t" << pixel<<std::endl;
+  }
 
-    //__________________________________________________________________________________________________________
-    void DrawGammaPadSettings( TPad* pad1,
-                            Double_t leftMargin,
-                            Double_t rightMargin,
-                            Double_t topMargin,
-                            Double_t bottomMargin){
-        pad1->SetFillColor(0);
-        pad1->GetFrame()->SetFillColor(0);
-        pad1->SetBorderMode(0);
-        pad1->SetLeftMargin(leftMargin);
-        pad1->SetBottomMargin(bottomMargin);
-        pad1->SetRightMargin(rightMargin);
-        pad1->SetTopMargin(topMargin);
-        pad1->SetTickx();
-        pad1->SetTicky();
+  if(verbose)std::cout << "boundaries Y" << std::endl;
+  pixel = sizeY;
+  for (Int_t i = 0; i < nRows+1; i++){
+    if (i == 0){
+      arrayBoundariesY[i] = 1.;
+      pixel = pixel-nPixelsUpperColumn-nPixelsSinglePlotY;
+    } else if (i == nRows){
+      arrayBoundariesY[i] = 0.;
+      pixel = pixel-nPixelsLowerColumn;
+    } else {
+      arrayBoundariesY[i] = (Double_t)pixel/sizeY;
+      pixel = pixel-nPixelsSinglePlotY;
     }
+    if(verbose)std::cout << i << "\t" << arrayBoundariesY[i] <<"\t" << pixel<<std::endl;
+  }
 
-  //__________________________________________________________________________________________________________
+  relativeMarginsX[0]         = (Double_t)nPixelsLeftColumn/(nPixelsLeftColumn+nPixelsSinglePlotX);
+  relativeMarginsX[1]         = 0;
+  relativeMarginsX[2]         = (Double_t)nPixelsRightColumn/(nPixelsRightColumn+nPixelsSinglePlotX);;
+
+  relativeMarginsY[0]         = (Double_t)nPixelsUpperColumn/(nPixelsUpperColumn+nPixelsSinglePlotY);
+  relativeMarginsY[1]         = 0;
+  relativeMarginsY[2]         = (Double_t)nPixelsLowerColumn/(nPixelsLowerColumn+nPixelsSinglePlotY);;
+
+  return;
+}
+
+//__________________________________________________________________________________________________________
+void DrawGammaPadSettings( TPad* pad1,
+                        Double_t leftMargin,
+                        Double_t rightMargin,
+                        Double_t topMargin,
+                        Double_t bottomMargin){
+    pad1->SetFillColor(0);
+    pad1->GetFrame()->SetFillColor(0);
+    pad1->SetBorderMode(0);
+    pad1->SetLeftMargin(leftMargin);
+    pad1->SetBottomMargin(bottomMargin);
+    pad1->SetRightMargin(rightMargin);
+    pad1->SetTopMargin(topMargin);
+    pad1->SetTickx();
+    pad1->SetTicky();
+}
+
+//__________________________________________________________________________________________________________
 void SetStyleHistoTH1ForGraphs( TH1* histo,
                                 TString XTitle,
                                 TString YTitle,
@@ -437,6 +437,7 @@ void SetStyleHistoTH1ForGraphs( TH1* histo,
   histo->GetYaxis()->SetNdivisions(yNDivisions,kTRUE);
 }
 
+//__________________________________________________________________________________________________________
 void SetStyleHistoTHStackForGraphs( THStack* histo,
                                 TString XTitle,
                                 TString YTitle,
@@ -472,15 +473,15 @@ void SetStyleHistoTHStackForGraphs( THStack* histo,
   histo->GetYaxis()->SetNdivisions(yNDivisions,kTRUE);
 }
 
-
+//__________________________________________________________________________________________________________
 void DrawGammaLines(Float_t startX, Float_t endX,
                 Float_t startY, Float_t endY,
                 Float_t linew, Float_t lineColor = 4, Style_t lineStyle = 1){
-    TLine * l1 = new TLine (startX,startY,endX,endY);
-    l1->SetLineColor(lineColor);
-    l1->SetLineWidth(linew);
-    l1->SetLineStyle(lineStyle);
-    l1->Draw("same");
+  TLine * l1 = new TLine (startX,startY,endX,endY);
+  l1->SetLineColor(lineColor);
+  l1->SetLineWidth(linew);
+  l1->SetLineStyle(lineStyle);
+  l1->Draw("same");
 }
 //__________________________________________________________________________________________________________
 void SetStyleTLatex( TLatex* text,
@@ -550,38 +551,38 @@ void DrawGammaSetMarker(    TH1* histo1,
   histo1->GetXaxis()->SetTitleFont(62);
 }
 
+//__________________________________________________________________________________________________________
+TF1* ScaleTF1(TF1* func, Double_t constant, TString name) {
 
-    TF1* ScaleTF1(TF1* func, Double_t constant, TString name) {
+  if (!func) return NULL;
 
-        if (!func) return NULL;
-
-        Double_t    xMin, xMax;
-        TString     formula         = func->GetExpFormula();
-        func->GetRange(xMin, xMax);
-            #if !defined (__CINT__) || defined (__CLING__)
-            for (Int_t i=0; i<func->GetNpar(); i++) {
-                formula.ReplaceAll(Form("[p%d]", i), Form("[placeholder%d]",i+1));
-            }
-            for (Int_t i=1; i<func->GetNpar()+1; i++) {
-                formula.ReplaceAll(Form("[placeholder%d]", i), Form("[p%d]",i));
-            }
-        #else
-            for (Int_t i=0; i<func->GetNpar(); i++) {
-                formula.ReplaceAll(Form("[%d]", i), Form("[placeholder%d]",i+1));
-            }
-            for (Int_t i=1; i<func->GetNpar()+1; i++) {
-                formula.ReplaceAll(Form("[placeholder%d]", i), Form("[%d]",i));
-            }
-        #endif
-
-        TF1* result                 = new TF1(name.Data(), Form("[0] * (%s)", formula.Data()), xMin, xMax);
-        for (Int_t i=0; i<func->GetNpar()+1; i++) {
-            if (i==0)   result->SetParameter(i, constant);
-            else        result->SetParameter(i, func->GetParameter(i-1));
-        }
-
-        return result;
+  Double_t    xMin, xMax;
+  TString     formula         = func->GetExpFormula();
+  func->GetRange(xMin, xMax);
+  #if !defined (__CINT__) || defined (__CLING__)
+    for (Int_t i=0; i<func->GetNpar(); i++) {
+      formula.ReplaceAll(Form("[p%d]", i), Form("[placeholder%d]",i+1));
     }
+    for (Int_t i=1; i<func->GetNpar()+1; i++) {
+      formula.ReplaceAll(Form("[placeholder%d]", i), Form("[p%d]",i));
+    }
+  #else
+    for (Int_t i=0; i<func->GetNpar(); i++) {
+      formula.ReplaceAll(Form("[%d]", i), Form("[placeholder%d]",i+1));
+    }
+    for (Int_t i=1; i<func->GetNpar()+1; i++) {
+      formula.ReplaceAll(Form("[placeholder%d]", i), Form("[%d]",i));
+    }
+  #endif
+
+  TF1* result                 = new TF1(name.Data(), Form("[0] * (%s)", formula.Data()), xMin, xMax);
+  for (Int_t i=0; i<func->GetNpar()+1; i++) {
+    if (i==0)   result->SetParameter(i, constant);
+    else        result->SetParameter(i, func->GetParameter(i-1));
+  }
+
+  return result;
+}
 
 //__________________________________________________________________________________________________________
 void StyleSettingsThesis( TString format = ""){
@@ -844,3 +845,13 @@ Double_t FindLargestBin1DHist(TH1* hist, Float_t minX, Float_t maxX ){
     return largestBinCenter;
 }
 
+//__________________________________________________________________________________________________________
+void RemoveZerosFromGraph(TGraph* graph){
+ for (Int_t i = 0; i < graph->GetN(); i++){
+    if (graph->GetY()[i] == 0 || graph->GetY()[i] <= -10000){
+      graph->RemovePoint(i);
+      i--;
+    }
+  }
+  return;
+}

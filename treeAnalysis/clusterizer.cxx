@@ -997,7 +997,7 @@ void runclusterizer(
       }
 
       // determine remaining cluster properties from its towers
-      float* showershape_eta_phi = CalculateM02andWeightedPosition(cluster_towers, weightM02, tempstructC.cluster_E, caloEnum, false);
+      float* showershape_eta_phi = CalculateM02andWeightedPosition(cluster_towers, tempstructC.cluster_E, caloEnum, false);
       tempstructC.cluster_M02 = showershape_eta_phi[0];
       tempstructC.cluster_M20 = showershape_eta_phi[1];
       tempstructC.cluster_Eta = showershape_eta_phi[2];

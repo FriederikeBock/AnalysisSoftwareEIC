@@ -59,7 +59,9 @@ void treeProcessing(
     } else { 
       std::cout << "using calorimeter projections for matching" << std::endl;
     }
-    bool runPi0Reco = false;
+    
+    LoadM02CutValueGraphs("output_ShowerShape.root");
+    
     // load tree
     TChain *const tt_event = new TChain("event_tree");
     if (inFile.EndsWith(".root")) {                     // are we loading a single root tree?
@@ -545,8 +547,9 @@ void treeProcessing(
           trackingcomparison();
           if(verbosity>1) std::cout << "finished tracking studies" << std::endl;
         }
-        if (runPi0Reco){
+        if (addOutputName.Contains("PI0")){
           pi0studies();
+          if(verbosity>1) std::cout << "finished pi0 studies" << std::endl;
         }
         if (runCaloRes){
           if(verbosity>1) std::cout << "running clusterstudies" << std::endl;
@@ -600,7 +603,8 @@ void treeProcessing(
       std::cout << "running hitstudiesSave" << std::endl;
       hitstudiesSave();
     }
-    if(runPi0Reco){
+    if(addOutputName.Contains("PI0")){
+      std::cout << "running pi0studiesSave" << std::endl;
       pi0studiesSave();
     }
     if(tracksEnabled) {
