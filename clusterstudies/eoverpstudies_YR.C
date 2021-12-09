@@ -44,9 +44,40 @@ TGraphAsymmErrors* shrinkGraph(TH1F* histo, float energy){
 // Remove nonsense values at the end of the graph
 //*************************************************************************************
 void shrinkGraphErr(TGraphErrors* &graph, float energy){
+  graph->Print();
   while(graph->GetN()>0 && graph->GetY()[graph->GetN()-1] == -1) graph->RemovePoint(graph->GetN()-1);
   while(graph->GetN()>0 && graph->GetY()[graph->GetN()-1] <= 0) graph->RemovePoint(graph->GetN()-1);
   while(graph->GetN()>0 && graph->GetX()[graph->GetN()-1] > energy) graph->RemovePoint(graph->GetN()-1);
+}
+
+//*************************************************************************************
+// Fill 2D hist with graph values interpolated
+//*************************************************************************************
+void Fill2DHistWithGraphValues(TH2D* hist2D, TGraphErrors* graphs, double eta){
+  cout << "eta: " << eta << endl;
+  if (graphs){
+    if (graphs->GetN() == 0) return;
+    graphs->Print();
+  } else { 
+    return ;
+  }
+  cout << "max p:" << graphs->GetX()[graphs->GetN()-1] << endl;
+  for (Int_t k = 1; k < hist2D->GetNbinsY()+1; k++){
+    if (hist2D->GetYaxis()->GetBinCenter(k) < graphs->GetX()[0]){
+      hist2D->Fill(eta+0.005, hist2D->GetYaxis()->GetBinCenter(k), graphs->GetY()[0] );
+    } else if (hist2D->GetYaxis()->GetBinCenter(k) > graphs->GetX()[graphs->GetN()-1]){
+      hist2D->Fill(eta+0.005, hist2D->GetYaxis()->GetBinCenter(k), graphs->GetY()[graphs->GetN()-1] );
+    } else {
+      hist2D->Fill(eta+0.005, hist2D->GetYaxis()->GetBinCenter(k), graphs->Eval(hist2D->GetYaxis()->GetBinCenter(k)) );
+    }
+  }
+  
+  for (Int_t k = 1; k < hist2D->GetNbinsY()+1; k++){
+    for (Int_t l = 1; l < hist2D->GetNbinsX()+1; l++){
+      hist2D->SetBinError(l, k, 0);
+    }
+  }
+  return;
 }
 
 //************************************************************************************
@@ -128,8 +159,14 @@ void eoverpstudies_YR(
   //************************** Read data **************************************************
 //   const int nEne = 15;
 //   const static Double_t partE[]   = {   0.7, 1.0, 1.5, 2, 3, 4, 6, 10,15,20,25,  30,35,  40, 50};
-  const int nEne = 16;
-  const static Double_t partE[]   = {   0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 2, 3, 4, 5, 6, 8, 10,15,20,25,  30};
+  const int nEne = 28;
+  const static Double_t partE[]   = {   0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 2, 3,
+                                        4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+                                        14, 15, 16, 17, 18, 19, 20, 25,  30};
+  Double_t partEcenter[nEne];
+  for (int i = 0; i < nEne; i++){
+    partEcenter[i]  = (partE[i]+partE[i+1])/2.;
+  }
   // double energymax = 40.;
   // const int nEne = 26;
   // const static Double_t partE[]   = {   0.7, 0.9, 1.2, 1.6, 2, 2.5, 3, 3.5, 4, 4.5,  5,
@@ -245,7 +282,6 @@ void eoverpstudies_YR(
       float maxEtaProj = 0;
 
       for(int ieta=0;ieta<nEta+1;ieta++){
-
         if(ieta==nEta){
             minEtaProj = nominalEtaRegion[icalo][0];
             maxEtaProj = nominalEtaRegion[icalo][1];
@@ -253,6 +289,11 @@ void eoverpstudies_YR(
           minEtaProj = partEtaCalo[ieta];
           maxEtaProj = partEtaCalo[ieta+1];
         }
+        if (ieta != nEta){
+          if (ieta < minEtaBinCaloDis[icalo] || ieta > maxEtaBinCaloDis[icalo])
+            continue;
+        }
+        
         cout << caloName[icalo] << endl;
         cout << minEtaProj << " < eta < " << maxEtaProj << endl;
         padebin = 0;
@@ -279,7 +320,7 @@ void eoverpstudies_YR(
         histElectronEfficiency[ifilltrue][imatch][icalo][ieta]      = new TH1F(Form("histElectronEfficiency_%s_%f",caloName[icalo].Data(),minEtaProj),"",nEne-1,partE);
         histElectronEfficiency_fwhm[ifilltrue][imatch][icalo][ieta] = new TH1F(Form("histElectronEfficiency_fwhm_%s_%f",caloName[icalo].Data(),minEtaProj),"",nEne-1,partE);
 
-        for(int ebin=0;ebin<nEne-1;ebin++){
+        for(int ebin=0;ebin<nEne;ebin++){
 
           h_EoverP_pions_EoverP_E_Eta[imatch][icalo][ifilltrue]->GetYaxis()->SetRange(  h_EoverP_pions_EoverP_E_Eta[imatch][icalo][ifilltrue]->GetYaxis()->FindBin(partE[ebin]),h_EoverP_pions_EoverP_E_Eta[imatch][icalo][ifilltrue]->GetYaxis()->FindBin(partE[ebin+1]));
           h_EoverP_pions_EoverP_E_Eta[imatch][icalo][ifilltrue]->GetZaxis()->SetRange(  h_EoverP_pions_EoverP_E_Eta[imatch][icalo][ifilltrue]->GetZaxis()->FindBin(minEtaProj),h_EoverP_pions_EoverP_E_Eta[imatch][icalo][ifilltrue]->GetZaxis()->FindBin(maxEtaProj));
@@ -354,13 +395,13 @@ void eoverpstudies_YR(
 
           Double_t intelectrons_95 = intelectrons;
           EP_cut_95[ifilltrue][imatch][icalo][ieta][padebin] = EP_cut[ifilltrue][imatch][icalo][ieta][padebin];
-          for(int iwindow=0;iwindow<100;iwindow++){
+          for(int iBin=0;iBin<100;iBin++){
             if(abs(intelectrons_95/intelectronsall)>0.95) break;
             else {
-              intelectrons_95 = histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->Integral(
-              histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->FindBin(EP_cut[ifilltrue][imatch][icalo][ieta][padebin]-0.005*iwindow),
-              histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->FindBin(eopcutvaluemax[icalo]));
-              EP_cut_95[ifilltrue][imatch][icalo][ieta][padebin] = EP_cut[ifilltrue][imatch][icalo][ieta][padebin]-0.005*iwindow;
+              Int_t binStart = histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->FindBin(EP_cut[ifilltrue][imatch][icalo][ieta][padebin])-iBin;
+              Int_t binEnd  = histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->FindBin(eopcutvaluemax[icalo]);
+              intelectrons_95 = histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->Integral(binStart, binEnd);
+              EP_cut_95[ifilltrue][imatch][icalo][ieta][padebin] = histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padebin]->GetXaxis()->GetBinLowEdge(binStart);
             }
           }
 
@@ -465,7 +506,9 @@ void eoverpstudies_YR(
             padnumber++;
           }
         }
-        if(minEtaProj >= etarangemin[icalo] && maxEtaProj <= etarangemax[icalo])
+        if(ieta==nEta)
+          canvasEoPSingleBins->Print(Form("%s/%s/%s/EoP_bin_pions%s_%s_full_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(), str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
+        else 
           canvasEoPSingleBins->Print(Form("%s/%s/%s/EoP_bin_pions%s_%s_%2.1f_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(), minEtaProj,str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
 
         padnumber = 0;
@@ -498,11 +541,12 @@ void eoverpstudies_YR(
           padnumber++;
           }
         }
-
-        if(minEtaProj >= etarangemin[icalo] && maxEtaProj <= etarangemax[icalo])
-          canvasEoPSingleBins->Print(Form("%s/%s/%s/EoP_bin_electrons%s_%s_%2.1f_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(), minEtaProj,str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
+        
         if(ieta==nEta)
           canvasEoPSingleBins->Print(Form("%s/%s/%s/EoP_bin_electrons%s_%s_full_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(),str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
+        else 
+          canvasEoPSingleBins->Print(Form("%s/%s/%s/EoP_bin_electrons%s_%s_%2.1f_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(), minEtaProj,str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
+
         padnumber = 0;
         
         for(int z=0; z< padebin +1 ; z++ ){
@@ -534,11 +578,11 @@ void eoverpstudies_YR(
           }
         }
 
-        if(minEtaProj >= etarangemin[icalo] && maxEtaProj <= etarangemax[icalo])
-        canvasEoPSingleBins->Print(Form("%s/%s/%s/EoP_bin_pions_%s_%s_%2.1f_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(), minEtaProj,str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
         if(ieta==nEta)
-        canvasEoPSingleBins->Print(Form("%s/%s/%s/EoP_bin_pions_%s_%s_full_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(),str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
-
+          canvasEoPSingleBins->Print(Form("%s/%s/%s/EoP_bin_pions_%s_%s_full_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(),str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
+        else 
+          canvasEoPSingleBins->Print(Form("%s/%s/%s/EoP_bin_pions_%s_%s_%2.1f_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(), minEtaProj,str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
+        
         padnumber = 0;
         
         for(int z=0; z< padebin +1 ; z++ ){
@@ -587,7 +631,9 @@ void eoverpstudies_YR(
             histEoP_proj_pionsWM02[ifilltrue][imatch][icalo][ieta][padnumber]->Draw("ep,same");
             
             float EP_cut_tmp = EP_cut[ifilltrue][imatch][icalo][ieta][padnumber];
-            DrawGammaLines(EP_cut_tmp, EP_cut_tmp, 0, 0.5*histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padnumber]->GetMaximum(),1, kGray+1,3);
+            float EP_cut_tmp2 = EP_cut_95[ifilltrue][imatch][icalo][ieta][padnumber];
+            DrawGammaLines(EP_cut_tmp, EP_cut_tmp, 0, 0.5*histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padnumber]->GetMaximum(),1, kGray+1, 3);
+            DrawGammaLines(EP_cut_tmp2, EP_cut_tmp2, 0, 0.5*histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][padnumber]->GetMaximum(),1, kBlack, 7);
           drawLatexAdd(Form("%1.1f < #it{p}_{tr.}< %1.1f GeV",partE[padnumber],partE[padnumber+1]),0.15,0.87,1.4*textSizeSinglePad,kFALSE);
           drawLatexAdd(Form("#it{N}_{#pi}, #it{E/p} > %0.3f",EP_cut_tmp),0.93,0.87,1.4*textSizeSinglePad,kFALSE, kFALSE, kTRUE);
 //           cout << partE[padnumber] << "\t" << histIntCounts_pions_EoP[ifilltrue][imatch][icalo][ieta]->GetBinContent(histIntCounts_pions_EoP[ifilltrue][imatch][icalo][ieta]->GetXaxis()->FindBin((partE[padnumber]+partE[padnumber+1])/2)) << "\t" << histIntCounts_pionsM02_EoP[ifilltrue][imatch][icalo][ieta]->GetBinContent(histIntCounts_pionsM02_EoP[ifilltrue][imatch][icalo][ieta]->GetXaxis()->FindBin((partE[padnumber]+partE[padnumber+1])/2)) << endl;
@@ -596,11 +642,11 @@ void eoverpstudies_YR(
           padnumber++;
           }
         }
-
-        if(minEtaProj >= etarangemin[icalo] && maxEtaProj <= etarangemax[icalo])
-          canvasEoPSingleBins->Print(Form("%s/%s/%s/EoP_bin_electrons_and_pions_%s_%s_%2.1f_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(), minEtaProj,str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
+          
         if(ieta==nEta)
           canvasEoPSingleBins->Print(Form("%s/%s/%s/EoP_bin_electrons_and_pions_%s_%s_full_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(),str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
+        else 
+          canvasEoPSingleBins->Print(Form("%s/%s/%s/EoP_bin_electrons_and_pions_%s_%s_%2.1f_%s.%s", outputDir.Data(), caloNamePlot[icalo].Data(), matchbasis[imatch].Data(), caloNamePlot[icalo].Data(), clusterizerName.Data(), minEtaProj,str_EoverP_FillTrue[ifilltrue].Data(), suffix.Data()));
       }
     }
   }
@@ -666,10 +712,10 @@ cout << "meow" << endl;
           graphElectronEfficiency_fwhm[ifilltrue][icalo][nEta] = shrinkGraph(histElectronEfficiency_fwhm[ifilltrue][imatch][icalo][ieta], energymax[icalo] ); 
         }
 
-        graphEPcutValue[ifilltrue][icalo][ieta]       = new TGraphErrors(nEne,partE,EP_cut[ifilltrue][imatch][icalo][ieta]);
+        graphEPcutValue[ifilltrue][icalo][ieta]       = new TGraphErrors(nEne,partEcenter,EP_cut[ifilltrue][imatch][icalo][ieta]);
         shrinkGraphErr(graphEPcutValue[ifilltrue][icalo][ieta],  energymax[icalo] ); 
 
-        graphEPcutValue_fwhm[ifilltrue][icalo][ieta]  = new TGraphErrors(nEne,partE,EP_cut_FWHM[ifilltrue][imatch][icalo][ieta]);
+        graphEPcutValue_fwhm[ifilltrue][icalo][ieta]  = new TGraphErrors(nEne,partEcenter,EP_cut_FWHM[ifilltrue][imatch][icalo][ieta]);
         shrinkGraphErr(graphEPcutValue_fwhm[ifilltrue][icalo][ieta],  energymax[icalo] ); 
 
         graphEPcutValue_95[ifilltrue][icalo][ieta]   = new TGraphErrors(nEne,partE,EP_cut_95[ifilltrue][imatch][icalo][ieta]);
@@ -1071,6 +1117,127 @@ cout << "meow" << endl;
   canvasEPcutValue->Update();
   canvasEPcutValue->Print(Form("%s/EoP_cutVlue_AllCalo_true.%s",outputDir.Data(),suffix.Data()));
 
+  TLegend* legendEoPCutEta      = GetAndSetLegend2(0.13, 0.95-(7*0.65*textSizeLabelsRel), 0.60, 0.95,0.65*textSizeLabelsRel,2,"",42,0.15);
+  TH2D* eopCut2D[2][3];
+  eopCut2D[0][0]  = new TH2D("eopCut2D_recP_sigma", "", nEta, partEtaCalo, 2000, 0, 100);
+  eopCut2D[0][1]  = new TH2D("eopCut2D_recP_FWHM", "", nEta, partEtaCalo, 2000, 0, 100);
+  eopCut2D[0][2]  = new TH2D("eopCut2D_recP_95effi", "", nEta, partEtaCalo, 2000, 0, 100);
+  eopCut2D[1][0]  = new TH2D("eopCut2D_trueP_sigma", "", nEta, partEtaCalo, 2000, 0, 100);
+  eopCut2D[1][1]  = new TH2D("eopCut2D_trueP_FWHM", "", nEta, partEtaCalo, 2000, 0, 100);
+  eopCut2D[1][2]  = new TH2D("eopCut2D_trueP_95effi", "", nEta, partEtaCalo, 2000, 0, 100);
+
+  histoEPcutValue->DrawCopy();
+  for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+    for (Int_t iEta = minEtaBinCaloDis[icalo] ; iEta < maxEtaBinCaloDis[icalo]; iEta++){
+        Fill2DHistWithGraphValues(eopCut2D[1][2], graphEPcutValue_95[1][icalo][iEta], partEtaCalo[iEta]);
+        DrawGammaSetMarkerTGraph(graphEPcutValue_95[1][icalo][iEta], markerStyleEta[iEta], 1.5*markerSizeEta[iEta], colorEta[iEta] , colorEta[iEta]);
+        graphEPcutValue_95[1][icalo][iEta]->Draw("samepe");
+        legendEoPCutEta->AddEntry(graphEPcutValue_95[1][icalo][iEta],  Form("%0.1f < #eta < %0.1f", partEtaCalo[iEta],partEtaCalo[iEta+1]), "p");
+    }
+  }
+  DrawGammaLines(0.51, 39, 1,1,2,kGray+1, 2);
+  legendEoPCutEta->Draw();
+  drawLatexAdd(perfLabel.Data(),0.95,toplegval,textSizeLabelsRel,false,false,true);
+  drawLatexAdd(collisionSystem.Data(),0.95,toplegval-0.05,textSizeLabelsRel,false,false,true);
+  drawLatexAdd("#epsilon_{e^{-}} = 95%, #it{p}_{true}",0.95,toplegval-2*0.05,textSizeLabelsRel,false,false,true);
+  
+  canvasEPcutValue->Update();
+  canvasEPcutValue->Print(Form("%s/EoP_cutVlue_95Per_AllEta_true.%s",outputDir.Data(),suffix.Data()));
+
+  histoEPcutValue->DrawCopy();
+  legendEoPCutEta->Clear();
+  for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+    for (Int_t iEta = minEtaBinCaloDis[icalo] ; iEta < maxEtaBinCaloDis[icalo]; iEta++){
+        Fill2DHistWithGraphValues(eopCut2D[0][2], graphEPcutValue_95[0][icalo][iEta], partEtaCalo[iEta]);
+        DrawGammaSetMarkerTGraph(graphEPcutValue_95[0][icalo][iEta], markerStyleEta[iEta], 1.5*markerSizeEta[iEta], colorEta[iEta] , colorEta[iEta]);
+        graphEPcutValue_95[0][icalo][iEta]->Draw("samepe");
+        legendEoPCutEta->AddEntry(graphEPcutValue_95[0][icalo][iEta],  Form("%0.1f < #eta < %0.1f", partEtaCalo[iEta],partEtaCalo[iEta+1]), "p");
+    }
+  }
+  DrawGammaLines(0.51, 39, 1,1,2,kGray+1, 2);
+  legendEoPCutEta->Draw();
+  drawLatexAdd(perfLabel.Data(),0.95,toplegval,textSizeLabelsRel,false,false,true);
+  drawLatexAdd(collisionSystem.Data(),0.95,toplegval-0.05,textSizeLabelsRel,false,false,true);
+  drawLatexAdd("#epsilon_{e^{-}} = 95%, #it{p}_{rec}",0.95,toplegval-2*0.05,textSizeLabelsRel,false,false,true);
+  
+  canvasEPcutValue->Update();
+  canvasEPcutValue->Print(Form("%s/EoP_cutVlue_95Per_AllEta_rec.%s",outputDir.Data(),suffix.Data()));
+
+  histoEPcutValue->DrawCopy();
+  legendEoPCutEta->Clear();
+  for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+    for (Int_t iEta = minEtaBinCaloDis[icalo] ; iEta < maxEtaBinCaloDis[icalo]; iEta++){
+        Fill2DHistWithGraphValues(eopCut2D[1][1], graphEPcutValue_fwhm[1][icalo][iEta], partEtaCalo[iEta]);
+        DrawGammaSetMarkerTGraph(graphEPcutValue_fwhm[1][icalo][iEta], markerStyleEta[iEta], 1.5*markerSizeEta[iEta], colorEta[iEta] , colorEta[iEta]);
+        graphEPcutValue_fwhm[1][icalo][iEta]->Draw("samepe");
+        legendEoPCutEta->AddEntry(graphEPcutValue_fwhm[1][icalo][iEta],  Form("%0.1f < #eta < %0.1f", partEtaCalo[iEta],partEtaCalo[iEta+1]), "p");
+    }
+  }
+  DrawGammaLines(0.51, 39, 1,1,2,kGray+1, 2);
+  legendEoPCutEta->Draw();
+  drawLatexAdd(perfLabel.Data(),0.95,toplegval,textSizeLabelsRel,false,false,true);
+  drawLatexAdd(collisionSystem.Data(),0.95,toplegval-0.05,textSizeLabelsRel,false,false,true);
+  drawLatexAdd("FWHM-based, #it{p}_{true}",0.95,toplegval-2*0.05,textSizeLabelsRel,false,false,true);
+  
+  canvasEPcutValue->Update();
+  canvasEPcutValue->Print(Form("%s/EoP_cutVlue_FWHM_AllEta_true.%s",outputDir.Data(),suffix.Data()));
+
+  histoEPcutValue->DrawCopy();
+  legendEoPCutEta->Clear();
+  for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+    for (Int_t iEta = minEtaBinCaloDis[icalo] ; iEta < maxEtaBinCaloDis[icalo]; iEta++){
+        Fill2DHistWithGraphValues(eopCut2D[0][1], graphEPcutValue_fwhm[0][icalo][iEta], partEtaCalo[iEta]);
+        DrawGammaSetMarkerTGraph(graphEPcutValue_fwhm[0][icalo][iEta], markerStyleEta[iEta], 1.5*markerSizeEta[iEta], colorEta[iEta] , colorEta[iEta]);
+        graphEPcutValue_fwhm[0][icalo][iEta]->Draw("samepe");
+        legendEoPCutEta->AddEntry(graphEPcutValue_fwhm[0][icalo][iEta],  Form("%0.1f < #eta < %0.1f", partEtaCalo[iEta],partEtaCalo[iEta+1]), "p");
+    }
+  }
+  DrawGammaLines(0.51, 39, 1,1,2,kGray+1, 2);
+  legendEoPCutEta->Draw();
+  drawLatexAdd(perfLabel.Data(),0.95,toplegval,textSizeLabelsRel,false,false,true);
+  drawLatexAdd(collisionSystem.Data(),0.95,toplegval-0.05,textSizeLabelsRel,false,false,true);
+  drawLatexAdd("FWHM-based, #it{p}_{rec}",0.95,toplegval-2*0.05,textSizeLabelsRel,false,false,true);
+  
+  canvasEPcutValue->Update();
+  canvasEPcutValue->Print(Form("%s/EoP_cutVlue_FWHM_AllEta_rec.%s",outputDir.Data(),suffix.Data()));
+
+  histoEPcutValue->DrawCopy();
+  legendEoPCutEta->Clear();
+  for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+    for (Int_t iEta = minEtaBinCaloDis[icalo] ; iEta < maxEtaBinCaloDis[icalo]; iEta++){
+      Fill2DHistWithGraphValues(eopCut2D[1][0], graphEPcutValue[1][icalo][iEta], partEtaCalo[iEta]);
+      DrawGammaSetMarkerTGraph(graphEPcutValue[1][icalo][iEta], markerStyleEta[iEta], 1.5*markerSizeEta[iEta], colorEta[iEta] , colorEta[iEta]);
+      graphEPcutValue[1][icalo][iEta]->Draw("samepe");
+      legendEoPCutEta->AddEntry(graphEPcutValue[1][icalo][iEta],  Form("%0.1f < #eta < %0.1f", partEtaCalo[iEta],partEtaCalo[iEta+1]), "p");
+    }
+  }
+  DrawGammaLines(0.51, 39, 1,1,2,kGray+1, 2);
+  legendEoPCutEta->Draw();
+  drawLatexAdd(perfLabel.Data(),0.95,toplegval,textSizeLabelsRel,false,false,true);
+  drawLatexAdd(collisionSystem.Data(),0.95,toplegval-0.05,textSizeLabelsRel,false,false,true);
+  drawLatexAdd("#sigma-based, #it{p}_{true}",0.95,toplegval-2*0.05,textSizeLabelsRel,false,false,true);
+  
+  canvasEPcutValue->Update();
+  canvasEPcutValue->Print(Form("%s/EoP_cutVlue_Sigma_AllEta_true.%s",outputDir.Data(),suffix.Data()));
+  
+  histoEPcutValue->DrawCopy();
+  legendEoPCutEta->Clear();
+  for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+    for (Int_t iEta = minEtaBinCaloDis[icalo] ; iEta < maxEtaBinCaloDis[icalo]; iEta++){
+      Fill2DHistWithGraphValues(eopCut2D[0][0], graphEPcutValue[1][icalo][iEta], partEtaCalo[iEta]);
+      DrawGammaSetMarkerTGraph(graphEPcutValue[0][icalo][iEta], markerStyleEta[iEta], 1.5*markerSizeEta[iEta], colorEta[iEta] , colorEta[iEta]);
+      graphEPcutValue[0][icalo][iEta]->Draw("samepe");
+      legendEoPCutEta->AddEntry(graphEPcutValue[0][icalo][iEta],  Form("%0.1f < #eta < %0.1f", partEtaCalo[iEta],partEtaCalo[iEta+1]), "p");
+    }
+  }
+  DrawGammaLines(0.51, 39, 1,1,2,kGray+1, 2);
+  legendEoPCutEta->Draw();
+  drawLatexAdd(perfLabel.Data(),0.95,toplegval,textSizeLabelsRel,false,false,true);
+  drawLatexAdd(collisionSystem.Data(),0.95,toplegval-0.05,textSizeLabelsRel,false,false,true);
+  drawLatexAdd("#sigma-based, #it{p}_{rec}",0.95,toplegval-2*0.05,textSizeLabelsRel,false,false,true);
+  
+  canvasEPcutValue->Update();
+  canvasEPcutValue->Print(Form("%s/EoP_cutVlue_Sigma_AllEta_rec.%s",outputDir.Data(),suffix.Data()));
 
   histoEPcutValue->DrawCopy();
   legendPi0Merge1           = GetAndSetLegend2(0.50, 0.14, 0.70, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
@@ -1182,8 +1349,15 @@ cout << "meow" << endl;
 
 
   TFile* fileOutput = new TFile(Form("%s/output_EoverP.root",outputDir.Data()),"RECREATE");
+  
+  if (eopCut2D[0][0])eopCut2D[0][0]->Write();
+  if (eopCut2D[0][1])eopCut2D[0][1]->Write();
+  if (eopCut2D[0][2])eopCut2D[0][2]->Write();
+  if (eopCut2D[1][0])eopCut2D[1][0]->Write();
+  if (eopCut2D[1][1])eopCut2D[1][1]->Write();
+  if (eopCut2D[1][2])eopCut2D[1][2]->Write();
+    
   for(int icalo=0;icalo<maxcalo;icalo++){
-
     fileOutput->mkdir(Form("%s",caloName[icalo].Data()));
     fileOutput->cd(Form("%s",caloName[icalo].Data()));
     if(graphEPcutValue[0][icalo][nEta])graphEPcutValue[0][icalo][nEta]->Write(Form("graphEPcutValue_recP_sigma_%s",caloName[icalo].Data()));
@@ -1200,7 +1374,7 @@ cout << "meow" << endl;
     if(graphPionRejection_95[0][icalo][nEta])graphPionRejection_95[0][icalo][nEta]->Write(Form("graphPionRejection_recP_95effi_%s",caloName[icalo].Data()));
     if(graphPionRejection_95[1][icalo][nEta])graphPionRejection_95[1][icalo][nEta]->Write(Form("graphPionRejection_trueP_95effi_%s",caloName[icalo].Data()));
     if(graphElectronEfficiency[1][icalo][nEta])graphElectronEfficiency[1][icalo][nEta]->Write(Form("graphElectronEfficiency_trueP_sigma_%s",caloName[icalo].Data()));
-    if(graphElectronEfficiency_fwhm[1][icalo][nEta])graphElectronEfficiency_fwhm[1][icalo][nEta]->Write(Form("graphElectronEfficiency_trueP_fwhm_%s",caloName[icalo].Data()));
+    if(graphElectronEfficiency_fwhm[1][icalo][nEta])graphElectronEfficiency_fwhm[1][icalo][nEta]->Write(Form("graphElectronEfficiency_trueP_fwhm_%s",caloName[icalo].Data()));    
   }
   // write output file
   fileOutput->Write();
