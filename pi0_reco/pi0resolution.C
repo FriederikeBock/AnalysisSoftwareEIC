@@ -852,7 +852,7 @@ void pi0resolution(
     // histo2DPi0InvMassDummy             = new TH2F("histo2DPi0InvMassDummy","histo2DPi0InvMassDummy",11000,0.05,0.249,21000,-1000,200000);
     SetStyleHistoTH2ForGraphs(histo2DPi0InvMassDummy, "#it{M}_{#gamma#gamma} (GeV/#it{c}^{2})","Counts",0.85*textsizeLabelsInvMass, textsizeLabelsInvMass,
                             0.85*textsizeLabelsInvMass, textsizeLabelsInvMass,0.88, 0.115/(textsizeFacInvMass*marginInvMass),505,510,42,42);
-  int exampleBins[maxcalo+1] = {16,7,6,11};
+  int exampleBins[maxcalo+1] = {7,7,6,11};
   bool plotinvmass = true;
   if(plotinvmass){
     for (Int_t icalo = 0; icalo < maxcalo+1; icalo++){

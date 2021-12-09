@@ -153,12 +153,14 @@ bool eoverpstudies( int primaryTrackSource = 0, bool runSpecialCuts = false){
           trackP = recpartvec.Mag();
 
           TLorentzVector PiGen(_mcpart_px[mcID], _mcpart_py[mcID], _mcpart_pz[mcID], _mcpart_E[mcID]);
-
+          if (verbosityEOP > 4)
+            std::cout << _mcpart_E[mcID] << "\t" << icalo << "\t" << GetM02CutValueForEMC(icalo, _mcpart_E[mcID]) << std::endl;
+          
           if(abs(_mcpart_PDG[(int)_track_trueID[trackIDMatched]])==211){
             h_EoverP_pions_EoverP_E_projectionbased[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackP,PiGen.P());
             h_EoverP_pions_EoverP_E_Eta_projectionbased[icalo][0]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackP,PiGen.P(),PiGen.Eta());
             h_EoverP_pions_EoverP_E_Eta_projectionbased[icalo][1]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/PiGen.P(),PiGen.P(),PiGen.Eta());
-            if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_M02 < 1.0){ 
+            if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_M02 < GetM02CutValueForEMC(icalo, _mcpart_E[mcID])){ 
               h_EoverP_pions_EoverP_E_projectionbasedWithM02[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackP,PiGen.P());
               h_EoverP_pions_EoverP_E_Eta_projectionbasedWithM02[icalo][0]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackP,PiGen.P(),PiGen.Eta());
               h_EoverP_pions_EoverP_E_Eta_projectionbasedWithM02[icalo][1]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/PiGen.P(),PiGen.P(),PiGen.Eta());
@@ -168,10 +170,10 @@ bool eoverpstudies( int primaryTrackSource = 0, bool runSpecialCuts = false){
             h_EoverP_electrons_EoverP_E_projectionbased[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackP,PiGen.P());
             h_EoverP_electrons_EoverP_E_Eta_projectionbased[icalo][0]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackP,PiGen.P(),PiGen.Eta());
             h_EoverP_electrons_EoverP_E_Eta_projectionbased[icalo][1]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/PiGen.P(),PiGen.P(),PiGen.Eta());
-            if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_M02 < 1.0){ 
+            if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_M02 < GetM02CutValueForEMC(icalo, _mcpart_E[mcID])){ 
               h_EoverP_electrons_EoverP_E_projectionbasedWithM02[icalo]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackP,PiGen.P());
-              h_EoverP_electrons_EoverP_E_Eta_projectionbased[icalo][0]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackP,PiGen.P(),PiGen.Eta());
-              h_EoverP_electrons_EoverP_E_Eta_projectionbased[icalo][1]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/PiGen.P(),PiGen.P(),PiGen.Eta());
+              h_EoverP_electrons_EoverP_E_Eta_projectionbasedWithM02[icalo][0]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/trackP,PiGen.P(),PiGen.Eta());
+              h_EoverP_electrons_EoverP_E_Eta_projectionbasedWithM02[icalo][1]->Fill((_clusters_calo[ialgo][icalo].at(iclus)).cluster_E/PiGen.P(),PiGen.P(),PiGen.Eta());
             }
           }
         }

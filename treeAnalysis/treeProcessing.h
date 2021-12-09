@@ -18,7 +18,7 @@ const int _maxNclustersCentral = 2000;
 const int _maxNTracks = 200;
 const int _maxNProjections = 20000;
 const int _maxNMCPart = 100000;
-const int _maxNHepmcp = 1000;
+const int _maxNHepmcp = 100000;
 int verbosityBASE = 0;
 bool _useAlternateForProjections = false;
 float _nEventsTree;
@@ -207,6 +207,8 @@ float _vertex_true_x;
 float _vertex_true_y;
 float _vertex_true_z;
 
+Int_t trackID_ScatteredElectron = -1;
+
 // tracks
 int _nTracks;
 float* _track_ID                 = new float[_maxNTracks];
@@ -217,7 +219,9 @@ float* _track_pz                 = new float[_maxNTracks];
 float* _track_x                  = new float[_maxNTracks];
 float* _track_y                  = new float[_maxNTracks];
 float* _track_z                  = new float[_maxNTracks];
+short* _track_charge             = new short[_maxNTracks];
 unsigned short* _track_source             = new unsigned short[_maxNTracks];
+
 std::array<std::vector<int>, _maxNTracks> _track_RefProjID;
 // Initializes all elements to 0
 std::array<bool, _maxNTracks> _track_hasTTL{{}};
@@ -228,6 +232,11 @@ std::array<bool, _maxNTracks> _track_hasOL{{}};
 std::array<matchingCalStrct, _maxNTracks> _track_matchECal{{}};
 std::array<matchingCalStrct, _maxNTracks> _track_matchHCal{{}};
 std::array<std::vector<tofStrct>, _maxNTracks> _track_TOFmeas;
+
+// hadron PID
+float* _track_pion_LL           = new float[_maxNTracks];
+float* _track_kaon_LL           = new float[_maxNTracks];
+float* _track_proton_LL         = new float[_maxNTracks];
 
 int _nProjections;
 float* _track_ProjTrackID                 = new float[_maxNProjections];
@@ -272,16 +281,16 @@ float _hepmcp_vtx_t;
 float _hepmcp_x1;
 float _hepmcp_x2;
 float _hepmcp_Q2;
-int*  _hepmcp_BCID = new int[_maxNHepmcp];
+int*  _hepmcp_BCID            = new int[_maxNHepmcp];
 // float*  _hepmcp_ID_parent = new float[_maxNHepmcp];
-int*  _hepmcp_status = new int[_maxNHepmcp];
-int*  _hepmcp_PDG = new int[_maxNHepmcp];
-float*  _hepmcp_E = new float[_maxNHepmcp];
-float*  _hepmcp_px = new float[_maxNHepmcp];
-float*  _hepmcp_py = new float[_maxNHepmcp];
-float*  _hepmcp_pz = new float[_maxNHepmcp];
-int*  _hepmcp_m1 = new int[_maxNHepmcp];
-int*  _hepmcp_m2 = new int[_maxNHepmcp];
+int*  _hepmcp_status          = new int[_maxNHepmcp];
+int*  _hepmcp_PDG             = new int[_maxNHepmcp];
+float*  _hepmcp_E             = new float[_maxNHepmcp];
+float*  _hepmcp_px            = new float[_maxNHepmcp];
+float*  _hepmcp_py            = new float[_maxNHepmcp];
+float*  _hepmcp_pz            = new float[_maxNHepmcp];
+int*  _hepmcp_m1              = new int[_maxNHepmcp];
+int*  _hepmcp_m2              = new int[_maxNHepmcp];
 
 TRandom3  _fRandom;                                  // random for effi generation
 
@@ -341,7 +350,12 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("tracks_z",             _track_z);
       inputTree->SetBranchAddress("tracks_trueID",        _track_trueID);
       inputTree->SetBranchAddress("tracks_source",        _track_source);
+      inputTree->SetBranchAddress("tracks_charge",        _track_charge);
       
+      inputTree->SetBranchAddress("track_pion_LL",	  _track_pion_LL);
+      inputTree->SetBranchAddress("track_kaon_LL",	  _track_kaon_LL);
+      inputTree->SetBranchAddress("track_proton_LL",	  _track_proton_LL);
+ 
       inputTree->SetBranchAddress("nProjections",         &_nProjections);
       inputTree->SetBranchAddress("track_ProjTrackID",    _track_ProjTrackID);
       inputTree->SetBranchAddress("track_ProjLayer",      _track_ProjLayer);
@@ -511,6 +525,7 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("vertex_true_z",                &_vertex_true_z);
     }
     // MC particles
+
     inputTree->SetBranchAddress("nMCPart",          &_nMCPart);
     inputTree->SetBranchAddress("mcpart_ID",        _mcpart_ID);
     inputTree->SetBranchAddress("mcpart_ID_parent", _mcpart_ID_parent);
@@ -1178,10 +1193,20 @@ void prepareMCMatchInfo(){
     _mcpart_RecTrackIDs[(int)_track_trueID[itrk]].push_back(itrk);
   }
   Int_t nCurrProj = 0;
+  trackID_ScatteredElectron = -1;
   for(Int_t itrk=0; itrk<_nTracks; itrk++){
     if (verbosityBASE > 2) std::cout << "current track: " << itrk <<std::endl;
     unsigned short trackSource = _track_source[itrk];
     TVector3 trackVecP(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
+    if (_track_trueID[itrk] >= 0 && trackSource == 0){
+      Int_t mcID = _track_trueID[itrk];
+      if (_mcpart_PDG[mcID] == 11){
+        int bcid = _mcpart_BCID[mcID]-1;
+        if (_hepmcp_status[bcid] == 1 && _hepmcp_status[_hepmcp_m1[bcid]-1] > 1)
+          trackID_ScatteredElectron = itrk;
+      }      
+    }
+    
     for(Int_t iproj=nCurrProj; iproj<_nProjections; iproj++){
       if (itrk != _track_ProjTrackID[iproj])
         continue;
@@ -1320,8 +1345,10 @@ void prepareMCMatchInfo(){
     
     _track_matchECal[itrk] = matchingCalStrct();
     _track_matchHCal[itrk] = matchingCalStrct();
-   
   }
+  if (verbosityBASE > 0)
+    if (trackID_ScatteredElectron != -1) std::cout << "found scattered electron: " << trackID_ScatteredElectron << std::endl;
+  
 }
 
 // **********************************************************************************************

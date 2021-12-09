@@ -132,6 +132,7 @@ std::vector<matchingStrct> isClusterMatched(  clustersStrct tempcluster,
       float delta_1 = isFwd ? trackvec.X()-tempcluster.cluster_X : tracketa-tempcluster.cluster_Eta;
       float delta_2 = isFwd ? trackvec.Y()-tempcluster.cluster_Y : trackphi-tempcluster.cluster_Phi;
 
+//				cout << "CLUST  \t TrackID " << itrk << " Calo " << caloEnum << " dR = " << sqrt(delta_1*delta_1 + delta_2*delta_2) << endl;
       // fill delta histogram
       h_clusterizer_all_2D_delta[caloEnum][clusterizerEnum]->Fill(delta_1,delta_2);
 
@@ -997,7 +998,7 @@ void runclusterizer(
       }
 
       // determine remaining cluster properties from its towers
-      float* showershape_eta_phi = CalculateM02andWeightedPosition(cluster_towers, weightM02, tempstructC.cluster_E, caloEnum, false);
+      float* showershape_eta_phi = CalculateM02andWeightedPosition(cluster_towers, tempstructC.cluster_E, caloEnum, false);
       tempstructC.cluster_M02 = showershape_eta_phi[0];
       tempstructC.cluster_M20 = showershape_eta_phi[1];
       tempstructC.cluster_Eta = showershape_eta_phi[2];

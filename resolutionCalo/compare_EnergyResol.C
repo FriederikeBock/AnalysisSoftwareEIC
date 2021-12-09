@@ -142,7 +142,7 @@ void compare_EnergyResol(
         SetStyleHistoTH1ForGraphs(h_exampleBin_reso[iSet][pid][iEta], "#it{E}^{rec}/#it{E}^{MC}", "probability",
                                   0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1, 510, 505);
         h_exampleBin_reso[iSet][pid][iEta]->GetXaxis()->SetRangeUser(0.,1.25);
-        h_exampleBin_reso[iSet][pid][iEta]->GetYaxis()->SetRangeUser(1e-3*maximYRange,5*maximYRange);
+        h_exampleBin_reso[iSet][pid][iEta]->GetYaxis()->SetRangeUser(1e-5*maximYRange,20*maximYRange);
         
         DrawGammaSetMarker(h_exampleBin_reso[iSet][pid][iEta], markerStyleSet[iSet], markerSizeSet[iSet], colorSet[iSet], colorSet[iSet]);
         if (iSet == 0)
@@ -193,7 +193,7 @@ void compare_EnergyResol(
       SetStyleHistoTH1ForGraphs(h_exampleBinF_reso[iSet][pid], "#it{E}^{rec}/#it{E}^{MC}", "probability",
                                 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1, 510, 505);
       h_exampleBinF_reso[iSet][pid]->GetXaxis()->SetRangeUser(0.,1.25);
-      h_exampleBinF_reso[iSet][pid]->GetYaxis()->SetRangeUser(1e-3*maximYRange,5*maximYRange);
+      h_exampleBinF_reso[iSet][pid]->GetYaxis()->SetRangeUser(1e-5*maximYRange,20*maximYRange);
       
       DrawGammaSetMarker(h_exampleBinF_reso[iSet][pid], markerStyleSet[iSet], markerSizeSet[iSet], colorSet[iSet], colorSet[iSet]);
       if (iSet == 0)
@@ -241,7 +241,7 @@ void compare_EnergyResol(
       SetStyleHistoTH1ForGraphs(h_exampleBinFH_reso[iSet][pid], "#it{E}^{rec}/#it{E}^{MC}", "probability",
                                 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,1.1, 510, 505);
       h_exampleBinFH_reso[iSet][pid]->GetXaxis()->SetRangeUser(0.,1.25);
-      h_exampleBinFH_reso[iSet][pid]->GetYaxis()->SetRangeUser(1e-3*maximYRange,5*maximYRange);
+      h_exampleBinFH_reso[iSet][pid]->GetYaxis()->SetRangeUser(1e-5*maximYRange,20*maximYRange);
       
       DrawGammaSetMarker(h_exampleBinFH_reso[iSet][pid], markerStyleSet[iSet], markerSizeSet[iSet], colorSet[iSet], colorSet[iSet]);
       if (iSet == 0)
@@ -264,6 +264,8 @@ void compare_EnergyResol(
 
     cExampleBin->Print(Form("%s/%s_%s_ExampleBinHighest_%d.%s", outputDir.Data(), calo.Data(), readNames[pid].Data(), exampleBin, suffix.Data()));    
   }
+  
+  
   
   
 }

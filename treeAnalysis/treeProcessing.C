@@ -12,12 +12,12 @@
 #include "../common/plottingheader.h"
 #include "treeProcessing.h"
 #include "event_utils.cxx"
-#include "jet_finder.cxx"
-#include "jet_observables.cxx"
+//#include "jet_finder.cxx"
+//#include "jet_observables.cxx"
 #include "caloheader.h"
 #include "clusterizer.cxx"
 
-#include "jetresolutionhistos.cxx"
+//#include "jetresolutionhistos.cxx"
 #include "caloresolutionhistos.cxx"
 #include "clusterstudies.cxx"
 #include "trackingefficiency.cxx"
@@ -26,6 +26,19 @@
 #include "eoverpstudies.cxx"
 #include "pi0studies.cxx"
 #include "tofpid.cxx"
+
+#include "disreconstruction.cxx"
+#include "electronpid.cxx"
+
+#include <TROOT.h>
+#include <TString.h>
+#include <TSystem.h>
+#include <TChain.h>
+#include <TVector3.h>
+
+
+#include <iostream>
+#include <fstream>
 
 void treeProcessing(
     TString inFile              = "",
@@ -51,6 +64,7 @@ void treeProcessing(
     gSystem->Exec("mkdir -p "+outputDir);
     gSystem->Exec("mkdir -p "+outputDir + "/etaphi");
 
+	bool _do_jetfinding = false;
     if(do_jetfinding) _do_jetfinding = true;
     // switch projection layer to most appropriate
     if (brokenProjections){
@@ -59,7 +73,9 @@ void treeProcessing(
     } else { 
       std::cout << "using calorimeter projections for matching" << std::endl;
     }
-    bool runPi0Reco = false;
+    
+    LoadM02CutValueGraphs("output_ShowerShape.root");
+    
     // load tree
     TChain *const tt_event = new TChain("event_tree");
     if (inFile.EndsWith(".root")) {                     // are we loading a single root tree?
@@ -99,6 +115,8 @@ void treeProcessing(
     if(_doClusterECalibration){
         std::cout << "clusters will be energy-corrected and subsequently smeared to meet testbeam constant term!" << std::endl;
     }
+
+/*
     // Additional setup
     auto eventObservables = EventObservables();
     auto jetObservablesTrue = JetObservables{JetType_t::full, "true"};
@@ -119,6 +137,7 @@ void treeProcessing(
         jetObservablesCalo.Init(jetRParameters);
         jetObservablesFull.Init(jetRParameters);
     }
+*/
 
     _nEventsTree=0;
     // main event loop
@@ -333,6 +352,7 @@ void treeProcessing(
             }
           }
         }
+
         if(do_reclus && kMA<_active_algo && _do_jetfinding){
           // ANCHOR FEMC cluster loop variables:
           // for(Int_t iclus=0; iclus<_nclusters_FEMC; iclus++){
@@ -536,6 +556,10 @@ void treeProcessing(
             jetresolutionhistos(jetsEmcalRec,  jetsTrue,  6, jetR);
             // TString jettype[njettypes] = {"track", "full","hcal","calo","all"};
         }
+
+        disreconstruction();
+        electronpid();
+
         if(tracksEnabled){
           if(verbosity>1) std::cout << "running trackingefficiency" << std::endl;
           trackingefficiency();
@@ -545,8 +569,9 @@ void treeProcessing(
           trackingcomparison();
           if(verbosity>1) std::cout << "finished tracking studies" << std::endl;
         }
-        if (runPi0Reco){
+        if (addOutputName.Contains("PI0")){
           pi0studies();
+          if(verbosity>1) std::cout << "finished pi0 studies" << std::endl;
         }
         if (runCaloRes){
           if(verbosity>1) std::cout << "running clusterstudies" << std::endl;
@@ -562,6 +587,7 @@ void treeProcessing(
         clearMCRecMatchVectors();
 
     } // event loop end
+/*
     if (_do_jetfinding) {
         std::cout << "saving event level observables\n";
         eventObservables.Write(outputDir.Data());
@@ -574,6 +600,7 @@ void treeProcessing(
     }
     std::cout << "running jetresolutionhistosSave" << std::endl;
     jetresolutionhistosSave();
+*/
     if (runCaloRes){
       std::cout << "running caloresolutionhistosSave" << std::endl;
       caloresolutionhistossave();
@@ -600,7 +627,8 @@ void treeProcessing(
       std::cout << "running hitstudiesSave" << std::endl;
       hitstudiesSave();
     }
-    if(runPi0Reco){
+    if(addOutputName.Contains("PI0")){
+      std::cout << "running pi0studiesSave" << std::endl;
       pi0studiesSave();
     }
     if(tracksEnabled) {
