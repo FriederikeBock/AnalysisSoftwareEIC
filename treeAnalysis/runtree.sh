@@ -93,6 +93,14 @@ fi
 
 
 
+if [ $1 = "cades_pythia_q2" ]; then
+maxevt=50000 #-1 #10000
+    input="/media/nschmidt/SSD/simulationOutputCADES/pythia_productions/merged_output_TTLGEO_7_HITS_P6_Q2_HEPMCVTXT_phpythia6_ep18x275_q2_100/pythia6_ep18x275.root"
+    geometry=/media/nschmidt/SSD/simulationOutputCADES/geometry.root
+    root -x -l -b -q 'treeProcessing.C+("'$input'","'$geometry'","CADES_PYTHIA_TTL7_HEPMCVTXT_JETS",'$maxevt',true,true  ,false,0, 0, "anti-kt", 0.5, 30, false, false, false)'
+fi
+
+
 if [ $1 = "cades_singlepion6GeV" ]; then
 maxevt=1e6
     #input=/media/nschmidt/SSD/simulationOutputCADES/single_particle_productions/merged_output_TTLGEO_7_HITS_SimpleMultiPion/merged_output_TTLGEO_7_HITS_SimpleMultiPion.root

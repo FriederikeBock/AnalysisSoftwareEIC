@@ -23,7 +23,9 @@ const float min_eta[njettypes]   = {-3.5, 1.5, 1.5, 1.5, 1.5};  // TODO Save thi
 const float max_eta[njettypes]   = {3.5, 3.5, 3.5, 3.5, 3.5};
 
 // Regions to group plots into
+// const int eta_regions = 3;
 const int eta_regions = 3;
+// const float eta_regions_boundaries[eta_regions + 1] = {-3.5, -1.7, 1.3, 3.5};
 const float eta_regions_boundaries[eta_regions + 1] = {-3.5, -1.5, 1.5, 3.5};
 
 struct plottingStyleData
@@ -33,7 +35,7 @@ struct plottingStyleData
   int linestyle_jets[njettypes] = {1, 2, 2, 4, 8};//, 8, 9};
   TString str_jet_type[njettypes] = {"track", "calo", "hcal", "nocluster", "emcal"};
   TString str_jet_type_plot[njettypes] = {"Track Jets", "Calo Jets", "HCal Jets", "EMC No Cluster", "EMCal Jets"};
-  TString collisionSystem = "Pythia 6, ep 18x100, Q^{2}>100";
+  TString collisionSystem = "Pythia 6, ep 18x275, Q^{2}>100";
   TString jetMatching = "anti-#it{k}_{T}, #it{R} = 0.5";
   TString format;
 };
@@ -383,18 +385,20 @@ void resolutionJETStree(
 
 void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][nEta+eta_regions], TString title, TString outputFormat, plottingStyleData style, float yMin, float yMax, TString xLabel, TString yLabel) {
   // SETUP
+  float maxX = 109;
+  maxX = 149;
   for (int grouped = 0; grouped <= 1; grouped++) {
     TCanvas *canvasJES = new TCanvas("canvasJES", "", 200, 10, 1000, 900);
     DrawGammaCanvasSettings( canvasJES, 0.1, 0.01, 0.01, 0.11);
     Double_t textSizeSinglePad = 0.05;
     Double_t textSizeLabelsPixel = 35;
     Double_t textSizeLabelsRel = 58.0 / 1300;
-    TH2F * scaleHist = new TH2F("scaleHist", "scaleHist", 1000, 0, 109, 1000, yMin, yMax);
+    TH2F * scaleHist = new TH2F("scaleHist", "scaleHist", 1000, 0, maxX, 1000, yMin, yMax);
     SetStyleHistoTH2ForGraphs(scaleHist, xLabel, yLabel, 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.91);
     scaleHist->GetXaxis()->SetNoExponent();
     scaleHist->GetYaxis()->SetNdivisions(505,true);
     scaleHist->GetXaxis()->SetMoreLogLabels(true);
-    DrawGammaLines(0, 109, 0., 0., 1, kGray+2, 7);
+    DrawGammaLines(0, maxX, 0., 0., 1, kGray+2, 7);
     
     // ITERATE OVER JET TYPES
     for(int ijr=0; ijr<njettypes; ijr++){
@@ -402,7 +406,7 @@ void plotResoOrScale(TH1F *scaleData[nInputs][njettypes][nEta+eta_regions], TStr
         scaleHist->GetXaxis()->SetRangeUser(0, 59);
       }
       else {
-        scaleHist->GetXaxis()->SetRangeUser(0, 109);
+        scaleHist->GetXaxis()->SetRangeUser(0, maxX);
       }
       scaleHist->DrawCopy();
       TLegend *scaleLegend;

@@ -208,7 +208,7 @@ void jetresolutionhistos(std::tuple<std::shared_ptr<fastjet::ClusterSequenceArea
     // if(verbosityJRH>1)std::cout << "jet " << i << ": "<< std::get<1>(recjets)[i].pt() << " " << std::get<1>(recjets)[i].rap() << " " << std::get<1>(recjets)[i].phi() << "  Ntrue: " << std::get<1>(truejets).size() << endl;
     h_constituents_Eta[select]->Fill(std::get<1>(recjets)[i].eta(),(std::get<1>(recjets)[i].constituents()).size());
 
-    for (std::size_t j = 2; j < std::get<1>(truejets).size(); j++) {
+    for (std::size_t j = 0; j < std::get<1>(truejets).size(); j++) {
       eta = std::get<1>(truejets)[j].eta();
       if (eta < min_eta[select] || eta > max_eta[select]) {
         continue;

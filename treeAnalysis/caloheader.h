@@ -548,7 +548,7 @@ float ReturnEtaCaloMatching(int caloID, int caloID2){
 
 // ANCHOR function to determine shower shape
 float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers, float cluster_E_calc, int caloSelect, bool debugOutput){
-    static float returnVariables[7]; //0:M02, 1:M20, 2:eta, 3: phi
+    static float returnVariables[8]; //0:M02, 1:M20, 2:eta, 3: phi
     float w_tot = 0;
     std::vector<float> w_i;
     TVector3 vecTwr;
@@ -581,6 +581,7 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
     float delta_phi_phi[4] = {0};
     float delta_eta_eta[4] = {0};
     float delta_eta_phi[4] = {0};
+    float dispersion = 0;
     int supModLeadingCell = -1;
     for(int cellI=0; cellI<(int)cluster_towers.size(); cellI++){
 //       vecTwrTmp = TowerPositionVectorFromIndicesGeometry(cluster_towers.at(cellI).tower_iEta,cluster_towers.at(cellI).tower_iPhi, cluster_towers.at(cellI).tower_iL, caloSelect);
@@ -599,7 +600,21 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
       delta_eta_phi[1] += (w_i.at(cellI)*ieta*iphi)/w_tot;
       delta_eta_phi[2] += (w_i.at(cellI)*iphi)/w_tot;
       delta_eta_phi[3] += (w_i.at(cellI)*ieta)/w_tot;
+
+      vecTwrTmp = TowerPositionVectorFromIndicesGeometry(cluster_towers.at(cellI).tower_iEta,cluster_towers.at(cellI).tower_iPhi, cluster_towers.at(cellI).tower_iL, caloSelect);
+      if(IsForwardCalorimeter(caloSelect)){
+        // scale cluster position to z-plane
+        vecTwr*=abs(vecTwrTmp.Z()/vecTwr.Z());
+      } else {
+        // scale cluster position to same radial position as towers
+        vecTwr*=abs(sqrt(pow(vecTwrTmp.X(),2)+pow(vecTwrTmp.Y(),2))/sqrt(pow(vecTwr.X(),2)+pow(vecTwr.Y(),2)));
+      }
+      float dx2 = pow(vecTwrTmp.X()-vecTwr.X(),2);
+      float dy2 = pow(vecTwrTmp.Y()-vecTwr.Y(),2);
+      float dz2 = pow(vecTwrTmp.Z()-vecTwr.Z(),2);
+      dispersion+= (w_i.at(cellI)*(dx2+dy2+dz2))/w_tot;
     }
+    returnVariables[7]=dispersion;
     delta_phi_phi[0] = delta_phi_phi[1] - (delta_phi_phi[2] * delta_phi_phi[3]);
     delta_eta_eta[0] = delta_eta_eta[1] - (delta_eta_eta[2] * delta_eta_eta[3]);
     delta_eta_phi[0] = delta_eta_phi[1] - (delta_eta_phi[2] * delta_eta_phi[3]);
@@ -788,7 +803,7 @@ void fillHCalClustersIntoJetFindingInputs( int caloEnum, int clusterizerEnum,
 )
 {
   for(Int_t iclus=0; iclus<(Int_t)_clusters_calo[clusterizerEnum][caloEnum].size(); iclus++){
-      if(!(_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_isMatched){
+      // if(!(_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_isMatched){
           double pt = (_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_E / cosh((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_Eta);
           double px = pt * cos((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_Phi);
           double py = pt * sin((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_Phi);
@@ -805,7 +820,7 @@ void fillHCalClustersIntoJetFindingInputs( int caloEnum, int clusterizerEnum,
           jetf_all_py.push_back(py);
           jetf_all_pz.push_back(pz);
           jetf_all_E.push_back((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_E);
-      }
+      // }
   }
 }
 
@@ -818,7 +833,7 @@ void fillECalClustersIntoJetFindingInputs(
 )
 {
     for(Int_t iclus=0; iclus<(Int_t)_clusters_calo[clusterizerEnum][caloEnum].size(); iclus++){
-      if(!(_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_isMatched){
+      // if(!(_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_isMatched){
           double pt = (_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_E / cosh((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_Eta);
           double px = pt * cos((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_Phi);
           double py = pt * sin((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_Phi);
@@ -839,7 +854,7 @@ void fillECalClustersIntoJetFindingInputs(
           jetf_full_py.push_back(py);
           jetf_full_pz.push_back(pz);
           jetf_full_E.push_back((_clusters_calo[clusterizerEnum][caloEnum].at(iclus)).cluster_E);
-      }
+      // }
   }
 }
 
