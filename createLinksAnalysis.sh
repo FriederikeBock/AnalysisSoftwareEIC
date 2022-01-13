@@ -6,6 +6,7 @@ fi
 
 mkdir trackingresolution/
 mkdir treeAnalysis/
+mkdir treeAnalysis/inputs
 mkdir resolutionCalo/
 mkdir clusterProperties/
 mkdir clusterstudies/
@@ -17,6 +18,7 @@ ln -s $EICANA/trackingresolution/*.C trackingresolution/
 ln -s $EICANA/trackingresolution/*.sh trackingresolution/
 ln -s $EICANA/treeAnalysis/*.h treeAnalysis/
 ln -s $EICANA/treeAnalysis/*.cxx treeAnalysis/
+ln -s $EICANA/treeAnalysis/inputs/*.root treeAnalysis/inputs/
 ln -s $EICANA/treeAnalysis/*.C treeAnalysis/
 ln -s $EICANA/treeAnalysis/*.sh treeAnalysis/
 ln -s $EICANA/pi0_reco/*.C pi0_reco/

@@ -8,13 +8,12 @@ void disreconstruction() {
   ResetDISVariables();
 
   GetBornEvent();
-  LeptonReconstruction();
+  bool havelepton =  LeptonReconstruction();
 //	LeptonReconstructionPrimary();
 //	HadronReconstruction();
   GetMissingTransverse();
 
   disTree->Fill();
-
 }
 
 void SetBeamEnergies(double electronE, double hadronE) {
@@ -65,8 +64,9 @@ void LoadEopCutGraph() {
   EopFEMC   = (TGraph*)femcFile->Get(Form("graphEPcutValue_%s_%s_FEMC", pType.Data(), eopCutType.Data()));
 
   // 2D
+  std::cout << Form("eopCut2D_%s_%s", pType.Data(), eopCutType.Data()) << std::endl;
   eopcut2Dhist  = (TH2D*)rejFile->Get(Form("eopCut2D_%s_%s", pType.Data(), eopCutType.Data()));
-  
+  if (!eopcut2Dhist) std::cout << "failed to find 2D hist" << std::endl;
 }
 
 void LoadResolutions() {
@@ -78,35 +78,37 @@ void LoadResolutions() {
   trackRes = (TH2D*)trackResFile->Get("Electron_reso_track");
 }
 
-void LeptonReconstruction() {
+bool LeptonReconstruction() {
 
   int eTrackID = ElectronPID(false);	
 
-  if(eTrackID == -1) return;
+  if( eTrackID < 0 ){
+    if (verbosity_DISREC > 0) std::cout << "aborting Lepton reco" << std::endl;
+    return false;
+  }
 
   fRecElectron = 1;
 
   e_tr_PDG = (int)_mcpart_PDG[(int)_track_trueID[eTrackID]];
-
+  
   TVector3 e_tr_vec(_track_px[eTrackID], _track_py[eTrackID], _track_pz[eTrackID]);
   double track_mag = e_tr_vec.Mag();
   double track_eta = e_tr_vec.PseudoRapidity();
-
+  
   int caloID      = _track_matchECal[eTrackID].caloid;
   int clustID     = _track_matchECal[eTrackID].id;
   double calo_mag = (_clusters_calo[fClusterAlgo][caloID].at(clustID)).cluster_E;
-
+  
   int track_res_bin = trackRes->FindBin(track_eta, track_mag); 
   int calo_res_bin = caloRes->FindBin(track_eta, track_mag); 
-
+  
   double sigma_track = trackRes->GetBinContent(track_res_bin);
   double sigma_calo  =  caloRes->GetBinContent(calo_res_bin);
-
+  
   double track_weight = 1. / (sigma_track * sigma_track);
   double calo_weight = 1. / (sigma_calo * sigma_calo);
-
-  double average_mag = (track_mag*track_weight + calo_mag*calo_weight) / (track_weight + calo_weight);
   
+  double average_mag = (track_mag*track_weight + calo_mag*calo_weight) / (track_weight + calo_weight);
   e_tr_vec.SetMag(average_mag);
 
   e_tr_p  = e_tr_vec.Mag();
@@ -120,8 +122,8 @@ void LeptonReconstruction() {
   TLorentzVector rec_eprime = CorrectCrossingAngle(TLorentzVector(e_tr_vec.x(), e_tr_vec.y(), e_tr_vec.z(), sqrt(e_tr_vec.Mag2() + Me*Me)));
 
   CalculateElectronKinematics(rec_eprime, e_tr_xB, e_tr_Q2, e_tr_W2, e_tr_y, e_tr_eta);	
-
-  return;
+  
+  return true;
 
 }
 
@@ -297,6 +299,8 @@ void GetMissingTransverse() {
 
   vector<TLorentzVector> clusters_all;
 
+  if (verbosity_DISREC) std::cout <<   "missing transverse" << std::endl;
+
   for(int icalo = 0; icalo < _active_calo; icalo++) {
     
     if(!caloEnabled[icalo]) continue;	
@@ -362,6 +366,8 @@ void GetMissingTransverse() {
   E_tot = sum_all.E();
   pz_tot = sum_all.Pz();
 
+  if (verbosity_DISREC) std::cout <<   "missing transverse done" << std::endl;
+  
   return;
 }
 
@@ -394,7 +400,6 @@ int ElectronPID(bool reqParentID ) {
     } 
     if(reqParentID && (parentID != 10001) ) continue;
 */
-
     Int_t mcID = _track_trueID[itrk];
     if (mcID < 0) continue;
     double mc_PDG     = _mcpart_PDG[mcID] ;
@@ -416,14 +421,13 @@ int ElectronPID(bool reqParentID ) {
     int caloID  = _track_matchECal[itrk].caloid;
     if (caloID == -1) 
       continue;
-    int etbin   = 0;
+    
     if (!use1DEoPDISrecPID){
       if (useTruePDISrecPID){
         EopCut = eopcut2Dhist->Interpolate(mc_eta, mc_p);
       } else {
         EopCut = eopcut2Dhist->Interpolate(mc_eta, track_p);
       }
-      
     } else {
       if(caloID == kEEMC) {
         // EEMC
@@ -490,7 +494,6 @@ int ElectronPID(bool reqParentID ) {
   }
   if (!foundScatE)
     missedScatteredElectronDISLeptonReco++;
-  
   return eTrack;
 }
 

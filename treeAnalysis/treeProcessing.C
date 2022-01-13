@@ -12,12 +12,12 @@
 #include "../common/plottingheader.h"
 #include "treeProcessing.h"
 #include "event_utils.cxx"
-//#include "jet_finder.cxx"
-//#include "jet_observables.cxx"
+#include "jet_finder.cxx"
+#include "jet_observables.cxx"
 #include "caloheader.h"
 #include "clusterizer.cxx"
 
-//#include "jetresolutionhistos.cxx"
+#include "jetresolutionhistos.cxx"
 #include "caloresolutionhistos.cxx"
 #include "clusterstudies.cxx"
 #include "trackingefficiency.cxx"
@@ -64,7 +64,7 @@ void treeProcessing(
     gSystem->Exec("mkdir -p "+outputDir);
     gSystem->Exec("mkdir -p "+outputDir + "/etaphi");
 
-	bool _do_jetfinding = false;
+    bool _do_jetfinding = false;
     if(do_jetfinding) _do_jetfinding = true;
     // switch projection layer to most appropriate
     if (brokenProjections){
@@ -109,14 +109,14 @@ void treeProcessing(
     Long64_t nEntriesTree                 = tt_event->GetEntries();
     std::cout << "Number of events in tree: " << nEntriesTree << std::endl;
     if(maxNEvent>0 && maxNEvent<nEntriesTree){
-        nEntriesTree = maxNEvent;
-        std::cout << "Will only analyze first " << maxNEvent << " events in the tree..." << std::endl;
+      nEntriesTree = maxNEvent;
+      std::cout << "Will only analyze first " << maxNEvent << " events in the tree..." << std::endl;
     }
     if(_doClusterECalibration){
-        std::cout << "clusters will be energy-corrected and subsequently smeared to meet testbeam constant term!" << std::endl;
+      std::cout << "clusters will be energy-corrected and subsequently smeared to meet testbeam constant term!" << std::endl;
     }
 
-/*
+
     // Additional setup
     auto eventObservables = EventObservables();
     auto jetObservablesTrue = JetObservables{JetType_t::full, "true"};
@@ -125,6 +125,11 @@ void treeProcessing(
     auto jetObservablesCalo = JetObservables{JetType_t::calo};
     auto jetObservablesFull = JetObservables{JetType_t::full};
 
+    if (addOutputName.Contains("DISEPID")){
+      InitializeDISRecon();
+      make_epid_tree(Form("%s/electronpidTree.root",outputDir.Data()));
+    }
+    
     if (_do_jetfinding) {
         // Event level
         eventObservables.Init();
@@ -137,7 +142,7 @@ void treeProcessing(
         jetObservablesCalo.Init(jetRParameters);
         jetObservablesFull.Init(jetRParameters);
     }
-*/
+
 
     _nEventsTree=0;
     // main event loop
@@ -557,9 +562,11 @@ void treeProcessing(
             // TString jettype[njettypes] = {"track", "full","hcal","calo","all"};
         }
 
-        disreconstruction();
-        electronpid();
-
+        if (addOutputName.Contains("DISEPID")){
+          disreconstruction();
+          electronpid();
+        }
+        
         if(tracksEnabled){
           if(verbosity>1) std::cout << "running trackingefficiency" << std::endl;
           trackingefficiency();
@@ -634,7 +641,17 @@ void treeProcessing(
     if(tracksEnabled) {
       std::cout << "running trackmatchingstudiesSave" << std::endl;
       trackmatchingstudiesSave();
-      if(addOutputName.Contains("EOP"))eoverpstudiesSave();
+      if(addOutputName.Contains("EOP")){
+        std::cout << "running eoverpstudiesSave" << std::endl;
+        eoverpstudiesSave();
+      }
+    }
+    if (addOutputName.Contains("DISEPID")){
+      std::cout << "writing DIS tree" << std::endl;
+      WriteDISTree(nEntriesTree);
+      std::cout << "writing epid DIS tree" << std::endl;
+      write_epid_tree();
+      
     }
     std::cout << "running clusterizerSave" << std::endl;
     clusterizerSave();

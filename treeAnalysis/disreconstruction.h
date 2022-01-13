@@ -179,7 +179,7 @@ void LoadEopCutGraph();
 void LoadResolutions();
 
 void ResetDISVariables();
-void LeptonReconstruction();
+bool LeptonReconstruction();
 void HadronReconstruction();
 void GetBornEvent();
 int ElectronPID(bool);

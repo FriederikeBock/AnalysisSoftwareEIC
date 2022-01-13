@@ -86,7 +86,7 @@ void epidTreeProcessing(
         std::cout << "clusters will be energy-corrected and subsequently smeared to meet testbeam constant term!" << std::endl;
     }
 
-	make_epid_tree(addOutputName);
+    make_epid_tree(addOutputName);
 
     _nEventsTree=0;
     // main event loop
