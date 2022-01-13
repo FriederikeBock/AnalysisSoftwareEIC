@@ -20,13 +20,15 @@ fi
 
 ls $SINGULARIYMACROS/*.C
 rm $SINGULARIYMACROS/*.C
-rm $SINGULARIYCALIB/Beam/*.gdml 
+# rm $SINGULARIYCALIB/Beam/*.gdml 
+rm $SINGULARIYCALIB/BarrelEcal/mapping/*.txt
 if [ $2 = "link" ]; then
   ln -s $EICMACROS/*.C $SINGULARIYMACROS/
   if [[ "$1" == *"EIC"* ]]; then
     ln -s $SPHENIXMACROS/*.C $SINGULARIYMACROS/
   fi
-  ln -s $EICCALIB/Beam/*.gdml $SINGULARIYCALIB/Beam/
+#   ln -s $EICCALIB/Beam/*.gdml $SINGULARIYCALIB/Beam/
+  ln -s $EICCALIB/BarrelEcal/mapping/*.txt $SINGULARIYCALIB/BarrelEcal/mapping/
 elif [ $2 = "copy" ]; then
   cp $EICMACROS/*.C $SINGULARIYMACROS/
   if [[ "$1" == *"EIC"* ]]; then
