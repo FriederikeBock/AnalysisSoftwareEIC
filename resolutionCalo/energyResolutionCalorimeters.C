@@ -1438,6 +1438,7 @@ void energyResolutionCalorimeters(
       Double_t paramsNL[5]= {0.965782, 0.017567, 0.0907133, 119.679, 79.7096};      
       fitMeanENL[i] = new TF1(Form("fit_meanNL_%sE", readNames[i].Data()), "( [0] + [1] * TMath::Log(x) ) / ( 1 + ( [2] * TMath::Exp( ( x - [3] ) / [4] ) ) )", resFitEM[dirCal][0] , resFitEM[dirCal][1]);
       fitMeanENL[i]->SetParameters(paramsNL);
+      cout << "Fitting ... mean " << labelPart[i].Data() << endl;
       histMeanEVsE[i]->Fit(fitMeanENL[i],"RMNE");
       fitMeanENL[i]->Draw("same");
       DrawGammaSetMarkerTF1(fitMeanE[i], 3, 3, colorPart[i]+1);

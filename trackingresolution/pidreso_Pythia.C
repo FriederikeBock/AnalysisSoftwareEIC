@@ -2,6 +2,20 @@
 #include "../common/binningheader.h"
 #define NELEMS(arr) (sizeof(arr)/sizeof(arr[0]))
 
+//*************************************************************************************
+// Remove nonsense values at the end of the graph
+//*************************************************************************************
+void shrinkGraphErr(TGraphErrors* &graph, float energy){
+  graph->Print();
+  while(graph->GetN()>0 && graph->GetY()[graph->GetN()-1] == -1) graph->RemovePoint(graph->GetN()-1);
+  while(graph->GetN()>0 && graph->GetY()[graph->GetN()-1] <= 0) graph->RemovePoint(graph->GetN()-1);
+  while(graph->GetN()>0 && graph->GetX()[graph->GetN()-1] > energy) graph->RemovePoint(graph->GetN()-1);
+  while(graph->GetN()>0 && graph->GetY()[0] == -1) graph->RemovePoint(0);
+  while(graph->GetN()>0 && graph->GetY()[0] <= 0) graph->RemovePoint(0);
+}
+
+//*************************************************************************************
+//*************************************************************************************
 void ScaleByBinWidth2D(TH2F* h2){
   // Normalize by y bin size
   for(Int_t j = 1; j <= h2->GetNbinsX(); j++){
@@ -15,7 +29,8 @@ void ScaleByBinWidth2D(TH2F* h2){
 }
 
 
-
+//*************************************************************************************
+//*************************************************************************************
 void pidreso_Pythia(
                             TString inputFileName   = "file.root",
                             TString suffix          = "pdf",
@@ -98,6 +113,12 @@ void pidreso_Pythia(
   
   TH2F* h_beta_p_Region[6][3]             = {{NULL}};
   TH2F* h_betaSmearT0_p_Region[6][3]      = {{NULL}};
+  TH2F* h_NSigma_p_Region[6][6][3]        = {{NULL}};   // [currentpart][refpart][region] 
+  TGraphErrors* g_ParticleYieldTot_p_Region[6][6][3]      = {NULL}; // [currentpart][refpart][region] 
+  TGraphErrors* g_ParticleYieldCut_p_Region[6][6][3]      = {NULL}; // [currentpart][refpart][region] 
+  TGraphErrors* g_ParticleRejection_p_Region[6][6][3]      = {NULL}; // [currentpart][refpart][region] 
+  
+  
   TH2F* h_betaTrack_p_Region[6][3]        = {{NULL}};
   TH2F* h_betaGen_p_Region[6][3]          = {{NULL}};
   
@@ -119,8 +140,10 @@ void pidreso_Pythia(
   TH2F* hResBetaVsPDet_wT0[3][6]          = {NULL};
   TH2F* hResBetaVsPDet_woT0[3][6]         = {NULL};
   TGraphErrors* g_betaMeanSmearT0_p_Region[6][3]      = {NULL};
-  TGraphErrors* g_betaSigmaUpSmearT0_p_Region[6][3]   = {NULL};
+  TGraphErrors* g_betaSigmaAbsSmearT0_p_Region[6][3]  = {NULL};
   TGraphErrors* g_betaSigmaDownSmearT0_p_Region[6][3] = {NULL};
+  TGraphErrors* g_betaSigmaUpSmearT0_p_Region[6][3]   = {NULL};
+  
   
   Int_t nSlicesP                          = 5;
   Float_t sliceP[5]                       = {0.3, 1.5, 2., 3., 4.5};
@@ -243,12 +266,13 @@ void pidreso_Pythia(
       for (Int_t pt = 0; pt < nSlicesP; pt++){
         hSliceBetaRegion[pid][eR][pt] = (TH1D*)h_betaSmearT0_p_Region[pid][eR]->ProjectionY(Form("sliceP_%i_%i_%i", eR, pid, pt), h_betaSmearT0_p_Region[pid][eR]->GetXaxis()->FindBin(sliceP[pt]), h_betaSmearT0_p_Region[pid][eR]->GetXaxis()->FindBin(sliceP[pt]), "E");
       }
-      if (pid == 1){
-        TH2F* temp = (TH2F*)h_betaSmearT0_p_Region[pid][eR]->RebinX(4,Form("h_InvSmearT0Beta%s_Eta_p_%s_%s", readTrackClass.Data(), partName[pid].Data(), nameOutEtaRange[eR].Data()));
-        h_betaSmearT0_p_Region[pid][eR] = temp;
-      }
+//       if (pid == 1){
+//         TH2F* temp = (TH2F*)h_betaSmearT0_p_Region[pid][eR]->RebinX(4,Form("h_InvSmearT0Beta%s_Eta_p_%s_%s", readTrackClass.Data(), partName[pid].Data(), nameOutEtaRange[eR].Data()));
+//         h_betaSmearT0_p_Region[pid][eR] = temp;
+//       }
       if (pid > 0){
         Double_t mean[500];
+        Double_t sigma[500];
         Double_t sigmaU[500];
         Double_t sigmaD[500];
         Double_t p[500];
@@ -256,8 +280,15 @@ void pidreso_Pythia(
         Double_t meanE[500];
         Double_t sigmaE[500];
         Int_t bins = 0;
-        for (Int_t iPt = 1; iPt < h_betaSmearT0_p_Region[pid][eR]->GetNbinsX() && bins < 500; iPt++ ){
-          TH1D* tempProjec = (TH1D*)h_betaSmearT0_p_Region[pid][eR]->ProjectionY("dummy", iPt, iPt, "E");
+
+        TH2F* temp = (TH2F*)h_betaSmearT0_p_Region[pid][eR]->Clone("toslice");
+        if (pid == 1){
+          temp = (TH2F*)h_betaSmearT0_p_Region[pid][eR]->RebinX(4,"toslice");
+        }
+
+        
+        for (Int_t iPt = 1; iPt < temp->GetNbinsX() && bins < 500; iPt++ ){
+          TH1D* tempProjec = (TH1D*)temp->ProjectionY("dummy", iPt, iPt, "E");
           if (pid == 4 && (p[bins] < 0.55 || p[bins] > 2))
             tempProjec->Rebin(4);
           if (pid == 5 &&  p[bins] > 2)
@@ -274,8 +305,9 @@ void pidreso_Pythia(
             
             mean[bins]  = tempGauss->GetParameter(1);
             meanE[bins] = tempGauss->GetParError(1);
-            p[bins]     = h_betaSmearT0_p_Region[pid][eR]->GetXaxis()->GetBinCenter(iPt);
-            pE[bins]    = h_betaSmearT0_p_Region[pid][eR]->GetXaxis()->GetBinWidth(iPt)/2;
+            p[bins]     = temp->GetXaxis()->GetBinCenter(iPt);
+            pE[bins]    = temp->GetXaxis()->GetBinWidth(iPt)/2;
+            sigma[bins]   = tempGauss->GetParameter(2);
             sigmaU[bins]  = mean[bins]+3*tempGauss->GetParameter(2);
             sigmaD[bins]  = mean[bins]-3*tempGauss->GetParameter(2);
             sigmaE[bins] = tempGauss->GetParError(2);
@@ -286,8 +318,70 @@ void pidreso_Pythia(
           }
         }
         g_betaMeanSmearT0_p_Region[pid][eR]   = new TGraphErrors(bins, p, mean, pE, meanE);
+        g_betaSigmaAbsSmearT0_p_Region[pid][eR]  = new TGraphErrors(bins, p, sigma, pE, sigmaE);
         g_betaSigmaUpSmearT0_p_Region[pid][eR]  = new TGraphErrors(bins, p, sigmaU, pE, sigmaE);
         g_betaSigmaDownSmearT0_p_Region[pid][eR]  = new TGraphErrors(bins, p, sigmaD, pE, sigmaE);
+      }
+    }
+    
+    cout << "here" << endl;
+    for (Int_t pid = 0; pid < 6; pid++){
+       for (Int_t pidref = 1; pidref < 6; pidref++){
+         cout << __LINE__ <<"\t" << pid <<"\t"<< pidref<< endl;
+          h_NSigma_p_Region[pid][pidref][eR] = new TH2F(Form("h_%s_NSigma%s_Eta_p_%s", partName[pid].Data(), partName[pidref].Data(), nameOutEtaRange[eR].Data()),"", nBinsPFine, binningPFine ,200, -15, 15);
+          if (h_betaSmearT0_p_Region[pid][eR] && g_betaMeanSmearT0_p_Region[pidref][eR]){
+            for (Int_t ip = 1; ip < h_betaSmearT0_p_Region[pid][eR]->GetNbinsX()+1; ip++){
+              for (Int_t ibe = 0; ibe < h_betaSmearT0_p_Region[pid][eR]->GetNbinsY()+2; ibe++){
+                Double_t p      = h_betaSmearT0_p_Region[pid][eR]->GetXaxis()->GetBinCenter(ip);
+                Double_t nsigma = (h_betaSmearT0_p_Region[pid][eR]->GetYaxis()->GetBinCenter(ibe)-g_betaMeanSmearT0_p_Region[pidref][eR]->Eval(p))/g_betaSigmaAbsSmearT0_p_Region[pidref][eR]->Eval(p);
+                h_NSigma_p_Region[pid][pidref][eR]->Fill(p, nsigma, h_betaSmearT0_p_Region[pid][eR]->GetBinContent(ip,ibe));
+              }
+            }
+          }
+          
+          if (pid > 0 && pid != pidref && h_NSigma_p_Region[pid][pidref][eR]){
+            Double_t yieldTot[500];
+            Double_t yieldErrTot[500];
+            Double_t yieldCut[500];
+            Double_t yieldErrCut[500];
+            Double_t reject[500];
+            Double_t rejectErr[500];
+            Double_t p[500];
+            Double_t pE[500];
+            Int_t bins = 0;
+            
+            for (Int_t iPt = 0; iPt < nBinsPLow ; iPt++ ){
+              TH1D* tempProjec = (TH1D*)h_NSigma_p_Region[pid][pidref][eR]->ProjectionY("dummy", h_NSigma_p_Region[pid][pidref][eR]->GetXaxis()->FindBin(binningP[iPt]+0.0001), h_NSigma_p_Region[pid][pidref][eR]->GetXaxis()->FindBin(binningP[iPt+1]-0.0001), "E");
+              
+              
+          
+            yieldTot[bins]      = tempProjec->Integral();
+            yieldErrTot[bins]   = TMath::Sqrt(yieldTot[bins]);
+            yieldCut[bins]      = tempProjec->Integral(tempProjec->GetXaxis()->FindBin( -3+0.001), tempProjec->GetXaxis()->FindBin( 3+0.001));
+            yieldErrCut[bins]   = TMath::Sqrt(yieldCut[bins]);
+            if (yieldCut[bins] > 0){
+              reject[bins]      = yieldTot[bins]/yieldCut[bins];
+              rejectErr[bins]   = reject[bins]*TMath::Sqrt( TMath::Power(yieldErrTot[bins]/yieldTot[bins],2) + TMath::Power(yieldErrCut[bins]/yieldCut[bins],2));
+            } else {
+              reject[bins]      = -1;
+              rejectErr[bins]   = 1;
+            }
+            p[bins]     = (binningP[iPt]+binningP[iPt+1])/2;
+            pE[bins]    = (binningP[iPt+1]-binningP[iPt])/2;
+            bins++;
+          }
+          g_ParticleYieldTot_p_Region[pid][pidref][eR]      = new TGraphErrors(bins, p, yieldTot, pE, yieldErrTot);
+          g_ParticleYieldCut_p_Region[pid][pidref][eR]      = new TGraphErrors(bins, p, yieldCut, pE, yieldErrCut);
+          g_ParticleRejection_p_Region[pid][pidref][eR]     = new TGraphErrors(bins, p, reject, pE, rejectErr);
+          cout << "rejection " << pid << "\t" << partName[pid].Data() << "\t ref \t" << pidref  << "\t" << partName[pidref].Data() << endl;
+//           cout << "tot" << endl;
+//           g_ParticleYieldTot_p_Region[pid][pidref][eR]->Print();
+//           cout << "cut" << endl;
+//           g_ParticleYieldCut_p_Region[pid][pidref][eR]->Print();
+//           cout << "rejection" << endl;
+//           g_ParticleRejection_p_Region[pid][pidref][eR]->Print();
+          
+        }
       }
     }
   }
@@ -970,6 +1064,44 @@ void pidreso_Pythia(
       }
     }
   }
+
+    //*****************************************************************************
+  // NSigma plots in regions for different particle type
+  //*****************************************************************************
+  for (Int_t pid = 0; pid < 6; pid++){
+    for (Int_t pidref = 1; pidref < 6; pidref++){
+      for (Int_t eR = 0; eR < 3; eR++){
+        SetPlotStyle();
+        if (!h_NSigma_p_Region[pid][pidref][eR]) continue;
+        cSingle2D->cd();
+        cSingle2D->SetLogx();
+        Double_t etaMin = partEta[minEtaBin[eR]];
+        Double_t etaMax = partEta[maxEtaBin[eR]+1];
+        SetStyleHistoTH2ForGraphs(h_NSigma_p_Region[pid][pidref][eR], "#it{p} (GeV/#it{c})",  Form("n #sigma_{%s}",partLabel[pidref].Data()), 
+                                  0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.93);
+          ScaleByBinWidth2D(h_NSigma_p_Region[pid][pidref][eR]);
+    //       h_NSigma_p_Region[pid][pidref][eR]->GetYaxis()->SetRangeUser(-0.02,0.02);
+          h_NSigma_p_Region[pid][pidref][eR]->GetZaxis()->SetRangeUser(0.9/5,h_NSigma_p_Region[pid][pidref][eR]->GetMaximum()*5);
+          h_NSigma_p_Region[pid][pidref][eR]->GetXaxis()->SetRangeUser(0.07,50.);
+          h_NSigma_p_Region[pid][pidref][eR]->GetYaxis()->SetRangeUser(-15,15);
+          h_NSigma_p_Region[pid][pidref][eR]->Draw("colz");
+      
+          drawLatexAdd(Form("%1.1f < #eta < %1.1f",partEta[minEtaBinTTL[eR]],partEta[maxEtaBinTTL[eR]+1]),0.85,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          if (pid != 0) 
+            drawLatexAdd(Form("w/ t_{0}, %s", partLabel[pid].Data()),0.85,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          else
+            drawLatexAdd("w/ t_{0}",0.85, 0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          drawLatexAdd(perfLabel,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          drawLatexAdd(collisionSystem,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.91-2*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+          
+        cSingle2D->cd();
+        cSingle2D->SaveAs(Form("%s/NSigma%sTOFBetaPWithT0_%s_Bin_%s.%s", outputDirOverview.Data(), partName[pidref].Data(), partName[pid].Data(), nameOutEtaRange[eR].Data(), suffix.Data()));
+      
+        
+      }
+    }
+  }
   cSingle2D->SetLogx(kFALSE);
   
   //*****************************************************************************
@@ -1596,31 +1728,89 @@ void pidreso_Pythia(
     }
   }
   
+  textSizeLabelsPixel       = 55;
+  textSizeLabelsRel      = 55./1200;
 
+  TCanvas* canvasEoverPRejection       = new TCanvas("canvasEoverPRejection", "", 200, 10, 1200, 1100);  // gives the page size
+  DrawGammaCanvasSettings( canvasEoverPRejection,  0.1, 0.01, 0.017, 0.095);
+  canvasEoverPRejection->SetLogy(1);
+  canvasEoverPRejection->SetLogx(1);
 
+  TH2F * histo2DRejectionDummy;
+  histo2DRejectionDummy                = new TH2F("histo2DRejectionDummy", "histo2DRejectionDummy",1000, 0.061, 3.1, 100, 0.9, 999999 );
+  SetStyleHistoTH2ForGraphs( histo2DRejectionDummy, "#it{p}_{track} (GeV/#it{c})", "#pi^{-}  rejection",
+                          0.85*textSizeLabelsRel, textSizeLabelsRel, 0.85*textSizeLabelsRel, textSizeLabelsRel, 0.9, 1, 510, 510);//(#times #epsilon_{pur})
+  histo2DRejectionDummy->GetYaxis()->SetLabelOffset(0.001);
+  histo2DRejectionDummy->GetXaxis()->SetNoExponent();
+  histo2DRejectionDummy->GetXaxis()->SetMoreLogLabels(kTRUE);
+  histo2DRejectionDummy->DrawCopy();
+  
+  Style_t markerStyleCalo[3] = {20, 47, 33};
+  Size_t markerSizeCalo[3] = {1.5, 1.8, 2.2};
+  Color_t colorCalo[3];
+  colorCalo[0] = getCaloColor("EEMC", 0);
+  colorCalo[1] = getCaloColor("BEMC", 0);
+  colorCalo[2] = getCaloColor("FEMC", 0);
+  TLegend* legendTTL   = GetAndSetLegend2(0.65, 0.95-(3*textSizeLabelsRel), 0.95, 0.95,0.9*textSizeLabelsPixel,1);
+  
+  for (Int_t eR = 0; eR < 3; eR++){
+    shrinkGraphErr( g_ParticleRejection_p_Region[3][1][eR], 20);
+    DrawGammaSetMarkerTGraphErr(g_ParticleRejection_p_Region[3][1][eR], markerStyleCalo[eR], 1.5*markerSizeCalo[eR], colorCalo[eR] , colorCalo[eR]);
+    g_ParticleRejection_p_Region[3][1][eR]->Draw("samepe");
+    legendTTL->AddEntry(g_ParticleRejection_p_Region[3][1][eR], Form("%1.1f < #eta < %1.1f", partEta[minEtaBinTTL[eR]],partEta[maxEtaBinTTL[eR]+1]), "p");
+  }
+  legendTTL->Draw();
+  float toplegval = 0.90;
+//   drawLatexAdd("#it{p}_{rec}",0.75,0.30,textSizeLabelsRel,false,false,false);
+//   drawLatexAdd("#it{p}_{true}",0.65,0.30,textSizeLabelsRel,false,false,false);
+  drawLatexAdd(perfLabel.Data(),0.14,toplegval,textSizeLabelsRel,false,false,false);
+  drawLatexAdd(collisionSystem.Data(),0.14,toplegval-0.05,textSizeLabelsRel,false,false,false);
+  drawLatexAdd("AC-LGAD",0.14,toplegval-0.05*2,textSizeLabelsRel,false,false,false);
+
+  canvasEoverPRejection->Update();
+  canvasEoverPRejection->Print(Form("%s/pionrejection_TOF.%s",outputDir.Data(),suffix.Data()));
+  
+  
   //*****************************************************************************
   // Write output
   //*****************************************************************************
   TFile* outputFile  = new TFile(inputFileName.Data(),"UPDATE");
-  for (Int_t iEta = 0; iEta < nEta+1; iEta++){
-    if (properFit){
-      for (Int_t pid = 0; pid < 6; pid++){
-        if (!enablePIDEta[pid][iEta]) continue;
-        h_mean_p_betaReso[pid][iEta]->Write(Form("histBetaResol%s_%s_FitMean_%d", readTrackClass.Data(), partName[pid].Data(),iEta),TObject::kOverwrite);
-        h_sigma_p_betaReso[pid][iEta]->Write(Form("histBetaResol%s_%s_FitSigma_%d",readTrackClass.Data(),  partName[pid].Data(), iEta),TObject::kOverwrite);
-        if (h_mean_p_betaSmearT0Reso[pid][iEta]) h_mean_p_betaSmearT0Reso[pid][iEta]->Write(Form("histBetaResol%sWT0%s_FitMean_%d", readTrackClass.Data(), partName[pid].Data(),iEta),TObject::kOverwrite);
-        if (h_sigma_p_betaSmearT0Reso[pid][iEta]) h_sigma_p_betaSmearT0Reso[pid][iEta]->Write(Form("histBetaResol%sWT0%s_FitSigma_%d", readTrackClass.Data(),  partName[pid].Data(), iEta),TObject::kOverwrite);
-      }
-    } else {
-      for (Int_t pid = 0; pid < 6; pid++){
-        if (!enablePIDEta[pid][iEta]) continue;
-        h_mean_p_betaReso[pid][iEta]->Write(Form("histBetaResol%s_%s_mean_%d", readTrackClass.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
-        h_sigma_p_betaReso[pid][iEta]->Write(Form("histBetaResol%s_%s_sigma_%d", readTrackClass.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);      
-        if (h_mean_p_betaSmearT0Reso[pid][iEta])h_mean_p_betaSmearT0Reso[pid][iEta]->Write(Form("histBetaResol%sWT0%s_mean_%d", readTrackClass.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
-        if (h_sigma_p_betaSmearT0Reso[pid][iEta])h_sigma_p_betaSmearT0Reso[pid][iEta]->Write(Form("histBetaResol%sWT0%s_sigma_%d", readTrackClass.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);      
+    for (Int_t iEta = 0; iEta < nEta+1; iEta++){
+      if (properFit){
+        for (Int_t pid = 0; pid < 6; pid++){
+          if (!enablePIDEta[pid][iEta]) continue;
+          h_mean_p_betaReso[pid][iEta]->Write(Form("histBetaResol%s_%s_FitMean_%d", readTrackClass.Data(), partName[pid].Data(),iEta),TObject::kOverwrite);
+          h_sigma_p_betaReso[pid][iEta]->Write(Form("histBetaResol%s_%s_FitSigma_%d",readTrackClass.Data(),  partName[pid].Data(), iEta),TObject::kOverwrite);
+          if (h_mean_p_betaSmearT0Reso[pid][iEta]) h_mean_p_betaSmearT0Reso[pid][iEta]->Write(Form("histBetaResol%sWT0%s_FitMean_%d", readTrackClass.Data(), partName[pid].Data(),iEta),TObject::kOverwrite);
+          if (h_sigma_p_betaSmearT0Reso[pid][iEta]) h_sigma_p_betaSmearT0Reso[pid][iEta]->Write(Form("histBetaResol%sWT0%s_FitSigma_%d", readTrackClass.Data(),  partName[pid].Data(), iEta),TObject::kOverwrite);
+        }
+      } else {
+        for (Int_t pid = 0; pid < 6; pid++){
+          if (!enablePIDEta[pid][iEta]) continue;
+          h_mean_p_betaReso[pid][iEta]->Write(Form("histBetaResol%s_%s_mean_%d", readTrackClass.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
+          h_sigma_p_betaReso[pid][iEta]->Write(Form("histBetaResol%s_%s_sigma_%d", readTrackClass.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);      
+          if (h_mean_p_betaSmearT0Reso[pid][iEta])h_mean_p_betaSmearT0Reso[pid][iEta]->Write(Form("histBetaResol%sWT0%s_mean_%d", readTrackClass.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);
+          if (h_sigma_p_betaSmearT0Reso[pid][iEta])h_sigma_p_betaSmearT0Reso[pid][iEta]->Write(Form("histBetaResol%sWT0%s_sigma_%d", readTrackClass.Data(), partName[pid].Data(), iEta),TObject::kOverwrite);      
+        }
       }
     }
-  }
+    g_ParticleRejection_p_Region[3][1][0]->Write("PionRejection_ETTL",TObject::kOverwrite);
+    g_ParticleRejection_p_Region[3][1][1]->Write("PionRejection_CTTL",TObject::kOverwrite);
+    g_ParticleRejection_p_Region[3][1][2]->Write("PionRejection_FTTL",TObject::kOverwrite);
   outputFile->Write();
   outputFile->Close();
+
+  TFile* outputFile2  = new TFile(Form("%s/TOFparams.root",outputDir.Data()),"UPDATE");
+    for(Int_t eR = 0; eR < 3; eR++){
+      g_ParticleRejection_p_Region[3][1][0]->Write(Form("PionRejection_%s",readRegion[eR].Data() ),TObject::kOverwrite);
+      for (Int_t pid = 1; pid < 6; pid++){
+        g_betaMeanSmearT0_p_Region[pid][eR]->Write(Form("meanBeta_%s_%s", partName[pid].Data(), readRegion[eR].Data()) ,TObject::kOverwrite);
+        g_betaSigmaAbsSmearT0_p_Region[pid][eR]->Write(Form("simgaBeta_%s_%s", partName[pid].Data(), readRegion[eR].Data() ),TObject::kOverwrite);
+        g_betaSigmaDownSmearT0_p_Region[pid][eR]->Write(Form("3simgaBetaDown_%s_%s", partName[pid].Data(), readRegion[eR].Data()) ,TObject::kOverwrite);
+        g_betaSigmaUpSmearT0_p_Region[pid][eR]->Write(Form("3simgaBetaUp_%s_%s", partName[pid].Data(), readRegion[eR].Data()) ,TObject::kOverwrite);
+      }
+    }
+  outputFile2->Write();
+  outputFile2->Close();
+  
 }

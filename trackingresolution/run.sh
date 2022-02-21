@@ -49,9 +49,11 @@ if [ $1 == "Fredi" ]; then
 
 #     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/SingleElectronEEMCPCarbonEOP/output_TRKRS.root","pdf","SingleElectron",false,0,0)'
 #     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/SinglePionEEMCPCarbonEOP/output_TRKRS.root","pdf","SinglePion",false,0,0)'
-    root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/SingleElectronEEMCPCarbonEOP/output_TRKRS.root","pdf","SingleElectron",true,0,0)'
+#     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/SingleElectronEEMCPCarbonEOP/output_TRKRS.root","pdf","SingleElectron",true,0,0)'
 #     root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/SinglePionEEMCPCarbonEOP/output_TRKRS.root","pdf","SinglePion",true,0,0)'
 
+    root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/SingleParticle_EOP_PbGlasG4/output_TRKRS.root","pdf","SingleElectron",true,0,0)'
+    root -b -x -q -l 'trackingreso_Pythia.C("'$basepath'/SingleParticle_EOP_PbGlasG4/output_TRKRS.root","pdf","SinglePion",true,0,0)'
   fi
   if  [ $2 == "effi" ]; then
     basepath=/home/fbock/EIC/Analysis/2ndSimulationCampaign/treeAnalysis/treeProcessing
@@ -61,12 +63,15 @@ if [ $1 == "Fredi" ]; then
 #     root -x -l -q -b 'trackingeffi.C("'$basepath'/LYSO-1TTL-nomRes-pythia8Q2-TRonly/output_TRKEFF.root","pdf","1TTLnomResMinQ2_10",0)'
 #     root -x -l -q -b 'trackingeffi.C("'$basepath'/LYSO-1TTL-nomRes-pythia8Q2-TRonly/output_TRKEFF.root","pdf","1TTLnomResMinQ2_10",1)'
 #     root -x -l -q -b 'trackingeffi.C("'$basepath'/LYSO-1TTL-nomRes-pythia8Q2-TRonly/output_TRKEFF.root","pdf","1TTLnomResMinQ2_10",2)'
-    root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_10",0)'
-    root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_10",1)'
-    root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_10",2)'
-    root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q1-100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_1-100",0)'
-    root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q1-100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_1-100",1)'
-    root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q1-100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_1-100",2)'
+#     root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_10",0)'
+#     root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_10",1)'
+#     root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_10",2)'
+#     root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q1-100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_1-100",0)'
+#     root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q1-100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_1-100",1)'
+#     root -x -l -q -b 'trackingeffi.C("'$basepath'/2TTL-nomRes-pythia8Q1-100-TRonly/output_TRKEFF.root","pdf","2TTLnomResMinQ2_1-100",2)'
+
+    root -x -l -q -b 'trackingeffi.C("'$basepath'/SingleParticle_EOP_PbGlasG4/output_TRKEFF.root","pdf","1TTLMB_1-100",0)'
+
   fi
   
   if [ $2 == "compare" ]; then

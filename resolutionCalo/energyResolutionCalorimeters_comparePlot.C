@@ -217,8 +217,9 @@ void energyResolutionCalorimeters_comparePlot(
         } else{
           if(labels[iSet].Contains("FEMC"))graphReq1oEEM[dirCal[iSet]]->SetFillStyle(3545);
           if(labels[iSet].Contains("BEMC"))graphReq1oEEM[dirCal[iSet]]->SetFillStyle(3754);
-          // if(!labels[iSet].Contains("BEMC"))
-          graphReq1oEEM[dirCal[iSet]]->Draw("same,e3");
+          if(labels[iSet].Contains("BEMC") && !labels[iSet].Contains("Pb-Glas"))          
+            graphReq1oEEM[dirCal[iSet]]->Draw("same,e3");
+          
           // if(dirCal[iSet]==1) iindexplotted[2] = true;
         }
         iindexplotted[dirCal[iSet]] = true;

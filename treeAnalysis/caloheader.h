@@ -100,6 +100,14 @@ TString str_clusterizer[7] = {"MA", "V3", "V1", "5x5", "C5", "C3", "3x3"};
 const int maxAlgo = 7;
 const int _active_algo = 1;
 
+enum calibBECAL{
+    kSciGlas      = 0,
+    kPbGlasG4     = 1,
+    kPbGlasTF1    = 2
+};
+
+calibBECAL settingCalibBECAL = kSciGlas;
+
 float _ch_DRCALO_pos_z = 1;
 float _ch_FHCAL_pos_z = 1;
 float _ch_FEMC_pos_z = 1;
@@ -720,13 +728,20 @@ float getCalibrationValue(float clusterE, int caloEnum, int algoEnum, int MCtrue
     return 1;
   } else if(caloEnum == kBECAL){
     if(algoEnum==kMA){
-      float corrFac1  = ( 5.91169e+06 + 1.54628e+05 * TMath::Log(clusterE) ) / ( 1 + ( 2.14932e+06 * TMath::Exp( ( clusterE + 1.22185e+02 ) / 1.09576e+02 ) ) );
+      if ( settingCalibBECAL == kSciGlas){
+        float corrFac1  = ( 5.91169e+06 + 1.54628e+05 * TMath::Log(clusterE) ) / ( 1 + ( 2.14932e+06 * TMath::Exp( ( clusterE + 1.22185e+02 ) / 1.09576e+02 ) ) );
         return corrFac1;        
-//       float tempE     = clusterE/corrFac1;
-//       float corrFac2  = ( 3.31323e+08 + 2.45195e+06 * TMath::Log(clusterE) ) / ( 1 + ( 1.47392e+08 * TMath::Exp( ( clusterE + 2.99068e+02 ) / 3.69747e+02 ) ) );
-//       return clusterE /tempE/ corrFac2;
+      } else if ( settingCalibBECAL == kPbGlasG4){
+        float params[5] = {1.1, 0.0161174, 0.219832, 3.29418, 27.857 };
+        float corrFac1  = ( params[0] + params[1] * TMath::Log(clusterE) ) / ( 1 + ( params[2] * TMath::Exp( ( clusterE  + params[3] ) / params[4] ) ) );
+        return corrFac1*1.045;
+      } else if ( settingCalibBECAL == kPbGlasTF1){
+        float params[5] = {1.57990e+07, 5.17276e+05, 4.88518e+06, 1.39930e+02, 1.08064e+02};
+        float corrFac1  = ( params[0] + params[1] * TMath::Log(clusterE) ) / ( 1 + ( params[2] * TMath::Exp( ( clusterE  + params[3] ) / params[4] ) ) );
+        return corrFac1;
+      }
     } else {
-      return 0.9;
+      return 1.;
     }
     return 1;
   } else if(caloEnum == kFEMC){

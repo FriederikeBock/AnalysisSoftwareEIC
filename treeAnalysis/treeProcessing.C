@@ -74,8 +74,15 @@ void treeProcessing(
       std::cout << "using calorimeter projections for matching" << std::endl;
     }
     
-    LoadM02CutValueGraphs("output_ShowerShape.root");
+    // load shower shape cut graphs
+    LoadM02CutValueGraphs("inputs/output_ShowerShape.root");
     
+    // reset calib values for BECAL
+    if (addOutputName.Contains("PbGlasG4"))
+      settingCalibBECAL = kPbGlasG4;
+    else if (addOutputName.Contains("PbGlasTF1"))
+      settingCalibBECAL = kPbGlasTF1;
+      
     // load tree
     TChain *const tt_event = new TChain("event_tree");
     if (inFile.EndsWith(".root")) {                     // are we loading a single root tree?

@@ -96,6 +96,9 @@ void caloresolutionhistos(){
       } else if(icalo==kEHCAL || icalo==kHCALOUT || icalo==kHCALOUT) {
         nbinsERes = 100;
       }
+      int ncellCut = 1;
+      if (icalo==kBECAL)
+        ncellCut = 0;
       
       Int_t caloDir           = GetCaloDirection(icalo);
       Float_t minEtaCurCalo   = partEtaCalo[minEtaBinCalo[caloDir]];
@@ -130,7 +133,7 @@ void caloresolutionhistos(){
       for(Int_t iclus=0; iclus<(Int_t)_clusters_calo[ialgo][icalo].size(); iclus++){
 
         // cluster should have at least 2 towers
-        if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_NTowers<2) continue;
+        if((_clusters_calo[ialgo][icalo].at(iclus)).cluster_NTowers< ncellCut+1) continue;
         
         // get MC particle ID
         int mcID = (_clusters_calo[ialgo][icalo].at(iclus)).cluster_trueID;
@@ -152,7 +155,7 @@ void caloresolutionhistos(){
         bool isHighestForPart = true;
         for(Int_t iclus2=0; iclus2<(Int_t)_clusters_calo[ialgo][icalo].size(); iclus2++){
           if( iclus == iclus2) continue;
-          if ( (_clusters_calo[ialgo][icalo].at(iclus2)).cluster_NTowers<2) continue;
+          if ( (_clusters_calo[ialgo][icalo].at(iclus2)).cluster_NTowers < ncellCut+1) continue;
           if ( (_clusters_calo[ialgo][icalo].at(iclus)).cluster_trueID == (_clusters_calo[ialgo][icalo].at(iclus2)).cluster_trueID  ) {
             if ( (_clusters_calo[ialgo][icalo].at(iclus)).cluster_E < (_clusters_calo[ialgo][icalo].at(iclus2)).cluster_E  ){
               isHighestForPart = false;
@@ -173,7 +176,7 @@ void caloresolutionhistos(){
             if (verbosityCRH > 2) std::cout << "found projection: " << icalo << "\t"  << mcEta << "\t" << mcPhi << std::endl;
           } else {
             if (verbosityCRH > 2) std::cout << "no correct projection found, using phi & eta at vtx" << std::endl;
-          }      
+          }
         }
         if (_mcpart_HcalProjs[mcID].size() > 0 && IsHCALCalorimeter(icalo)){
           int proj = -1;
@@ -331,6 +334,10 @@ void caloresolutionhistos(){
         nbinsERes = 200;
       else if(icalo==kEHCAL || icalo==kHCALOUT || icalo==kHCALOUT) 
         nbinsERes = 100;
+      int ncellCut = 1;
+      if (icalo==kBECAL)
+        ncellCut = 0;
+      
       
       for(Int_t sp = 0; sp< particleSpRes; sp++){
         if(!h_CRH_EResoComb_E[sp][icalo][ialgo]) h_CRH_EResoComb_E[sp][icalo][ialgo]              = new TH2F(Form("h_CRH_EResoComb_%sE_%s_%s", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data()), "", 500, 0.25, 250.25, nbinsERes, 0, 2);
@@ -362,13 +369,13 @@ void caloresolutionhistos(){
           if(!h_CRH_EResoCombFracHighest_E_Eta[sp][icalo][ialgo][eT])h_CRH_EResoCombFracHighest_E_Eta[sp][icalo][ialgo][eT] 	= new TH2F(Form("h_CRH_EResoCombFracHighest_%sE_Eta_%s_%s_%d", addNameRes[sp].Data(), str_calorimeter[icalo].Data(), str_clusterizer[ialgo].Data(), eT), "", 500, 0.25, 250.25, nbinsERes, 0, 5);
         }        
       }
-
+      
       std::vector<simpleHighestComb> highestComb;
       //******************************************************************************
       //Hcal loop
       //******************************************************************************
       for (int iclus = 0; iclus < (int)_clusters_calo[ialgo][icalo].size(); iclus++){
-        if(!((_clusters_calo[ialgo][icalo].at(iclus)).cluster_NTowers > 1) ) continue;
+        if(!((_clusters_calo[ialgo][icalo].at(iclus)).cluster_NTowers > ncellCut) ) continue;
         float clustereta                  = (_clusters_calo[ialgo][icalo].at(iclus)).cluster_Eta;
         float clusterenergy               = (_clusters_calo[ialgo][icalo].at(iclus)).cluster_E;
         Int_t currMCID                    = (_clusters_calo[ialgo][icalo].at(iclus)).cluster_trueID;
@@ -386,7 +393,7 @@ void caloresolutionhistos(){
           float dEta      = (((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedECals).at(iCl2)).dEta;
           float energyCl2 = _clusters_calo[ialgo][calID].at(clID).cluster_E;
           float dRC       = TMath::Sqrt(dPhi*dPhi+dEta*dEta);
-          if ( dRC < dRE && energyCl2 > 0.9*energyE && (_clusters_calo[ialgo][calID].at(clID)).cluster_NTowers>1 ){
+          if ( dRC < dRE && energyCl2 > 0.9*energyE && (_clusters_calo[ialgo][calID].at(clID)).cluster_NTowers>ncellCut ){
             if(verbosityCRH >2) std::cout << "\t current\t"<< clIDE << "\t" << calIDE << "\t" << dRE << "\t" << energyE << std::endl;
             if(verbosityCRH >2) std::cout << "\t new\t"<< clID << "\t" << calID << "\t" << dRC << "\t" << energyCl2 << std::endl;
             clIDE   = clID;
@@ -414,7 +421,7 @@ void caloresolutionhistos(){
             float dEta      = (((_clusters_calo[ialgo][icalo].at(iclus)).cluster_matchedHCals).at(iCl3)).dEta;
             float energyCl3 = _clusters_calo[ialgo][calID].at(clID).cluster_E;
             float dRC       = TMath::Sqrt(dPhi*dPhi+dEta*dEta);
-            if ( dRC < dRH && energyCl3 > 0.9*energyH && (_clusters_calo[ialgo][calID].at(clID)).cluster_NTowers>1 ){
+            if ( dRC < dRH && energyCl3 > 0.9*energyH && (_clusters_calo[ialgo][calID].at(clID)).cluster_NTowers>ncellCut ){
               if(verbosityCRH >2) std::cout << "\t current\t"<< clIDH << "\t" << calIDH << "\t" << dRH << "\t" << energyH << std::endl;
               if(verbosityCRH >2) std::cout << "\t new\t"<< clID << "\t" << calID << "\t" << dRC << "\t" << energyCl3 << std::endl;
               clIDH   = clID;
@@ -519,13 +526,13 @@ void caloresolutionhistos(){
       // ecal only loop
       //******************************************************************************
       for (int iclus = 0; iclus < (Int_t)_clusters_calo[ialgo][_combCalo[icalo]].size(); iclus++){
-        if((_clusters_calo[ialgo][_combCalo[icalo]].at(iclus)).cluster_NTowers<2 ) continue;
+        if((_clusters_calo[ialgo][_combCalo[icalo]].at(iclus)).cluster_NTowers<ncellCut+1 ) continue;
           
         bool matchedWHCal = false;
         for (int iCl3 = 0; iCl3 < (int)((_clusters_calo[ialgo][_combCalo[icalo]].at(iclus)).cluster_matchedHCals.size()); iCl3++){
           int clID        = (((_clusters_calo[ialgo][_combCalo[icalo]].at(iclus)).cluster_matchedHCals).at(iCl3)).id;
           int calID       = (((_clusters_calo[ialgo][_combCalo[icalo]].at(iclus)).cluster_matchedHCals).at(iCl3)).caloid;
-          if (_clusters_calo[ialgo][calID].at(clID).cluster_NTowers > 1 )
+          if (_clusters_calo[ialgo][calID].at(clID).cluster_NTowers > ncellCut )
             matchedWHCal  = true;
         }
         // we only fill here the Ecal cluster which don't have a HCal cluster with Ntowers > 1 matched
