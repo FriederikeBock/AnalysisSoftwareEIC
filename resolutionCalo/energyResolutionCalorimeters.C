@@ -64,6 +64,7 @@ void energyResolutionCalorimeters(
   Double_t minEtaMax  = -4;
   Double_t maxEtaMax  = 4;
   Double_t maxReso    = 1.25;
+  Double_t maxEnergy  = 1e5;
   TString detLabel    = "";
   Bool_t isEMCal      = 0;
   Int_t rebinRes      = 1;
@@ -96,8 +97,12 @@ void energyResolutionCalorimeters(
     isEMCal       = 1;
     exEtabin      = 7;
     dirCal        = 1;
-    if (caloName.CompareTo("BECAL-wMat") == 0){
+    maxEnergy     = 20.0;
+    if (caloName.Contains("BECAL-wMat")){
       detLabel  = "BEMC, w/ mat. infront";
+      if (caloName.Contains("PbGl")){
+        detLabel  = "BEMC (PbGl), w/ mat. infront";
+      }
     }
   } else if (caloName.BeginsWith("LFHCAL") ){
     detLabel      = "LFHCAL";
@@ -323,7 +328,7 @@ void energyResolutionCalorimeters(
                                                                         hist2DResoE[i]->GetXaxis()->FindBin(partE[ebin]-0.05), hist2DResoE[i]->GetXaxis()->FindBin(partE[ebin]+0.05),"e"); 
         if (i < 2 && partE[ebin] < minEnergy[dirCal][0]) continue; // switch of low E bins for ECals
         if (i > 1 && partE[ebin] < minEnergy[dirCal][1]) continue; // switch of low E bins for HCals
-        
+        if(partE[ebin]>maxEnergy) continue;
         if (hist1DResoEbins[i][ebin]->GetEntries() > 10 ){
           useE[i][ebin]         = 1;
           usePart[i]            = 1;
@@ -432,7 +437,7 @@ void energyResolutionCalorimeters(
                                                                         hist2DResoEhighest[i]->GetXaxis()->FindBin(partE[ebin]-0.05), hist2DResoEhighest[i]->GetXaxis()->FindBin(partE[ebin]+0.05),"e"); 
         if (i < 2 && partE[ebin] < minEnergy[dirCal][0]) continue; // switch of low E bins for ECals
         if (i > 1 && partE[ebin] < minEnergy[dirCal][1]) continue; // switch of low E bins for HCals
-
+        if(partE[ebin]>maxEnergy) continue;
         if (hist1DResoEbinshighests[i][ebin]->GetEntries() > 10 ){
           Double_t mean         = FindLargestBin1DHist(hist1DResoEbinshighests[i][ebin], 0.4, 1.9);
 //           Double_t mean     = hist1DResoEbins[i][ebin]->GetMean();
@@ -560,6 +565,7 @@ void energyResolutionCalorimeters(
                                                                             hist2DResoEEta[i][etbin]->GetXaxis()->FindBin(partE[ebin]-0.05), hist2DResoEEta[i][etbin]->GetXaxis()->FindBin(partE[ebin]+0.05),"e"); 
             if (i < 2 && partE[ebin] < minEnergy[dirCal][0]) continue; // switch of low E bins for ECals
             if (i > 1 && partE[ebin] < minEnergy[dirCal][1]) continue; // switch of low E bins for HCals
+            if(partE[ebin]>maxEnergy) continue;
             if (hist1DResoEbinsEta[i][ebin][etbin]->GetEntries() > 10){
               useEEta[i][ebin][etbin]  = 1;
               if (!useEta[i][etbin]) nActiveEtapart[i]++;
@@ -1439,7 +1445,12 @@ void energyResolutionCalorimeters(
       fitMeanENL[i] = new TF1(Form("fit_meanNL_%sE", readNames[i].Data()), "( [0] + [1] * TMath::Log(x) ) / ( 1 + ( [2] * TMath::Exp( ( x - [3] ) / [4] ) ) )", resFitEM[dirCal][0] , resFitEM[dirCal][1]);
       fitMeanENL[i]->SetParameters(paramsNL);
       cout << "Fitting ... mean " << labelPart[i].Data() << endl;
-      histMeanEVsE[i]->Fit(fitMeanENL[i],"RMNE");
+      fitMeanENL[i]->SetParLimits(0,0.1,1.1);
+      histMeanEVsE[i]->Fit(fitMeanENL[i],"RMNE","",resFitEM[dirCal][0] , resFitEM[dirCal][1]);
+      for(int iparam=0;iparam<5;iparam++){
+        cout << fitMeanENL[i]->GetParameter(iparam) << ", ";
+      }
+      cout << endl;
       fitMeanENL[i]->Draw("same");
       DrawGammaSetMarkerTF1(fitMeanE[i], 3, 3, colorPart[i]+1);
       legendResPartMu->AddEntry(histMeanEVsE[i],Form("%s", labelPart[i].Data()),"p");

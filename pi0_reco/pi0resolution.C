@@ -7,6 +7,8 @@
 #include <cstring>
 #include <TDatabasePDG.h>
 
+
+
 #define NELEMS(arr) (sizeof(arr)/sizeof(arr[0])) 
 
 
@@ -81,7 +83,6 @@ void pi0resolution(
   Double_t textSizeSinglePad        = 0.05;
   Double_t textSizeLabelsPixel      = 35;
   Double_t textSizeLabelsRel        = 58./1300;
-
 
   
   TString outputDir                 = Form("plotsResolution");
@@ -848,45 +849,49 @@ void pi0resolution(
     cout << __LINE__ << endl;
 
     TH2F * histo2DPi0InvMassDummy;
-    histo2DPi0InvMassDummy             = new TH2F("histo2DPi0InvMassDummy","histo2DPi0InvMassDummy",11000,0.05,0.21,21000,-1000,200000);
+    histo2DPi0InvMassDummy             = new TH2F("histo2DPi0InvMassDummy","histo2DPi0InvMassDummy",11000,0.051,0.21,1000,0.0,0.99);
     // histo2DPi0InvMassDummy             = new TH2F("histo2DPi0InvMassDummy","histo2DPi0InvMassDummy",11000,0.05,0.249,21000,-1000,200000);
     SetStyleHistoTH2ForGraphs(histo2DPi0InvMassDummy, "#it{M}_{#gamma#gamma} (GeV/#it{c}^{2})","Counts",0.85*textsizeLabelsInvMass, textsizeLabelsInvMass,
                             0.85*textsizeLabelsInvMass, textsizeLabelsInvMass,0.88, 0.115/(textsizeFacInvMass*marginInvMass),505,510,42,42);
-  int exampleBins[maxcalo+1] = {7,7,6,11};
+  int exampleBins[maxcalo+1] = {5,5,5,11};
+  TH1D* histoSignalPlusBGPi0[maxcalo+1][50]            = {NULL};
+  TF1* fFitGausExp[maxcalo+1][50]            = {NULL};
   bool plotinvmass = true;
   if(plotinvmass){
     for (Int_t icalo = 0; icalo < maxcalo+1; icalo++){
       if(histEtrueMinvbin[icalo][exampleBins[icalo]]){
         Int_t iptbinplot = exampleBins[icalo];
-        TH1D* histoSignalPlusBGPi0                        = nullptr;
+        // TH1D* histoSignalPlusBGPi0                        = nullptr;
         if(icalo<maxcalo){
-          histoSignalPlusBGPi0                        = (TH1D*)histEtrueMinvbin[icalo][iptbinplot]->Clone(Form("Mapping_GG_InvMass_in_Pt_Bin%d_%s",iptbinplot,caloName[icalo].Data()));
+          histoSignalPlusBGPi0[icalo][iptbinplot]                        = (TH1D*)histEtrueMinvbin[icalo][iptbinplot]->Clone(Form("Mapping_GG_InvMass_in_Pt_Bin%d_%s",iptbinplot,caloName[icalo].Data()));
         } else {
-          histoSignalPlusBGPi0                        = (TH1D*)histEtrueMinvbin_allcalo[iptbinplot]->Clone(Form("Mapping_GG_InvMass_in_Pt_Bin%d_%s",iptbinplot,caloName[icalo].Data()));
+          histoSignalPlusBGPi0[icalo][iptbinplot]                        = (TH1D*)histEtrueMinvbin_allcalo[iptbinplot]->Clone(Form("Mapping_GG_InvMass_in_Pt_Bin%d_%s",iptbinplot,caloName[icalo].Data()));
         }
         TH1D* histoSignalPi0                              = nullptr;
         TH1D* histoCombBGPi0                              = nullptr;
-        TF1* fFitGausExp                                  = nullptr;
         if(icalo<maxcalo){
-          fFitGausExp  = (TF1*)fithistEtrueMinvFINAL[icalo][iptbinplot]->Clone(Form("Signal_InvMassFit_in_Pt_Bin%d_%s",iptbinplot,caloName[icalo].Data()));
+          fFitGausExp[icalo][iptbinplot]  = (TF1*)fithistEtrueMinvFINAL[icalo][iptbinplot]->Clone(Form("Signal_InvMassFit_in_Pt_Bin%d_%s",iptbinplot,caloName[icalo].Data()));
         } else {
-          fFitGausExp = (TF1*)fithistEtrueMinvFINAL_allcalo[iptbinplot]->Clone(Form("Signal_InvMassFit_in_Pt_Bin%d_%s",iptbinplot,caloName[icalo].Data()));
+          fFitGausExp[icalo][iptbinplot] = (TF1*)fithistEtrueMinvFINAL_allcalo[iptbinplot]->Clone(Form("Signal_InvMassFit_in_Pt_Bin%d_%s",iptbinplot,caloName[icalo].Data()));
         }
-        fFitGausExp->SetNpx(10000);
+        fFitGausExp[icalo][iptbinplot]->SetNpx(10000);
+        double scalingfac = histoSignalPlusBGPi0[icalo][iptbinplot]->GetMaximum();
+        fFitGausExp[icalo][iptbinplot] = ScaleTF1(fFitGausExp[icalo][iptbinplot],0.7/scalingfac,Form("fFitGausExp_%s_%d",caloName[icalo].Data(),iptbinplot));
+        histoSignalPlusBGPi0[icalo][iptbinplot]->Scale(0.7/scalingfac);
 
         canvasInvMassSamplePlot->cd();
         // histo2DPi0InvMassDummy->GetXaxis()->SetRangeUser(0.02,0.3);
-        histo2DPi0InvMassDummy->GetYaxis()->SetRangeUser(1.2*histoSignalPlusBGPi0->GetMinimum(),1.2*histoSignalPlusBGPi0->GetMaximum());
+        // histo2DPi0InvMassDummy->GetYaxis()->SetRangeUser(1.2*histoSignalPlusBGPi0[icalo][iptbinplot]->GetMinimum(),1.2*histoSignalPlusBGPi0[icalo][iptbinplot]->GetMaximum());
         histo2DPi0InvMassDummy->DrawCopy();
 
         TLatex *labelInvMassPtRangel = new TLatex(0.945,0.9,Form("#pi^{0}: %2.1f < #it{E}_{#pi^{0}} < %2.1f GeV/#it{c}",partE[iptbinplot],partE[iptbinplot+1]));
         // TLatex *labelInvMassPtRangel = new TLatex(0.945,0.9,Form("#pi^{0}: %2.1f < #it{p}_{T} < %2.1f GeV/#it{c}",partE[iptbinplot],partE[iptbinplot+1]));
-        if(histoSignalPlusBGPi0){
-          // DrawGammaSetMarker(histoSignalPlusBGPi0, markerStyleInvMassSGBG, markerSizeInvMassSGBG, markerColorInvMassSGBG, markerColorInvMassSGBG);
-          DrawGammaSetMarker(histoSignalPlusBGPi0, markerStyleInvMassSG, markerSizeInvMassSG, markerColorInvMassSGBG, markerColorInvMassSGBG);
-          histoSignalPlusBGPi0->SetLineWidth(1);
-          // histoSignalPlusBGPi0->Draw("hist,e,same");
-          histoSignalPlusBGPi0->Draw("same");
+        if(histoSignalPlusBGPi0[icalo][iptbinplot]){
+          // DrawGammaSetMarker(histoSignalPlusBGPi0[icalo][iptbinplot], markerStyleInvMassSGBG, markerSizeInvMassSGBG, markerColorInvMassSGBG, markerColorInvMassSGBG);
+          DrawGammaSetMarker(histoSignalPlusBGPi0[icalo][iptbinplot], markerStyleInvMassSG, markerSizeInvMassSG, getCaloColor(caloName[icalo],false), getCaloColor(caloName[icalo],false));
+          histoSignalPlusBGPi0[icalo][iptbinplot]->SetLineWidth(1);
+          // histoSignalPlusBGPi0[icalo][iptbinplot]->Draw("hist,e,same");
+          histoSignalPlusBGPi0[icalo][iptbinplot]->Draw("same");
         }
         // if(histoCombBGPi0){
         //   DrawGammaSetMarker(histoCombBGPi0, markerStyleInvMassMBG, markerSizeInvMassMBG, markerColorInvMassMBG1, markerColorInvMassMBG1);
@@ -898,10 +903,10 @@ void pi0resolution(
         //   histoSignalPi0->SetStats(kFALSE);
         //   histoSignalPi0->Draw("same");
         // }
-        fFitGausExp->SetLineWidth(1);
-        fFitGausExp->SetRange(0,0.255);
-        fFitGausExp->SetLineColor(fitColorInvMassSG);
-        fFitGausExp->Draw("same");
+        fFitGausExp[icalo][iptbinplot]->SetLineWidth(1);
+        fFitGausExp[icalo][iptbinplot]->SetRange(0,0.255);
+        fFitGausExp[icalo][iptbinplot]->SetLineColor(fitColorInvMassSG);
+        fFitGausExp[icalo][iptbinplot]->Draw("same");
 
         TLatex *labelInvMassALICE      = new TLatex(0.135,0.9,perfLabel.Data());
         SetStyleTLatex( labelInvMassALICE, 0.85*textSizeLabelsPixel,4);
@@ -929,16 +934,16 @@ void pi0resolution(
         labelInvMassPtRangel->SetTextFont(43);
         labelInvMassPtRangel->Draw();
 
-        DrawGammaLines(fFitGausExp->GetParameter(1)-(0.06),fFitGausExp->GetParameter(1)-(0.06),1.2*histoSignalPlusBGPi0->GetMinimum(),0.2*histoSignalPlusBGPi0->GetMaximum(),2,kGray+2,7);
-        DrawGammaLines(fFitGausExp->GetParameter(1)+(0.080),fFitGausExp->GetParameter(1)+(0.080),1.2*histoSignalPlusBGPi0->GetMinimum(),0.2*histoSignalPlusBGPi0->GetMaximum(),2,kGray+2,7);
+        DrawGammaLines(fFitGausExp[icalo][iptbinplot]->GetParameter(1)-(0.06),fFitGausExp[icalo][iptbinplot]->GetParameter(1)-(0.06),1.2*histoSignalPlusBGPi0[icalo][iptbinplot]->GetMinimum(),0.2*histoSignalPlusBGPi0[icalo][iptbinplot]->GetMaximum(),2,kGray+2,7);
+        DrawGammaLines(fFitGausExp[icalo][iptbinplot]->GetParameter(1)+(0.080),fFitGausExp[icalo][iptbinplot]->GetParameter(1)+(0.080),1.2*histoSignalPlusBGPi0[icalo][iptbinplot]->GetMinimum(),0.2*histoSignalPlusBGPi0[icalo][iptbinplot]->GetMaximum(),2,kGray+2,7);
         // TLegend* legendInvMassl  =GetAndSetLegend2(0.62, 0.87-5*0.8*0.75*textSizeLabelPPMass, 0.85, 0.87, 0.85*textSizeLabelsPixel);
         int legendreduction = 0;
         if(!histoCombBGPi0)legendreduction+=2;
         if(!histoSignalPi0)legendreduction++;
         TLegend* legendInvMassl  = GetAndSetLegend2(0.62, 0.87-(5-legendreduction)*0.9*0.75*textSizeLabelPPMass, 0.85, 0.87, 0.85*textSizeLabelsPixel);
         legendInvMassl->SetMargin(0.25);
-        legendInvMassl->AddEntry(histoSignalPlusBGPi0,"Raw real events","p");
-        // legendInvMassl->AddEntry(histoSignalPlusBGPi0,"Raw real events","l");
+        legendInvMassl->AddEntry(histoSignalPlusBGPi0[icalo][iptbinplot],"Raw real events","p");
+        // legendInvMassl->AddEntry(histoSignalPlusBGPi0[icalo][iptbinplot],"Raw real events","l");
         if(histoCombBGPi0){
           legendInvMassl->AddEntry(histoCombBGPi0,"Mixed event +","p");
           legendInvMassl->AddEntry((TObject*)0,"remain. BG","");
@@ -951,11 +956,108 @@ void pi0resolution(
         } else {
           // legendInvMassl->AddEntry((TObject*)0,"BG subtracted","");
         }
-        legendInvMassl->AddEntry(fFitGausExp, "Fit","l");
+        legendInvMassl->AddEntry(fFitGausExp[icalo][iptbinplot], "Fit","l");
         legendInvMassl->Draw();
         canvasInvMassSamplePlot->SaveAs(Form("%s/Pi0_InvMassBin%d_%s.%s",outputDir.Data(),iptbinplot,caloName[icalo].Data(), suffix.Data()));
       }
     }
+
+
+
+    Double_t arrayBoundariesInvMassX1_4[4];
+    Double_t arrayBoundariesInvMassY1_4[3];
+    Double_t relativeMarginsInvMassX[3];
+    Double_t relativeMarginsInvMassY[3];
+    textSizeLabelsPixel             = 750*0.05;
+    ReturnCorrectValuesForCanvasScaling(2250,750, 3, 1,0.035, 0.01, 0.01,0.095,arrayBoundariesInvMassX1_4,arrayBoundariesInvMassY1_4,relativeMarginsInvMassX,relativeMarginsInvMassY);
+
+    TCanvas* canvasInvMassPaperPlot     = new TCanvas("canvasInvMassPaperPlot","",0,0,2250,750);  // gives the page size
+    DrawGammaCanvasSettings( canvasInvMassPaperPlot,  0.05, 0.01, 0.01,0.095);
+    // canvasInvMassPaperPlot->SetLogy(1);
+
+    TPad* padInvMassEEMC               = new TPad("padInvMassEEMC", "", arrayBoundariesInvMassX1_4[0], arrayBoundariesInvMassY1_4[2], arrayBoundariesInvMassX1_4[1], arrayBoundariesInvMassY1_4[0],-1, -1, -2);
+    DrawGammaPadSettings( padInvMassEEMC, relativeMarginsInvMassX[0], relativeMarginsInvMassX[1], relativeMarginsInvMassY[0], relativeMarginsInvMassY[2]);
+    padInvMassEEMC->Draw();
+
+    TPad* padInvMassBEMC                = new TPad("padInvMassBEMC", "", arrayBoundariesInvMassX1_4[1], arrayBoundariesInvMassY1_4[2], arrayBoundariesInvMassX1_4[2], arrayBoundariesInvMassY1_4[0],-1, -1, -2);
+    DrawGammaPadSettings( padInvMassBEMC, relativeMarginsInvMassX[1], relativeMarginsInvMassX[1], relativeMarginsInvMassY[0], relativeMarginsInvMassY[2]);
+    padInvMassBEMC->Draw();
+
+    TPad* padInvMassFEMC                = new TPad("padInvMassFEMC", "", arrayBoundariesInvMassX1_4[2], arrayBoundariesInvMassY1_4[2], arrayBoundariesInvMassX1_4[3], arrayBoundariesInvMassY1_4[0],-1, -1, -2);
+    DrawGammaPadSettings( padInvMassFEMC, relativeMarginsInvMassX[1], relativeMarginsInvMassX[2], relativeMarginsInvMassY[0], relativeMarginsInvMassY[2]);
+    padInvMassFEMC->Draw();
+
+    // padInvMassEEMC->cd();
+    // padInvMassEEMC->SetLogy();
+
+    Double_t margin                 = relativeMarginsInvMassX[0]*2.7*1350;
+    double textsizeLabelsInvMass    = 0;
+    double textsizeFacInvMass       = 0;
+    if (padInvMassEEMC->XtoPixel(padInvMassEEMC->GetX2()) < padInvMassEEMC->YtoPixel(padInvMassEEMC->GetY1())){
+        textsizeLabelsInvMass         = (Double_t)textSizeLabelsPixel/padInvMassEEMC->XtoPixel(padInvMassEEMC->GetX2()) ;
+        textsizeFacInvMass            = (Double_t)1./padInvMassEEMC->XtoPixel(padInvMassEEMC->GetX2()) ;
+    } else {
+        textsizeLabelsInvMass         = (Double_t)textSizeLabelsPixel/padInvMassEEMC->YtoPixel(padInvMassEEMC->GetY1());
+        textsizeFacInvMass            = (Double_t)1./padInvMassEEMC->YtoPixel(padInvMassEEMC->GetY1());
+    }
+    TH2F* histoPlotDummy             = new TH2F("histoPlotDummy","histoPlotDummy",11000,0.0,2.,10000,0.00001,90);
+    SetStyleHistoTH2ForGraphs(histoPlotDummy, "#it{#sigma}_{long}^{2}","norm. counts",0.95*textsizeLabelsInvMass, 1.1*textsizeLabelsInvMass,
+                            0.95*textsizeLabelsInvMass, 1.1*textsizeLabelsInvMass,0.88, 1.1,510,510,42,42);
+    histoPlotDummy->SetLineColor(kGray);
+    histoPlotDummy->SetMarkerColor(kGray+1);
+    histoPlotDummy->SetMarkerStyle(20);
+    histoPlotDummy->SetMarkerSize(3);
+    histo2DPi0InvMassDummy->GetYaxis()->SetTitle("norm. counts");
+    histo2DPi0InvMassDummy->GetYaxis()->SetTitleOffset(1.0);
+    // histo2DPi0InvMassDummy->GetXaxis()->SetTickLength(0.025);
+    // histo2DPi0InvMassDummy->GetXaxis()->SetRangeUser(0,1.99);
+    // histo2DPi0InvMassDummy->GetYaxis()->SetRangeUser(0.1,2.9);
+    for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+      if(icalo==1) padInvMassBEMC->cd();
+      else if(icalo==2) padInvMassFEMC->cd();
+      else padInvMassEEMC->cd();
+
+      histo2DPi0InvMassDummy->DrawCopy();
+      Int_t iptbinplot = exampleBins[icalo];
+
+      // TLatex *labelInvMassPtRangel = new TLatex(0.945,0.9,Form("#pi^{0}: %2.1f < #it{E}_{#pi^{0}} < %2.1f GeV/#it{c}",partE[iptbinplot],partE[iptbinplot+1]));
+      if(histoSignalPlusBGPi0[icalo][iptbinplot]){
+        DrawGammaSetMarker(histoSignalPlusBGPi0[icalo][iptbinplot], markerStyleInvMassSG, 3, getCaloColor(caloName[icalo],false), getCaloColor(caloName[icalo],false));
+        histoSignalPlusBGPi0[icalo][iptbinplot]->SetLineWidth(1);
+        histoSignalPlusBGPi0[icalo][iptbinplot]->Draw("same");
+      }
+      fFitGausExp[icalo][iptbinplot]->SetLineWidth(1);
+      fFitGausExp[icalo][iptbinplot]->SetRange(0,0.255);
+      fFitGausExp[icalo][iptbinplot]->SetLineColor(getCaloColor(caloName[icalo],true));
+      fFitGausExp[icalo][iptbinplot]->Draw("same");
+
+      if(icalo==0){
+        drawLatexAdd(perfLabel.Data(),0.155,0.9,0.85*textsizeLabelsInvMass,false,false,false);
+        drawLatexAdd("single #pi^{0}",0.155,0.9-0.9*0.9*textsizeLabelsInvMass,0.85*textsizeLabelsInvMass,false,false,false);
+      }
+      if(icalo<2){
+        drawLatexAdd(Form("%2.1f < #it{E}_{#pi^{0}} < %2.1f GeV",partE[iptbinplot],partE[iptbinplot+1]),0.945,0.9,0.85*textsizeLabelsInvMass,false,false,true);
+        drawLatexAdd(caloNamePlot[icalo].Data(),0.945,0.9-0.9*0.9*textsizeLabelsInvMass,0.85*textsizeLabelsInvMass,false,false,true);
+      } else {
+        drawLatexAdd(Form("%2.1f < #it{E}_{#pi^{0}} < %2.1f GeV",partE[iptbinplot],partE[iptbinplot+1]),0.925,0.9,0.85*textsizeLabelsInvMass,false,false,true);
+        drawLatexAdd(caloNamePlot[icalo].Data(),0.925,0.9-0.9*0.9*textsizeLabelsInvMass,0.85*textsizeLabelsInvMass,false,false,true);
+      }
+      // DrawGammaLines(fFitGausExp[icalo][iptbinplot]->GetParameter(1)-(0.06),fFitGausExp[icalo][iptbinplot]->GetParameter(1)-(0.06),1.2*histoSignalPlusBGPi0[icalo][iptbinplot]->GetMinimum(),0.2*histoSignalPlusBGPi0[icalo][iptbinplot]->GetMaximum(),2,kGray+2,7);
+      // DrawGammaLines(fFitGausExp[icalo][iptbinplot]->GetParameter(1)+(0.080),fFitGausExp[icalo][iptbinplot]->GetParameter(1)+(0.080),1.2*histoSignalPlusBGPi0[icalo][iptbinplot]->GetMinimum(),0.2*histoSignalPlusBGPi0[icalo][iptbinplot]->GetMaximum(),2,kGray+2,7);
+      if(icalo==1){
+        int legendreduction = 3;
+        TLegend* legendInvMassl  = GetAndSetLegend2(0.045, 0.925-(5-legendreduction)*0.95*0.85*textsizeLabelsInvMass, 0.265, 0.925, 0.85*textSizeLabelsPixel);
+        legendInvMassl->SetMargin(0.30);
+        legendInvMassl->AddEntry(histoPlotDummy,"Raw real events","p");
+        legendInvMassl->AddEntry(histoPlotDummy, "Fit","l");
+        // legendInvMassl->AddEntry(histoSignalPlusBGPi0[icalo][iptbinplot],"Raw real events","p");
+        // legendInvMassl->AddEntry(fFitGausExp[icalo][iptbinplot], "Fit","l");
+        legendInvMassl->Draw();
+      }
+      histo2DPi0InvMassDummy->Draw("same,axis");
+      canvasInvMassPaperPlot->SaveAs(Form("%s/Pi0_InvMass_PaperPlot.%s",outputDir.Data(), suffix.Data()));
+    }
+
   }
 
 

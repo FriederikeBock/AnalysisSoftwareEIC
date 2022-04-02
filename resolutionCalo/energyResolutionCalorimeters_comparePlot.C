@@ -217,9 +217,9 @@ void energyResolutionCalorimeters_comparePlot(
         } else{
           if(labels[iSet].Contains("FEMC"))graphReq1oEEM[dirCal[iSet]]->SetFillStyle(3545);
           if(labels[iSet].Contains("BEMC"))graphReq1oEEM[dirCal[iSet]]->SetFillStyle(3754);
-          if(labels[iSet].Contains("BEMC") && !labels[iSet].Contains("Pb-Glas"))          
+          if(labels[iSet].Contains("BEMC") && (!labels[iSet].Contains("Pb-Glas") || !labels[iSet].Contains("PbGl")))          
             graphReq1oEEM[dirCal[iSet]]->Draw("same,e3");
-          
+
           // if(dirCal[iSet]==1) iindexplotted[2] = true;
         }
         iindexplotted[dirCal[iSet]] = true;
@@ -243,6 +243,7 @@ void energyResolutionCalorimeters_comparePlot(
       if(addName.Contains("HCal")){
         if(!labels[iSet].Contains("IHCAL"))legendPtResM->AddEntry(graphReq1oEHad[dirCal[iSet]], Form("YR Requirement %s",labels[iSet].Data()),"f");
       } else {
+        if(!labels[iSet].Contains("PbGl"))
         legendPtResM->AddEntry(graphReq1oEEM[dirCal[iSet]], Form("YR Requirement %s",labels[iSet].Data()),"f");
       }
       if(labels[iSet].Contains("IHCAL"))legendPtResM->AddEntry(h_particle_reso_1oEhighest[iSet][pid], Form("%s",labels[iSet].Data()),"p");

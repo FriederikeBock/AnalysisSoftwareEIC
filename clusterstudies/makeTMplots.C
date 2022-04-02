@@ -628,5 +628,88 @@ void makeTMplots(
     canvasMatchingEffi->Print(Form("%s/MatchingEffi_EtaCut_%s_%s.%s",outputDir.Data(),str_calorimeterPlot[icalo].Data(),str_calorimeterPlot[_combCalo[icalo]].Data(),suffix.Data()));
   }
 
+  histoDummyMatchingEffi->DrawCopy();
+  // legendPi0Merge1           = GetAndSetLegend2(0.50, 0.14, 0.70, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
+  // legendPi0Merge2           = GetAndSetLegend2(0.60, 0.14, 0.80, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
+  // legendPi0Merge3           = GetAndSetLegend2(0.70, 0.14, 0.90, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
+    // TLegend* legendPi0Merge4           = GetAndSetLegend2(0.15, 0.74-(7.5*textSizeLabelsRel), 0.35, 0.74,1.1*textSizeLabelsPixel,1);
+    TLegend* legendPi0Merge4           = GetAndSetLegend2(0.15, 0.74-(3.5*textSizeLabelsRel), 0.65, 0.74,1.1*textSizeLabelsPixel,2);
+    legendPi0Merge4->SetMargin(0.1);
+    // if(icalo==kHCALIN)legendPi0Merge4           = GetAndSetLegend2(0.15, 0.54, 0.35, 0.54+(3.5*textSizeLabelsRel),1.2*textSizeLabelsPixel,1);
+  for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+
+    if(!_curr_active_calo[icalo]) continue;
+    if(!IsHCALCalorimeter(icalo)) continue;
+    int icaloPlot = 0;
+    if(icalo==kLFHCAL) icaloPlot = 0;
+    if(icalo==kHCALOUT) icaloPlot = 1;
+    if(icalo==kHCALIN) icaloPlot = 2;
+    DrawGammaSetMarker(h_CaloMatchingEffi_MatchedCalo_vsAll[icalo], markerStyleCalo[icaloPlot], 1.5*markerSizeCalo[icaloPlot], colorPID[icaloPlot] , colorPID[icaloPlot]);
+    h_CaloMatchingEffi_MatchedCalo_vsAll[icalo]->Draw("same");
+    // legendPi0Merge4->AddEntry(h_CaloMatchingEffi_MatchedCalo_vsAll[icalo],"N_{clus,CM} / N_{clus}","p");
+
+    // DrawGammaSetMarker(h_CaloMatchingEffi_MatchedTrackAndCalo_vsAll[icalo], markerStyleCalo3[icaloPlot], 1.5*markerSizeCalo[icaloPlot], colorPID_light2[icaloPlot] , colorPID_light2[icaloPlot]);
+    // h_CaloMatchingEffi_MatchedTrackAndCalo_vsAll[icalo]->Draw("same");
+    // legendPi0Merge4->AddEntry(h_CaloMatchingEffi_MatchedTrackAndCalo_vsAll[icalo],"N_{clus,CM,TM} / N_{clus}","p");
+
+    // DrawGammaSetMarker(h_CaloMatchingEffi_MatchedCalo_vsTM[icalo], markerStyleCalo4[icaloPlot], 1.5*markerSizeCalo[icaloPlot], colorPID_light2[icaloPlot] , colorPID_light2[icaloPlot]);
+    // h_CaloMatchingEffi_MatchedCalo_vsTM[icalo]->Draw("same");
+    // legendPi0Merge4->AddEntry(h_CaloMatchingEffi_MatchedCalo_vsTM[icalo],"N_{clus,CM} / N_{clus,TM}","p");
+
+    DrawGammaSetMarker(h_CaloMatchingEffi_MatchedTrackAndCalo_vsTM[icalo], markerStyleCalo3[icaloPlot], 1.5*markerSizeCalo[icaloPlot], colorPID_light2[icaloPlot] , colorPID_light2[icaloPlot]);
+    // DrawGammaSetMarker(h_CaloMatchingEffi_MatchedTrackAndCalo_vsTM[icalo], markerStyleCalo2[icaloPlot], 1.5*markerSizeCalo[icaloPlot], colorPID_light[icaloPlot] , colorPID_light[icaloPlot]);
+    h_CaloMatchingEffi_MatchedTrackAndCalo_vsTM[icalo]->Draw("same");
+    // legendPi0Merge4->AddEntry(h_CaloMatchingEffi_MatchedTrackAndCalo_vsTM[icalo],"N_{clus,CM,TM} / N_{clus,TM}","p");
+  }
+  // legendPi0Merge4->AddEntry((TObject*)0,"N_{clus,CM} / N_{clus}"," ");
+  // for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+  //   if(!_curr_active_calo[icalo]) continue;
+  //   if(!IsHCALCalorimeter(icalo)) continue;
+  //     legendPi0Merge4->AddEntry(h_CaloMatchingEffi_MatchedCalo_vsAll[icalo],Form("%s-%s",str_calorimeterPlot[icalo].Data(),str_calorimeterPlot[_combCalo[icalo]].Data()),"p");
+  // }
+  // legendPi0Merge4->AddEntry((TObject*)0,"N_{clus,CM,TM} / N_{clus,TM}"," ");
+  // for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+  //   if(!_curr_active_calo[icalo]) continue;
+  //   if(!IsHCALCalorimeter(icalo)) continue;
+  //   legendPi0Merge4->AddEntry(h_CaloMatchingEffi_MatchedTrackAndCalo_vsTM[icalo],Form("%s-%s",str_calorimeterPlot[icalo].Data(),str_calorimeterPlot[_combCalo[icalo]].Data()),"p");
+  // }
+  // legendPi0Merge4->AddEntry((TObject*)0," "," ");
+  legendPi0Merge4->AddEntry((TObject*)0,"#it{#epsilon}_{CM,all}"," ");
+  legendPi0Merge4->AddEntry((TObject*)0,"#it{#epsilon}_{CM,TM}"," ");
+  // legendPi0Merge4->AddEntry((TObject*)0,"#frac{N_{clus,CM}}{N_{clus}}"," ");
+  // legendPi0Merge4->AddEntry((TObject*)0,"#frac{N_{clus,CM,TM}}{N_{clus,TM}}"," ");
+  // legendPi0Merge4->AddEntry((TObject*)0,"N_{clus,CM} / N_{clus}"," ");
+  // legendPi0Merge4->AddEntry((TObject*)0,"N_{clus,CM,TM} / N_{clus,TM}"," ");
+  for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+    if(!_curr_active_calo[icalo]) continue;
+    if(!IsHCALCalorimeter(icalo)) continue;
+    // legendPi0Merge4->AddEntry((TObject*)0,Form("%s-%s",str_calorimeterPlot[icalo].Data(),str_calorimeterPlot[_combCalo[icalo]].Data())," ");
+    legendPi0Merge4->AddEntry(h_CaloMatchingEffi_MatchedCalo_vsAll[icalo]," ","p");
+    legendPi0Merge4->AddEntry(h_CaloMatchingEffi_MatchedTrackAndCalo_vsTM[icalo]," ","p");
+  }
+  // legendPi0Merge4->AddEntry((TObject*)0,"N_{clus,CM,TM} / N_{clus,TM}"," ");
+  // for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+  //   if(!_curr_active_calo[icalo]) continue;
+  //   if(!IsHCALCalorimeter(icalo)) continue;
+  //   legendPi0Merge4->AddEntry(h_CaloMatchingEffi_MatchedTrackAndCalo_vsTM[icalo],Form("%s-%s",str_calorimeterPlot[icalo].Data(),str_calorimeterPlot[_combCalo[icalo]].Data()),"p");
+  // }
+  legendPi0Merge4->Draw();
+  float toplegval = 0.90;
+
+  drawLatexAdd(perfLabel.Data(),0.15,toplegval,textSizeLabelsRel,false,false,false);
+  // drawLatexAdd(Form("%s-%s cluster matching",str_calorimeterPlot[icalo].Data(),str_calorimeterPlot[_combCalo[icalo]].Data()),0.15,toplegval-0.05,textSizeLabelsRel,false,false,false);
+  // drawLatexAdd("1.6#cdot",0.55,0.35,textSizeLabelsRel,false,false,false);
+  // drawLatexAdd("#sigma",0.52,0.30,textSizeLabelsRel,false,false,false);
+  // drawLatexAdd("#scale[0.75]{FWHM}",0.58,0.30,textSizeLabelsRel,false,false,false);
+  // drawLatexAdd("#epsilon_{95%}",0.70,0.30,textSizeLabelsRel,false,false,false);
+  // drawLatexAdd(caloName[icalo].Data(),0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
+  // drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.15,toplegval-0.1,textSizeLabelsRel,false,false,false);
+
+  DrawGammaLines(0.51, 39, 1,1,2,kGray+1, 2);
+
+
+  canvasMatchingEffi->Update();
+  canvasMatchingEffi->Print(Form("%s/MatchingEffiCalos_Paper.%s",outputDir.Data(),suffix.Data()));
+
 }
 

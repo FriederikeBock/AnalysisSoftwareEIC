@@ -149,6 +149,13 @@ maxevt=-1
     root -x -l -b -q 'treeProcessing.C+("'$input'","'$geometry'","CADES_SINGLEMULTIELECTRON_TTLGEO7_EOP2",'$maxevt',true,false  ,false,0,0,"anti-kt",0.5,30,false,false,false)'
 fi
 
+if [ $1 = "cades_singlemultielectron_bemc" ]; then
+maxevt=-1
+    input=/media/nschmidt/SSD/simulationOutputCADES/tst/output_TTLGEO_7_EEMAPUPDATE_BCLG_HITS_SimpleMultiElectron/output_TTLGEO_7_EEMAPUPDATE_BCLG_HITS_SimpleMultiElectron.root
+    geometry=/media/nschmidt/SSD/simulationOutputCADES/geometry.root
+    root -x -l -b -q 'treeProcessing.C+("'$input'","'$geometry'","CADES_TTLGEO_7_EEMAPUPDATE_BCLG_NONCELL",'$maxevt',true,false  ,true,0,0,"anti-kt",0.5,30,false,false,false)'
+fi
+
 if [ $1 = "centralsim_singleelectron" ]; then
 maxevt=-1
     input="/media/nschmidt/local/EIC_running/singleElectron/eval_00000/DST_General_particleGun_singleElectron_merged_eval.root"

@@ -27,8 +27,8 @@
 #include "pi0studies.cxx"
 #include "tofpid.cxx"
 
-#include "disreconstruction.cxx"
-#include "electronpid.cxx"
+// #include "disreconstruction.cxx"
+// #include "electronpid.cxx"
 
 #include <TROOT.h>
 #include <TString.h>
@@ -123,7 +123,6 @@ void treeProcessing(
       std::cout << "clusters will be energy-corrected and subsequently smeared to meet testbeam constant term!" << std::endl;
     }
 
-
     // Additional setup
     auto eventObservables = EventObservables();
     auto jetObservablesTrue = JetObservables{JetType_t::full, "true"};
@@ -149,12 +148,7 @@ void treeProcessing(
         jetObservablesCalo.Init(jetRParameters);
         jetObservablesFull.Init(jetRParameters);
     }
-
-
     _nEventsTree=0;
-    // main event loop
-    bool tooSmallDeltaEta = false;
-    
     // use this if you wanna start at a specific event for debug
     Long64_t startEvent = 0;
     for (Long64_t i=startEvent; i<nEntriesTree;i++) {
@@ -265,7 +259,7 @@ void treeProcessing(
         // }
         if(tracksEnabled) hitstudies(primaryTrackSource);
 
-        if (tracksEnabled) tofpidhistos();
+        // if (tracksEnabled) tofpidhistos();
         
                 // ANCHOR Track loop variables:
         // float* _track_ID[itrk]
@@ -559,13 +553,13 @@ void treeProcessing(
 
             fillHadronObservables(jetObservablesTrue);
 
-            jetresolutionhistos(jetsTrackRec, jetsTrueCharged, 0, jetR);
-            jetresolutionhistos(jetsFullRec, jetsTrue, 1, jetR);
-            jetresolutionhistos(jetsHcalRec, jetsTrue, 2, jetR);
-            jetresolutionhistos(jetsCaloRec, jetsTrue, 3, jetR);
-            jetresolutionhistos(jetsAllRec, jetsTrue, 4, jetR);
-            jetresolutionhistos(jetsNoCluster,  jetsTrue,  5, jetR);
-            jetresolutionhistos(jetsEmcalRec,  jetsTrue,  6, jetR);
+            // jetresolutionhistos(jetsTrackRec, jetsTrueCharged, 0, jetR);
+            // jetresolutionhistos(jetsFullRec, jetsTrue, 1, jetR);
+            // jetresolutionhistos(jetsHcalRec, jetsTrue, 2, jetR);
+            // jetresolutionhistos(jetsCaloRec, jetsTrue, 3, jetR);
+            // jetresolutionhistos(jetsAllRec, jetsTrue, 4, jetR);
+            // jetresolutionhistos(jetsNoCluster,  jetsTrue,  5, jetR);
+            // jetresolutionhistos(jetsEmcalRec,  jetsTrue,  6, jetR);
             // TString jettype[njettypes] = {"track", "full","hcal","calo","all"};
         }
 
@@ -625,10 +619,10 @@ void treeProcessing(
       std::cout << "running trackingefficiencyhistosSave" << std::endl;
       trackingefficiencyhistosSave();
     }
-    if(tracksEnabled){
-      std::cout << "running tofpidhistosSave" << std::endl;
-      tofpidhistosSave();
-    }
+    // if(tracksEnabled){
+    //   std::cout << "running tofpidhistosSave" << std::endl;
+    //   tofpidhistosSave();
+    // }
     if(tracksEnabled) {
       std::cout << "running trackingresolutionhistosSave" << std::endl;
       trackingresolutionhistosSave();

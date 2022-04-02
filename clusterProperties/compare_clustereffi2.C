@@ -92,6 +92,7 @@ void compare_clustereffi2(
 
 
   for (Int_t iSet = 0; iSet < nSets; iSet++){
+    colorSet[iSet] = getCaloColor(labels[iSet],false);
     inputFiles[iSet]  = new TFile(inputFilesNames[iSet].Data());
       for (Int_t iEta=minEtaBinCaloDis[region[iSet]]; iEta<maxEtaBinCaloDis[region[iSet]]+1;iEta++){
         for (Int_t pid = 1; pid < nPID; pid++){
@@ -121,27 +122,81 @@ void compare_clustereffi2(
   histoDummyEffiE->GetXaxis()->SetRangeUser(0.15,50);
   histoDummyEffiE->GetYaxis()->SetNdivisions(510,kTRUE);
   histoDummyEffiE->GetXaxis()->SetMoreLogLabels(kTRUE);
-  TH2F* histoDummyEffiMCE   = new TH2F("histoDummyEffiMCE","histoDummyEffiMCE",1000,0.15, 100,1000,0.0, 1.35);
+  TH2F* histoDummyEffiMCE   = new TH2F("histoDummyEffiMCE","histoDummyEffiMCE",1000,0.15, 100,1000,0.0, 1.55);
   SetStyleHistoTH2ForGraphs(histoDummyEffiMCE, "#it{E}^{MC} (GeV)","#varepsilon_{TM}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,1.3*textSizeSinglePad, 0.9,0.57);
   histoDummyEffiMCE->GetXaxis()->SetNoExponent();
+  histoDummyEffiMCE->GetYaxis()->SetRangeUser(0.0,1.35);
   histoDummyEffiMCE->GetXaxis()->SetRangeUser(0.15,50);
   histoDummyEffiMCE->GetYaxis()->SetNdivisions(510,kTRUE);
   histoDummyEffiMCE->GetXaxis()->SetMoreLogLabels(kTRUE);
-  TLegend* legendPtResM  = GetAndSetLegend2(0.14, 0.72-(nSets*textSizeLabelsRel), 0.34, 0.72,textSizeLabelsPixel, 1, "", 43, 0.15);
 
+  TH2F* histoDummyNTowerMean   = new TH2F("histoDummyNTowerMean","histoDummyNTowerMean",1000,0.21, 99,1000,1, 999);
+  SetStyleHistoTH2ForGraphs(histoDummyNTowerMean, "#it{E} (GeV)","#LT#it{N}_{tower}#GT", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.8);
+  histoDummyNTowerMean->GetXaxis()->SetNoExponent();
+  histoDummyNTowerMean->GetYaxis()->SetNdivisions(510,kTRUE);
+  histoDummyNTowerMean->GetXaxis()->SetMoreLogLabels(kTRUE);
+  TH2F* histoDummyNClPerParMean   = new TH2F("histoDummyNClPerParMean","histoDummyNClPerParMean",1000,0.21, 99,1000,0.0, 4.9);
+  SetStyleHistoTH2ForGraphs(histoDummyNClPerParMean, "#it{E} (GeV)","#LT#it{N}_{cl}/particle #GT", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.8);
+  histoDummyNClPerParMean->GetXaxis()->SetNoExponent();
+  histoDummyNClPerParMean->GetYaxis()->SetNdivisions(505,kTRUE);
+  histoDummyNClPerParMean->GetXaxis()->SetMoreLogLabels(kTRUE);
+
+
+  TLegend* legendPtResMLeft  = GetAndSetLegend2(0.12, 0.82-(nSets*textSizeLabelsRel), 0.30, 0.82,textSizeLabelsPixel, 1, "", 43, 0.15);
+  TLegend* legendPtResM  = GetAndSetLegend2(0.74, 0.935-(nSets*textSizeLabelsRel), 0.92, 0.935,textSizeLabelsPixel, 1, "", 43, 0.25);
+  legendPtResM->SetMargin(0.3);
+  legendPtResMLeft->SetMargin(0.3);
   for (Int_t pid = 1; pid < nPID; pid++){
     if(!currPIDavail[pid]) continue;
     // histoDummyEffiE->Draw();
       legendPtResM->Clear();
-    if(pid==1 && addName.Contains("ECal")) legendPtResM  = GetAndSetLegend2(0.8, 0.935-(nSets*textSizeLabelsRel), 0.94, 0.935,textSizeLabelsPixel, 1, "", 43, 0.25);
-    if(pid==1 && addName.Contains("HCal")) legendPtResM  = GetAndSetLegend2(0.75, 0.935-(nSets*textSizeLabelsRel), 0.94, 0.935,textSizeLabelsPixel, 1, "", 43, 0.25);
+    // if(pid==1 && addName.Contains("ECal")) legendPtResM  = GetAndSetLegend2(0.8, 0.935-(nSets*textSizeLabelsRel), 0.94, 0.935,textSizeLabelsPixel, 1, "", 43, 0.25);
+    // if(pid==1 && addName.Contains("HCal")) legendPtResM  = GetAndSetLegend2(0.75, 0.935-(nSets*textSizeLabelsRel), 0.94, 0.935,textSizeLabelsPixel, 1, "", 43, 0.25);
+    
+    histoDummyNClPerParMean->Draw();
+    // DrawGammaLines(0.15, 50, 1,1,2,kGray+1, 2);
+      for(Int_t iSet=0; iSet<nSets;iSet++){
+        DrawGammaSetMarker(h_cluster_NClMean_E[iSet], markerStyleSet[iSet], markerSizeSet[iSet], getCaloColor(labels[iSet],false), getCaloColor(labels[iSet],false));
+        h_cluster_NClMean_E[iSet]->Draw("same,hist,p");
+        legendPtResM->AddEntry(h_cluster_NClMean_E[iSet],labels[iSet].Data(),"p");
+        legendPtResMLeft->AddEntry(h_cluster_NClMean_E[iSet],labels[iSet].Data(),"p");
+      }
+      legendPtResM->Draw();
+      drawLatexAdd(labelEnergy,0.14,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.14, 0.91-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);    
+      // drawLatexAdd(Form("single %s", partLabel[pid].Data()),0.14, 0.91-(nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      drawLatexAdd(Form("single particles"),0.14, 0.91-(nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      // drawLatexAdd(Form("#varepsilon_{TM} = N_{clus}^{matched} / N_{tracks}^{in acc.}"),0.14, 0.91-(1+nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+    cReso->Print(Form("%s/%s_NClusterPerParticle_Mean_MCE.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
+
+    
+    
+  cReso->SetLogy(true);
+    
+    histoDummyNTowerMean->Draw();
+    // DrawGammaLines(0.15, 50, 1,1,2,kGray+1, 2);
+      for(Int_t iSet=0; iSet<nSets;iSet++){
+        DrawGammaSetMarker(h_cluster_NTowerMean_E[iSet], markerStyleSet[iSet], markerSizeSet[iSet], colorSet[iSet], colorSet[iSet]);
+        h_cluster_NTowerMean_E[iSet]->Draw("same,hist,p");
+        // legendPtResM->AddEntry(h_cluster_NTowerMean_E[iSet],labels[iSet].Data(),"p");
+      }
+      legendPtResMLeft->Draw();
+      drawLatexAdd(labelEnergy,0.14,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.14, 0.91-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);    
+      drawLatexAdd(Form("single particles"),0.14, 0.91-(nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      // drawLatexAdd(Form("single %s", partLabel[pid].Data()),0.14, 0.91-(nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      // drawLatexAdd(Form("#varepsilon_{TM} = N_{clus}^{matched} / N_{tracks}^{in acc.}"),0.14, 0.91-(1+nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+
+    cReso->Print(Form("%s/%s_NTowerInCluster_Mean_E.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
+  cReso->SetLogy(false);
+    
     
     histoDummyEffiMCE->Draw();
     DrawGammaLines(0.15, 50, 1,1,2,kGray+1, 2);
       for(Int_t iSet=0; iSet<nSets;iSet++){
         DrawGammaSetMarker(h_TMeffi_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]], markerStyleSet[iSet], markerSizeSet[iSet], colorSet[iSet], colorSet[iSet]);
         h_TMeffi_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]]->Draw("same,p");
-        legendPtResM->AddEntry(h_TMeffi_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]],labels[iSet].Data(),"p");
+        // legendPtResM->AddEntry(h_TMeffi_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]],labels[iSet].Data(),"p");
       }
       legendPtResM->Draw();
       drawLatexAdd(labelEnergy,0.14,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
@@ -166,5 +221,330 @@ void compare_clustereffi2(
       drawLatexAdd(Form("#varepsilon_{TM} = N_{clus}^{matched} / N_{clus}"),0.14, 0.91-(1+nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
 
     cReso->Print(Form("%s/%s_ClusterTMEfficiencyClusterSE_MCE.%s", outputDir.Data(), partName[pid].Data(), suffix.Data()));
+  }
+  bool paperPlot = true;
+  if(nSets==5 && paperPlot){
+  histoDummyEffiMCE->GetYaxis()->SetRangeUser(0.0,1.55);
+    histoDummyEffiMCE->Draw();
+    legendPtResM  = GetAndSetLegend2(0.68, 0.935-(nSets*textSizeLabelsRel), 0.86, 0.935,textSizeLabelsPixel, 1, "", 43, 0.25);
+    legendPtResM->SetMargin(0.3);
+    DrawGammaLines(0.15, 50, 1,1,2,kGray+1, 2);
+        h_TMeffi_recSE_MCE[0][1][maxEtaBinCaloDis[region[0]]]->Draw("same,p");
+        h_TMeffi_recSE_MCE[1][1][maxEtaBinCaloDis[region[1]]]->Draw("same,p");
+        h_TMeffi_recSE_MCE[2][1][maxEtaBinCaloDis[region[2]]]->Draw("same,p");
+        h_TMeffi_recSE_MCE[3][3][maxEtaBinCaloDis[region[3]]]->Draw("same,p");
+        h_TMeffi_recSE_MCE[4][3][maxEtaBinCaloDis[region[4]]]->Draw("same,p");
+        legendPtResM->AddEntry(h_TMeffi_recSE_MCE[0][1][maxEtaBinCaloDis[region[0]]],Form("%s (%s)",labels[0].Data(),partLabel[1].Data()),"p");
+        legendPtResM->AddEntry(h_TMeffi_recSE_MCE[1][1][maxEtaBinCaloDis[region[1]]],Form("%s (%s)",labels[1].Data(),partLabel[1].Data()),"p");
+        legendPtResM->AddEntry(h_TMeffi_recSE_MCE[2][1][maxEtaBinCaloDis[region[2]]],Form("%s (%s)",labels[2].Data(),partLabel[1].Data()),"p");
+        legendPtResM->AddEntry(h_TMeffi_recSE_MCE[3][3][maxEtaBinCaloDis[region[3]]],Form("%s (%s)",labels[3].Data(),partLabel[3].Data()),"p");
+        legendPtResM->AddEntry(h_TMeffi_recSE_MCE[4][3][maxEtaBinCaloDis[region[4]]],Form("%s (%s)",labels[4].Data(),partLabel[3].Data()),"p");
+      legendPtResM->Draw();
+      drawLatexAdd(labelEnergy,0.14,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.14, 0.91-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);    
+      drawLatexAdd(Form("single particles"),0.14, 0.91-(nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      drawLatexAdd(Form("#varepsilon_{TM} = N_{clus}^{matched} / N_{tracks}^{in acc.}"),0.14, 0.91-(1+nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+
+    cReso->Print(Form("%s/Paper_ClusterTMEfficiencySE_MCE.%s", outputDir.Data(), suffix.Data()));
+    
+    
+    histoDummyEffiMCE->Draw();
+    DrawGammaLines(0.15, 50, 1,1,2,kGray+1, 2);
+        h_TMeffiCls_recSE_MCE[0][1][maxEtaBinCaloDis[region[0]]]->Draw("same,p");
+        h_TMeffiCls_recSE_MCE[1][1][maxEtaBinCaloDis[region[1]]]->Draw("same,p");
+        h_TMeffiCls_recSE_MCE[2][1][maxEtaBinCaloDis[region[2]]]->Draw("same,p");
+        h_TMeffiCls_recSE_MCE[3][3][maxEtaBinCaloDis[region[3]]]->Draw("same,p");
+        h_TMeffiCls_recSE_MCE[4][3][maxEtaBinCaloDis[region[4]]]->Draw("same,p");
+      legendPtResM->Draw();
+      drawLatexAdd(labelEnergy,0.14,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.14, 0.91-textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);    
+      drawLatexAdd(Form("single particles"),0.14, 0.91-(nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      drawLatexAdd(Form("#varepsilon_{TM} = N_{clus}^{matched} / N_{clus}"),0.14, 0.91-(1+nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+
+    cReso->Print(Form("%s/Paper_ClusterTMEfficiencyClusterSE_MCE.%s", outputDir.Data(), suffix.Data()));
+
+
+
+    Double_t arrayBoundariesTMEffEtaX1_4[4];
+    Double_t arrayBoundariesTMEffEtaY1_4[3];
+    Double_t relativeMarginsTMEffEtaX[3];
+    Double_t relativeMarginsTMEffEtaY[3];
+    textSizeLabelsPixel             = 750*0.05;
+    ReturnCorrectValuesForCanvasScaling(2250,750, 3, 1,0.035, 0.01, 0.01,0.095,arrayBoundariesTMEffEtaX1_4,arrayBoundariesTMEffEtaY1_4,relativeMarginsTMEffEtaX,relativeMarginsTMEffEtaY);
+
+    TCanvas* canvasTMEffEtaPaperPlot     = new TCanvas("canvasTMEffEtaPaperPlot","",0,0,2250,750);  // gives the page size
+    DrawGammaCanvasSettings( canvasTMEffEtaPaperPlot,  0.05, 0.01, 0.01,0.095);
+    // canvasTMEffEtaPaperPlot->SetLogy(1);
+
+    TPad* padTMEffEtaEEMC               = new TPad("padTMEffEtaEEMC", "", arrayBoundariesTMEffEtaX1_4[0], arrayBoundariesTMEffEtaY1_4[2], arrayBoundariesTMEffEtaX1_4[1], arrayBoundariesTMEffEtaY1_4[0],-1, -1, -2);
+    DrawGammaPadSettings( padTMEffEtaEEMC, relativeMarginsTMEffEtaX[0], relativeMarginsTMEffEtaX[1], relativeMarginsTMEffEtaY[0], relativeMarginsTMEffEtaY[2]);
+    padTMEffEtaEEMC->Draw();
+
+    TPad* padTMEffEtaBEMC                = new TPad("padTMEffEtaBEMC", "", arrayBoundariesTMEffEtaX1_4[1], arrayBoundariesTMEffEtaY1_4[2], arrayBoundariesTMEffEtaX1_4[2], arrayBoundariesTMEffEtaY1_4[0],-1, -1, -2);
+    DrawGammaPadSettings( padTMEffEtaBEMC, relativeMarginsTMEffEtaX[1], relativeMarginsTMEffEtaX[1], relativeMarginsTMEffEtaY[0], relativeMarginsTMEffEtaY[2]);
+    padTMEffEtaBEMC->Draw();
+
+    TPad* padTMEffEtaFEMC                = new TPad("padTMEffEtaFEMC", "", arrayBoundariesTMEffEtaX1_4[2], arrayBoundariesTMEffEtaY1_4[2], arrayBoundariesTMEffEtaX1_4[3], arrayBoundariesTMEffEtaY1_4[0],-1, -1, -2);
+    DrawGammaPadSettings( padTMEffEtaFEMC, relativeMarginsTMEffEtaX[1], relativeMarginsTMEffEtaX[2], relativeMarginsTMEffEtaY[0], relativeMarginsTMEffEtaY[2]);
+    padTMEffEtaFEMC->Draw();
+
+    // padTMEffEtaEEMC->cd();
+    // padTMEffEtaEEMC->SetLogy();
+
+    Double_t margin                 = relativeMarginsTMEffEtaX[0]*2.7*1350;
+    double textsizeLabelsTMEffEta    = 0;
+    double textsizeFacTMEffEta       = 0;
+    if (padTMEffEtaEEMC->XtoPixel(padTMEffEtaEEMC->GetX2()) < padTMEffEtaEEMC->YtoPixel(padTMEffEtaEEMC->GetY1())){
+        textsizeLabelsTMEffEta         = (Double_t)textSizeLabelsPixel/padTMEffEtaEEMC->XtoPixel(padTMEffEtaEEMC->GetX2()) ;
+        textsizeFacTMEffEta            = (Double_t)1./padTMEffEtaEEMC->XtoPixel(padTMEffEtaEEMC->GetX2()) ;
+    } else {
+        textsizeLabelsTMEffEta         = (Double_t)textSizeLabelsPixel/padTMEffEtaEEMC->YtoPixel(padTMEffEtaEEMC->GetY1());
+        textsizeFacTMEffEta            = (Double_t)1./padTMEffEtaEEMC->YtoPixel(padTMEffEtaEEMC->GetY1());
+    }
+    histoDummyEffiMCE   = new TH2F("histoDummyEffiMCE","histoDummyEffiMCE",1000,0.15, 100,1000,0.0, 1.55);
+    SetStyleHistoTH2ForGraphs(histoDummyEffiMCE, "#it{E}^{MC} (GeV)","#varepsilon_{TM}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,1.3*textSizeSinglePad, 0.9,0.57);
+    histoDummyEffiMCE->GetXaxis()->SetNoExponent();
+    histoDummyEffiMCE->GetYaxis()->SetRangeUser(0.0,1.35);
+    histoDummyEffiMCE->GetXaxis()->SetRangeUser(0.15,50);
+    histoDummyEffiMCE->GetYaxis()->SetNdivisions(510,kTRUE);
+    histoDummyEffiMCE->GetXaxis()->SetMoreLogLabels(kTRUE);
+    // histo2DPi0TMEffEtaDummy->GetYaxis()->SetTitle("norm. counts");
+    // histo2DPi0TMEffEtaDummy->GetYaxis()->SetTitleOffset(1.0);
+    // histo2DPi0TMEffEtaDummy->GetXaxis()->SetTickLength(0.025);
+    // histo2DPi0TMEffEtaDummy->GetXaxis()->SetRangeUser(0,1.99);
+    // histo2DPi0TMEffEtaDummy->GetYaxis()->SetRangeUser(0.1,2.9);
+    TLegend* legendEffiE[10] = {nullptr};
+    for (Int_t iSet = 0; iSet < 3; iSet++){
+      if(iSet==1){
+        padTMEffEtaBEMC->cd();
+        padTMEffEtaBEMC->SetLogx();
+      } else if(iSet==2){
+        padTMEffEtaFEMC->cd();
+        padTMEffEtaFEMC->SetLogx();
+      } else {
+        padTMEffEtaEEMC->cd();
+        padTMEffEtaEEMC->SetLogx();
+      }
+
+      histoDummyEffiMCE->DrawCopy();
+      if(iSet==0)drawLatexAdd( labels[iSet].Data(),0.14,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      else drawLatexAdd( labels[iSet].Data(),0.05,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      if(iSet==0)drawLatexAdd( "a)",0.14,0.86,textSizeLabelsRel,kFALSE,kFALSE,false);
+      else if(iSet==1)drawLatexAdd( "b)",0.05,0.86,textSizeLabelsRel,kFALSE,kFALSE,false);
+      else drawLatexAdd("c)",0.05,0.86,textSizeLabelsRel,kFALSE,kFALSE,false);
+
+      if(iSet==1){
+        double startleg = 0.26;
+        drawLatexAdd(labelEnergy,0.95,startleg,textSizeLabelsRel,kFALSE,kFALSE,true);
+        drawLatexAdd(Form("single e^{#pm}"),0.95, startleg-(nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,true);
+        drawLatexAdd(Form("#varepsilon_{TM} = N_{clus}^{matched} / N_{tracks}^{in acc.}"),0.95, startleg-(1+nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,true);
+      }
+      DrawGammaLines(0.15,50, 1., 1., 1, kGray+2, 7);
+      Int_t icurrPID = 1;
+      Int_t nActiveEta            = maxNEtaBinsFull[region[iSet]]+1;
+      legendEffiE[iSet]      = GetAndSetLegend2(0.4, 0.94-(nActiveEta/2*0.85*textSizeLabelsRel), 0.95, 0.94,0.85*textSizeLabelsRel, 2, "", 42, 0.2);
+      for (Int_t iEta=minEtaBinCaloDis[region[iSet]]; iEta<maxEtaBinCaloDis[region[iSet]]+1;iEta++){
+        int iEtaPlot = iEta==maxEtaBinCaloDis[region[iSet]] ? nEta : iEta;
+        DrawGammaSetMarker(h_TMeffi_recSE_MCE[iSet][icurrPID][iEta], markerStyleEta[iEtaPlot], markerSizeEta[iEtaPlot], colorEta[iEtaPlot], colorEta[iEtaPlot]);
+        h_TMeffi_recSE_MCE[iSet][icurrPID][iEta]->Draw("same");
+
+        if (iEta == maxEtaBinCaloDis[region[iSet]] )
+          legendEffiE[iSet]->AddEntry(h_TMeffi_recSE_MCE[iSet][icurrPID][iEta],Form("%1.1f < #it{#eta} < %1.1f",partEta[minEtaBinCaloDis[region[iSet]]],partEta[maxEtaBinCaloDis[region[iSet]]]),"p");
+        else 
+          legendEffiE[iSet]->AddEntry(h_TMeffi_recSE_MCE[iSet][icurrPID][iEta],Form("%1.1f < #it{#eta} < %1.1f",partEta[iEta],partEta[iEta+1]),"p");
+        legendEffiE[iSet]->Draw();
+      }
+      histoDummyEffiMCE->Draw("same,axis");
+    }
+      canvasTMEffEtaPaperPlot->SaveAs(Form("%s/TMEffEta_PaperPlot.%s",outputDir.Data(), suffix.Data()));
+
+
+    histoDummyEffiMCE->GetYaxis()->SetTitle("#varepsilon");
+
+    for (Int_t iSet = 0; iSet < 3; iSet++){
+      if(iSet==1){
+        padTMEffEtaBEMC->cd();
+        padTMEffEtaBEMC->SetLogx();
+      } else if(iSet==2){
+        padTMEffEtaFEMC->cd();
+        padTMEffEtaFEMC->SetLogx();
+      } else {
+        padTMEffEtaEEMC->cd();
+        padTMEffEtaEEMC->SetLogx();
+      }
+
+      histoDummyEffiMCE->DrawCopy();
+      if(iSet==0)drawLatexAdd( labels[iSet].Data(),0.14,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      else drawLatexAdd( labels[iSet].Data(),0.05,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      if(iSet==0)drawLatexAdd( "a)",0.14,0.86,textSizeLabelsRel,kFALSE,kFALSE,false);
+      else if(iSet==1)drawLatexAdd( "b)",0.05,0.86,textSizeLabelsRel,kFALSE,kFALSE,false);
+      else drawLatexAdd("c)",0.05,0.86,textSizeLabelsRel,kFALSE,kFALSE,false);
+
+      if(iSet==1){
+        double startleg = 0.26;
+        drawLatexAdd(labelEnergy,0.95,startleg-(nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,true);
+        drawLatexAdd(Form("single e^{#pm}"),0.95, startleg-(1+nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,true);
+        // drawLatexAdd(Form("#varepsilon_{TM} = N_{clus}^{matched} / N_{tracks}^{in acc.}"),0.95, startleg-(1+nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,true);
+      }
+      DrawGammaLines(0.15,50, 1., 1., 1, kGray+2, 7);
+      Int_t icurrPID = 1;
+      Int_t nActiveEta            = maxNEtaBinsFull[region[iSet]]+1;
+      legendEffiE[iSet]      = GetAndSetLegend2(0.4, 0.94-(nActiveEta/2*0.85*textSizeLabelsRel), 0.95, 0.94,0.85*textSizeLabelsRel, 2, "", 42, 0.2);
+      for (Int_t iEta=minEtaBinCaloDis[region[iSet]]; iEta<maxEtaBinCaloDis[region[iSet]]+1;iEta++){
+        int iEtaPlot = iEta==maxEtaBinCaloDis[region[iSet]] ? nEta : iEta;
+        DrawGammaSetMarker(h_effi_recSE_MCE[iSet][icurrPID][iEta], markerStyleEta[iEtaPlot], markerSizeEta[iEtaPlot], colorEta[iEtaPlot], colorEta[iEtaPlot]);
+        h_effi_recSE_MCE[iSet][icurrPID][iEta]->Draw("same");
+
+        if (iEta == maxEtaBinCaloDis[region[iSet]] )
+          legendEffiE[iSet]->AddEntry(h_effi_recSE_MCE[iSet][icurrPID][iEta],Form("%1.1f < #it{#eta} < %1.1f",partEta[minEtaBinCaloDis[region[iSet]]],partEta[maxEtaBinCaloDis[region[iSet]]]),"p");
+        else 
+          legendEffiE[iSet]->AddEntry(h_effi_recSE_MCE[iSet][icurrPID][iEta],Form("%1.1f < #it{#eta} < %1.1f",partEta[iEta],partEta[iEta+1]),"p");
+        legendEffiE[iSet]->Draw();
+      }
+      histoDummyEffiMCE->Draw("same,axis");
+    }
+      canvasTMEffEtaPaperPlot->SaveAs(Form("%s/ClusRecEffEta_ECals_PaperPlot.%s",outputDir.Data(), suffix.Data()));
+
+
+
+
+
+    Double_t arrayBoundariesEffEtaHCalX1_4[4];
+    Double_t arrayBoundariesEffEtaHCalY1_4[3];
+    Double_t relativeMarginsEffEtaHCalX[3];
+    Double_t relativeMarginsEffEtaHCalY[3];
+    textSizeLabelsPixel             = 750*0.05;
+    ReturnCorrectValuesForCanvasScaling(1500,750, 2, 1,0.045, 0.01, 0.01,0.095,arrayBoundariesEffEtaHCalX1_4,arrayBoundariesEffEtaHCalY1_4,relativeMarginsEffEtaHCalX,relativeMarginsEffEtaHCalY);
+
+    TCanvas* canvasEffEtaHCalPaperPlot     = new TCanvas("canvasEffEtaHCalPaperPlot","",0,0,1500,750);  // gives the page size
+    DrawGammaCanvasSettings( canvasEffEtaHCalPaperPlot,  0.05, 0.01, 0.01,0.095);
+    // canvasEffEtaHCalPaperPlot->SetLogy(1);
+
+    TPad* padEffEtaHCalOHCAL               = new TPad("padEffEtaHCalOHCAL", "", arrayBoundariesEffEtaHCalX1_4[0], arrayBoundariesEffEtaHCalY1_4[2], arrayBoundariesEffEtaHCalX1_4[1], arrayBoundariesEffEtaHCalY1_4[0],-1, -1, -2);
+    DrawGammaPadSettings( padEffEtaHCalOHCAL, relativeMarginsEffEtaHCalX[0], relativeMarginsEffEtaHCalX[1], relativeMarginsEffEtaHCalY[0], relativeMarginsEffEtaHCalY[2]);
+    padEffEtaHCalOHCAL->Draw();
+
+    TPad* padEffEtaHCalLFHCAL                = new TPad("padEffEtaHCalLFHCAL", "", arrayBoundariesEffEtaHCalX1_4[1], arrayBoundariesEffEtaHCalY1_4[2], arrayBoundariesEffEtaHCalX1_4[2], arrayBoundariesEffEtaHCalY1_4[0],-1, -1, -2);
+    DrawGammaPadSettings( padEffEtaHCalLFHCAL, relativeMarginsEffEtaHCalX[1], relativeMarginsEffEtaHCalX[2], relativeMarginsEffEtaHCalY[0], relativeMarginsEffEtaHCalY[2]);
+    padEffEtaHCalLFHCAL->Draw();
+
+    // TPad* padEffEtaHCalFEMC                = new TPad("padEffEtaHCalFEMC", "", arrayBoundariesEffEtaHCalX1_4[2], arrayBoundariesEffEtaHCalY1_4[2], arrayBoundariesEffEtaHCalX1_4[3], arrayBoundariesEffEtaHCalY1_4[0],-1, -1, -2);
+    // DrawGammaPadSettings( padEffEtaHCalFEMC, relativeMarginsEffEtaHCalX[1], relativeMarginsEffEtaHCalX[2], relativeMarginsEffEtaHCalY[0], relativeMarginsEffEtaHCalY[2]);
+    // padEffEtaHCalFEMC->Draw();
+
+    // padEffEtaHCalOHCAL->cd();
+    // padEffEtaHCalOHCAL->SetLogy();
+
+    // Double_t margin                 = relativeMarginsEffEtaHCalX[0]*2.7*1350;
+    double textsizeLabelsEffEtaHCal    = 0;
+    double textsizeFacEffEtaHCal       = 0;
+    if (padEffEtaHCalOHCAL->XtoPixel(padEffEtaHCalOHCAL->GetX2()) < padEffEtaHCalOHCAL->YtoPixel(padEffEtaHCalOHCAL->GetY1())){
+        textsizeLabelsEffEtaHCal         = (Double_t)textSizeLabelsPixel/padEffEtaHCalOHCAL->XtoPixel(padEffEtaHCalOHCAL->GetX2()) ;
+        textsizeFacEffEtaHCal            = (Double_t)1./padEffEtaHCalOHCAL->XtoPixel(padEffEtaHCalOHCAL->GetX2()) ;
+    } else {
+        textsizeLabelsEffEtaHCal         = (Double_t)textSizeLabelsPixel/padEffEtaHCalOHCAL->YtoPixel(padEffEtaHCalOHCAL->GetY1());
+        textsizeFacEffEtaHCal            = (Double_t)1./padEffEtaHCalOHCAL->YtoPixel(padEffEtaHCalOHCAL->GetY1());
+    }
+
+
+    histoDummyEffiMCE   = new TH2F("histoDummyEffiMCE","histoDummyEffiMCE",1000,0.15, 99,1000,0.0, 1.55);
+    SetStyleHistoTH2ForGraphs(histoDummyEffiMCE, "#it{E}^{MC} (GeV)","#varepsilon", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,1.3*textSizeSinglePad, 0.9,0.57);
+    histoDummyEffiMCE->GetXaxis()->SetNoExponent();
+    histoDummyEffiMCE->GetYaxis()->SetRangeUser(0.0,1.35);
+    // histoDummyEffiMCE->GetXaxis()->SetRangeUser(0.15,50);
+    histoDummyEffiMCE->GetYaxis()->SetNdivisions(510,kTRUE);
+    histoDummyEffiMCE->GetXaxis()->SetMoreLogLabels(kTRUE);
+    for (Int_t iSet = 3; iSet < 5; iSet++){
+      if(iSet==3){
+        padEffEtaHCalOHCAL->cd();
+        padEffEtaHCalOHCAL->SetLogx();
+      } else if(iSet==4){
+        padEffEtaHCalLFHCAL->cd();
+        padEffEtaHCalLFHCAL->SetLogx();
+      }
+
+      histoDummyEffiMCE->DrawCopy();
+      if(iSet==3)drawLatexAdd( labels[iSet].Data(),0.14,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      else drawLatexAdd( labels[iSet].Data(),0.05,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      if(iSet==3)drawLatexAdd( "d)",0.14,0.86,textSizeLabelsRel,kFALSE,kFALSE,false);
+      else drawLatexAdd("e)",0.05,0.86,textSizeLabelsRel,kFALSE,kFALSE,false);
+
+      if(iSet==4){
+        double startleg = 0.26;
+        drawLatexAdd(labelEnergy,0.94,startleg-(nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,true);
+        drawLatexAdd(Form("single #pi^{#pm}"),0.94, startleg-(1+nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,true);
+      }
+      DrawGammaLines(0.15,99, 1., 1., 1, kGray+2, 7);
+      Int_t icurrPID = 3;
+      Int_t nActiveEta            = maxNEtaBinsFull[region[iSet]]+1;
+      legendEffiE[iSet]      = GetAndSetLegend2(0.4, 0.94-(nActiveEta/2*0.85*textSizeLabelsRel), 0.95, 0.94,0.85*textSizeLabelsRel, 2, "", 42, 0.2);
+      for (Int_t iEta=minEtaBinCaloDis[region[iSet]]; iEta<maxEtaBinCaloDis[region[iSet]]+1;iEta++){
+        int iEtaPlot = iEta==maxEtaBinCaloDis[region[iSet]] ? nEta : iEta;
+        DrawGammaSetMarker(h_effi_recSE_MCE[iSet][icurrPID][iEta], markerStyleEta[iEtaPlot], markerSizeEta[iEtaPlot], colorEta[iEtaPlot], colorEta[iEtaPlot]);
+        h_effi_recSE_MCE[iSet][icurrPID][iEta]->Draw("same");
+
+        if (iEta == maxEtaBinCaloDis[region[iSet]] )
+          legendEffiE[iSet]->AddEntry(h_effi_recSE_MCE[iSet][icurrPID][iEta],Form("%1.1f < #it{#eta} < %1.1f",partEta[minEtaBinCaloDis[region[iSet]]],partEta[maxEtaBinCaloDis[region[iSet]]]),"p");
+        else 
+          legendEffiE[iSet]->AddEntry(h_effi_recSE_MCE[iSet][icurrPID][iEta],Form("%1.1f < #it{#eta} < %1.1f",partEta[iEta],partEta[iEta+1]),"p");
+        legendEffiE[iSet]->Draw();
+      }
+      histoDummyEffiMCE->Draw("same,axis");
+    }
+      canvasEffEtaHCalPaperPlot->SaveAs(Form("%s/ClusRecEffEta_HCals_PaperPlot.%s",outputDir.Data(), suffix.Data()));
+
+
+    histoDummyEffiMCE   = new TH2F("histoDummyEffiMCE","histoDummyEffiMCE",1000,0.15, 100,1000,0.0, 1.55);
+    SetStyleHistoTH2ForGraphs(histoDummyEffiMCE, "#it{E}^{MC} (GeV)","#varepsilon_{TM}", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,1.3*textSizeSinglePad, 0.9,0.57);
+    histoDummyEffiMCE->GetXaxis()->SetNoExponent();
+    histoDummyEffiMCE->GetYaxis()->SetRangeUser(0.0,1.35);
+    histoDummyEffiMCE->GetXaxis()->SetRangeUser(0.15,50);
+    histoDummyEffiMCE->GetYaxis()->SetNdivisions(510,kTRUE);
+    histoDummyEffiMCE->GetXaxis()->SetMoreLogLabels(kTRUE);
+    // histo2DPi0TMEffEtaDummy->GetYaxis()->SetTitle("norm. counts");
+    // histo2DPi0TMEffEtaDummy->GetYaxis()->SetTitleOffset(1.0);
+    // histo2DPi0TMEffEtaDummy->GetXaxis()->SetTickLength(0.025);
+    // histo2DPi0TMEffEtaDummy->GetXaxis()->SetRangeUser(0,1.99);
+    // histo2DPi0TMEffEtaDummy->GetYaxis()->SetRangeUser(0.1,2.9);
+    for (Int_t iSet = 3; iSet < 5; iSet++){
+      if(iSet==3){
+        padEffEtaHCalOHCAL->cd();
+        padEffEtaHCalOHCAL->SetLogx();
+      } else {
+        padEffEtaHCalLFHCAL->cd();
+        padEffEtaHCalLFHCAL->SetLogx();
+      }
+
+      histoDummyEffiMCE->DrawCopy();
+      if(iSet==3)drawLatexAdd( labels[iSet].Data(),0.14,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      else drawLatexAdd( labels[iSet].Data(),0.05,0.91,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      if(iSet==3)drawLatexAdd( "d)",0.14,0.86,textSizeLabelsRel,kFALSE,kFALSE,false);
+      else drawLatexAdd("e)",0.05,0.86,textSizeLabelsRel,kFALSE,kFALSE,false);
+
+      if(iSet==4){
+        double startleg = 0.26;
+        drawLatexAdd(labelEnergy,0.95,startleg,textSizeLabelsRel,kFALSE,kFALSE,true);
+        drawLatexAdd(Form("single #pi^{#pm}"),0.95, startleg-(nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,true);
+        drawLatexAdd(Form("#varepsilon_{TM} = N_{clus}^{matched} / N_{tracks}^{in acc.}"),0.95, startleg-(1+nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,true);
+      }
+      DrawGammaLines(0.15,50, 1., 1., 1, kGray+2, 7);
+      Int_t icurrPID = 3;
+      Int_t nActiveEta            = maxNEtaBinsFull[region[iSet]]+1;
+      legendEffiE[iSet]      = GetAndSetLegend2(0.4, 0.94-(nActiveEta/2*0.85*textSizeLabelsRel), 0.95, 0.94,0.85*textSizeLabelsRel, 2, "", 42, 0.2);
+      for (Int_t iEta=minEtaBinCaloDis[region[iSet]]; iEta<maxEtaBinCaloDis[region[iSet]]+1;iEta++){
+        int iEtaPlot = iEta==maxEtaBinCaloDis[region[iSet]] ? nEta : iEta;
+        DrawGammaSetMarker(h_TMeffi_recSE_MCE[iSet][icurrPID][iEta], markerStyleEta[iEtaPlot], markerSizeEta[iEtaPlot], colorEta[iEtaPlot], colorEta[iEtaPlot]);
+        h_TMeffi_recSE_MCE[iSet][icurrPID][iEta]->Draw("same");
+
+        if (iEta == maxEtaBinCaloDis[region[iSet]] )
+          legendEffiE[iSet]->AddEntry(h_TMeffi_recSE_MCE[iSet][icurrPID][iEta],Form("%1.1f < #it{#eta} < %1.1f",partEta[minEtaBinCaloDis[region[iSet]]],partEta[maxEtaBinCaloDis[region[iSet]]]),"p");
+        else 
+          legendEffiE[iSet]->AddEntry(h_TMeffi_recSE_MCE[iSet][icurrPID][iEta],Form("%1.1f < #it{#eta} < %1.1f",partEta[iEta],partEta[iEta+1]),"p");
+        legendEffiE[iSet]->Draw();
+      }
+      histoDummyEffiMCE->Draw("same,axis");
+    }
+      canvasEffEtaHCalPaperPlot->SaveAs(Form("%s/TMEffEta_PaperPlot_HCal.%s",outputDir.Data(), suffix.Data()));
+
   }
 }
