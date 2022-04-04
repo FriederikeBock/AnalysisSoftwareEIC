@@ -529,9 +529,10 @@ void makeTMplots(
   // canvasMatchingEffi->SetLogy(1);
   canvasMatchingEffi->SetLogx(1);
   TH2F * histoDummyMatchingEffi;
-  histoDummyMatchingEffi                = new TH2F("histoDummyMatchingEffi", "histoDummyMatchingEffi",1000, 0.51, 39, 1000, 0.0, 1.24 );
+  histoDummyMatchingEffi                = new TH2F("histoDummyMatchingEffi", "histoDummyMatchingEffi",1000, 0.51, 39, 1000, 0.0, 1.54 );
   SetStyleHistoTH2ForGraphs( histoDummyMatchingEffi, "#it{E}_{clus,HCal} (GeV/#it{c})", "#it{#epsilon}_{calomatch}",
                           0.85*textSizeLabelsRel, textSizeLabelsRel, 0.85*textSizeLabelsRel, textSizeLabelsRel, 0.9, 1, 510, 510);//(#times #epsilon_{pur})
+  histoDummyMatchingEffi->GetYaxis()->SetRangeUser(0., 1.24);
   histoDummyMatchingEffi->GetYaxis()->SetLabelOffset(0.001);
   histoDummyMatchingEffi->GetXaxis()->SetNoExponent();
   histoDummyMatchingEffi->GetXaxis()->SetMoreLogLabels(kTRUE);
@@ -627,13 +628,15 @@ void makeTMplots(
     canvasMatchingEffi->Update();
     canvasMatchingEffi->Print(Form("%s/MatchingEffi_EtaCut_%s_%s.%s",outputDir.Data(),str_calorimeterPlot[icalo].Data(),str_calorimeterPlot[_combCalo[icalo]].Data(),suffix.Data()));
   }
+  histoDummyMatchingEffi->GetYaxis()->SetRangeUser(0., 1.44);
 
   histoDummyMatchingEffi->DrawCopy();
   // legendPi0Merge1           = GetAndSetLegend2(0.50, 0.14, 0.70, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
   // legendPi0Merge2           = GetAndSetLegend2(0.60, 0.14, 0.80, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
   // legendPi0Merge3           = GetAndSetLegend2(0.70, 0.14, 0.90, 0.14+(3*textSizeLabelsRel),0.9*textSizeLabelsPixel,1);
     // TLegend* legendPi0Merge4           = GetAndSetLegend2(0.15, 0.74-(7.5*textSizeLabelsRel), 0.35, 0.74,1.1*textSizeLabelsPixel,1);
-    TLegend* legendPi0Merge4           = GetAndSetLegend2(0.15, 0.74-(3.5*textSizeLabelsRel), 0.65, 0.74,1.1*textSizeLabelsPixel,2);
+    TLegend* legendPi0Merge4           = GetAndSetLegend2(0.77, 0.90-(3*textSizeLabelsRel), 1.02, 0.90,1.1*textSizeLabelsPixel,2);
+    TLegend* legendPi0Merge5           = GetAndSetLegend2(0.45, 0.90-(3*textSizeLabelsRel), 0.65, 0.90,1.1*textSizeLabelsPixel,1);
     legendPi0Merge4->SetMargin(0.1);
     // if(icalo==kHCALIN)legendPi0Merge4           = GetAndSetLegend2(0.15, 0.54, 0.35, 0.54+(3.5*textSizeLabelsRel),1.2*textSizeLabelsPixel,1);
   for (Int_t icalo = 0; icalo < maxcalo; icalo++){
@@ -674,18 +677,20 @@ void makeTMplots(
   //   legendPi0Merge4->AddEntry(h_CaloMatchingEffi_MatchedTrackAndCalo_vsTM[icalo],Form("%s-%s",str_calorimeterPlot[icalo].Data(),str_calorimeterPlot[_combCalo[icalo]].Data()),"p");
   // }
   // legendPi0Merge4->AddEntry((TObject*)0," "," ");
-  legendPi0Merge4->AddEntry((TObject*)0,"#it{#epsilon}_{CM,all}"," ");
-  legendPi0Merge4->AddEntry((TObject*)0,"#it{#epsilon}_{CM,TM}"," ");
+  // legendPi0Merge4->AddEntry((TObject*)0,"#it{#epsilon}_{CM,all}"," ");
+  // legendPi0Merge4->AddEntry((TObject*)0,"#it{#epsilon}_{CM,TM}"," ");
   // legendPi0Merge4->AddEntry((TObject*)0,"#frac{N_{clus,CM}}{N_{clus}}"," ");
   // legendPi0Merge4->AddEntry((TObject*)0,"#frac{N_{clus,CM,TM}}{N_{clus,TM}}"," ");
   // legendPi0Merge4->AddEntry((TObject*)0,"N_{clus,CM} / N_{clus}"," ");
   // legendPi0Merge4->AddEntry((TObject*)0,"N_{clus,CM,TM} / N_{clus,TM}"," ");
+  drawLatexAdd("#it{#epsilon}_{CM,all}",0.82,0.93,textSizeLabelsRel,false,false,true);
+  drawLatexAdd("#it{#epsilon}_{CM,TM}",0.95,0.93,textSizeLabelsRel,false,false,true);
   for (Int_t icalo = 0; icalo < maxcalo; icalo++){
     if(!_curr_active_calo[icalo]) continue;
     if(!IsHCALCalorimeter(icalo)) continue;
-    // legendPi0Merge4->AddEntry((TObject*)0,Form("%s-%s",str_calorimeterPlot[icalo].Data(),str_calorimeterPlot[_combCalo[icalo]].Data())," ");
-    legendPi0Merge4->AddEntry(h_CaloMatchingEffi_MatchedCalo_vsAll[icalo]," ","p");
-    legendPi0Merge4->AddEntry(h_CaloMatchingEffi_MatchedTrackAndCalo_vsTM[icalo]," ","p");
+    legendPi0Merge5->AddEntry((TObject*)0,Form("%s-%s",str_calorimeterPlot[icalo].Data(),str_calorimeterPlot[_combCalo[icalo]].Data())," ");
+    legendPi0Merge4->AddEntry(h_CaloMatchingEffi_MatchedCalo_vsAll[icalo],"   ","p");
+    legendPi0Merge4->AddEntry(h_CaloMatchingEffi_MatchedTrackAndCalo_vsTM[icalo],"   ","p");
   }
   // legendPi0Merge4->AddEntry((TObject*)0,"N_{clus,CM,TM} / N_{clus,TM}"," ");
   // for (Int_t icalo = 0; icalo < maxcalo; icalo++){
@@ -693,10 +698,12 @@ void makeTMplots(
   //   if(!IsHCALCalorimeter(icalo)) continue;
   //   legendPi0Merge4->AddEntry(h_CaloMatchingEffi_MatchedTrackAndCalo_vsTM[icalo],Form("%s-%s",str_calorimeterPlot[icalo].Data(),str_calorimeterPlot[_combCalo[icalo]].Data()),"p");
   // }
+  legendPi0Merge5->Draw();
   legendPi0Merge4->Draw();
-  float toplegval = 0.90;
+  float toplegval = 0.91;
 
   drawLatexAdd(perfLabel.Data(),0.15,toplegval,textSizeLabelsRel,false,false,false);
+  drawLatexAdd("single #pi^{#pm}",0.15,toplegval-0.05,textSizeLabelsRel,false,false,false);
   // drawLatexAdd(Form("%s-%s cluster matching",str_calorimeterPlot[icalo].Data(),str_calorimeterPlot[_combCalo[icalo]].Data()),0.15,toplegval-0.05,textSizeLabelsRel,false,false,false);
   // drawLatexAdd("1.6#cdot",0.55,0.35,textSizeLabelsRel,false,false,false);
   // drawLatexAdd("#sigma",0.52,0.30,textSizeLabelsRel,false,false,false);

@@ -1302,6 +1302,10 @@ cout << "meow" << endl;
   int exampleBinCalo[maxcalo] = {3,4,5};
   Color_t colorPi = kRed+2;
   Color_t colorElec = kBlue+2;
+  TH1D* hPionEoPplot[maxcalo] = {nullptr};
+  TH1D* hElectronEoPplot[maxcalo] = {nullptr};
+  TH1D* hPionEoPplot_rec[maxcalo] = {nullptr};
+  TH1D* hElectronEoPplot_rec[maxcalo] = {nullptr};
   for (Int_t icalo = 0; icalo < maxcalo; icalo++){
 
     histoExampleBin->DrawCopy();
@@ -1312,28 +1316,28 @@ cout << "meow" << endl;
 
     // histEoP_proj_pions[ifilltrue][imatch][icalo][ieta][exampleBinCalo[icalo]] 
     // histEoP_proj_electrons[ifilltrue][imatch][icalo][ieta][exampleBinCalo[icalo]]
-    TH1D* hPionEoPplot = (TH1D*)histEoP_proj_pions[1][imatch][icalo][ieta][exampleBinCalo[icalo]]->Clone(Form("hPionEoPplot%s",caloName[icalo].Data()));
-    TH1D* hElectronEoPplot = (TH1D*)histEoP_proj_electrons[1][imatch][icalo][ieta][exampleBinCalo[icalo]]->Clone(Form("hElectronEoPplot%s",caloName[icalo].Data()));
-    hPionEoPplot->Scale(1/hPionEoPplot->GetEntries());
-    hElectronEoPplot->Scale(1/hElectronEoPplot->GetEntries());
-    DrawGammaSetMarker(hPionEoPplot, 33, 4, colorPi , colorPi);
-    hPionEoPplot->Draw("samepe");
-    DrawGammaSetMarker(hElectronEoPplot, 47, 3.5, colorElec , colorElec);
-    hElectronEoPplot->Draw("samepe");
+    hPionEoPplot[icalo] = (TH1D*)histEoP_proj_pions[1][imatch][icalo][ieta][exampleBinCalo[icalo]]->Clone(Form("hPionEoPplot_%s_%d",caloName[icalo].Data(),exampleBinCalo[icalo]));
+    hElectronEoPplot[icalo] = (TH1D*)histEoP_proj_electrons[1][imatch][icalo][ieta][exampleBinCalo[icalo]]->Clone(Form("hElectronEoPplot_%s_%d",caloName[icalo].Data(),exampleBinCalo[icalo]));
+    hPionEoPplot[icalo]->Scale(1/hPionEoPplot[icalo]->GetEntries());
+    hElectronEoPplot[icalo]->Scale(1/hElectronEoPplot[icalo]->GetEntries());
+    DrawGammaSetMarker(hPionEoPplot[icalo], 33, 4, colorPi , colorPi);
+    hPionEoPplot[icalo]->Draw("samepe");
+    DrawGammaSetMarker(hElectronEoPplot[icalo], 47, 3.5, colorElec , colorElec);
+    hElectronEoPplot[icalo]->Draw("samepe");
 
-    TH1D* hPionEoPplot_rec = (TH1D*)histEoP_proj_pions[0][imatch][icalo][ieta][exampleBinCalo[icalo]]->Clone(Form("hPionEoPplot_rec%s",caloName[icalo].Data()));
-    TH1D* hElectronEoPplot_rec = (TH1D*)histEoP_proj_electrons[0][imatch][icalo][ieta][exampleBinCalo[icalo]]->Clone(Form("hElectronEoPplot_rec%s",caloName[icalo].Data()));
-    hPionEoPplot_rec->Scale(1/hPionEoPplot_rec->GetEntries());
-    hElectronEoPplot_rec->Scale(1/hElectronEoPplot_rec->GetEntries());
-    DrawGammaSetMarker(hPionEoPplot_rec, 27, 4, colorPi-6 , colorPi-6);
-    hPionEoPplot_rec->Draw("samepe");
-    DrawGammaSetMarker(hElectronEoPplot_rec, 46, 3.5, colorElec-6 , colorElec-6);
-    hElectronEoPplot_rec->Draw("samepe");
+    hPionEoPplot_rec[icalo] = (TH1D*)histEoP_proj_pions[0][imatch][icalo][ieta][exampleBinCalo[icalo]]->Clone(Form("hPionEoPplot_rec_%s_%d",caloName[icalo].Data(),exampleBinCalo[icalo]));
+    hElectronEoPplot_rec[icalo] = (TH1D*)histEoP_proj_electrons[0][imatch][icalo][ieta][exampleBinCalo[icalo]]->Clone(Form("hElectronEoPplot_rec_%s_%d",caloName[icalo].Data(),exampleBinCalo[icalo]));
+    hPionEoPplot_rec[icalo]->Scale(1/hPionEoPplot_rec[icalo]->GetEntries());
+    hElectronEoPplot_rec[icalo]->Scale(1/hElectronEoPplot_rec[icalo]->GetEntries());
+    DrawGammaSetMarker(hPionEoPplot_rec[icalo], 27, 4, colorPi-6 , colorPi-6);
+    hPionEoPplot_rec[icalo]->Draw("samepe");
+    DrawGammaSetMarker(hElectronEoPplot_rec[icalo], 46, 3.5, colorElec-6 , colorElec-6);
+    hElectronEoPplot_rec[icalo]->Draw("samepe");
 
-    legendExmplPlot->AddEntry(hPionEoPplot,"#pi^{-} (true #it{p})","p");
-    legendExmplPlot->AddEntry(hElectronEoPplot,"e^{-} (true #it{p})","p");
-    legendExmplPlot->AddEntry(hPionEoPplot_rec,"#pi^{-} (rec. #it{p})","p");
-    legendExmplPlot->AddEntry(hElectronEoPplot_rec,"e^{-} (rec. #it{p})","p");
+    legendExmplPlot->AddEntry(hPionEoPplot[icalo],"#pi^{-} (true #it{p})","p");
+    legendExmplPlot->AddEntry(hElectronEoPplot[icalo],"e^{-} (true #it{p})","p");
+    legendExmplPlot->AddEntry(hPionEoPplot_rec[icalo],"#pi^{-} (rec. #it{p})","p");
+    legendExmplPlot->AddEntry(hElectronEoPplot_rec[icalo],"e^{-} (rec. #it{p})","p");
 
     legendExmplPlot->Draw();
     drawLatexAdd(perfLabel.Data(),0.945,toplegval,textSizeLabelsRel,false,false,true);
@@ -1347,6 +1351,16 @@ cout << "meow" << endl;
   }
 
 
+
+  TFile* fileOutputEx = new TFile(Form("%s/output_EoverP_ExampleBins.root",outputDir.Data()),"RECREATE");
+  for (Int_t icalo = 0; icalo < maxcalo; icalo++){
+    if (hPionEoPplot[icalo])hPionEoPplot[icalo]->Write();
+    if (hElectronEoPplot[icalo])hElectronEoPplot[icalo]->Write();
+    if (hPionEoPplot_rec[icalo])hPionEoPplot_rec[icalo]->Write();
+    if (hElectronEoPplot_rec[icalo])hElectronEoPplot_rec[icalo]->Write();
+  }
+  fileOutputEx->Write();
+  fileOutputEx->Close();
 
   TFile* fileOutput = new TFile(Form("%s/output_EoverP.root",outputDir.Data()),"RECREATE");
   

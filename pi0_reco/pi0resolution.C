@@ -628,7 +628,7 @@ void pi0resolution(
 
   TH2F * histo2DAllPi0FWHM    = new TH2F("histo2DAllPi0FWHM","histo2DAllPi0FWHM", 20, minPtPi0,maxPtPi0woMerged ,1000., -30, 40);
   SetStyleHistoTH2ForGraphs(histo2DAllPi0FWHM, "#it{E} (GeV)", "Peak width (MeV/#it{c}^{2})", 0.85*textsizeLabelsWidth, textsizeLabelsWidth,
-                            0.85*textsizeLabelsWidth, textsizeLabelsWidth, 0.8,0.28/(textsizeFacWidth*margin),512,505,62,42);//#it{p}_{T} (GeV/#it{c})
+                            0.85*textsizeLabelsWidth, textsizeLabelsWidth, 0.8,0.28/(textsizeFacWidth*margin),512,505);//#it{p}_{T} (GeV/#it{c})
   histo2DAllPi0FWHM->GetYaxis()->SetRangeUser(0.1,19.5);//24.5);
   histo2DAllPi0FWHM->GetYaxis()->SetMoreLogLabels(kTRUE);
   histo2DAllPi0FWHM->GetYaxis()->SetNdivisions(505);
@@ -642,7 +642,7 @@ void pi0resolution(
   colorDet[1] = getCaloColor("BEMC", false);
   colorDet[2] = getCaloColor("FEMC", false);
   colorDet[3] = kBlack;
-  Style_t markerStyleDet[maxcalo+1]   = {20, 47, 33, 25};//, 28, 30, 42, 46, 24, 25, 27, 28, 30};
+  Style_t markerStyleDet[maxcalo+1]   = {20, 47, 33, 25};//, 28, 30, 42, 46, 24, 25, 27, 28, 30};dasdf
   Size_t markerSizeDet[maxcalo+1]     = {2.5, 3, 3 , 2.5};//, 1.5, 1.8, 1.8, 1.5, 1.5, 1.4, 1.9,1.5, 1.8 };
   TGraphAsymmErrors* graphPi0FWHMMeV[maxcalo+1];
   for (Int_t icalo = 0; icalo < maxcalo; icalo++){
@@ -733,7 +733,7 @@ void pi0resolution(
           while(graphPi0Mass[icalo]->GetX()[graphPi0Mass[icalo]->GetN()-1] > 12) graphPi0Mass[icalo]->RemovePoint(graphPi0Mass[icalo]->GetN()-1);
         }
       if(graphPi0Mass[icalo]){
-        DrawGammaSetMarkerTGraphAsym(graphPi0Mass[icalo], markerStyleDet[icalo], markerSizeDet[icalo], colorDet[icalo] , colorDet[icalo]);
+        DrawGammaSetMarkerTGraphAsym(graphPi0Mass[icalo], markerStyleDet[icalo], markerSizeDet[icalo], getCaloColor(caloName[icalo],false), getCaloColor(caloName[icalo],false));
         graphPi0Mass[icalo]->Draw("p,same,e");
         // DrawGammaSetMarkerTGraphAsym(graphPi0TrueMass[i], markerStyleDetMC[i], markerSizeDetMC[i]*0.55, colorDetMC[i] , colorDetMC[i]);
         // graphPi0TrueMass[i]->Draw("p,same,e");

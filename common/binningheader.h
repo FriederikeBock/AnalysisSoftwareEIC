@@ -218,7 +218,7 @@
   Color_t getCaloColor(TString caloName = "", bool getlight = false){
     if(!caloName.CompareTo("EEMC"))       return getlight ? colorCaloPlot_light[0] : colorCaloPlot[0];
     else if(!caloName.CompareTo("BEMC") || !caloName.CompareTo("BECAL") || !caloName.CompareTo("BEMC SciGlass") || !caloName.CompareTo("BEMC SciGl"))  return getlight ? colorCaloPlot_light[1] : colorCaloPlot[1];
-    else if(caloName.CompareTo("BEMC Pb-Glass") )  return kOrange+2;
+    else if(!caloName.CompareTo("BEMC Pb-Glass") )  return kOrange+2;
     else if(!caloName.CompareTo("IHCAL")) return getlight ? colorCaloPlot_light[2] : colorCaloPlot[2];
     else if(!caloName.CompareTo("OHCAL") || !caloName.CompareTo("HCALOUT")) return getlight ? colorCaloPlot_light[3] : colorCaloPlot[3];
     else if(!caloName.CompareTo("FEMC"))  return getlight ? colorCaloPlot_light[4] : colorCaloPlot[4];
