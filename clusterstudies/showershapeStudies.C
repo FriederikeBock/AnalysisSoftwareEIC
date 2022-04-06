@@ -450,12 +450,13 @@ void showershapeStudies(
   canvasExampleBin->SetLogy();
   cout << __LINE__ << endl;
   textSizeLabelsRel         = 58./1200;
-  TH2F * histoExampleBin    = new TH2F("histoExampleBin", "histoExampleBin",1000, 0.0, 4, 1000, 0.0001, 0.805 );
+  TH2F * histoExampleBin    = new TH2F("histoExampleBin", "histoExampleBin",1000, 0.0, 4, 1000, 0.0004, 0.805 );
   SetStyleHistoTH2ForGraphs( histoExampleBin, "#sigma_{long}^{2}", "probability",
                           0.85*textSizeLabelsRel, textSizeLabelsRel, 0.85*textSizeLabelsRel, textSizeLabelsRel, 0.9, 1.1, 510, 505);//(#times #epsilon_{pur})
   histoExampleBin->GetYaxis()->SetLabelOffset(0.001);
   histoExampleBin->GetXaxis()->SetNoExponent();
   histoExampleBin->GetXaxis()->SetMoreLogLabels(kTRUE);
+  histoExampleBin->GetXaxis()->SetRangeUser(0,1.75);
   int exampleBinCalo[maxcalo] = {3,4,5};
   Color_t colorPi = kRed+2;
   Color_t colorElec = kBlue+2;
@@ -478,7 +479,9 @@ void showershapeStudies(
     legendExmplPlot->Draw();
 
     drawLatexAdd(perfLabel.Data(),0.945,toplegval,textSizeLabelsRel,false,false,true);
-    drawLatexAdd(Form("%s, w/ mat. infront",caloNamePlot[icalo].Data()),0.945,toplegval-0.05,textSizeLabelsRel,false,false,true);
+    // drawLatexAdd(Form("%s, w/ mat. infront",caloNamePlot[icalo].Data()),0.945,toplegval-0.05,textSizeLabelsRel,false,false,true);
+    drawLatexAdd(Form("single particles"),0.945,toplegval-0.05,textSizeLabelsRel,false,false,true);
+    drawLatexAdd(Form("%s",caloNamePlot[icalo].Data()),0.945,toplegval-0.1,textSizeLabelsRel,false,false,true);
     drawLatexAdd(Form("%1.1f< #it{#eta}< %1.1f, #it{E} = %1.1f GeV",nominalEtaRegion[icalo][0],nominalEtaRegion[icalo][1], (partE[exampleBinCalo[icalo]]+partE[exampleBinCalo[icalo]+1])/2),0.14,toplegval,textSizeLabelsRel,false,false,false);
 
     DrawGammaLines(M02_cut_90[icalo][exampleBinCalo[icalo]], M02_cut_90[icalo][exampleBinCalo[icalo]], 0,0.06,2,kGray+2, 2);
@@ -492,7 +495,7 @@ void showershapeStudies(
   histoExampleBin->GetYaxis()->SetLabelOffset(0.001);
   histoExampleBin->GetXaxis()->SetNoExponent();
   histoExampleBin->GetXaxis()->SetMoreLogLabels(kTRUE);
-  histoExampleBin->GetXaxis()->SetRangeUser(0,2.5);
+  histoExampleBin->GetXaxis()->SetRangeUser(0,1.25);
   for (Int_t icalo = 0; icalo < maxcalo; icalo++){
 
     histoExampleBin->DrawCopy();
@@ -512,7 +515,9 @@ void showershapeStudies(
     legendExmplPlot->Draw();
 
     drawLatexAdd(perfLabel.Data(),0.945,toplegval,textSizeLabelsRel,false,false,true);
-    drawLatexAdd(Form("%s, w/ mat. infront",caloNamePlot[icalo].Data()),0.945,toplegval-0.05,textSizeLabelsRel,false,false,true);
+    // drawLatexAdd(Form("%s, w/ mat. infront",caloNamePlot[icalo].Data()),0.945,toplegval-0.05,textSizeLabelsRel,false,false,true);
+    drawLatexAdd(Form("single particles"),0.945,toplegval-0.05,textSizeLabelsRel,false,false,true);
+    drawLatexAdd(Form("%s",caloNamePlot[icalo].Data()),0.945,toplegval-0.1,textSizeLabelsRel,false,false,true);
     drawLatexAdd(Form("%1.1f< #it{#eta}< %1.1f, #it{E} = %1.1f GeV",nominalEtaRegion[icalo][0],nominalEtaRegion[icalo][1], (partE[exampleBinCalo[icalo]]+partE[exampleBinCalo[icalo]+1])/2),0.14,toplegval,textSizeLabelsRel,false,false,false);
 
     DrawGammaLines(M20_cut_90[icalo][exampleBinCalo[icalo]], M20_cut_90[icalo][exampleBinCalo[icalo]], 0,0.06,2,kGray+2, 2);

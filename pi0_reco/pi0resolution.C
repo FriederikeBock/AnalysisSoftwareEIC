@@ -23,6 +23,7 @@ return Amplitude*sin(2*TMath::Pi()/wavelength*x[0]+phase);
 
 TF1* FitExpPlusGaussian(TH1F* histo, Double_t fitRangeMin, Double_t fitRangeMax, Int_t icalo, Double_t ptcenter, Int_t iDataMC);
 TF1* FitExpPlusGaussianPol2(TH1F* histo, Double_t fitRangeMin, Double_t fitRangeMax, Int_t icalo, Double_t ptcenter, Int_t iDataMC);
+TF1* FitPureGaussian(TH1F* histo, Double_t fitRangeMin, Double_t fitRangeMax, Int_t icalo, Double_t ptcenter, Int_t iDataMC);
 
 double GaussExpLinear(double* x, double* par) {
   double p0 = par[0];
@@ -84,9 +85,11 @@ void pi0resolution(
   Double_t textSizeLabelsPixel      = 35;
   Double_t textSizeLabelsRel        = 58./1300;
 
-  
-  TString outputDir                 = Form("plotsResolution");
-  if(doFitting) outputDir+="Fitting";
+  TString dateForOutput             = ReturnDateStringForOutput();
+
+  // TString outputDir                 = Form("plotsResolution");
+  TString outputDir                 = Form("plotsResolution%s/%s",doFitting ? "Fitting" : "",dateForOutput.Data());
+    // if(doFitting) outputDir+="Fitting";
   gSystem->Exec("mkdir -p "+outputDir);
 
   TFile* inputFile                      = new TFile(inputFileName.Data());
@@ -178,7 +181,7 @@ void pi0resolution(
   double ebin = 1.0;
   int padebin = 0; 
   double minmassfit = 0.05;
-  double maxmassfit = 0.15;
+  double maxmassfit = 0.17;
   double mean, meanErr, sigma, sigmaErr;
   double sigmat = 2.3548;
   int clusmax = 10;
@@ -341,22 +344,25 @@ void pi0resolution(
         //                                       histEtrueMinv_allcls[icalo]->GetXaxis()->FindBin(partE[ebin]), histEtrueMinv_allcls[icalo]->GetXaxis()->FindBin(partE[ebin+1]),"e");
 
         if(histEtrueMinvbin[icalo][padebin]->GetEntries() > 10){
-          if(icalo==2){
+          if(icalo==0){
+            histEtrueMinvbin[icalo][padebin]->Rebin(5);
+          } else if(icalo==1){
+            histEtrueMinvbin[icalo][padebin]->Rebin(10);
+          } else if(icalo==2){
             histEtrueMinvbin[icalo][padebin]->Rebin(6);
-            // histEtrueMinvbin_allcls[icalo][padebin]->Rebin(6);
           } else {
-            histEtrueMinvbin[icalo][padebin]->Rebin(4);
-            // histEtrueMinvbin_allcls[icalo][padebin]->Rebin(4);
+            histEtrueMinvbin[icalo][padebin]->Rebin(6);
           }
           mean = meanErr = sigma = sigmaErr = 0;
 
           if (doFitting){   
 
-            fithistEtrueMinv[icalo][padebin] = FitExpPlusGaussian (histEtrueMinvbin[icalo][padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
-            // fithistEtrueMinv[icalo][padebin] = FitExpPlusGaussianPol2 (histEtrueMinvbin[icalo][padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
+            // fithistEtrueMinv[icalo][padebin] = FitExpPlusGaussian (histEtrueMinvbin[icalo][padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
+            fithistEtrueMinv[icalo][padebin] = FitExpPlusGaussianPol2 (histEtrueMinvbin[icalo][padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
+            // fithistEtrueMinv[icalo][padebin] = FitPureGaussian (histEtrueMinvbin[icalo][padebin], minmassfit, maxmassfit, icalo, (partE[ebin]+partE[ebin+1])/2, 0);
             // fithistEtrueMinv[icalo][padebin]    = new TF1(Form("fit_Minv_%s_%f",caloName[icalo].Data(), partE[ebin]), "crystalball", 0.05, 0.15);
             // fithistEtrueMinv[icalo][padebin]->SetParameters(0.55*histEtrueMinvbin[icalo][padebin]->GetMaximum(),histEtrueMinvbin[icalo][padebin]->GetMean(),2.*histEtrueMinvbin[icalo][padebin]->GetRMS(),2.*histEtrueMinvbin[icalo][padebin]->GetRMS(),2.5*histEtrueMinvbin[icalo][padebin]->GetRMS());
-            histEtrueMinvbin[icalo][padebin]->Fit(fithistEtrueMinv[icalo][padebin],"L0RMEQ","",minmassfit, maxmassfit);
+            // histEtrueMinvbin[icalo][padebin]->Fit(fithistEtrueMinv[icalo][padebin],"L0RMEQ","",minmassfit, maxmassfit);
 
             // fithistEtrueMinvFINAL[icalo][padebin] = histEtrueMinvbin[icalo][padebin]->GetFunction(Form("fit_Minv_%s_%f",caloName[icalo].Data(), partE[ebin]));
             fithistEtrueMinvFINAL[icalo][padebin] = fithistEtrueMinv[icalo][padebin];
@@ -413,6 +419,7 @@ void pi0resolution(
           histEtrueMinvbin[icalo][padnumber]->GetYaxis()->SetNdivisions(5);
           histEtrueMinvbin[icalo][padnumber]->GetXaxis()->SetNdivisions(5);
           histEtrueMinvbin[icalo][padnumber]->GetXaxis()->SetRangeUser(0,0.3);
+          histEtrueMinvbin[icalo][padnumber]->GetYaxis()->SetRangeUser(0,histEtrueMinvbin[icalo][padnumber]->GetMaximum()*1.2);
           histEtrueMinvbin[icalo][padnumber]->Draw("ep");
           // DrawGammaSetMarker(histEtrueMinvbin_allcls[icalo][padnumber],27,1, kGreen+2, kGreen+2);
           // histEtrueMinvbin_allcls[icalo][padnumber]->GetXaxis()->SetRangeUser(0,0.3);
@@ -585,7 +592,7 @@ void pi0resolution(
   //============= End Fit Results======================================
 
   float minPtPi0 = 0.6;
-  float maxPtPi0woMerged = 49;
+  float maxPtPi0woMerged = 29;
 
   Double_t mesonMassExpectPi0                     = TDatabasePDG::Instance()->GetParticle(111)->Mass();
   Double_t mesonMassExpectEta                     = TDatabasePDG::Instance()->GetParticle(221)->Mass();
@@ -651,9 +658,9 @@ void pi0resolution(
         histSigmaEVsMinv[icalo]->Scale(1000);
         graphPi0FWHMMeV[icalo] = new TGraphAsymmErrors(histSigmaEVsMinv[icalo]);
         if(graphPi0FWHMMeV[icalo]){
-          if(icalo==1){
-            while(graphPi0FWHMMeV[icalo]->GetX()[graphPi0FWHMMeV[icalo]->GetN()-1] > 30) graphPi0FWHMMeV[icalo]->RemovePoint(graphPi0FWHMMeV[icalo]->GetN()-1);
-          } else if(icalo==2){
+          if(icalo==2 || icalo==0){
+            while(graphPi0FWHMMeV[icalo]->GetX()[graphPi0FWHMMeV[icalo]->GetN()-1] > 25) graphPi0FWHMMeV[icalo]->RemovePoint(graphPi0FWHMMeV[icalo]->GetN()-1);
+          } else if(icalo==1){
             while(graphPi0FWHMMeV[icalo]->GetX()[graphPi0FWHMMeV[icalo]->GetN()-1] > 12) graphPi0FWHMMeV[icalo]->RemovePoint(graphPi0FWHMMeV[icalo]->GetN()-1);
           }
             DrawGammaSetMarkerTGraphAsym(graphPi0FWHMMeV[icalo], markerStyleDet[icalo], markerSizeDet[icalo], colorDet[icalo] , colorDet[icalo]);
@@ -665,19 +672,19 @@ void pi0resolution(
       }
     }
   }
-  TGraphAsymmErrors* graphPi0FWHMMeV_allcalo;
-  if(histSigmaEVsMinv_allcalo){
-    histSigmaEVsMinv_allcalo->Scale(1000);
-    graphPi0FWHMMeV_allcalo = new TGraphAsymmErrors(histSigmaEVsMinv_allcalo);
-    if(graphPi0FWHMMeV_allcalo){
-      while(graphPi0FWHMMeV_allcalo->GetX()[graphPi0FWHMMeV_allcalo->GetN()-1] > 30) graphPi0FWHMMeV_allcalo->RemovePoint(graphPi0FWHMMeV_allcalo->GetN()-1);
-        DrawGammaSetMarkerTGraphAsym(graphPi0FWHMMeV_allcalo, markerStyleDet[maxcalo], markerSizeDet[maxcalo], colorDet[maxcalo] , colorDet[maxcalo]);
-        // DrawGammaSetMarkerTGraphAsym(graphPi0FWHMMeV[i], markerStyleDet[i], markerSizeDet[i]*0.55, colorDet[0] , colorDet[0]);
-        graphPi0FWHMMeV_allcalo->Draw("p,same,e");
-        // DrawGammaSetMarkerTGraphAsym(graphPi0TrueFWHMMeV[i], markerStyleDetMC[i], markerSizeDetMC[i]*0.55, colorDetMC[i] , colorDetMC[i]);
-        // graphPi0TrueFWHMMeV[i]->Draw("p,same,e");
-    }
-  }
+  // TGraphAsymmErrors* graphPi0FWHMMeV_allcalo;
+  // if(histSigmaEVsMinv_allcalo){
+  //   histSigmaEVsMinv_allcalo->Scale(1000);
+  //   graphPi0FWHMMeV_allcalo = new TGraphAsymmErrors(histSigmaEVsMinv_allcalo);
+  //   if(graphPi0FWHMMeV_allcalo){
+  //     while(graphPi0FWHMMeV_allcalo->GetX()[graphPi0FWHMMeV_allcalo->GetN()-1] > 30) graphPi0FWHMMeV_allcalo->RemovePoint(graphPi0FWHMMeV_allcalo->GetN()-1);
+  //       DrawGammaSetMarkerTGraphAsym(graphPi0FWHMMeV_allcalo, markerStyleDet[maxcalo], markerSizeDet[maxcalo], colorDet[maxcalo] , colorDet[maxcalo]);
+  //       // DrawGammaSetMarkerTGraphAsym(graphPi0FWHMMeV[i], markerStyleDet[i], markerSizeDet[i]*0.55, colorDet[0] , colorDet[0]);
+  //       graphPi0FWHMMeV_allcalo->Draw("p,same,e");
+  //       // DrawGammaSetMarkerTGraphAsym(graphPi0TrueFWHMMeV[i], markerStyleDetMC[i], markerSizeDetMC[i]*0.55, colorDetMC[i] , colorDetMC[i]);
+  //       // graphPi0TrueFWHMMeV[i]->Draw("p,same,e");
+  //   }
+  // }
 
   // TLatex *labelLegendAMass    = new TLatex(0.13,0.06,"a)");
   // SetStyleTLatex( labelLegendAMass, textSizeLabelsPixel,4);
@@ -688,7 +695,8 @@ void pi0resolution(
   SetStyleTLatex( labelMassPerf, textSizeLabelsPixel,4);
   labelMassPerf->SetTextFont(43);
   labelMassPerf->Draw();
-  TLatex *labelMassEnergy     = new TLatex(0.13,0.78,Form("%s clusters", clusterizerName.Data()));
+  TLatex *labelMassEnergy     = new TLatex(0.13,0.78,"single particles");
+  // TLatex *labelMassEnergy     = new TLatex(0.13,0.78,Form("%s clusters", clusterizerName.Data()));
   SetStyleTLatex( labelMassEnergy, textSizeLabelsPixel,4);
   labelMassEnergy->SetTextFont(43);
   labelMassEnergy->Draw();
@@ -710,9 +718,9 @@ void pi0resolution(
       textsizeFacMass                 = (Double_t)1./padMassPi0->YtoPixel(padMassPi0->GetY1());
   }
 
-  TH2F * histo2DAllPi0Mass            = new TH2F("histo2DAllPi0Mass","histo2DAllPi0Mass",20, minPtPi0,maxPtPi0woMerged, 1000., 80.1, 167.9);//, 100.1, 160.9);//125.1, 155.9);
+  TH2F * histo2DAllPi0Mass            = new TH2F("histo2DAllPi0Mass","histo2DAllPi0Mass",20, minPtPi0,maxPtPi0woMerged, 1000., 101.1, 139.9);//, 100.1, 160.9);//125.1, 155.9);
   SetStyleHistoTH2ForGraphs(histo2DAllPi0Mass, "#it{E}_{#pi^{0}} (GeV)", "Peak position (MeV/#it{c}^{2})", 0.85*textsizeLabelsMass, textsizeLabelsMass, 0.85*textsizeLabelsMass,
-                            textsizeLabelsMass, 0.9, 0.28/(textsizeFacMass*margin),512,505,42,42);
+                            textsizeLabelsMass, 0.9, 0.28/(textsizeFacMass*margin),512,505);
   histo2DAllPi0Mass->GetXaxis()->SetMoreLogLabels(kTRUE);
   histo2DAllPi0Mass->GetYaxis()->SetNdivisions(505);
   histo2DAllPi0Mass->GetYaxis()->SetRangeUser(80.1, 149.9);//(131.1, 147.9);//125.1, 155.9);
@@ -722,14 +730,14 @@ void pi0resolution(
   histo2DAllPi0Mass->DrawCopy();
   DrawGammaLines(minPtPi0,maxPtPi0woMerged , mesonMassExpectPi0*1000., mesonMassExpectPi0*1000.,2, kGray+1,7);
   TGraphAsymmErrors* graphPi0Mass[maxcalo];
-  TLegend* legendMassWidth   = GetAndSetLegend2(0.12, 0.2, 0.32, 0.2+4*textsizeLabelsMass, textSizeLabelsPixel);
+  TLegend* legendMassWidth   = GetAndSetLegend2(0.12, 0.2, 0.32, 0.2+3*textsizeLabelsMass, textSizeLabelsPixel);
   for (Int_t icalo = 0; icalo < maxcalo; icalo++){
     if(caloactive[icalo] && histMeanEVsMinv[icalo]){
       histMeanEVsMinv[icalo]->Scale(1000);
       graphPi0Mass[icalo] = new TGraphAsymmErrors(histMeanEVsMinv[icalo]);
-      if(icalo==1){
-          while(graphPi0Mass[icalo]->GetX()[graphPi0Mass[icalo]->GetN()-1] > 30) graphPi0Mass[icalo]->RemovePoint(graphPi0Mass[icalo]->GetN()-1);
-        } else if(icalo==2){
+      if(icalo==2 || icalo==0){
+          while(graphPi0Mass[icalo]->GetX()[graphPi0Mass[icalo]->GetN()-1] > 25) graphPi0Mass[icalo]->RemovePoint(graphPi0Mass[icalo]->GetN()-1);
+        } else if(icalo==1){
           while(graphPi0Mass[icalo]->GetX()[graphPi0Mass[icalo]->GetN()-1] > 12) graphPi0Mass[icalo]->RemovePoint(graphPi0Mass[icalo]->GetN()-1);
         }
       if(graphPi0Mass[icalo]){
@@ -741,19 +749,20 @@ void pi0resolution(
       }
     }
   }
-  TGraphAsymmErrors* graphPi0Mass_allcalo;
-  if(histMeanEVsMinv_allcalo){
-    histMeanEVsMinv_allcalo->Scale(1000);
-    graphPi0Mass_allcalo = new TGraphAsymmErrors(histMeanEVsMinv_allcalo);
-    if(graphPi0Mass_allcalo){
-      while(graphPi0Mass_allcalo->GetX()[graphPi0Mass_allcalo->GetN()-1] > 30) graphPi0Mass_allcalo->RemovePoint(graphPi0Mass_allcalo->GetN()-1);
-      DrawGammaSetMarkerTGraphAsym(graphPi0Mass_allcalo, markerStyleDet[maxcalo], markerSizeDet[maxcalo], colorDet[maxcalo] , colorDet[maxcalo]);
-      graphPi0Mass_allcalo->Draw("p,same,e");
-      // DrawGammaSetMarkerTGraphAsym(graphPi0TrueMass[i], markerStyleDetMC[i], markerSizeDetMC[i]*0.55, colorDetMC[i] , colorDetMC[i]);
-      // graphPi0TrueMass[i]->Draw("p,same,e");
-      legendMassWidth->AddEntry(graphPi0Mass_allcalo,"Hybrid","p");
-    }
-  }
+  drawLatexAdd(Form("PDG mass: #it{m}_{#pi^{0}} = %3.2f MeV/#it{c}^{2}",mesonMassExpectPi0*1000.),0.96,0.915,0.85*textsizeLabelsMass,false,false,true);
+  // TGraphAsymmErrors* graphPi0Mass_allcalo;
+  // if(histMeanEVsMinv_allcalo){
+  //   histMeanEVsMinv_allcalo->Scale(1000);
+  //   graphPi0Mass_allcalo = new TGraphAsymmErrors(histMeanEVsMinv_allcalo);
+  //   if(graphPi0Mass_allcalo){
+  //     while(graphPi0Mass_allcalo->GetX()[graphPi0Mass_allcalo->GetN()-1] > 30) graphPi0Mass_allcalo->RemovePoint(graphPi0Mass_allcalo->GetN()-1);
+  //     DrawGammaSetMarkerTGraphAsym(graphPi0Mass_allcalo, markerStyleDet[maxcalo], markerSizeDet[maxcalo], colorDet[maxcalo] , colorDet[maxcalo]);
+  //     graphPi0Mass_allcalo->Draw("p,same,e");
+  //     // DrawGammaSetMarkerTGraphAsym(graphPi0TrueMass[i], markerStyleDetMC[i], markerSizeDetMC[i]*0.55, colorDetMC[i] , colorDetMC[i]);
+  //     // graphPi0TrueMass[i]->Draw("p,same,e");
+  //     legendMassWidth->AddEntry(graphPi0Mass_allcalo,"Hybrid","p");
+  //   }
+  // }
   legendMassWidth->Draw();
 
 
@@ -816,7 +825,7 @@ void pi0resolution(
 
     textSizeLabelsPixel                 = 100*3.5/5;
     TCanvas* canvasInvMassSamplePlot    = new TCanvas("canvasInvMassSamplePlot","",0,0,1500,1500);  // gives the page size
-    DrawGammaCanvasSettings( canvasInvMassSamplePlot,  0.105, 0.01, 0.039, 0.093);
+    DrawGammaCanvasSettings( canvasInvMassSamplePlot,  0.105, 0.01, 0.01, 0.093);
     Double_t textSizeLabelPPMass             = (Double_t)textSizeLabelsPixel/canvasInvMassSamplePlot->XtoPixel(canvasInvMassSamplePlot->GetX2()) ;
 
     Style_t markerStyleInvMassSGBG      = 0;
@@ -851,8 +860,8 @@ void pi0resolution(
     TH2F * histo2DPi0InvMassDummy;
     histo2DPi0InvMassDummy             = new TH2F("histo2DPi0InvMassDummy","histo2DPi0InvMassDummy",11000,0.051,0.21,1000,0.0,0.99);
     // histo2DPi0InvMassDummy             = new TH2F("histo2DPi0InvMassDummy","histo2DPi0InvMassDummy",11000,0.05,0.249,21000,-1000,200000);
-    SetStyleHistoTH2ForGraphs(histo2DPi0InvMassDummy, "#it{M}_{#gamma#gamma} (GeV/#it{c}^{2})","Counts",0.85*textsizeLabelsInvMass, textsizeLabelsInvMass,
-                            0.85*textsizeLabelsInvMass, textsizeLabelsInvMass,0.88, 0.115/(textsizeFacInvMass*marginInvMass),505,510,42,42);
+    SetStyleHistoTH2ForGraphs(histo2DPi0InvMassDummy, "#it{M}_{#gamma#gamma} (GeV/#it{c}^{2})","norm. counts",0.85*textsizeLabelsInvMass, textsizeLabelsInvMass,
+                            0.85*textsizeLabelsInvMass, textsizeLabelsInvMass,0.88, 0.115/(textsizeFacInvMass*marginInvMass),505,510);
   int exampleBins[maxcalo+1] = {5,5,5,11};
   TH1D* histoSignalPlusBGPi0[maxcalo+1][50]            = {NULL};
   TF1* fFitGausExp[maxcalo+1][50]            = {NULL};
@@ -962,6 +971,45 @@ void pi0resolution(
       }
     }
 
+        histo2DPi0InvMassDummy->GetYaxis()->SetRangeUser(0.,0.79);
+    histo2DPi0InvMassDummy->SetLineColor(kGray);
+    histo2DPi0InvMassDummy->SetLineWidth(3);
+    histo2DPi0InvMassDummy->SetMarkerColor(kGray+1);
+    histo2DPi0InvMassDummy->SetMarkerStyle(21);
+    histo2DPi0InvMassDummy->SetMarkerSize(3);
+        histo2DPi0InvMassDummy->DrawCopy();
+    // TLatex *labelInvMassPtRangel = new TLatex(0.945,0.9,Form("#pi^{0}: %2.1f < #it{E}_{#pi^{0}} < %2.1f GeV/#it{c}",partE[iptbinplot],partE[iptbinplot+1]));
+    // TLatex *labelInvMassPtRangel = new TLatex(0.945,0.9,Form("#pi^{0}: %2.1f < #it{p}_{T} < %2.1f GeV/#it{c}",partE[iptbinplot],partE[iptbinplot+1]));
+    TLegend* legendInvMassCalos  = GetAndSetLegend2(0.80, 0.90-(3)*textSizeLabelPPMass, 0.94, 0.90, 0.85*textSizeLabelsPixel);
+    for (Int_t icalo = 0; icalo < maxcalo+1; icalo++){
+      Int_t iptbinplot = exampleBins[icalo];
+      if(histEtrueMinvbin[icalo][iptbinplot]){
+        if(histoSignalPlusBGPi0[icalo][iptbinplot]){
+          // DrawGammaSetMarker(histoSignalPlusBGPi0[icalo][iptbinplot], markerStyleInvMassSGBG, markerSizeInvMassSGBG, markerColorInvMassSGBG, markerColorInvMassSGBG);
+          DrawGammaSetMarker(histoSignalPlusBGPi0[icalo][iptbinplot], markerStyleDet[icalo], 1.5*markerSizeDet[icalo], getCaloColor(caloName[icalo],false), getCaloColor(caloName[icalo],false));
+          histoSignalPlusBGPi0[icalo][iptbinplot]->SetLineWidth(1);
+          // histoSignalPlusBGPi0[icalo][iptbinplot]->Draw("hist,e,same");
+          histoSignalPlusBGPi0[icalo][iptbinplot]->Draw("same");
+          legendInvMassCalos->AddEntry(histoSignalPlusBGPi0[icalo][iptbinplot], caloName[icalo].Data(),"p");
+        }
+        fFitGausExp[icalo][iptbinplot]->SetLineWidth(3);
+        fFitGausExp[icalo][iptbinplot]->SetRange(0,0.255);
+        fFitGausExp[icalo][iptbinplot]->SetLineColor(getCaloColor(caloName[icalo],true));
+        fFitGausExp[icalo][iptbinplot]->Draw("same");
+      }
+    }
+    legendInvMassCalos->Draw();
+    TLegend* legendInvMassl  = GetAndSetLegend2(0.14, 0.85-(2)*textSizeLabelPPMass, 0.34, 0.85, 0.85*textSizeLabelsPixel);
+    legendInvMassl->SetMargin(0.25);
+    legendInvMassl->AddEntry(histo2DPi0InvMassDummy,"Raw real events","p");
+    legendInvMassl->AddEntry(histo2DPi0InvMassDummy, "Fit","l");
+    legendInvMassl->Draw();
+    drawLatexAdd(perfLabel.Data(),0.15,0.92,textSizeLabelsRel,false,false,false);
+    drawLatexAdd(Form("%2.1f < #it{E}_{#pi^{0}} < %2.1f GeV",partE[exampleBins[0]],partE[exampleBins[0]+1]),0.95,0.92,textSizeLabelsRel,false,false,true);
+    drawLatexAdd("single #pi^{0} #rightarrow #gamma#gamma",0.15,0.92-0.05,textSizeLabelsRel,false,false,false);
+    // DrawGammaLines(fFitGausExp[icalo][iptbinplot]->GetParameter(1)-(0.06),fFitGausExp[icalo][iptbinplot]->GetParameter(1)-(0.06),1.2*histoSignalPlusBGPi0[icalo][iptbinplot]->GetMinimum(),0.2*histoSignalPlusBGPi0[icalo][iptbinplot]->GetMaximum(),2,kGray+2,7);
+    // DrawGammaLines(fFitGausExp[icalo][iptbinplot]->GetParameter(1)+(0.080),fFitGausExp[icalo][iptbinplot]->GetParameter(1)+(0.080),1.2*histoSignalPlusBGPi0[icalo][iptbinplot]->GetMinimum(),0.2*histoSignalPlusBGPi0[icalo][iptbinplot]->GetMaximum(),2,kGray+2,7);
+    canvasInvMassSamplePlot->SaveAs(Form("%s/Pi0_InvMassBin_AllCalos.%s",outputDir.Data(), suffix.Data()));
 
 
     Double_t arrayBoundariesInvMassX1_4[4];
@@ -1268,17 +1316,21 @@ TF1* FitExpPlusGaussianPol2(TH1F* histo, Double_t fitRangeMin, Double_t fitRange
     Double_t mesonAmplitudeMin;
     Double_t mesonAmplitudeMax;
 
-    mesonAmplitudeMin = mesonAmplitude*70./100.;
-    mesonAmplitudeMax = mesonAmplitude*110./100.;
+    mesonAmplitudeMin = mesonAmplitude*90./100.;
+    mesonAmplitudeMax = mesonAmplitude*130./100.;
     // if(icalo==3){
     //   mesonAmplitudeMin = mesonAmplitude*50./100.;
     // }
-    if (icalo == 2){
-      fitRangeMin = 0.07;
-      fitRangeMax = 0.17;
-    } else if (icalo == 1){
-      // fitRangeMax = 0.19;
+    // if (icalo == 2){
+    //   fitRangeMin = 0.07;
+    //   fitRangeMax = 0.17;
+    if (icalo == 0){
+      fitRangeMin = 0.08;
+      fitRangeMax = 0.15;
     }
+    // } else if (icalo == 1){
+    //   // fitRangeMax = 0.19;
+    // }
 
     TF1* fFitReco    = new TF1("GaussExpPol2","(x<[1])*([0]*(TMath::Exp(-0.5*((x-[1])/[2])^2)+TMath::Exp((x-[1])/[3])*(1.-TMath::Exp(-0.5*((x-[1])/[2])^2)))+[4]+[5]*x)+(x>=[1])*([0]*TMath::Exp(-0.5*((x-[1])/[2])^2)+[4]+[5]*x)",fitRangeMin, fitRangeMax);
     // TF1* fFitReco    = new TF1("GaussExpPol2","(x<[1])*([0]*(TMath::Exp(-0.5*((x-[1])/[2])^2)+TMath::Exp((x-[1])/[3])*(1.-TMath::Exp(-0.5*((x-[1])/[2])^2)))+[4]+[5]*x+[6]*x*x)+(x>=[1])*([0]*TMath::Exp(-0.5*((x-[1])/[2])^2)+[4]+[5]*x+[6]*x*x)",fitRangeMin, fitRangeMax);
@@ -1289,18 +1341,21 @@ TF1* FitExpPlusGaussianPol2(TH1F* histo, Double_t fitRangeMin, Double_t fitRange
 
     // peak position
     fFitReco->SetParameter(1, fMesonMassExpect);
-    fFitReco->SetParLimits(1, fMesonMassExpect*0.75, fMesonMassExpect*1.1);
+    fFitReco->SetParLimits(1, fMesonMassExpect*0.80, fMesonMassExpect*1.15);
+    if(icalo==2){
+      fFitReco->SetParLimits(1, fMesonMassExpect*0.70, fMesonMassExpect*1.15);
+    }
 
     // peak width
     fFitReco->SetParameter(2, 0.03);
-    fFitReco->SetParLimits(2, 0.01, 0.5);
+    fFitReco->SetParLimits(2, 0.004, 0.035);
     // if(icalo==0){
     //   fFitReco->SetParLimits(2, 0.001, 0.03);
     // }
 
     // lambda tail
-    fFitReco->SetParameter(3, 0.012);
-    // fFitReco->SetParLimits(3, 0.00001, 0.09);
+    fFitReco->SetParameter(3, 0.022);
+    fFitReco->SetParLimits(3, 0.001, 0.12);
 
     // constant offset
     fFitReco->SetParLimits(4, 0.0,1000);
@@ -1316,6 +1371,71 @@ TF1* FitExpPlusGaussianPol2(TH1F* histo, Double_t fitRangeMin, Double_t fitRange
 
     histo->Fit(fFitReco,"QRME0");
     histo->Fit(fFitReco,"QRME0");
+
+    fFitReco->SetLineColor(kRed+1);
+    fFitReco->SetLineWidth(1);
+    fFitReco->SetLineStyle(1);
+
+    return fFitReco;
+}
+
+TF1* FitPureGaussian(TH1F* histo, Double_t fitRangeMin, Double_t fitRangeMax, Int_t icalo, Double_t ptcenter , Int_t iDataMC){
+
+    Double_t mesonAmplitude = 0;
+    for(Int_t i = histo->FindBin(0.09); i < histo->FindBin(0.2) ; i++ ){
+      if(histo->GetBinContent(i) > mesonAmplitude) mesonAmplitude = histo->GetBinContent(i);
+    }
+    Double_t mesonAmplitudeMin;
+    Double_t mesonAmplitudeMax;
+
+    mesonAmplitudeMin = mesonAmplitude*80./100.;
+    mesonAmplitudeMax = mesonAmplitude*110./100.;
+    // if(icalo==3){
+    //   mesonAmplitudeMin = mesonAmplitude*50./100.;
+    // }
+    // if (icalo == 2){
+      fitRangeMin = 0.08;
+      fitRangeMax = 0.15;
+    // } else if (icalo == 1){
+    //   // fitRangeMax = 0.19;
+    // }
+
+    TF1* fFitReco    = new TF1("GaussPol2","[0]*TMath::Exp(-0.5*((x-[1])/[2])^2)",fitRangeMin, fitRangeMax);
+    // TF1* fFitReco    = new TF1("GaussExpPol2","(x<[1])*([0]*(TMath::Exp(-0.5*((x-[1])/[2])^2)+TMath::Exp((x-[1])/[3])*(1.-TMath::Exp(-0.5*((x-[1])/[2])^2)))+[4]+[5]*x+[6]*x*x)+(x>=[1])*([0]*TMath::Exp(-0.5*((x-[1])/[2])^2)+[4]+[5]*x+[6]*x*x)",fitRangeMin, fitRangeMax);
+    Double_t fMesonMassExpect = TDatabasePDG::Instance()->GetParticle(111)->Mass();
+    // amplitude
+    fFitReco->SetParameter(0, mesonAmplitude);
+    fFitReco->SetParLimits(0, mesonAmplitudeMin, mesonAmplitudeMax);
+
+    // peak position
+    fFitReco->SetParameter(1, fMesonMassExpect);
+    fFitReco->SetParLimits(1, fMesonMassExpect*0.80, fMesonMassExpect*1.15);
+
+    // peak width
+    fFitReco->SetParameter(2, 0.03);
+    fFitReco->SetParLimits(2, 0.005, 0.5);
+    // if(icalo==0){
+    //   fFitReco->SetParLimits(2, 0.001, 0.03);
+    // }
+
+    // lambda tail
+    fFitReco->SetParameter(3, 0.022);
+    // fFitReco->SetParLimits(3, 0.00001, 0.09);
+
+    // constant offset
+    fFitReco->SetParLimits(4, 0.0,1000);
+
+    // // linear BG
+    // fFitReco->SetParameter(5, 1.0);
+
+    // pol2 BG
+    // fFitReco->SetParameter(6, 0.1);
+    // fFitReco->SetParLimits(6, 0.0, 0.0);
+
+
+
+    histo->Fit(fFitReco,"QRME0");
+    histo->Fit(fFitReco,"LQRME0");
 
     fFitReco->SetLineColor(kRed+1);
     fFitReco->SetLineWidth(1);
