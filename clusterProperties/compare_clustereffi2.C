@@ -224,6 +224,113 @@ void compare_clustereffi2(
   }
   bool paperPlot = true;
   if(nSets==5 && paperPlot){
+
+
+
+
+
+  Double_t arrayBoundariesX1_4[2];
+  Double_t arrayBoundariesY1_4[3];
+  Double_t relativeMarginsX[3];
+  Double_t relativeMarginsY[3];
+  textSizeLabelsPixel             = 50;
+  ReturnCorrectValuesForCanvasScaling(1350,1450, 1, 2,0.07, 0.006, 0.005,0.075,arrayBoundariesX1_4,arrayBoundariesY1_4,relativeMarginsX,relativeMarginsY);
+
+  TCanvas* canvasGeoPaper     = new TCanvas("canvasGeoPaper","",0,0,1350,1450);  // gives the page size
+  DrawGammaCanvasSettings( canvasGeoPaper,  0.13, 0.02, 0.03, 0.06);
+
+  TPad* padGeoECal               = new TPad("padGeoECal", "", arrayBoundariesX1_4[0], arrayBoundariesY1_4[1], arrayBoundariesX1_4[1], arrayBoundariesY1_4[0],-1, -1, -2);
+  DrawGammaPadSettings( padGeoECal, relativeMarginsX[0], relativeMarginsX[2], relativeMarginsY[0], relativeMarginsY[1]);
+  padGeoECal->Draw();
+
+  TPad* padGeoHCal                = new TPad("padGeoHCal", "", arrayBoundariesX1_4[0], arrayBoundariesY1_4[2], arrayBoundariesX1_4[1], arrayBoundariesY1_4[1],-1, -1, -2);
+  DrawGammaPadSettings( padGeoHCal, relativeMarginsX[0], relativeMarginsX[2], relativeMarginsY[1], relativeMarginsY[2]);
+  padGeoHCal->Draw();
+
+  padGeoECal->cd();
+  padGeoECal->SetLogx();
+
+  Double_t margin                 = relativeMarginsX[0]*2.7*1350;
+  Double_t textsizeLabelsWidth    = 0;
+  Double_t textsizeFacWidth       = 0;
+  if (padGeoECal->XtoPixel(padGeoECal->GetX2()) < padGeoECal->YtoPixel(padGeoECal->GetY1())){
+      textsizeLabelsWidth         = (Double_t)textSizeLabelsPixel/padGeoECal->XtoPixel(padGeoECal->GetX2()) ;
+      textsizeFacWidth            = (Double_t)1./padGeoECal->XtoPixel(padGeoECal->GetX2()) ;
+  } else {
+      textsizeLabelsWidth         = (Double_t)textSizeLabelsPixel/padGeoECal->YtoPixel(padGeoECal->GetY1());
+      textsizeFacWidth            = (Double_t)1./padGeoECal->YtoPixel(padGeoECal->GetY1());
+  }
+
+  TH2F * histo2DAllPi0FWHM    = new TH2F("histo2DAllPi0FWHM","histo2DAllPi0FWHM",1000,0.21, 99,1000,0.01, 3.9);
+  SetStyleHistoTH2ForGraphs(histo2DAllPi0FWHM, "#it{E} (GeV)","#LT#it{N}_{cl}/particle #GT", 0.85*textsizeLabelsWidth, textsizeLabelsWidth,
+                            0.85*textsizeLabelsWidth, textsizeLabelsWidth, 0.8,0.35,512,505);//#it{p}_{T} (GeV/#it{c})
+  histo2DAllPi0FWHM->GetYaxis()->SetMoreLogLabels(kTRUE);
+  // histo2DAllPi0FWHM->GetYaxis()->SetNdivisions(505);
+  histo2DAllPi0FWHM->GetYaxis()->SetNoExponent(kTRUE);
+  histo2DAllPi0FWHM->GetXaxis()->SetTickLength(0.05);
+  histo2DAllPi0FWHM->GetYaxis()->SetTickLength(0.026);
+  histo2DAllPi0FWHM->SetMaximum(20);
+  histo2DAllPi0FWHM->DrawCopy();
+
+  for(Int_t iSet=0; iSet<nSets;iSet++){
+    DrawGammaSetMarker(h_cluster_NClMean_E[iSet], markerStyleSet[iSet], markerSizeSet[iSet], getCaloColor(labels[iSet],false), getCaloColor(labels[iSet],false));
+    h_cluster_NClMean_E[iSet]->Draw("same,hist,p");
+    // legendPtResM->AddEntry(h_cluster_NClMean_E[iSet],labels[iSet].Data(),"p");
+    // legendPtResMLeft2->AddEntry(h_cluster_NClMean_E[iSet],labels[iSet].Data(),"p");
+  }
+  // legendPhiEta    = GetAndSetLegend2(0.10, 0.08, 0.38, 0.08+(3*0.85*textsizeLabelsWidth),0.85*textSizeLabelsPixel, 1, "", 43, 0.15);
+  // legendPhiEta->AddEntry(h_PhiEta_ECal, "all towers","plf");
+  // legendPhiEta->AddEntry(h_PhiEta_iEta_ECal, "towers iEta = 1, 30, 70","fl");
+  // legendPhiEta->AddEntry(h_PhiEta_iPhi_ECal, "towers iPhi = 1, 50, 100","fl");
+  // legendPhiEta->Draw();
+  
+  drawLatexAdd("#it{#bf{ECCE}} simulation",0.10,0.86,textsizeLabelsWidth,kFALSE,kFALSE,false);
+  drawLatexAdd(Form("single particles"),0.10,0.78,textsizeLabelsWidth,kFALSE,kFALSE,false);
+  drawLatexAdd(Form("a)"),0.97,0.08,textsizeLabelsWidth,kFALSE,kFALSE,true);
+  padGeoHCal->SetLogx();
+  padGeoHCal->SetLogy();
+
+  padGeoHCal->cd();
+  Double_t textsizeLabelsMass         = 0;
+  Double_t textsizeFacMass            = 0;
+  if (padGeoHCal->XtoPixel(padGeoHCal->GetX2()) <padGeoHCal->YtoPixel(padGeoHCal->GetY1()) ){
+      textsizeLabelsMass              = (Double_t)textSizeLabelsPixel/padGeoHCal->XtoPixel(padGeoHCal->GetX2()) ;
+      textsizeFacMass                 = (Double_t)1./padGeoHCal->XtoPixel(padGeoHCal->GetX2()) ;
+  } else {
+      textsizeLabelsMass              = (Double_t)textSizeLabelsPixel/padGeoHCal->YtoPixel(padGeoHCal->GetY1());
+      textsizeFacMass                 = (Double_t)1./padGeoHCal->YtoPixel(padGeoHCal->GetY1());
+  }
+
+  TH2F * histo2DAllPi0Mass            = new TH2F("histo2DAllPi0Mass","histo2DAllPi0Mass",1000,0.21, 99,1000,1, 999);//, 100.1, 160.9);//125.1, 155.9);
+  SetStyleHistoTH2ForGraphs(histo2DAllPi0Mass, "#it{E} (GeV)","#LT#it{N}_{tower}#GT", 0.85*textsizeLabelsMass, textsizeLabelsMass, 0.85*textsizeLabelsMass,
+                            textsizeLabelsMass, 0.9, 0.35,512,505);
+  histo2DAllPi0Mass->GetXaxis()->SetMoreLogLabels(kTRUE);
+  histo2DAllPi0Mass->GetYaxis()->SetNoExponent(kTRUE);
+  histo2DAllPi0Mass->GetXaxis()->SetTickLength(0.05);
+  histo2DAllPi0Mass->GetXaxis()->SetNoExponent();
+  histo2DAllPi0Mass->SetMaximum(20);
+  histo2DAllPi0Mass->DrawCopy();
+  TLegend* legendPtResMLeft2  = GetAndSetLegend2(0.10, 0.95-(nSets*textsizeLabelsMass), 0.28, 0.95,textSizeLabelsPixel, 1, "", 43, 0.15);
+
+  for(Int_t iSet=0; iSet<nSets;iSet++){
+    DrawGammaSetMarker(h_cluster_NTowerMean_E[iSet], markerStyleSet[iSet], markerSizeSet[iSet], colorSet[iSet], colorSet[iSet]);
+    h_cluster_NTowerMean_E[iSet]->Draw("same,hist,p");
+    legendPtResMLeft2->AddEntry(h_cluster_NTowerMean_E[iSet],labels[iSet].Data(),"p");
+  }
+   legendPtResMLeft2->Draw();
+ // drawLatexAdd(Form("ECals"),0.10,0.88,textsizeLabelsMass,kFALSE,kFALSE,false);
+  drawLatexAdd(Form("b)"),0.97,0.19,textsizeLabelsMass,kFALSE,kFALSE,true);
+
+  canvasGeoPaper->Update();
+  canvasGeoPaper->Print(Form("%s/NTowAndMeanClus_Paper.%s",outputDir.Data(),suffix.Data()));
+
+
+
+
+
+
+
+
   histoDummyEffiMCE->GetYaxis()->SetRangeUser(0.0,1.55);
     histoDummyEffiMCE->Draw();
     legendPtResM  = GetAndSetLegend2(0.68, 0.935-(nSets*textSizeLabelsRel), 0.86, 0.935,textSizeLabelsPixel, 1, "", 43, 0.25);
@@ -291,7 +398,7 @@ void compare_clustereffi2(
     // padTMEffEtaEEMC->cd();
     // padTMEffEtaEEMC->SetLogy();
 
-    Double_t margin                 = relativeMarginsTMEffEtaX[0]*2.7*1350;
+    margin                 = relativeMarginsTMEffEtaX[0]*2.7*1350;
     double textsizeLabelsTMEffEta    = 0;
     double textsizeFacTMEffEta       = 0;
     if (padTMEffEtaEEMC->XtoPixel(padTMEffEtaEEMC->GetX2()) < padTMEffEtaEEMC->YtoPixel(padTMEffEtaEEMC->GetY1())){

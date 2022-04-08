@@ -55,7 +55,7 @@ void treeProcessing(
     double jetR                 = 0.5,
     double tracked_jet_max_pT   = 30,
     bool removeTracklets        = false,
-    bool brokenProjections      = true,               // use this to true with outputs for prod4, newer output swtich it to false
+    bool brokenProjections      = false,               // use this to true with outputs for prod4, newer output swtich it to false
     bool isSingleParticleProd   = false
 ){
     // make output directory
@@ -131,10 +131,10 @@ void treeProcessing(
     auto jetObservablesCalo = JetObservables{JetType_t::calo};
     auto jetObservablesFull = JetObservables{JetType_t::full};
 
-    if (addOutputName.Contains("DISEPID")){
-      InitializeDISRecon();
-      make_epid_tree(Form("%s/electronpidTree.root",outputDir.Data()));
-    }
+    // if (addOutputName.Contains("DISEPID")){
+    //   InitializeDISRecon();
+    //   make_epid_tree(Form("%s/electronpidTree.root",outputDir.Data()));
+    // }
     
     if (_do_jetfinding) {
         // Event level
@@ -188,6 +188,7 @@ void treeProcessing(
         }
 
         if (isSingleParticleProd){
+          bool tooSmallDeltaEta = false;
           for (Int_t imc=0; imc<_nMCPart; imc++){
             for (Int_t imc2=imc; imc2<_nMCPart; imc2++){
               if (TMath::Abs(_mcpart_Eta[imc] - _mcpart_Eta[imc2]) < 1.)
@@ -563,10 +564,10 @@ void treeProcessing(
             // TString jettype[njettypes] = {"track", "full","hcal","calo","all"};
         }
 
-        if (addOutputName.Contains("DISEPID")){
-          disreconstruction();
-          electronpid();
-        }
+        // if (addOutputName.Contains("DISEPID")){
+        //   disreconstruction();
+        //   electronpid();
+        // }
         
         if(tracksEnabled){
           if(verbosity>1) std::cout << "running trackingefficiency" << std::endl;
@@ -647,13 +648,13 @@ void treeProcessing(
         eoverpstudiesSave();
       }
     }
-    if (addOutputName.Contains("DISEPID")){
-      std::cout << "writing DIS tree" << std::endl;
-      WriteDISTree(nEntriesTree);
-      std::cout << "writing epid DIS tree" << std::endl;
-      write_epid_tree();
+    // if (addOutputName.Contains("DISEPID")){
+    //   std::cout << "writing DIS tree" << std::endl;
+    //   WriteDISTree(nEntriesTree);
+    //   std::cout << "writing epid DIS tree" << std::endl;
+    //   write_epid_tree();
       
-    }
+    // }
     std::cout << "running clusterizerSave" << std::endl;
     clusterizerSave();
     std::cout << "all done :)" << std::endl;

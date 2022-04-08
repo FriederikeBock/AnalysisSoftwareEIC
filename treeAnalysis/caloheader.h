@@ -721,7 +721,8 @@ float getCalibrationValue(float clusterE, int caloEnum, int algoEnum, int MCtrue
   } else if(caloEnum == kEEMC){
     if(algoEnum==kMA){
 //       return ( 2.21528e+00 + 7.34167e-02 * TMath::Log(clusterE) ) / ( 1 + ( 3.41200e-01 * TMath::Exp( ( clusterE + 4.66905e+02 ) / 3.10970e+02 ) ) ); //2mm Carbon
-      return ( 2.21528e+00 + 7.34167e-02 * TMath::Log(clusterE) ) / ( 1 + ( 3.41200e-01 * TMath::Exp( ( clusterE + 4.66905e+02 ) / 3.10970e+02 ) ) )*1.04;  // 0.5mm Carbon
+      double addCalibFromPi0 = 1;
+      return ( 2.21528e+00 + 7.34167e-02 * TMath::Log(clusterE) ) / ( 1 + ( 3.41200e-01 * TMath::Exp( ( clusterE + 4.66905e+02 ) / 3.10970e+02 ) ) )*1.04*addCalibFromPi0;  // 0.5mm Carbon
     } else {
       return 0.9;
     }
@@ -745,7 +746,8 @@ float getCalibrationValue(float clusterE, int caloEnum, int algoEnum, int MCtrue
     }
     return 1;
   } else if(caloEnum == kFEMC){
-      return ( 1.85096e+00  + 4.56917e-02 * TMath::Log(clusterE) ) / ( 1 + ( 1.10960e+00 * TMath::Exp( ( clusterE - 7.27315e+01 ) / 4.39902e+02 ) ) );
+      double addCalibFromPi0 = 0.12/0.135;
+      return ( 1.85096e+00  + 4.56917e-02 * TMath::Log(clusterE) ) / ( 1 + ( 1.10960e+00 * TMath::Exp( ( clusterE - 7.27315e+01 ) / 4.39902e+02 ) ) ) * addCalibFromPi0;
 //     else 
 //       return 1/2.22*( 1.85096e+00  + 4.56917e-02 * TMath::Log(clusterE) ) / ( 1 + ( 1.10960e+00 * TMath::Exp( ( clusterE - 7.27315e+01 ) / 4.39902e+02 ) ) );
   } else if(caloEnum == kLFHCAL){

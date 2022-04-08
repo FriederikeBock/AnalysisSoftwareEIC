@@ -344,15 +344,16 @@ void pi0resolution(
         //                                       histEtrueMinv_allcls[icalo]->GetXaxis()->FindBin(partE[ebin]), histEtrueMinv_allcls[icalo]->GetXaxis()->FindBin(partE[ebin+1]),"e");
 
         if(histEtrueMinvbin[icalo][padebin]->GetEntries() > 10){
-          if(icalo==0){
-            histEtrueMinvbin[icalo][padebin]->Rebin(5);
-          } else if(icalo==1){
-            histEtrueMinvbin[icalo][padebin]->Rebin(10);
-          } else if(icalo==2){
-            histEtrueMinvbin[icalo][padebin]->Rebin(6);
-          } else {
-            histEtrueMinvbin[icalo][padebin]->Rebin(6);
-          }
+          // if(icalo==0){
+            // histEtrueMinvbin[icalo][padebin]->Rebin(5);
+            histEtrueMinvbin[icalo][padebin]->Rebin(2);
+          // } else if(icalo==1){
+          //   histEtrueMinvbin[icalo][padebin]->Rebin(10);
+          // } else if(icalo==2){
+          //   histEtrueMinvbin[icalo][padebin]->Rebin(6);
+          // } else {
+          //   histEtrueMinvbin[icalo][padebin]->Rebin(6);
+          // }
           mean = meanErr = sigma = sigmaErr = 0;
 
           if (doFitting){   
@@ -636,7 +637,7 @@ void pi0resolution(
   TH2F * histo2DAllPi0FWHM    = new TH2F("histo2DAllPi0FWHM","histo2DAllPi0FWHM", 20, minPtPi0,maxPtPi0woMerged ,1000., -30, 40);
   SetStyleHistoTH2ForGraphs(histo2DAllPi0FWHM, "#it{E} (GeV)", "Peak width (MeV/#it{c}^{2})", 0.85*textsizeLabelsWidth, textsizeLabelsWidth,
                             0.85*textsizeLabelsWidth, textsizeLabelsWidth, 0.8,0.28/(textsizeFacWidth*margin),512,505);//#it{p}_{T} (GeV/#it{c})
-  histo2DAllPi0FWHM->GetYaxis()->SetRangeUser(0.1,19.5);//24.5);
+  histo2DAllPi0FWHM->GetYaxis()->SetRangeUser(0.1,11.5);//24.5);
   histo2DAllPi0FWHM->GetYaxis()->SetMoreLogLabels(kTRUE);
   histo2DAllPi0FWHM->GetYaxis()->SetNdivisions(505);
   histo2DAllPi0FWHM->GetYaxis()->SetNoExponent(kTRUE);
@@ -718,12 +719,12 @@ void pi0resolution(
       textsizeFacMass                 = (Double_t)1./padMassPi0->YtoPixel(padMassPi0->GetY1());
   }
 
-  TH2F * histo2DAllPi0Mass            = new TH2F("histo2DAllPi0Mass","histo2DAllPi0Mass",20, minPtPi0,maxPtPi0woMerged, 1000., 101.1, 139.9);//, 100.1, 160.9);//125.1, 155.9);
+  TH2F * histo2DAllPi0Mass            = new TH2F("histo2DAllPi0Mass","histo2DAllPi0Mass",20, minPtPi0,maxPtPi0woMerged, 1000., 121.1, 145.9);//, 100.1, 160.9);//125.1, 155.9);
   SetStyleHistoTH2ForGraphs(histo2DAllPi0Mass, "#it{E}_{#pi^{0}} (GeV)", "Peak position (MeV/#it{c}^{2})", 0.85*textsizeLabelsMass, textsizeLabelsMass, 0.85*textsizeLabelsMass,
                             textsizeLabelsMass, 0.9, 0.28/(textsizeFacMass*margin),512,505);
   histo2DAllPi0Mass->GetXaxis()->SetMoreLogLabels(kTRUE);
   histo2DAllPi0Mass->GetYaxis()->SetNdivisions(505);
-  histo2DAllPi0Mass->GetYaxis()->SetRangeUser(80.1, 149.9);//(131.1, 147.9);//125.1, 155.9);
+  // histo2DAllPi0Mass->GetYaxis()->SetRangeUser(80.1, 149.9);//(131.1, 147.9);//125.1, 155.9);
   histo2DAllPi0Mass->GetYaxis()->SetNoExponent(kTRUE);
   histo2DAllPi0Mass->GetXaxis()->SetTickLength(0.05);
   histo2DAllPi0Mass->GetXaxis()->SetNoExponent();
@@ -1348,7 +1349,7 @@ TF1* FitExpPlusGaussianPol2(TH1F* histo, Double_t fitRangeMin, Double_t fitRange
 
     // peak width
     fFitReco->SetParameter(2, 0.03);
-    fFitReco->SetParLimits(2, 0.004, 0.035);
+    fFitReco->SetParLimits(2, 0.002, 0.020);
     // if(icalo==0){
     //   fFitReco->SetParLimits(2, 0.001, 0.03);
     // }

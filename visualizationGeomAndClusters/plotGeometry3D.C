@@ -392,6 +392,14 @@ void plotGeometry3D(
     
   cReso->Print(Form("%s/PhiEta%s.%s", outputDir.Data(),detector.Data(), suffix.Data()));
 
+  TFile* fileOutput = new TFile(Form("%s/outputPhiEta%s.root",outputDir.Data(),detector.Data()),"RECREATE");
+      h_PhiEta->Write();
+      h_PhiEta_iEta->Write();
+      h_PhiEta_iPhi->Write();
+  // write output file   
+  fileOutput->Write();
+  fileOutput->Close();
+
   DrawGammaCanvasSettings( cReso, 0.105, 0.01, 0.02, 0.08);
     SetStyleHistoTH2ForGraphs(h_RZ,  "Z (cm)", "R (cm)", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.8, 1, 505,510);
 
