@@ -40,98 +40,98 @@ void positionResolutionCalorimeters(
   
   if (caloName.CompareTo("EEMC") == 0){
     detLabel        = "EEMC (PbWO_{4} crystal)";
-    minEtaMax       = -4;
-    maxEtaMax       = -1.7;
+    minEtaMax       = nominalEtaRegion[0][0];
+    maxEtaMax       = nominalEtaRegion[0][1];
     isEMCal         = 1;
     region          = 0;
   } else if (caloName.CompareTo("EEMC-wMat") == 0){
     detLabel        = "EEMC w/ mat";
     caloNameRead    = "EEMC";
-    minEtaMax       = -4;
-    maxEtaMax       = -1.7;
+    minEtaMax       = nominalEtaRegion[0][0];
+    maxEtaMax       = nominalEtaRegion[0][1];
     isEMCal         = 1;
     region          = 0;
   } else if (caloName.CompareTo("FEMC") == 0){
     detLabel        = "FEMC";
-    minEtaMax       = 1.3;
-    maxEtaMax       = 4;
+    minEtaMax       = nominalEtaRegion[2][0];
+    maxEtaMax       = nominalEtaRegion[2][1];
     isEMCal         = 1;
     region          = 2;
   } else if (caloName.CompareTo("FEMC-wMat") == 0){
     detLabel        = "FEMC-w/ mat";
     caloNameRead    = "FEMC";
-    minEtaMax       = 1.3;
-    maxEtaMax       = 4;
+    minEtaMax       = nominalEtaRegion[2][0];
+    maxEtaMax       = nominalEtaRegion[2][1];
     isEMCal         = 1;
     region          = 2;
   } else if (caloName.CompareTo("BECAL") == 0){
     detLabel        = "BECAL (Sci-glass)";
-    minEtaMax       = -1.8;
-    maxEtaMax       = 1.3;
+    minEtaMax       = nominalEtaRegion[1][0];
+    maxEtaMax       = nominalEtaRegion[1][1];
     isEMCal         = 1;
     region          = 1;
   } else if (caloName.CompareTo("BECAL-wMat") == 0){
     detLabel        = "BECAL w/ mat";
     caloNameRead    = "BECAL";
-    minEtaMax       = -1.8;
-    maxEtaMax       = 1.3;
+    minEtaMax       = nominalEtaRegion[1][0];
+    maxEtaMax       = nominalEtaRegion[1][1];
     isEMCal         = 1;
     region          = 1;
   } else if (caloName.CompareTo("LFHCAL") == 0){
     detLabel        = "LFHCAL";
-    minEtaMax       = 1.1;
-    maxEtaMax       = 4;
+    minEtaMax       = nominalEtaRegion[2][0];
+    maxEtaMax       = nominalEtaRegion[2][1];
     rebinRes        = 2;
     region          = 2;
   } else if (caloName.CompareTo("LFHCAL-wMat") == 0){
     detLabel        = "LFHCAL, w/ mat.";
     caloNameRead    = "LFHCAL";
-    minEtaMax       = 1.1;
-    maxEtaMax       = 4;
+    minEtaMax       = nominalEtaRegion[2][0];
+    maxEtaMax       = nominalEtaRegion[2][1];
     rebinRes        = 2;
     region          = 2;
   } else if (caloName.CompareTo("LFHCAL-oFEMC") == 0){
     detLabel        = "LFHCAL, FEMC infront";
     caloNameRead    = "LFHCAL";
-    minEtaMax       = 1.1;
-    maxEtaMax       = 4;
+    minEtaMax       = nominalEtaRegion[2][0];
+    maxEtaMax       = nominalEtaRegion[2][1];
     rebinRes        = 2;
     region          = 2;
   } else if (caloName.CompareTo("EHCAL") == 0){
     detLabel        = "EHCAL (STAR re-use)";
-    minEtaMax       = -4;
-    maxEtaMax       = -1.7;
+    minEtaMax       = nominalEtaRegion[0][0];
+    maxEtaMax       = nominalEtaRegion[0][1];
     region          = 0;
   } else if (caloName.CompareTo("EHCAL-wMat") == 0){
     detLabel        = "EHCAL, w/ mat";
     caloNameRead    = "EHCAL";
-    minEtaMax       = -4;
-    maxEtaMax       = -1.7;
+    minEtaMax       = nominalEtaRegion[0][0];
+    maxEtaMax       = nominalEtaRegion[0][1];
     region          = 0;
   } else if (caloName.CompareTo("CHCAL") == 0){
     detLabel        = "oHCAL, iHCal infront";
     caloNameRead    = "HCALOUT";
-    minEtaMax       = -1.8;
-    maxEtaMax       = 1.2;
+    minEtaMax       = -1.1;
+    maxEtaMax       = 1.1;
     isComb          = 0;
     region          = 1;
   } else if (caloName.CompareTo("CHCAL-wMat") == 0){
     detLabel        = "oHCAL, w/ mat";
     caloNameRead    = "HCALOUT";
-    minEtaMax       = -1.8;
-    maxEtaMax       = 1.2;
+    minEtaMax       = -1.1;
+    maxEtaMax       = 1.1;
     isComb          = 0;
     region          = 1;
   } else if (caloName.CompareTo("HCALIN") == 0){
     detLabel  = "iHCal";
     caloNameRead    = "HCALIN";
-    minEtaMax       = -1.8;
-    maxEtaMax       = 1.2;
+    minEtaMax       = nominalEtaRegion[1][0];
+    maxEtaMax       = nominalEtaRegion[1][1];
     isComb          = 0;
     region          = 1;
   } else {
-    minEtaMax       = -1.8;
-    maxEtaMax       = 1.2;
+    minEtaMax       = nominalEtaRegion[1][0];
+    maxEtaMax       = nominalEtaRegion[1][1];
   }
   // determine eta bins
   Int_t binEtaMin = 0;
@@ -1045,4 +1045,24 @@ void positionResolutionCalorimeters(
       etavar->SaveAs(Form("%s/%seta-width_E_%s.%s", outputDir.Data(), readNames[i].Data(), caloNameRead.Data(), suffix.Data())); 
     }
   }  
+  
+  
+  TFile* outputFile = new TFile(Form("%s/PositionResolutionPostProcessing.root", outputDir.Data()),"RECREATE");
+  outputFile->cd();
+  
+  for (Int_t i = 0; i <nParticles-1; i++){
+    if (usePartEta[i]){
+      if (histMeanEtaVsE[i]) histMeanEtaVsE[i]->Write();
+      if (histSigmaEtaVsE[i]) histSigmaEtaVsE[i]->Write();
+    } 
+    if (usePartPhi[i]){
+      if (histMeanPhiVsE[i]) histMeanPhiVsE[i]->Write();
+      if (histSigmaPhiVsE[i]) histSigmaPhiVsE[i]->Write();
+    }
+    
+  }
+  
+  outputFile->Write();
+  outputFile->Close();
+
 }

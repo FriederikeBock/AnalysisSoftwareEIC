@@ -215,6 +215,10 @@
                                               kGreen+2 /*FEMC*/, kCyan+2 /*LFHCAL*/};
   Color_t colorCaloPlot_light[nCaloPlot]  = { kBlue-8 /*EEMC*/, kRed-8 /*BEMC*/, kYellow-8 /*iHCAL*/, kOrange-9 /*OHCAL*/,
                                               kGreen-8 /*FEMC*/, kCyan-8 /*LFHCAL*/};
+                                              
+  //*******************************************************************
+  // get default color for calorimeters
+  //*******************************************************************                                              
   Color_t getCaloColor(TString caloName = "", bool getlight = false){
     if(!caloName.CompareTo("EEMC"))       return getlight ? colorCaloPlot_light[0] : colorCaloPlot[0];
     else if(!caloName.CompareTo("BEMC") || !caloName.CompareTo("BECAL") || !caloName.CompareTo("BEMC SciGlass") || !caloName.CompareTo("BEMC SciGl"))  return getlight ? colorCaloPlot_light[1] : colorCaloPlot[1];
@@ -228,4 +232,23 @@
       return getlight ? kGray+1 : kBlack;
     }
   }
+  
+  //*******************************************************************
+  // get default marker for calorimeters
+  //*******************************************************************
+  Color_t getCaloMarker(TString caloName = "", bool getopen = false){
+    if(!caloName.CompareTo("EEMC"))       return getopen ? 24 : 20;
+    else if(!caloName.CompareTo("BEMC") || !caloName.CompareTo("BECAL") || !caloName.CompareTo("BEMC SciGlass") || !caloName.CompareTo("BEMC SciGl"))  return getopen ? 46 : 47;
+    else if(!caloName.CompareTo("BEMC Pb-Glass") )  return getopen ? 46 : 47;
+    else if(!caloName.CompareTo("IHCAL")) return getopen ? 42 : 43;
+    else if(!caloName.CompareTo("CHCAL") ||!caloName.CompareTo("OHCAL") || !caloName.CompareTo("HCALOUT")) return getopen ? 25:21;
+    else if(!caloName.CompareTo("FEMC"))  return getopen ? 27 : 33;
+    else if(!caloName.CompareTo("LFHCAL"))return getopen ? 30 : 29;
+    else {
+      cout << "no color for calo " << caloName.Data() << " defined!" << endl;
+      return getopen ? 20 : 24;
+    }
+  }
+
+  
 #endif

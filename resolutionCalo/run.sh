@@ -66,16 +66,16 @@ elif [ $1 == "special" ]; then
 #   root -b -x -l -q 'energyResolutionCalorimeters.C("'$inputfileWO'","EEMC","MA","'$suffix'",kTRUE)'
   
 elif [ $1 == "position" ];  then
-#   inputfile=/home/fbock/EIC/Analysis/2ndSimulationCampaign/treeAnalysis/treeProcessing/SingleParticleEEMCPCarbonEOP/output_CRH.root
-#   root -b -x -q -l 'positionResolutionCalorimeters.C("'$inputfile'","LFHCAL-wMat","MA","pdf",kFALSE)'
-#   root -b -x -q -l 'positionResolutionCalorimeters.C("'$inputfile'","EHCAL-wMat","MA","pdf",kFALSE)'
-#   root -b -x -q -l 'positionResolutionCalorimeters.C("'$inputfile'","CHCAL-wMat","MA","pdf",kFALSE)'
-#   root -b -x -q -l 'positionResolutionCalorimeters.C("'$inputfile'","EEMC-wMat","MA","pdf",kFALSE)'
-#   root -b -x -q -l 'positionResolutionCalorimeters.C("'$inputfile'","FEMC-wMat","MA","pdf",kFALSE)'
-#   root -b -x -q -l 'positionResolutionCalorimeters.C("'$inputfile'","BECAL-wMat","MA","pdf",kFALSE)'
-
-  inputfile=/home/fbock/EIC/Analysis/2ndSimulationCampaign/treeAnalysis/treeProcessing/SingleParticle_EOP_PbGlasG4/output_CRH.root
+  inputfile=/home/fbock/EIC/Analysis/2ndSimulationCampaign/treeAnalysis/treeProcessing/SingleParticleEEMCPCarbonEOP/output_CRH.root
+  root -b -x -q -l 'positionResolutionCalorimeters.C("'$inputfile'","LFHCAL-wMat","MA","pdf",kFALSE)'
+  root -b -x -q -l 'positionResolutionCalorimeters.C("'$inputfile'","EHCAL-wMat","MA","pdf",kFALSE)'
+  root -b -x -q -l 'positionResolutionCalorimeters.C("'$inputfile'","CHCAL-wMat","MA","pdf",kFALSE)'
+  root -b -x -q -l 'positionResolutionCalorimeters.C("'$inputfile'","EEMC-wMat","MA","pdf",kFALSE)'
+  root -b -x -q -l 'positionResolutionCalorimeters.C("'$inputfile'","FEMC-wMat","MA","pdf",kFALSE)'
   root -b -x -q -l 'positionResolutionCalorimeters.C("'$inputfile'","BECAL-wMat","MA","pdf",kFALSE)'
+
+#   inputfile=/home/fbock/EIC/Analysis/2ndSimulationCampaign/treeAnalysis/treeProcessing/SingleParticle_EOP_PbGlasG4/output_CRH.root
+#   root -b -x -q -l 'positionResolutionCalorimeters.C("'$inputfile'","BECAL-wMat","MA","pdf",kFALSE)'
 elif [ $1 == "material" ];  then
 #   root -b -x -l -q 'compare_EnergyResol.C("compareMaterialBECAL.txt","MaterialStudies","BECAL","pdf",1)'
 #   root -b -x -l -q 'compare_EnergyResol.C("compareMaterialBECAL.txt","MaterialStudies","BECAL","pdf",3)'
