@@ -124,10 +124,14 @@ void plotGeometry_Paper(
   h_PhiEta_iPhi_HCal->SetFillColor(kRed+2);
   h_PhiEta_iPhi_HCal->Draw("box,same");
 
-  legendPhiEta    = GetAndSetLegend2(0.10, 0.08, 0.38, 0.08+(3*0.85*textsizeLabelsWidth),0.85*textSizeLabelsPixel, 1, "", 43, 0.15);
+  legendPhiEta    = GetAndSetLegend2(0.10, 0.08, 0.38, 0.08+(5*0.85*textsizeLabelsWidth),0.85*textSizeLabelsPixel, 1, "", 43, 0.15);
   legendPhiEta->AddEntry(h_PhiEta_ECal, "all towers","plf");
-  legendPhiEta->AddEntry(h_PhiEta_iEta_ECal, "towers iEta = 1, 30, 70","fl");
-  legendPhiEta->AddEntry(h_PhiEta_iPhi_ECal, "towers iPhi = 1, 50, 100","fl");
+  legendPhiEta->AddEntry(h_PhiEta_iEta_ECal, "fixed #it{#eta} towers","fl");
+  legendPhiEta->AddEntry((TObject*)0, "iEta = 1, 30, 70"," ");
+  // legendPhiEta->AddEntry(h_PhiEta_iEta_ECal, "towers iEta = 1, 30, 70","fl");
+  // legendPhiEta->AddEntry(h_PhiEta_iPhi_ECal, "towers iPhi = 1, 50, 100","fl");
+  legendPhiEta->AddEntry(h_PhiEta_iPhi_ECal, "fixed #it{#varphi} towers","fl");
+  legendPhiEta->AddEntry((TObject*)0, "iPhi = 1, 50, 100"," ");
   legendPhiEta->Draw();
   
   drawLatexAdd("#it{#bf{ECCE}} simulation",0.10,0.86,textsizeLabelsWidth,kFALSE,kFALSE,false);

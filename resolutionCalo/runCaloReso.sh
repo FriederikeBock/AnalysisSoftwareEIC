@@ -5,23 +5,23 @@ if [ $1 = "noteplots" ]; then
 
     input=SingleParticleNewGeom
     caloname=FEMC-wMat
-    root -x -l -q -b 'energyResolutionCalorimeters.C("'$basepath/$input/output_CRH.root'","'$caloname'","'$clusterizername'","pdf",kTRUE)'
+    #root -x -l -q -b 'energyResolutionCalorimeters.C("'$basepath/$input/output_CRH.root'","'$caloname'","'$clusterizername'","pdf",kTRUE)'
 
     caloname=BECAL-wMat
     root -x -l -q -b 'energyResolutionCalorimeters.C("'$basepath/$input/output_CRH.root'","'$caloname'","'$clusterizername'","pdf",kTRUE)'
 
     caloname=EEMC-wMat
-    root -x -l -q -b 'energyResolutionCalorimeters.C("'$basepath/$input/output_CRH.root'","'$caloname'","'$clusterizername'","pdf",kTRUE)'
+    #root -x -l -q -b 'energyResolutionCalorimeters.C("'$basepath/$input/output_CRH.root'","'$caloname'","'$clusterizername'","pdf",kTRUE)'
 
     input=HCALStandaloneSingleParticle
     caloname=LFHCAL
-    root -x -l -q -b 'energyResolutionCalorimeters.C("'$basepath/$input/output_CRH.root'","'$caloname'","'$clusterizername'","pdf",kTRUE)'
+    #root -x -l -q -b 'energyResolutionCalorimeters.C("'$basepath/$input/output_CRH.root'","'$caloname'","'$clusterizername'","pdf",kTRUE)'
 
     caloname=CHCAL
-    root -x -l -q -b 'energyResolutionCalorimeters.C("'$basepath/$input/output_CRH.root'","'$caloname'","'$clusterizername'","pdf",kTRUE)'
+    #root -x -l -q -b 'energyResolutionCalorimeters.C("'$basepath/$input/output_CRH.root'","'$caloname'","'$clusterizername'","pdf",kTRUE)'
 
     caloname=HCALIN
-    root -x -l -q -b 'energyResolutionCalorimeters.C("'$basepath/$input/output_CRH.root'","'$caloname'","'$clusterizername'","pdf",kTRUE)'
+    #root -x -l -q -b 'energyResolutionCalorimeters.C("'$basepath/$input/output_CRH.root'","'$caloname'","'$clusterizername'","pdf",kTRUE)'
 
 #    input=FOCAL$filled-BH2-FCTB-FCTungsten-SimplePion-NEW
 #    root -x -l -q -b 'energyResolutionCalorimeters.C("'$basepath/$input/output_RH.root'","'$caloname'","'$clusterizername'","pdf",kTRUE,"FCTB-FCTungsten-Pion-NEW")'

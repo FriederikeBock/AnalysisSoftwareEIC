@@ -97,7 +97,7 @@ void energyResolutionCalorimeters(
     isEMCal       = 1;
     exEtabin      = 7;
     dirCal        = 1;
-    maxEnergy     = 20.0;
+    maxEnergy     = 10.0;
     if (caloName.Contains("BECAL-wMat")){
       detLabel  = "BEMC, w/ mat. infront";
       if (caloName.Contains("PbGl")){
@@ -156,9 +156,10 @@ void energyResolutionCalorimeters(
   // determine eta bins
   Int_t binEtaMin = 0;
   Int_t binEtaMax = 15;
-  
-  TString outputDir                 = Form("plotsResolution%s",caloName.Data());
-  if(doFitting) outputDir+="Fitting";
+  TString dateForOutput             = ReturnDateStringForOutput();
+ 
+  TString outputDir                 = Form("plotsResolution%s%s/%s",caloName.Data(),doFitting ? "Fitting" : "",dateForOutput.Data());
+  // if(doFitting) outputDir+="Fitting";
   gSystem->Exec("mkdir -p "+outputDir);
 
 

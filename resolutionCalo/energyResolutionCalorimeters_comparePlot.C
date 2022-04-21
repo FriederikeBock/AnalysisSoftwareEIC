@@ -102,12 +102,12 @@ void energyResolutionCalorimeters_comparePlot(
           graph_particle_reso_E_Eta[iSet][pid][etbin]     = new TGraphErrors(h_particle_reso_E_Eta[iSet][pid][etbin]);
           RemoveZerosFromGraph(graph_particle_reso_E_Eta[iSet][pid][etbin]);
           cout << partEtaCalo[etbin] << "\t" << partEtaCalo[etbin+1] << "\t" << labelPart[pid] << endl;
-          cout << "reso" << endl;
-          graph_particle_reso_E_Eta[iSet][pid][etbin]->Print();
+          // cout << "reso" << endl;
+          // graph_particle_reso_E_Eta[iSet][pid][etbin]->Print();
           graph_particle_resoFWHM_E_Eta[iSet][pid][etbin] = new TGraphErrors(h_particle_resoFWHM_E_Eta[iSet][pid][etbin]);
           RemoveZerosFromGraph(graph_particle_resoFWHM_E_Eta[iSet][pid][etbin]);
-          cout << "reso FWHM" << endl;
-          graph_particle_resoFWHM_E_Eta[iSet][pid][etbin]->Print();
+          // cout << "reso FWHM" << endl;
+          // graph_particle_resoFWHM_E_Eta[iSet][pid][etbin]->Print();
         }
       }
     }
@@ -231,9 +231,9 @@ void energyResolutionCalorimeters_comparePlot(
       cout << "\t" << calo[iSet].Data() << endl;
       // sigma resolution
       if (!h_particle_reso_1oEhighest[iSet][pid]) continue;
-      DrawGammaSetMarker(h_particle_reso_1oEhighest[iSet][pid], markerStyleSet[iSet], markerSizeSet[iSet], getCaloColor(labels[iSet]), getCaloColor(labels[iSet]));
+      DrawGammaSetMarker(h_particle_reso_1oEhighest[iSet][pid], getCaloMarker(labels[iSet]),labels[iSet].Contains("LFHCAL") ? 2.4 : markerSizeSet[iSet], getCaloColor(labels[iSet]), getCaloColor(labels[iSet]));
       dummyGraph[iSet] = new TGraphErrors(h_particle_reso_1oEhighest[iSet][pid]);
-      DrawGammaSetMarkerTGraph(dummyGraph[iSet], markerStyleSet[iSet], markerSizeSet[iSet], getCaloColor(labels[iSet]), getCaloColor(labels[iSet]));
+      DrawGammaSetMarkerTGraph(dummyGraph[iSet], getCaloMarker(labels[iSet]), labels[iSet].Contains("LFHCAL") ? 2.4 : markerSizeSet[iSet], getCaloColor(labels[iSet]), getCaloColor(labels[iSet]));
       dummyGraph[iSet]->SetLineStyle(lineStylePID[iSet+1]);
       dummyGraph[iSet]->SetLineWidth(3);
       h_particle_reso_1oEhighest[iSet][pid]->Draw("same,p");
@@ -247,7 +247,7 @@ void energyResolutionCalorimeters_comparePlot(
         legendPtResM->AddEntry(graphReq1oEEM[dirCal[iSet]], Form("YR Requirement %s",labels[iSet].Data()),"f");
       }
       if(labels[iSet].Contains("IHCAL"))legendPtResM->AddEntry(h_particle_reso_1oEhighest[iSet][pid], Form("%s",labels[iSet].Data()),"p");
-      else legendPtResM->AddEntry(dummyGraph[iSet], Form("%s: #sigma/#it{E} =  %1.1f/#sqrt{#it{E}} #oplus %1.1f",labels[iSet].Data(), fit_resohighest_particle_1oE[iSet][pid]->GetParameter(1),fit_resohighest_particle_1oE[iSet][pid]->GetParameter(0)),"pl");
+      else legendPtResM->AddEntry(dummyGraph[iSet], Form("%s: #sigma_{g} /#it{E} =  %1.1f/#sqrt{#it{E}} #oplus %1.1f",labels[iSet].Data(), fit_resohighest_particle_1oE[iSet][pid]->GetParameter(1),fit_resohighest_particle_1oE[iSet][pid]->GetParameter(0)),"pl");
     }
     drawLatexAdd(labelEnergy.Data(),0.95,0.92,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     drawLatexAdd(Form("single %s", labelPart[pid].Data()),0.95,0.87,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
@@ -288,12 +288,13 @@ void energyResolutionCalorimeters_comparePlot(
       }
     }
     TGraphErrors* dummyGraph2[maxNSets] = {nullptr};
+    TGraphErrors* dummyGraph3[maxNSets] = {nullptr};
     for (Int_t iSet = 0; iSet < nSets; iSet++){
       cout << "\t" << calo[iSet].Data() << endl;
       // sigma resolution
-      DrawGammaSetMarker(h_particle_reso_1oEhighest[iSet][pid], markerStyleSet[iSet], markerSizeSet[iSet], getCaloColor(labels[iSet]), getCaloColor(labels[iSet]));
+      DrawGammaSetMarker(h_particle_reso_1oEhighest[iSet][pid], getCaloMarker(labels[iSet]), markerSizeSet[iSet], getCaloColor(labels[iSet]), getCaloColor(labels[iSet]));
       dummyGraph2[iSet] = new TGraphErrors(h_particle_reso_1oEhighest[iSet][pid]);
-      DrawGammaSetMarkerTGraph(dummyGraph2[iSet], markerStyleSet[iSet], markerSizeSet[iSet], getCaloColor(labels[iSet]), getCaloColor(labels[iSet]));
+      DrawGammaSetMarkerTGraph(dummyGraph2[iSet], getCaloMarker(labels[iSet]), markerSizeSet[iSet], getCaloColor(labels[iSet]), getCaloColor(labels[iSet]));
       dummyGraph2[iSet]->SetLineStyle(lineStylePID[iSet+1]);
       dummyGraph2[iSet]->SetLineWidth(3);
       h_particle_reso_1oEhighest[iSet][pid]->Draw("same,p");
@@ -306,7 +307,7 @@ void energyResolutionCalorimeters_comparePlot(
         legendPtResM2->AddEntry(graphReq1oEEM[dirCal[iSet]], Form("YR Requirement %s",labels[iSet].Data()),"f");
       }
       if(labels[iSet].Contains("IHCAL"))legendPtResM2->AddEntry(h_particle_reso_1oEhighest[iSet][pid], Form("%s",labels[iSet].Data()),"p");
-      else legendPtResM2->AddEntry(dummyGraph2[iSet], Form("%s: #sigma/#it{E} =  %1.1f/#sqrt{#it{E}} #oplus %1.1f",labels[iSet].Data(), fit_resohighest_particle_1oE[iSet][pid]->GetParameter(1),fit_resohighest_particle_1oE[iSet][pid]->GetParameter(0)),"pl");
+      else legendPtResM2->AddEntry(dummyGraph2[iSet], Form("%s: #sigma_{g} /#it{E} =  %1.1f/#sqrt{#it{E}} #oplus %1.1f",labels[iSet].Data(), fit_resohighest_particle_1oE[iSet][pid]->GetParameter(1),fit_resohighest_particle_1oE[iSet][pid]->GetParameter(0)),"pl");
 
       TF1* tempResoFunc = NULL;
       if(labels[iSet].Contains("OHCAL")){
@@ -339,6 +340,68 @@ void energyResolutionCalorimeters_comparePlot(
 
     cReso2->Print(Form("%s/Resolution_%sFitted_wTB.%s", outputDir.Data(), readNames[pid].Data(), suffix.Data()));
 
+    legendPtResM2  = GetAndSetLegend2(0.14,addName.Contains("HCal") ? 0.95-((2*nSets +1)*textSizeLabelsRel) :  0.95-((2*nSets +3)*textSizeLabelsRel), 0.55, 0.95,textSizeLabelsPixel, 1, "", 43, 0.15);
+    histResoDummy->Draw();
+
+    bool iiindexplotted2[3] = {false};
+    for (Int_t iSet = 0; iSet < nSets; iSet++){
+      if(!iiindexplotted2[dirCal[iSet]]){
+        DrawGammaSetMarkerTGraphErr(  graphReq1oEEM[dirCal[iSet]], 0, 0, getCaloColor(labels[iSet],true), getCaloColor(labels[iSet],true), 2, kTRUE, getCaloColor(labels[iSet],true), kFALSE);
+        DrawGammaSetMarkerTGraphErr(  graphReq1oEHad[dirCal[iSet]], 0, 0, getCaloColor(labels[iSet],true), getCaloColor(labels[iSet],true), 2, kTRUE, getCaloColor(labels[iSet],true), kFALSE);
+        if(addName.Contains("HCal")){
+          if(labels[iSet].Contains("OHCAL"))graphReq1oEHad[dirCal[iSet]]->SetFillStyle(3544);
+          graphReq1oEHad[dirCal[iSet]]->Draw("same,e3");
+        } else{
+          if(labels[iSet].Contains("FEMC"))graphReq1oEEM[dirCal[iSet]]->SetFillStyle(3545);
+          if(labels[iSet].Contains("BEMC"))graphReq1oEEM[dirCal[iSet]]->SetFillStyle(3754);
+          graphReq1oEEM[dirCal[iSet]]->Draw("same,e3");
+        }
+        iiindexplotted2[dirCal[iSet]] = true;
+      }
+    }
+    cout << __LINE__ << endl;
+    for (Int_t iSet = 0; iSet < nSets; iSet++){
+      cout << "\t" << calo[iSet].Data() << endl;
+      // sigma resolution
+      DrawGammaSetMarker(h_particle_reso_1oEhighest[iSet][pid], getCaloMarker(labels[iSet]), markerSizeSet[iSet], getCaloColor(labels[iSet]), getCaloColor(labels[iSet]));
+      if(!fit_resofhighest_particle_1oE[iSet][pid]){
+        continue;
+      }
+      DrawGammaSetMarker(h_particle_resof_1oEhighest[iSet][pid], markerStyleSet2[iSet], markerSizeSet[iSet], getCaloColor(labels[iSet],2), getCaloColor(labels[iSet],2));
+      dummyGraph2[iSet] = new TGraphErrors(h_particle_reso_1oEhighest[iSet][pid]);
+      DrawGammaSetMarkerTGraph(dummyGraph2[iSet], getCaloMarker(labels[iSet]), markerSizeSet[iSet], getCaloColor(labels[iSet]), getCaloColor(labels[iSet]));
+      dummyGraph2[iSet]->SetLineStyle(lineStylePID[iSet+1]);
+      dummyGraph2[iSet]->SetLineWidth(3);
+      dummyGraph3[iSet] = new TGraphErrors(h_particle_resof_1oEhighest[iSet][pid]);
+      DrawGammaSetMarkerTGraph(dummyGraph3[iSet], markerStyleSet2[iSet], markerSizeSet[iSet], getCaloColor(labels[iSet],2), getCaloColor(labels[iSet],2));
+      dummyGraph3[iSet]->SetLineStyle(lineStylePID[iSet+1]);
+      dummyGraph3[iSet]->SetLineWidth(3);
+      h_particle_reso_1oEhighest[iSet][pid]->Draw("same,p");
+      h_particle_resof_1oEhighest[iSet][pid]->Draw("same,p");
+      DrawGammaSetMarkerTF1(fit_resohighest_particle_1oE[iSet][pid], lineStylePID[iSet+1], 3, getCaloColor(labels[iSet]));
+      if(!labels[iSet].Contains("IHCAL"))fit_resohighest_particle_1oE[iSet][pid]->Draw("same");
+      DrawGammaSetMarkerTF1(fit_resofhighest_particle_1oE[iSet][pid], lineStylePID[iSet+1], 3, getCaloColor(labels[iSet], 2));
+      if(!labels[iSet].Contains("IHCAL"))fit_resofhighest_particle_1oE[iSet][pid]->Draw("same");
+
+      if(addName.Contains("HCal")){
+        if(!labels[iSet].Contains("IHCAL"))legendPtResM2->AddEntry(graphReq1oEHad[dirCal[iSet]], Form("%s YR Requirement",labels[iSet].Data()),"f");
+      } else {
+        legendPtResM2->AddEntry(graphReq1oEEM[dirCal[iSet]], Form("%s YR Requirement",labels[iSet].Data()),"f");
+      }
+      if(labels[iSet].Contains("IHCAL")){
+        legendPtResM2->AddEntry(h_particle_reso_1oEhighest[iSet][pid], Form("%s",labels[iSet].Data()),"p");
+      } else {
+        legendPtResM2->AddEntry(dummyGraph2[iSet], Form("#sigma_{g} /#it{E} =  %1.1f/#sqrt{#it{E}} #oplus %1.1f", fit_resohighest_particle_1oE[iSet][pid]->GetParameter(1),fit_resohighest_particle_1oE[iSet][pid]->GetParameter(0)),"pl");
+        legendPtResM2->AddEntry(dummyGraph3[iSet], Form("#sigma_{F} /#it{E} =  %1.1f/#sqrt{#it{E}} #oplus %1.1f", fit_resofhighest_particle_1oE[iSet][pid]->GetParameter(1),fit_resofhighest_particle_1oE[iSet][pid]->GetParameter(0)),"pl");
+      }
+
+    }
+    drawLatexAdd(labelEnergy.Data(),0.95,0.92,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("single %s", labelPart[pid].Data()),0.95,0.87,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    legendPtResM2->Draw();
+
+    cReso2->Print(Form("%s/Resolution_%sFitted_wFWHM.%s", outputDir.Data(), readNames[pid].Data(), suffix.Data()));
+  cout << __LINE__ << endl;
   }
   
   TH2F * histResoDummyE                           = new TH2F("histResoDummyE","histResoDummyE",1000,0.3, 50,1000,0, 100);
@@ -440,6 +503,7 @@ void energyResolutionCalorimeters_comparePlot(
     drawLatexAdd(Form("single %s", labelPart[pid].Data()),0.95,0.87,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     legendResEta->Draw();
     cReso3->Print(Form("%s/ResolutionFWHM_%sAllBins.%s", outputDir.Data(), readNames[pid].Data(), suffix.Data()));
+  cout << __LINE__ << endl;
     
     cReso4->cd();
     cReso4->SetLogy();
@@ -466,6 +530,7 @@ void energyResolutionCalorimeters_comparePlot(
     
     cReso4->Print(Form("%s/ResolutionFWHM_%s2D.%s", outputDir.Data(), readNames[pid].Data(), suffix.Data()));
   }
+  cout << __LINE__ << endl;
   
   TFile* fileOutput = new TFile(Form("%s/resolutionSummary.root", outputDir.Data()),"RECREATE");
   for (Int_t pid = 1; pid < nPID; pid++){

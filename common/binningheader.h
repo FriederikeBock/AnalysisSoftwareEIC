@@ -215,17 +215,23 @@
                                               kGreen+2 /*FEMC*/, kCyan+2 /*LFHCAL*/};
   Color_t colorCaloPlot_light[nCaloPlot]  = { kBlue-8 /*EEMC*/, kRed-8 /*BEMC*/, kYellow-8 /*iHCAL*/, kOrange-9 /*OHCAL*/,
                                               kGreen-8 /*FEMC*/, kCyan-8 /*LFHCAL*/};
-                                              
-  //*******************************************************************
-  // get default color for calorimeters
-  //*******************************************************************                                              
-  Color_t getCaloColor(TString caloName = "", bool getlight = false){
-    if(!caloName.CompareTo("EEMC"))       return getlight ? colorCaloPlot_light[0] : colorCaloPlot[0];
-    else if(!caloName.CompareTo("BEMC") || !caloName.CompareTo("BECAL") || !caloName.CompareTo("BEMC SciGlass") || !caloName.CompareTo("BEMC SciGl"))  return getlight ? colorCaloPlot_light[1] : colorCaloPlot[1];
-    else if(!caloName.CompareTo("BEMC Pb-Glass") )  return kOrange+2;
+  Color_t getCaloColor(TString caloName = "", int getlight = 0){
+    if(!caloName.CompareTo("EEMC")){
+      if(getlight==0) return colorCaloPlot[0];
+      else if(getlight==1) return colorCaloPlot_light[0];
+      else return kAzure+3;
+    } else if(!caloName.CompareTo("BEMC") || !caloName.CompareTo("BECAL") || !caloName.CompareTo("BEMC SciGlass") || !caloName.CompareTo("BEMC SciGl")){
+      if(getlight==0) return colorCaloPlot[1];
+      else if(getlight==1) return colorCaloPlot_light[1];
+      else return kRed+3;
+    } else if(!caloName.CompareTo("BEMC Pb-Glass") )  return kOrange+2;
     else if(!caloName.CompareTo("IHCAL")) return getlight ? colorCaloPlot_light[2] : colorCaloPlot[2];
     else if(!caloName.CompareTo("OHCAL") || !caloName.CompareTo("HCALOUT")) return getlight ? colorCaloPlot_light[3] : colorCaloPlot[3];
-    else if(!caloName.CompareTo("FEMC"))  return getlight ? colorCaloPlot_light[4] : colorCaloPlot[4];
+    else if(!caloName.CompareTo("FEMC")){
+      if(getlight==0) return colorCaloPlot[4];
+      else if(getlight==1) return colorCaloPlot_light[4];
+      else return kGreen+3;
+    }
     else if(!caloName.CompareTo("LFHCAL"))return getlight ? colorCaloPlot_light[5] : colorCaloPlot[5];
     else {
       cout << "no color for calo " << caloName.Data() << " defined!" << endl;

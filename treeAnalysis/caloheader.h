@@ -579,7 +579,8 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
     returnVariables[3]= vecTwr.Phi(); //(vecTwr.Phi()<0 ? vecTwr.Phi()+TMath::Pi() : vecTwr.Phi()-TMath::Pi());
 //     std::cout << "X: "<< vecTwr.X() << "\t" << " Y: "<< vecTwr.Y() << "\t" << " Z: "<< vecTwr.Z() << "\t zHC: " <<  zHC << std::endl;
     if(IsForwardCalorimeter(caloSelect)){
-      vecTwr*=abs(zHC/vecTwr.Z()); // wtot/Ntowers?
+      vecTwr*=abs(1/((int)cluster_towers.size()*w_tot)); // wtot/Ntowers?
+      // vecTwr*=abs(zHC/vecTwr.Z()); // wtot/Ntowers?
     }
     returnVariables[4]=vecTwr.X();
     returnVariables[5]=vecTwr.Y();
@@ -591,6 +592,7 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
     float delta_eta_phi[4] = {0};
     float dispersion = 0;
     int supModLeadingCell = -1;
+    //TODO fredi make it 3D for LFHCAL... yay!
     for(int cellI=0; cellI<(int)cluster_towers.size(); cellI++){
 //       vecTwrTmp = TowerPositionVectorFromIndicesGeometry(cluster_towers.at(cellI).tower_iEta,cluster_towers.at(cellI).tower_iPhi, cluster_towers.at(cellI).tower_iL, caloSelect);
 //       int iphi = vecTwrTmp.Phi();

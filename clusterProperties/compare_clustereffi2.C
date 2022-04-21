@@ -47,7 +47,7 @@ void compare_clustereffi2(
 
   Color_t colorSet[8]         = {kBlack, kRed+1, kGreen+2, kGray+1, kCyan+1, kAzure+2, kBlack };
   Style_t markerStyleSet[8]   = {20, 47, 33,  21, 30, 42, 46, 20};
-  Size_t markerSizeSet[8]     = {1.8, 2.0, 2.4, 1.5, 1.8, 1.8, 1.5, 1.5 };
+  Size_t markerSizeSet[8]     = {1.8, 2.0, 2.4, 1.5, 2.4, 1.8, 1.5, 1.5 };
   
   const Int_t maxNSets        = 10;
   TString outTrackCuts[3]     = {"", "LI2", "LI3"};
@@ -92,7 +92,7 @@ void compare_clustereffi2(
 
 
   for (Int_t iSet = 0; iSet < nSets; iSet++){
-    colorSet[iSet] = getCaloColor(labels[iSet],false);
+    // getCaloColor(labels[iSet],false) = getCaloColor(labels[iSet],false);
     inputFiles[iSet]  = new TFile(inputFilesNames[iSet].Data());
       for (Int_t iEta=minEtaBinCaloDis[region[iSet]]; iEta<maxEtaBinCaloDis[region[iSet]]+1;iEta++){
         for (Int_t pid = 1; pid < nPID; pid++){
@@ -156,7 +156,7 @@ void compare_clustereffi2(
     histoDummyNClPerParMean->Draw();
     // DrawGammaLines(0.15, 50, 1,1,2,kGray+1, 2);
       for(Int_t iSet=0; iSet<nSets;iSet++){
-        DrawGammaSetMarker(h_cluster_NClMean_E[iSet], markerStyleSet[iSet], markerSizeSet[iSet], getCaloColor(labels[iSet],false), getCaloColor(labels[iSet],false));
+        DrawGammaSetMarker(h_cluster_NClMean_E[iSet], getCaloMarker(labels[iSet]), markerSizeSet[iSet], getCaloColor(labels[iSet],false), getCaloColor(labels[iSet],false));
         h_cluster_NClMean_E[iSet]->Draw("same,hist,p");
         legendPtResM->AddEntry(h_cluster_NClMean_E[iSet],labels[iSet].Data(),"p");
         legendPtResMLeft->AddEntry(h_cluster_NClMean_E[iSet],labels[iSet].Data(),"p");
@@ -176,7 +176,7 @@ void compare_clustereffi2(
     histoDummyNTowerMean->Draw();
     // DrawGammaLines(0.15, 50, 1,1,2,kGray+1, 2);
       for(Int_t iSet=0; iSet<nSets;iSet++){
-        DrawGammaSetMarker(h_cluster_NTowerMean_E[iSet], markerStyleSet[iSet], markerSizeSet[iSet], colorSet[iSet], colorSet[iSet]);
+        DrawGammaSetMarker(h_cluster_NTowerMean_E[iSet], getCaloMarker(labels[iSet]), markerSizeSet[iSet], getCaloColor(labels[iSet],false), getCaloColor(labels[iSet],false));
         h_cluster_NTowerMean_E[iSet]->Draw("same,hist,p");
         // legendPtResM->AddEntry(h_cluster_NTowerMean_E[iSet],labels[iSet].Data(),"p");
       }
@@ -194,7 +194,7 @@ void compare_clustereffi2(
     histoDummyEffiMCE->Draw();
     DrawGammaLines(0.15, 50, 1,1,2,kGray+1, 2);
       for(Int_t iSet=0; iSet<nSets;iSet++){
-        DrawGammaSetMarker(h_TMeffi_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]], markerStyleSet[iSet], markerSizeSet[iSet], colorSet[iSet], colorSet[iSet]);
+        DrawGammaSetMarker(h_TMeffi_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]], getCaloMarker(labels[iSet]), markerSizeSet[iSet], getCaloColor(labels[iSet],false), getCaloColor(labels[iSet],false));
         h_TMeffi_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]]->Draw("same,p");
         // legendPtResM->AddEntry(h_TMeffi_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]],labels[iSet].Data(),"p");
       }
@@ -210,7 +210,7 @@ void compare_clustereffi2(
     histoDummyEffiMCE->Draw();
     DrawGammaLines(0.15, 50, 1,1,2,kGray+1, 2);
       for(Int_t iSet=0; iSet<nSets;iSet++){
-        DrawGammaSetMarker(h_TMeffiCls_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]], markerStyleSet[iSet], markerSizeSet[iSet], colorSet[iSet], colorSet[iSet]);
+        DrawGammaSetMarker(h_TMeffiCls_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]], getCaloMarker(labels[iSet]), markerSizeSet[iSet], getCaloColor(labels[iSet],false), getCaloColor(labels[iSet],false));
         h_TMeffiCls_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]]->Draw("same,p");
         // legendPtResM->AddEntry(h_TMeffiCls_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]],labels[iSet].Data(),"p");
       }
@@ -273,7 +273,7 @@ void compare_clustereffi2(
   histo2DAllPi0FWHM->DrawCopy();
 
   for(Int_t iSet=0; iSet<nSets;iSet++){
-    DrawGammaSetMarker(h_cluster_NClMean_E[iSet], markerStyleSet[iSet], markerSizeSet[iSet], getCaloColor(labels[iSet],false), getCaloColor(labels[iSet],false));
+    DrawGammaSetMarker(h_cluster_NClMean_E[iSet], getCaloMarker(labels[iSet]), 1.5*markerSizeSet[iSet], getCaloColor(labels[iSet],false), getCaloColor(labels[iSet],false));
     h_cluster_NClMean_E[iSet]->Draw("same,hist,p");
     // legendPtResM->AddEntry(h_cluster_NClMean_E[iSet],labels[iSet].Data(),"p");
     // legendPtResMLeft2->AddEntry(h_cluster_NClMean_E[iSet],labels[iSet].Data(),"p");
@@ -313,7 +313,7 @@ void compare_clustereffi2(
   TLegend* legendPtResMLeft2  = GetAndSetLegend2(0.10, 0.95-(nSets*textsizeLabelsMass), 0.28, 0.95,textSizeLabelsPixel, 1, "", 43, 0.15);
 
   for(Int_t iSet=0; iSet<nSets;iSet++){
-    DrawGammaSetMarker(h_cluster_NTowerMean_E[iSet], markerStyleSet[iSet], markerSizeSet[iSet], colorSet[iSet], colorSet[iSet]);
+    DrawGammaSetMarker(h_cluster_NTowerMean_E[iSet], getCaloMarker(labels[iSet]), 1.5*markerSizeSet[iSet], getCaloColor(labels[iSet],false), getCaloColor(labels[iSet],false));
     h_cluster_NTowerMean_E[iSet]->Draw("same,hist,p");
     legendPtResMLeft2->AddEntry(h_cluster_NTowerMean_E[iSet],labels[iSet].Data(),"p");
   }
@@ -323,6 +323,107 @@ void compare_clustereffi2(
 
   canvasGeoPaper->Update();
   canvasGeoPaper->Print(Form("%s/NTowAndMeanClus_Paper.%s",outputDir.Data(),suffix.Data()));
+
+
+  padGeoECal->cd();
+  padGeoECal->SetLogx();
+
+  margin                 = relativeMarginsX[0]*2.7*1350;
+  textsizeLabelsWidth    = 0;
+  textsizeFacWidth       = 0;
+  if (padGeoECal->XtoPixel(padGeoECal->GetX2()) < padGeoECal->YtoPixel(padGeoECal->GetY1())){
+      textsizeLabelsWidth         = (Double_t)textSizeLabelsPixel/padGeoECal->XtoPixel(padGeoECal->GetX2()) ;
+      textsizeFacWidth            = (Double_t)1./padGeoECal->XtoPixel(padGeoECal->GetX2()) ;
+  } else {
+      textsizeLabelsWidth         = (Double_t)textSizeLabelsPixel/padGeoECal->YtoPixel(padGeoECal->GetY1());
+      textsizeFacWidth            = (Double_t)1./padGeoECal->YtoPixel(padGeoECal->GetY1());
+  }
+
+  TH2F * histo2DAllEffiTM2    = new TH2F("histo2DAllEffiTM2","histo2DAllEffiTM2",1000,0.26, 55,1000,0.001, 1.35);
+  SetStyleHistoTH2ForGraphs(histo2DAllEffiTM2, "#it{E}^{MC} (GeV)","#varepsilon_{TM}", 0.85*textsizeLabelsWidth, textsizeLabelsWidth,
+                            0.85*textsizeLabelsWidth, textsizeLabelsWidth, 0.8,0.45,512,505);//#it{p}_{T} (GeV/#it{c})
+  histo2DAllEffiTM2->GetYaxis()->SetMoreLogLabels(kTRUE);
+  // histo2DAllEffiTM2->GetYaxis()->SetNdivisions(505);
+  histo2DAllEffiTM2->GetYaxis()->SetNoExponent(kTRUE);
+  histo2DAllEffiTM2->GetXaxis()->SetTickLength(0.05);
+  histo2DAllEffiTM2->GetYaxis()->SetTickLength(0.026);
+  histo2DAllEffiTM2->SetMaximum(20);
+  histo2DAllEffiTM2->DrawCopy();
+  DrawGammaLines(0.26, 55, 1,1,2,kGray+1, 2);
+    for (Int_t pid = 1; pid < nPID; pid++){
+    if(!currPIDavail[pid]) continue;
+    for(Int_t iSet=0; iSet<nSets;iSet++){
+        DrawGammaSetMarker(h_TMeffi_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]], getCaloMarker(labels[iSet]), 1.5*markerSizeSet[iSet], getCaloColor(labels[iSet],false), getCaloColor(labels[iSet],false));
+    }
+  }
+  h_TMeffi_recSE_MCE[0][1][maxEtaBinCaloDis[region[0]]]->Draw("same,p");
+  h_TMeffi_recSE_MCE[1][1][maxEtaBinCaloDis[region[1]]]->Draw("same,p");
+  h_TMeffi_recSE_MCE[2][1][maxEtaBinCaloDis[region[2]]]->Draw("same,p");
+  h_TMeffi_recSE_MCE[3][3][maxEtaBinCaloDis[region[3]]]->Draw("same,p");
+  h_TMeffi_recSE_MCE[4][3][maxEtaBinCaloDis[region[4]]]->Draw("same,p");
+
+  // drawLatexAdd(Form("#varepsilon_{TM} = N_{clus}^{matched} / N_{tracks}^{in acc.}"),0.14, 0.91-(1+nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+  
+  drawLatexAdd("#it{#bf{ECCE}} simulation",0.10,0.86,textsizeLabelsWidth,kFALSE,kFALSE,false);
+  drawLatexAdd(Form("single particles"),0.10,0.78,textsizeLabelsWidth,kFALSE,kFALSE,false);
+  drawLatexAdd(Form("a)"),0.97,0.08,textsizeLabelsWidth,kFALSE,kFALSE,true);
+  histo2DAllEffiTM2->Draw("same,axis");
+  padGeoHCal->SetLogx();
+  padGeoHCal->SetLogy(false);
+
+  padGeoHCal->cd();
+  textsizeLabelsMass         = 0;
+  textsizeFacMass            = 0;
+  if (padGeoHCal->XtoPixel(padGeoHCal->GetX2()) <padGeoHCal->YtoPixel(padGeoHCal->GetY1()) ){
+      textsizeLabelsMass              = (Double_t)textSizeLabelsPixel/padGeoHCal->XtoPixel(padGeoHCal->GetX2()) ;
+      textsizeFacMass                 = (Double_t)1./padGeoHCal->XtoPixel(padGeoHCal->GetX2()) ;
+  } else {
+      textsizeLabelsMass              = (Double_t)textSizeLabelsPixel/padGeoHCal->YtoPixel(padGeoHCal->GetY1());
+      textsizeFacMass                 = (Double_t)1./padGeoHCal->YtoPixel(padGeoHCal->GetY1());
+  }
+
+  TH2F * histo2DAllEffiTM3            = new TH2F("histo2DAllEffiTM3","histo2DAllEffiTM3",1000,0.26, 55,1000,0.0, 1.35);//, 100.1, 160.9);//125.1, 155.9);
+  SetStyleHistoTH2ForGraphs(histo2DAllEffiTM3, "#it{E}^{MC} (GeV)","#kappa_{TM}", 0.85*textsizeLabelsMass, textsizeLabelsMass, 0.85*textsizeLabelsMass,
+                            textsizeLabelsMass, 0.9, 0.45,512,505);
+  histo2DAllEffiTM3->GetXaxis()->SetMoreLogLabels(kTRUE);
+  histo2DAllEffiTM3->GetYaxis()->SetNoExponent(kTRUE);
+  histo2DAllEffiTM3->GetXaxis()->SetTickLength(0.05);
+  histo2DAllEffiTM3->GetXaxis()->SetNoExponent();
+  histo2DAllEffiTM3->SetMaximum(20);
+  histo2DAllEffiTM3->DrawCopy();
+  legendPtResMLeft2  = GetAndSetLegend2(0.10, 0.94-(2*textsizeLabelsMass), 0.78, 0.94,textSizeLabelsPixel, 3, "", 43, 0.15);
+  for (Int_t pid = 1; pid < nPID; pid++){
+    if(!currPIDavail[pid]) continue;
+    for(Int_t iSet=0; iSet<nSets;iSet++){
+        DrawGammaSetMarker(h_TMeffiCls_recSE_MCE[iSet][pid][maxEtaBinCaloDis[region[iSet]]], getCaloMarker(labels[iSet]), 1.5*markerSizeSet[iSet], getCaloColor(labels[iSet],false), getCaloColor(labels[iSet],false));
+    }
+  }
+    DrawGammaLines(0.26, 55, 1,1,2,kGray+1, 2);
+        h_TMeffiCls_recSE_MCE[0][1][maxEtaBinCaloDis[region[0]]]->Draw("same,p");
+        h_TMeffiCls_recSE_MCE[1][1][maxEtaBinCaloDis[region[1]]]->Draw("same,p");
+        h_TMeffiCls_recSE_MCE[2][1][maxEtaBinCaloDis[region[2]]]->Draw("same,p");
+        h_TMeffiCls_recSE_MCE[3][3][maxEtaBinCaloDis[region[3]]]->Draw("same,p");
+        h_TMeffiCls_recSE_MCE[4][3][maxEtaBinCaloDis[region[4]]]->Draw("same,p");
+
+        legendPtResMLeft2->AddEntry(h_TMeffiCls_recSE_MCE[0][1][maxEtaBinCaloDis[region[0]]],Form("%s (%s)",labels[0].Data(),partLabel[1].Data()),"p");
+        legendPtResMLeft2->AddEntry(h_TMeffiCls_recSE_MCE[1][1][maxEtaBinCaloDis[region[1]]],Form("%s (%s)",labels[1].Data(),partLabel[1].Data()),"p");
+        legendPtResMLeft2->AddEntry(h_TMeffiCls_recSE_MCE[2][1][maxEtaBinCaloDis[region[2]]],Form("%s (%s)",labels[2].Data(),partLabel[1].Data()),"p");
+        legendPtResMLeft2->AddEntry(h_TMeffiCls_recSE_MCE[3][3][maxEtaBinCaloDis[region[3]]],Form("%s (%s)",labels[3].Data(),partLabel[3].Data()),"p");
+        legendPtResMLeft2->AddEntry(h_TMeffiCls_recSE_MCE[4][3][maxEtaBinCaloDis[region[4]]],Form("%s (%s)",labels[4].Data(),partLabel[3].Data()),"p");
+      // drawLatexAdd(Form("#varepsilon_{TM} = N_{clus}^{matched} / N_{clus}"),0.14, 0.91-(1+nLinesCol)*textSizeLabelsRel*1.1,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+  
+  // for(Int_t iSet=0; iSet<nSets;iSet++){
+  //   DrawGammaSetMarker(h_cluster_NTowerMean_E[iSet], getCaloMarker(labels[iSet]), markerSizeSet[iSet], getCaloColor(labels[iSet],false), getCaloColor(labels[iSet],false));
+  //   h_cluster_NTowerMean_E[iSet]->Draw("same,hist,p");
+  //   legendPtResMLeft2->AddEntry(h_cluster_NTowerMean_E[iSet],labels[iSet].Data(),"p");
+  // }
+   legendPtResMLeft2->Draw();
+ // drawLatexAdd(Form("ECals"),0.10,0.88,textsizeLabelsMass,kFALSE,kFALSE,false);
+  drawLatexAdd(Form("b)"),0.97,0.19,textsizeLabelsMass,kFALSE,kFALSE,true);
+  histo2DAllEffiTM3->Draw("same,axis");
+
+  canvasGeoPaper->Update();
+  canvasGeoPaper->Print(Form("%s/ClusterTMEfficiency_Paper.%s",outputDir.Data(),suffix.Data()));
 
 
 

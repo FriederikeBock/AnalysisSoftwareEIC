@@ -637,7 +637,7 @@ void pi0resolution(
   TH2F * histo2DAllPi0FWHM    = new TH2F("histo2DAllPi0FWHM","histo2DAllPi0FWHM", 20, minPtPi0,maxPtPi0woMerged ,1000., -30, 40);
   SetStyleHistoTH2ForGraphs(histo2DAllPi0FWHM, "#it{E} (GeV)", "Peak width (MeV/#it{c}^{2})", 0.85*textsizeLabelsWidth, textsizeLabelsWidth,
                             0.85*textsizeLabelsWidth, textsizeLabelsWidth, 0.8,0.28/(textsizeFacWidth*margin),512,505);//#it{p}_{T} (GeV/#it{c})
-  histo2DAllPi0FWHM->GetYaxis()->SetRangeUser(0.1,11.5);//24.5);
+  histo2DAllPi0FWHM->GetYaxis()->SetRangeUser(0.1,8.5);//24.5);
   histo2DAllPi0FWHM->GetYaxis()->SetMoreLogLabels(kTRUE);
   histo2DAllPi0FWHM->GetYaxis()->SetNdivisions(505);
   histo2DAllPi0FWHM->GetYaxis()->SetNoExponent(kTRUE);
@@ -659,10 +659,12 @@ void pi0resolution(
         histSigmaEVsMinv[icalo]->Scale(1000);
         graphPi0FWHMMeV[icalo] = new TGraphAsymmErrors(histSigmaEVsMinv[icalo]);
         if(graphPi0FWHMMeV[icalo]){
-          if(icalo==2 || icalo==0){
-            while(graphPi0FWHMMeV[icalo]->GetX()[graphPi0FWHMMeV[icalo]->GetN()-1] > 25) graphPi0FWHMMeV[icalo]->RemovePoint(graphPi0FWHMMeV[icalo]->GetN()-1);
+          if(icalo==0){
+            while(graphPi0FWHMMeV[icalo]->GetX()[graphPi0FWHMMeV[icalo]->GetN()-1] > 16) graphPi0FWHMMeV[icalo]->RemovePoint(graphPi0FWHMMeV[icalo]->GetN()-1);
           } else if(icalo==1){
-            while(graphPi0FWHMMeV[icalo]->GetX()[graphPi0FWHMMeV[icalo]->GetN()-1] > 12) graphPi0FWHMMeV[icalo]->RemovePoint(graphPi0FWHMMeV[icalo]->GetN()-1);
+            while(graphPi0FWHMMeV[icalo]->GetX()[graphPi0FWHMMeV[icalo]->GetN()-1] > 10) graphPi0FWHMMeV[icalo]->RemovePoint(graphPi0FWHMMeV[icalo]->GetN()-1);
+          } else if(icalo==2){
+            while(graphPi0FWHMMeV[icalo]->GetX()[graphPi0FWHMMeV[icalo]->GetN()-1] > 25) graphPi0FWHMMeV[icalo]->RemovePoint(graphPi0FWHMMeV[icalo]->GetN()-1);
           }
             DrawGammaSetMarkerTGraphAsym(graphPi0FWHMMeV[icalo], markerStyleDet[icalo], markerSizeDet[icalo], colorDet[icalo] , colorDet[icalo]);
             // DrawGammaSetMarkerTGraphAsym(graphPi0FWHMMeV[i], markerStyleDet[i], markerSizeDet[i]*0.55, colorDet[0] , colorDet[0]);
@@ -736,11 +738,13 @@ void pi0resolution(
     if(caloactive[icalo] && histMeanEVsMinv[icalo]){
       histMeanEVsMinv[icalo]->Scale(1000);
       graphPi0Mass[icalo] = new TGraphAsymmErrors(histMeanEVsMinv[icalo]);
-      if(icalo==2 || icalo==0){
-          while(graphPi0Mass[icalo]->GetX()[graphPi0Mass[icalo]->GetN()-1] > 25) graphPi0Mass[icalo]->RemovePoint(graphPi0Mass[icalo]->GetN()-1);
-        } else if(icalo==1){
-          while(graphPi0Mass[icalo]->GetX()[graphPi0Mass[icalo]->GetN()-1] > 12) graphPi0Mass[icalo]->RemovePoint(graphPi0Mass[icalo]->GetN()-1);
-        }
+      if(icalo==0){
+        while(graphPi0Mass[icalo]->GetX()[graphPi0Mass[icalo]->GetN()-1] > 16) graphPi0Mass[icalo]->RemovePoint(graphPi0Mass[icalo]->GetN()-1);
+      } else if(icalo==1){
+        while(graphPi0Mass[icalo]->GetX()[graphPi0Mass[icalo]->GetN()-1] > 10) graphPi0Mass[icalo]->RemovePoint(graphPi0Mass[icalo]->GetN()-1);
+      } else if(icalo==2){
+        while(graphPi0Mass[icalo]->GetX()[graphPi0Mass[icalo]->GetN()-1] > 25) graphPi0Mass[icalo]->RemovePoint(graphPi0Mass[icalo]->GetN()-1);
+      }
       if(graphPi0Mass[icalo]){
         DrawGammaSetMarkerTGraphAsym(graphPi0Mass[icalo], markerStyleDet[icalo], markerSizeDet[icalo], getCaloColor(caloName[icalo],false), getCaloColor(caloName[icalo],false));
         graphPi0Mass[icalo]->Draw("p,same,e");
@@ -1131,7 +1135,7 @@ void pi0resolution(
   // canvasMergingFraction->SetLogx(1);
   // float minPtPi0MF = 5;
   TH2F * histo2DAccEff;
-  histo2DAccEff                = new TH2F("histo2DAccEff", "histo2DAccEff",1000, minPtPi0, maxPtPi0woMerged, 1000, 0, 1.09 );
+  histo2DAccEff                = new TH2F("histo2DAccEff", "histo2DAccEff",1000, minPtPi0, 44.9, 1000, 0, 1.24 );
   SetStyleHistoTH2ForGraphs( histo2DAccEff, "#it{E}_{#pi^{0}} (GeV)", "#it{f}_{merg.}",
                           0.85*textSizeLabelsRel, textSizeLabelsRel, 0.85*textSizeLabelsRel, textSizeLabelsRel, 0.9, 1, 510, 510,42,42);//(#times #epsilon_{pur})
   histo2DAccEff->GetYaxis()->SetLabelOffset(0.001);
@@ -1148,25 +1152,27 @@ void pi0resolution(
         // h_Pi0_mergedfraction[icalo]->Divide(h_Pi0Spec_total[icalo]);
         h_Pi0_mergedfraction[icalo]->Divide(h_Pi0_mergedfraction[icalo],h_Pi0Spec_total[icalo], 1, 1,"B" );
           DrawGammaSetMarker(h_Pi0_mergedfraction[icalo], markerStyleDet[icalo], 1.2*markerSizeDet[icalo], colorDet[icalo] , colorDet[icalo]);
-          if(icalo==1)h_Pi0_mergedfraction[icalo]->GetXaxis()->SetRangeUser(2,50);
-          if(icalo==0 || icalo==2)h_Pi0_mergedfraction[icalo]->GetXaxis()->SetRangeUser(5,50);
+          // if(icalo==1)h_Pi0_mergedfraction[icalo]->GetXaxis()->SetRangeUser(2,50);
+          // if(icalo==0 || icalo==2)h_Pi0_mergedfraction[icalo]->GetXaxis()->SetRangeUser(5,50);
           h_Pi0_mergedfraction[icalo]->Draw("same,p,e");
       }
   }
 
-  TLegend* legendPi0Merge           = GetAndSetLegend2(0.45, 0.13, 0.95, 0.13+(1*textSizeLabelsRel),0.9*textSizeLabelsPixel,3);
+  // TLegend* legendPi0Merge           = GetAndSetLegend2(0.45, 0.13, 0.95, 0.13+(1*textSizeLabelsRel),0.9*textSizeLabelsPixel,3);
+  TLegend* legendPi0Merge           = GetAndSetLegend2(0.46, 0.90, 0.96, 0.90+(1*textSizeLabelsRel),0.9*textSizeLabelsPixel,3);
   for (Int_t icalo = maxcalo-1; icalo > -1; icalo--){
       if(h_Pi0Spec_mergedclus[icalo]){
           legendPi0Merge->AddEntry(h_Pi0_mergedfraction[icalo],caloNamePlot[icalo].Data(),"p");
       }
   }
   legendPi0Merge->Draw();
-  float lowlegval = 0.20;
-  drawLatexAdd(perfLabel.Data(),0.95,lowlegval+0.05,textSizeLabelsRel,false,false,true);
-  // drawLatexAdd(collisionSystem.Data(),0.95,lowlegval+0.05,textSizeLabelsRel,false,false,true);
-  drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.95,lowlegval,textSizeLabelsRel,false,false,true);
+  float lowlegval = 0.86;
+  drawLatexAdd(perfLabel.Data(),0.14,lowlegval+0.05,textSizeLabelsRel,false,false,false);
+  drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.14,lowlegval,textSizeLabelsRel,false,false,false);
+  // drawLatexAdd(perfLabel.Data(),0.95,lowlegval+0.05,textSizeLabelsRel,false,false,true);
+  // drawLatexAdd("#pi^{0} #rightarrow #gamma#gamma",0.95,lowlegval,textSizeLabelsRel,false,false,true);
 
-  DrawGammaLines(minPtPi0, maxPtPi0woMerged, 1,1,2,kGray+1, 2);
+  DrawGammaLines(minPtPi0, 44.9, 1,1,2,kGray+1, 2);
 
 
   canvasMergingFraction->Update();

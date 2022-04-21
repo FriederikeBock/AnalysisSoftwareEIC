@@ -54,90 +54,104 @@ void pi0studies(){
 
       // calculations only necessary if at least two clusters are present
       h_NClus[icalo][ialgo]->Fill(_clusters_calo[ialgo][icalo].size());
-      if(_clusters_calo[ialgo][icalo].size() > 1){
-        bool processclusters = true;
-        // if(icalo==kFEMC){
-        //   if((_clusters_calo[ialgo][icalo].at(0)).cluster_Eta < 2.0) processclusters = false;
-        // } else if(icalo==kBECAL){
-        //   if(abs((_clusters_calo[ialgo][icalo].at(0)).cluster_Eta) > 0.5) processclusters = false;
-        // } else if(icalo==kEEMCG){
-        //   if(abs((_clusters_calo[ialgo][icalo].at(0)).cluster_Eta) > -2.0) processclusters = false;
-        // }
-        if(processclusters){
+      // if(_clusters_calo[ialgo][icalo].size() > 1){
+      //   bool processclusters = true;
+      //   // if(icalo==kFEMC){
+      //   //   if((_clusters_calo[ialgo][icalo].at(0)).cluster_Eta < 2.0) processclusters = false;
+      //   // } else if(icalo==kBECAL){
+      //   //   if(abs((_clusters_calo[ialgo][icalo].at(0)).cluster_Eta) > 0.5) processclusters = false;
+      //   // } else if(icalo==kEEMCG){
+      //   //   if(abs((_clusters_calo[ialgo][icalo].at(0)).cluster_Eta) > -2.0) processclusters = false;
+      //   // }
+      //   if(processclusters){
 
-          // try with x,y,z of cluster relative to smeared vertex
-          // float _vertex_x;
-          // float _vertex_y;
-          // float _vertex_z;
-          TVector3 vecClus1((_clusters_calo[ialgo][icalo].at(0)).cluster_X - _vertex_x,(_clusters_calo[ialgo][icalo].at(0)).cluster_Y - _vertex_y,(_clusters_calo[ialgo][icalo].at(0)).cluster_Z - _vertex_z);
-          // cout << vecClus1.Eta() << "\t" << (_clusters_calo[ialgo][icalo].at(0)).cluster_Eta << "\t" << _vertex_z << endl;
+      //     // try with x,y,z of cluster relative to smeared vertex
+      //     // float _vertex_x;
+      //     // float _vertex_y;
+      //     // float _vertex_z;
+      //     TVector3 vecClus1((_clusters_calo[ialgo][icalo].at(0)).cluster_X - _vertex_x,(_clusters_calo[ialgo][icalo].at(0)).cluster_Y - _vertex_y,(_clusters_calo[ialgo][icalo].at(0)).cluster_Z - _vertex_z);
+      //     // cout << vecClus1.Eta() << "\t" << (_clusters_calo[ialgo][icalo].at(0)).cluster_Eta << "\t" << _vertex_z << endl;
 
-          // try hybrid calo methods
+      //     // try hybrid calo methods
 
-          //pi0 reco efficiency
+      //     //pi0 reco efficiency
 
-          double Erec = (_clusters_calo[ialgo][icalo].at(0)).cluster_E + (_clusters_calo[ialgo][icalo].at(1)).cluster_E ;
-          double E1 = (_clusters_calo[ialgo][icalo].at(0)).cluster_E;
-          double E2 = (_clusters_calo[ialgo][icalo].at(1)).cluster_E;
-          double theta1 = 2*atan(exp(-(_clusters_calo[ialgo][icalo].at(0)).cluster_Eta));
-          double theta2 = 2*atan(exp(-(_clusters_calo[ialgo][icalo].at(1)).cluster_Eta));
-          double phi1   = (_clusters_calo[ialgo][icalo].at(0)).cluster_Phi;
-          double phi2   = (_clusters_calo[ialgo][icalo].at(1)).cluster_Phi;
+      //     double Erec = (_clusters_calo[ialgo][icalo].at(0)).cluster_E + (_clusters_calo[ialgo][icalo].at(1)).cluster_E ;
+      //     double E1 = (_clusters_calo[ialgo][icalo].at(0)).cluster_E;
+      //     double E2 = (_clusters_calo[ialgo][icalo].at(1)).cluster_E;
+      //     double theta1 = 2*atan(exp(-(_clusters_calo[ialgo][icalo].at(0)).cluster_Eta));
+      //     double theta2 = 2*atan(exp(-(_clusters_calo[ialgo][icalo].at(1)).cluster_Eta));
+      //     double phi1   = (_clusters_calo[ialgo][icalo].at(0)).cluster_Phi;
+      //     double phi2   = (_clusters_calo[ialgo][icalo].at(1)).cluster_Phi;
 
-          double pX1    = E1*sin(theta1)*cos(phi1);
-          double pY1    = E1*sin(theta1)*sin(phi1);
-          double pZ1    = E1*cos(theta1);
-          TLorentzVector photon1(pX1, pY1, pZ1, E1);
+      //     double pX1    = E1*sin(theta1)*cos(phi1);
+      //     double pY1    = E1*sin(theta1)*sin(phi1);
+      //     double pZ1    = E1*cos(theta1);
+      //     TLorentzVector photon1(pX1, pY1, pZ1, E1);
 
-          double pX2    = E2*sin(theta2)*cos(phi2);
-          double pY2    = E2*sin(theta2)*sin(phi2);
-          double pZ2    = E2*cos(theta2);
-          TLorentzVector photon2(pX2, pY2, pZ2, E2);
+      //     double pX2    = E2*sin(theta2)*cos(phi2);
+      //     double pY2    = E2*sin(theta2)*sin(phi2);
+      //     double pZ2    = E2*cos(theta2);
+      //     TLorentzVector photon2(pX2, pY2, pZ2, E2);
 
-          TLorentzVector pi0 = photon1 + photon2;
-          double Minv = pi0.M();
-          //cout << "====== M ========" << Minv << " " << photon1.M() << " " << photon1.Eta() << " " <<  (_clusters_calo[ialgo][icalo].at(0)).cluster_Eta  << " " << photon1.Phi() << " " << phi1 << endl;
-          //cout << "====== M ========" << Minv << " " << photon2.M() << " " << photon2.Eta() << " " <<  (_clusters_calo[ialgo][icalo].at(1)).cluster_Eta  << " " << photon2.Phi() << " " << phi2 << endl;
+      //     TLorentzVector pi0 = photon1 + photon2;
+      //     double Minv = pi0.M();
+      //     //cout << "====== M ========" << Minv << " " << photon1.M() << " " << photon1.Eta() << " " <<  (_clusters_calo[ialgo][icalo].at(0)).cluster_Eta  << " " << photon1.Phi() << " " << phi1 << endl;
+      //     //cout << "====== M ========" << Minv << " " << photon2.M() << " " << photon2.Eta() << " " <<  (_clusters_calo[ialgo][icalo].at(1)).cluster_Eta  << " " << photon2.Phi() << " " << phi2 << endl;
 
-          h_Erec_Minv[icalo][ialgo]->Fill(Erec,Minv);
-          // if(_mcpart_PDG[0]!=111) cout << "not a pion!" << endl;
-          // cout << _mcpart_E[(_clusters_calo[ialgo][icalo].at(0)).cluster_trueID] << endl;
-          if(hepMCavailable){
-            int bcid_clus1 = _mcpart_BCID[(_clusters_calo[ialgo][icalo].at(0)).cluster_trueID]-1; // -1 due to array filling
-            int bcid_clus2 = _mcpart_BCID[(_clusters_calo[ialgo][icalo].at(1)).cluster_trueID]-1; // -1 due to array filling
-            if(_hepmcp_m1[bcid_clus1]!=0){
-                // cout << "cls1\thepPDG \tMCPDG \tMotherPDG " << endl;
-                // cout << "\t" << _hepmcp_PDG[bcid_clus1] << "\t " << _mcpart_PDG[(_clusters_calo[ialgo][icalo].at(iclus1)).cluster_trueID]<< "\t " << _hepmcp_PDG[_hepmcp_m1[bcid_clus1]-1] << endl;
-              if(_hepmcp_PDG[_hepmcp_m1[bcid_clus1]-1]==111){
-                h_Etrue_Minv_allcls[icalo][ialgo]->Fill(_hepmcp_E[_hepmcp_m1[bcid_clus1]-1],Minv);
-              }
-            }
-            if(_hepmcp_m1[bcid_clus2]!=0){
-                // cout << "cls2\thepPDG \tMCPDG \tMotherPDG " << endl;
-                // cout << "\t" << _hepmcp_PDG[bcid_clus2] << "\t " << _mcpart_PDG[(_clusters_calo[ialgo][icalo].at(iclus2)).cluster_trueID]<< "\t " << _hepmcp_PDG[_hepmcp_m1[bcid_clus2]-1] << endl;
-              if(_hepmcp_PDG[_hepmcp_m1[bcid_clus2]-1]==111){
-                h_Etrue_Minv_allcls[icalo][ialgo]->Fill(_hepmcp_E[_hepmcp_m1[bcid_clus2]-1],Minv);
-              }
-            }
-          } else {
-            if(_mcpart_PDG[(_clusters_calo[ialgo][icalo].at(0)).cluster_trueID]==111){
-              h_Etrue_Minv[icalo][ialgo]->Fill(_mcpart_E[(_clusters_calo[ialgo][icalo].at(0)).cluster_trueID],Minv);
-            } else if(_mcpart_PDG[(_clusters_calo[ialgo][icalo].at(1)).cluster_trueID]==111){
-              h_Etrue_Minv[icalo][ialgo]->Fill(_mcpart_E[(_clusters_calo[ialgo][icalo].at(1)).cluster_trueID],Minv);
-            }
-          }
-          // get true pi0 candidates, as well as candidates with only one true contribution
-          bool passedMCcheck = false;
-          if(passedMCcheck){
+      //     h_Erec_Minv[icalo][ialgo]->Fill(Erec,Minv);
+      //     // if(_mcpart_PDG[0]!=111) cout << "not a pion!" << endl;
+      //     // cout << _mcpart_E[(_clusters_calo[ialgo][icalo].at(0)).cluster_trueID] << endl;
+      //     if(hepMCavailable){
+      //       int bcid_clus1 = _mcpart_BCID[(_clusters_calo[ialgo][icalo].at(0)).cluster_trueID]-1; // -1 due to array filling
+      //       int bcid_clus2 = _mcpart_BCID[(_clusters_calo[ialgo][icalo].at(1)).cluster_trueID]-1; // -1 due to array filling
+      //       if(_hepmcp_m1[bcid_clus1]!=0){
+      //           // cout << "cls1\thepPDG \tMCPDG \tMotherPDG " << endl;
+      //           // cout << "\t" << _hepmcp_PDG[bcid_clus1] << "\t " << _mcpart_PDG[(_clusters_calo[ialgo][icalo].at(iclus1)).cluster_trueID]<< "\t " << _hepmcp_PDG[_hepmcp_m1[bcid_clus1]-1] << endl;
+      //         if(_hepmcp_PDG[_hepmcp_m1[bcid_clus1]-1]==111){
+      //           h_Etrue_Minv_allcls[icalo][ialgo]->Fill(_hepmcp_E[_hepmcp_m1[bcid_clus1]-1],Minv);
+      //         }
+      //       }
+      //       if(_hepmcp_m1[bcid_clus2]!=0){
+      //           // cout << "cls2\thepPDG \tMCPDG \tMotherPDG " << endl;
+      //           // cout << "\t" << _hepmcp_PDG[bcid_clus2] << "\t " << _mcpart_PDG[(_clusters_calo[ialgo][icalo].at(iclus2)).cluster_trueID]<< "\t " << _hepmcp_PDG[_hepmcp_m1[bcid_clus2]-1] << endl;
+      //         if(_hepmcp_PDG[_hepmcp_m1[bcid_clus2]-1]==111){
+      //           h_Etrue_Minv_allcls[icalo][ialgo]->Fill(_hepmcp_E[_hepmcp_m1[bcid_clus2]-1],Minv);
+      //         }
+      //       }
+      //     } else {
+      //       if(_mcpart_PDG[(_clusters_calo[ialgo][icalo].at(0)).cluster_trueID]==111){
+      //         h_Etrue_Minv[icalo][ialgo]->Fill(_mcpart_E[(_clusters_calo[ialgo][icalo].at(0)).cluster_trueID],Minv);
+      //       } else if(_mcpart_PDG[(_clusters_calo[ialgo][icalo].at(1)).cluster_trueID]==111){
+      //         h_Etrue_Minv[icalo][ialgo]->Fill(_mcpart_E[(_clusters_calo[ialgo][icalo].at(1)).cluster_trueID],Minv);
+      //       }
+      //     }
+      //     // get true pi0 candidates, as well as candidates with only one true contribution
+      //     bool passedMCcheck = false;
+      //     if(passedMCcheck){
 
-          }
-        }
-      }
+      //     }
+      //   }
+      // }
 
       for(Int_t iclus1=0; iclus1<(Int_t)_clusters_calo[ialgo][icalo].size(); iclus1++){
         if(ialgo==kMA)_clusters_allcalo.push_back(_clusters_calo[ialgo][icalo].at(iclus1));
         // if((_clusters_calo[ialgo][icalo].at(iclus1)).cluster_NTowers<2) continue;
+        // if(icalo==kFEMC){
+        //   if((_clusters_calo[ialgo][icalo].at(iclus1)).cluster_Eta < 2.5) continue;
+        // } else if(icalo==kBECAL){
+        //   if(abs((_clusters_calo[ialgo][icalo].at(iclus1)).cluster_Eta) > 0.8) continue;
+        // } else if(icalo==kEEMCG){
+        //   if((_clusters_calo[ialgo][icalo].at(iclus1)).cluster_Eta > -2.5) continue;
+        // }
         for(Int_t iclus2=iclus1+1; iclus2<(Int_t)_clusters_calo[ialgo][icalo].size(); iclus2++){
+          // if(icalo==kFEMC){
+          //   if((_clusters_calo[ialgo][icalo].at(iclus2)).cluster_Eta < 2.5) continue;
+          // } else if(icalo==kBECAL){
+          //   if(abs((_clusters_calo[ialgo][icalo].at(iclus2)).cluster_Eta) > 0.8) continue;
+          // } else if(icalo==kEEMCG){
+          //   if(abs((_clusters_calo[ialgo][icalo].at(iclus2)).cluster_Eta) > -2.5) continue;
+          // }
           // if((_clusters_calo[ialgo][icalo].at(iclus2)).cluster_NTowers<2) continue;
           double Erec = (_clusters_calo[ialgo][icalo].at(iclus1)).cluster_E + (_clusters_calo[ialgo][icalo].at(iclus2)).cluster_E ;
           double E1 = (_clusters_calo[ialgo][icalo].at(iclus1)).cluster_E;
@@ -192,37 +206,98 @@ void pi0studies(){
 
 
       if(!hepMCavailable){ // this means it is a single particle simulation
+      // cout << "new evt" << endl;
         for(int imc=0; imc<_nMCPart; imc++){
           // approach is to find the cluster(s) for each generated pi0
+          // cout << _mcpart_PDG[imc] << "motherID: " << _mcpart_ID_parent[imc]<< endl;
           if(_mcpart_PDG[imc]==111){
-            TVector3 mcpartvec(_mcpart_px[imc],_mcpart_py[imc],_mcpart_pz[imc]);
-            float trueeta = _mcpart_Eta[imc];
-            if((trueeta<-3.2 || trueeta>-1.5) && icalo==kEEMC) continue;
+            // TVector3 mcpartvec(_mcpart_px[imc],_mcpart_py[imc],_mcpart_pz[imc]);
+            float trueetaPi0 = _mcpart_Eta[imc];
+            if((trueetaPi0<-2.5 || trueetaPi0>-1.5) && icalo==kEEMC) continue;
+            if((trueetaPi0<-1.2 || trueetaPi0>1.2) && icalo==kBECAL) continue;
+            if((trueetaPi0<1.6 || trueetaPi0>2.5) && icalo==kFEMC) continue;
+            if((trueetaPi0<2.0 || trueetaPi0>3.0) && icalo==kDRCALO) continue;
 
-            if((trueeta<-1.5 || trueeta>1.2) && icalo==kBECAL) continue;
-
-            if((trueeta<1.2 || trueeta>3.2) && icalo==kFEMC) continue;
-
-            int iclusfound = 0;
-            for(Int_t iclus1=0; iclus1<(Int_t)_clusters_calo[ialgo][icalo].size(); iclus1++){
-              if((_clusters_calo[ialgo][icalo].at(iclus1)).cluster_E > (0.05*_mcpart_E[imc])){
-                iclusfound++;
+            int gammasInAcc = 0;
+            TVector3 g1,g2;
+            for(int imc2=0; imc2<_nMCPart; imc2++){
+              if(_mcpart_ID_parent[imc2]==1 && _mcpart_PDG[imc2]==22){
+                // TVector3 mcpartvec2(_mcpart_px[imc2],_mcpart_py[imc2],_mcpart_pz[imc2]);
+                float trueetaGamma = _mcpart_Eta[imc2];
+                if((trueetaGamma<-2.5 || trueetaGamma>-1.5) && icalo==kEEMC) continue;
+                if((trueetaGamma<-1.2 || trueetaGamma>1.2) && icalo==kBECAL) continue;
+                if((trueetaGamma<1.6 || trueetaGamma>2.5) && icalo==kFEMC) continue;
+                if((trueetaGamma<2.0 || trueetaGamma>3.0) && icalo==kDRCALO) continue;
+                gammasInAcc++;
+                if(gammasInAcc==1) g1.SetXYZ(_mcpart_px[imc2],_mcpart_py[imc2],_mcpart_pz[imc2]);
+                else if(gammasInAcc==2) g2.SetXYZ(_mcpart_px[imc2],_mcpart_py[imc2],_mcpart_pz[imc2]);
               }
             }
-            if(iclusfound==1){
+            // both decay photons must be in calorimeter acceptance
+            if(gammasInAcc!=2){
+              // cout << "only " << gammasInAcc << " found" << endl;
+              continue;
+            }
+            bool ismerged = false;
+            float caloPos = 0;
+            switch (icalo){
+              case kFEMC:
+                caloPos = 315;
+                g1 *= caloPos/g1.Z();
+                g2 *= caloPos/g2.Z();
+                if((g1-g2).Mag()<sqrt(2*pow(2.5,2))) ismerged = true;
+                break;
+              case kEEMC:
+                caloPos = -240;
+                g1 *= caloPos/g1.Z();
+                g2 *= caloPos/g2.Z();
+                if((g1-g2).Mag()<sqrt(2*pow(3.2,2))) ismerged = true;
+                break;
+              case kBECAL:
+                caloPos = 64;
+                g1 *= caloPos/sqrt(pow(g1.X(),2)+pow(g1.Y(),2));
+                g2 *= caloPos/sqrt(pow(g2.X(),2)+pow(g2.Y(),2));
+                if((g1-g2).Mag()<sqrt(2*pow(4.0,2))) ismerged = true;
+                break;
+              case kDRCALO:
+                caloPos = 270;
+                g1 *= caloPos/g1.Z();
+                g2 *= caloPos/g2.Z();
+                if((g1-g2).Mag()<1.0) ismerged = true;
+                break;
+              default:
+                ismerged = false;
+                break;
+            }
+
+            if(ismerged){
               h_Pi0Spec_total[ialgo][icalo]->Fill(_mcpart_E[imc]);
               h_Pi0Spec_mergedclus[ialgo][icalo]->Fill(_mcpart_E[imc]);
-              h_Pi0Spec_total_Eta[ialgo][icalo]->Fill(_mcpart_E[imc],trueeta);
-              h_Pi0Spec_mergedclus_Eta[ialgo][icalo]->Fill(_mcpart_E[imc],trueeta);
-            } else if(iclusfound>1){
+              h_Pi0Spec_total_Eta[ialgo][icalo]->Fill(_mcpart_E[imc],trueetaPi0);
+              h_Pi0Spec_mergedclus_Eta[ialgo][icalo]->Fill(_mcpart_E[imc],trueetaPi0);
+            } else {
               h_Pi0Spec_total[ialgo][icalo]->Fill(_mcpart_E[imc]);
               h_Pi0Spec_separatecls[ialgo][icalo]->Fill(_mcpart_E[imc]);
-              h_Pi0Spec_total_Eta[ialgo][icalo]->Fill(_mcpart_E[imc],trueeta);
-              h_Pi0Spec_separatecls[ialgo][icalo]->Fill(_mcpart_E[imc],trueeta);
+              h_Pi0Spec_total_Eta[ialgo][icalo]->Fill(_mcpart_E[imc],trueetaPi0);
+              h_Pi0Spec_separatecls[ialgo][icalo]->Fill(_mcpart_E[imc],trueetaPi0);
             }
-            // TH1F*  h_Pi0Spec_total[_active_calo][_active_algo];
-            // TH1F*  h_Pi0Spec_separatecls[_active_calo][_active_algo];
-            // TH1F*  h_Pi0Spec_mergedclus[_active_calo][_active_algo];
+            // int iclusfound = 0;
+            // for(Int_t iclus1=0; iclus1<(Int_t)_clusters_calo[ialgo][icalo].size(); iclus1++){
+            //   if((_clusters_calo[ialgo][icalo].at(iclus1)).cluster_E > (0.05*_mcpart_E[imc])){
+            //     iclusfound++;
+            //   }
+            // }
+            // if(iclusfound==1){
+            //   h_Pi0Spec_total[ialgo][icalo]->Fill(_mcpart_E[imc]);
+            //   h_Pi0Spec_mergedclus[ialgo][icalo]->Fill(_mcpart_E[imc]);
+            //   h_Pi0Spec_total_Eta[ialgo][icalo]->Fill(_mcpart_E[imc],trueetaPi0);
+            //   h_Pi0Spec_mergedclus_Eta[ialgo][icalo]->Fill(_mcpart_E[imc],trueetaPi0);
+            // } else if(iclusfound>1){
+            //   h_Pi0Spec_total[ialgo][icalo]->Fill(_mcpart_E[imc]);
+            //   h_Pi0Spec_separatecls[ialgo][icalo]->Fill(_mcpart_E[imc]);
+            //   h_Pi0Spec_total_Eta[ialgo][icalo]->Fill(_mcpart_E[imc],trueetaPi0);
+            //   h_Pi0Spec_separatecls[ialgo][icalo]->Fill(_mcpart_E[imc],trueetaPi0);
+            // }
           }
         }
       }
