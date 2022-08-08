@@ -96,6 +96,26 @@ void towerEta(
   histoTowerMapDummy->Draw("axis,same");
   cReso->Print(Form("%s/towerGeometry.%s", outputDir.Data(), suffix.Data()));
 
+  histoTowerMapDummy->Draw();
+
+
+  for(Int_t ix=0;ix<77*2;ix++){
+    if((15+(5*ix))<265){
+      DrawGammaLines(0, 265, 15+5*ix, 15+5*ix, 1, kGray+2, 1);
+//       DrawGammaLines(5, 15, 15+5*ix, 15+5*ix, 1, kGray+2, 1);
+    }
+  }
+  for(Int_t iy=0;iy<77*2;iy++){
+    if((15+(5*iy))<265){
+      DrawGammaLines(15+5*iy, 15+5*iy, 0, 265, 1, kGray+2, 1);
+//       DrawGammaLines(15+5*iy, 15+5*iy, 5, 15, 1, kGray+2, 1);
+    }
+  }
+  
+  histoTowerMapDummy->Draw("axis,same");
+  cReso->Print(Form("%s/towerGeometry5cm.%s", outputDir.Data(), suffix.Data()));
+
+  
 
   TH2F* histoTowerMapDummy2   = new TH2F("histoTowerMapDummy2","histoTowerMapDummy2",266,-132.5, 132.5,266,0, 266.5);
   SetStyleHistoTH2ForGraphs(histoTowerMapDummy2, "#it{x} (cm)","#it{y} (cm)", 0.85*textSizeSinglePad,textSizeSinglePad, 0.85*textSizeSinglePad,textSizeSinglePad, 0.9,0.97);

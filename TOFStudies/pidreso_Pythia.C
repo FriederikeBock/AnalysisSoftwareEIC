@@ -35,9 +35,9 @@ void pidreso_Pythia(
                             TString inputFileName   = "file.root",
                             TString suffix          = "pdf",
                             TString addLabel        = "",
+                            Double_t tRes           = 25.,          
                             Bool_t properFit        = kTRUE,
                             Int_t trackCuts         = 0
-                            
 ){
 
   gROOT->Reset();
@@ -997,9 +997,9 @@ void pidreso_Pythia(
         
         drawLatexAdd(Form("%1.1f < #eta < %1.1f",partEta[minEtaBinTTL[eR]],partEta[maxEtaBinTTL[eR]+1]),0.85,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         if (pid != 0) 
-          drawLatexAdd(Form("w/ t_{0}, %s", partLabel[pid].Data()),0.85,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          drawLatexAdd(Form("w/ t_{0}, #Deltat = %2.0f ps, %s", tRes, partLabel[pid].Data()),0.85,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         else
-          drawLatexAdd("w/ t_{0}",0.85, 0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          drawLatexAdd(Form("w/ t_{0}, #Deltat = %2.0f ps", tRes ),0.85, 0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         drawLatexAdd(perfLabel,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         drawLatexAdd(collisionSystem,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.91-2*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
@@ -1030,7 +1030,7 @@ void pidreso_Pythia(
           legendPIDSummary->Draw();
         
           drawLatexAdd(Form("%1.1f < #eta < %1.1f",partEta[minEtaBinTTL[eR]],partEta[maxEtaBinTTL[eR]+1]),0.85,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd("w/ t_{0}",0.85, 0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          drawLatexAdd(Form("w/ t_{0}, #Deltat = %2.0f ps", tRes ),0.85, 0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
           drawLatexAdd(perfLabel,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
           drawLatexAdd(collisionSystem,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
           if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.91-2*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
@@ -1054,7 +1054,7 @@ void pidreso_Pythia(
           legendPIDSummary->Draw();
         
           drawLatexAdd(Form("%1.1f < #eta < %1.1f",partEta[minEtaBinTTL[eR]],partEta[maxEtaBinTTL[eR]+1]),0.85,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-          drawLatexAdd("w/ t_{0}",0.85, 0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+          drawLatexAdd(Form("w/ t_{0}, #Deltat = %2.0f ps", tRes ),0.85, 0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
           drawLatexAdd(perfLabel,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
           drawLatexAdd(collisionSystem,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
           if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.91-2*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
@@ -1088,9 +1088,9 @@ void pidreso_Pythia(
       
           drawLatexAdd(Form("%1.1f < #eta < %1.1f",partEta[minEtaBinTTL[eR]],partEta[maxEtaBinTTL[eR]+1]),0.85,0.91-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
           if (pid != 0) 
-            drawLatexAdd(Form("w/ t_{0}, %s", partLabel[pid].Data()),0.85,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            drawLatexAdd(Form("w/ t_{0}, #Deltat = %2.0f ps, %s", tRes, partLabel[pid].Data()),0.85,0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
           else
-            drawLatexAdd("w/ t_{0}",0.85, 0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+            drawLatexAdd(Form("w/ t_{0}, #Deltat = %2.0f ps", tRes ),0.85, 0.91-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
           drawLatexAdd(perfLabel,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
           drawLatexAdd(collisionSystem,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
           if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.91-2*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
@@ -1120,7 +1120,7 @@ void pidreso_Pythia(
       hBetaVsPDet[eR]->Draw("colz");
     
       drawLatexAdd(Form("%1.1f < #eta < %1.1f",nominalEtaRegion[eR][0],nominalEtaRegion[eR][1]),0.14,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-      drawLatexAdd("w/ t_{0}",0.14,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+      drawLatexAdd(Form("w/ t_{0}, #Deltat = %2.0f ps", tRes ),0.14,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
       drawLatexAdd(perfLabel,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       drawLatexAdd(collisionSystem,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.91-2*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
@@ -1171,7 +1171,7 @@ void pidreso_Pythia(
         hResBetaVsPDet_wT0[eR][pid]->Draw("colz");
       
         drawLatexAdd(Form("%1.1f < #eta < %1.1f",nominalEtaRegion[eR][0],nominalEtaRegion[eR][1]),0.14,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
-        drawLatexAdd("w/ t_{0}", 0.14,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+        drawLatexAdd(Form("w/ t_{0}, #Deltat = %2.0f ps", tRes ), 0.14,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
         drawLatexAdd(perfLabel,0.85,0.91,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         drawLatexAdd(collisionSystem,0.85,0.91-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
         if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.85,0.91-2*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
@@ -1331,9 +1331,9 @@ void pidreso_Pythia(
       drawLatexAdd(collisionSystem,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-2*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
       if (pid != 0) 
-        drawLatexAdd(Form("w/ t_{0}, %s",partLabel[pid].Data()),0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        drawLatexAdd(Form("w/ t_{0}, #Deltat = %2.0f ps, %s",tRes, partLabel[pid].Data()),0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       else 
-        drawLatexAdd("w/ t_{0}",0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        drawLatexAdd(Form("w/ t_{0}, #Deltat = %2.0f ps", tRes ),0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
       cReso->Print(Form("%s/BetaResolutionWithT0_%s_Sigma_p_%s.%s", outputDirOverview.Data(), partName[pid].Data(), nameOutEtaRange[eR].Data(), suffix.Data() ));
     }
     
@@ -1377,7 +1377,7 @@ void pidreso_Pythia(
     drawLatexAdd(collisionSystem,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-2*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
     drawLatexAdd(Form("%1.1f < #eta < %1.1f",etaMin,etaMax),0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    drawLatexAdd("w/ t_{0}",0.95,0.88-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("w/ t_{0}, #Deltat = %2.0f ps", tRes ),0.95,0.88-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/BetaResolutionWithT0PID_Sigma_p_%d_%d.%s", outputDir.Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
 
     histoDummyBetaResMean->Draw();
@@ -1405,7 +1405,7 @@ void pidreso_Pythia(
     drawLatexAdd(collisionSystem,0.95,0.88-0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.88-2*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
     drawLatexAdd(Form("%1.1f < #eta < %1.1f",etaMin,etaMax),0.95,0.88-(nLinesCol+1)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
-    drawLatexAdd("w/ t_{0}",0.95,0.88-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+    drawLatexAdd(Form("w/ t_{0}, #Deltat = %2.0f ps", tRes ),0.95,0.88-(nLinesCol+2)*0.85*textSizeLabelsRel,0.85*textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
     cReso->Print(Form("%s/BetaResolutionWithT0PID_Mean_p_%d_%d.%s", outputDir.Data(), (Int_t)(etaMin*10), (Int_t)(etaMax*10), suffix.Data()));
   }
 
@@ -1457,6 +1457,7 @@ void pidreso_Pythia(
     h_InitT0DiffVsNtrk[tl]->Draw("col");
     
     if(tl == 1)  drawLatexAdd(perfLabel,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if(tl == 1)  drawLatexAdd(Form("#Deltat = %2.0f ps", tRes ),0.93,0.88-textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
     if(tl == 0)  drawLatexAdd(collisionSystem,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
     if(tl == 0 && pTHard.CompareTo("") != 0 )  drawLatexAdd(pTHard,0.93,0.88-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);    
     if (tl == 0)drawLatexAdd(Form("%1.2f%s events w/ scat. e^{-}", h_InitT0DiffVsNtrk[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
@@ -1477,6 +1478,7 @@ void pidreso_Pythia(
     h_T0VsNtrk[tl]->Draw("col");
     
     if(tl == 1)  drawLatexAdd(perfLabel,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if(tl == 1)  drawLatexAdd(Form("#Deltat = %2.0f ps", tRes ),0.93,0.88-textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
     if(tl == 0)  drawLatexAdd(collisionSystem,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
     if(tl == 0 && pTHard.CompareTo("") != 0 )  drawLatexAdd(pTHard,0.93,0.88-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);    
     if (tl == 0)drawLatexAdd(Form("%1.2f%s events w/ scat. e^{-}", h_T0VsNtrk[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
@@ -1497,6 +1499,7 @@ void pidreso_Pythia(
     h_T0DiffVsNtrk[tl]->Draw("col");
     
     if(tl == 1)  drawLatexAdd(perfLabel,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if(tl == 1)  drawLatexAdd(Form("#Deltat = %2.0f ps", tRes ),0.93,0.88-textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
     if(tl == 0)  drawLatexAdd(collisionSystem,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
     if(tl == 0 && pTHard.CompareTo("") != 0 )  drawLatexAdd(pTHard,0.93,0.88-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);    
     if (tl == 0)drawLatexAdd(Form("%1.2f%s events w/ scat. e^{-}", h_T0DiffVsNtrk[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
@@ -1520,6 +1523,7 @@ void pidreso_Pythia(
     h_InitT0VsNttl[tl]->Draw("col");
     
     if(tl == 1)  drawLatexAdd(perfLabel,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if(tl == 1)  drawLatexAdd(Form("#Deltat = %2.0f ps", tRes ),0.93,0.88-textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
     if(tl == 0)  drawLatexAdd(collisionSystem,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
     if(tl == 0 && pTHard.CompareTo("") != 0 )  drawLatexAdd(pTHard,0.93,0.88-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);    
     if (tl == 0)drawLatexAdd(Form("%1.2f%s events w/ scat. e^{-}", h_InitT0VsNttl[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
@@ -1540,6 +1544,7 @@ void pidreso_Pythia(
     h_InitT0DiffVsNttl[tl]->Draw("col");
     
     if(tl == 1)  drawLatexAdd(perfLabel,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if(tl == 1)  drawLatexAdd(Form("#Deltat = %2.0f ps", tRes ),0.93,0.88-textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
     if(tl == 0)  drawLatexAdd(collisionSystem,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
     if(tl == 0 && pTHard.CompareTo("") != 0 )  drawLatexAdd(pTHard,0.93,0.88-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);    
     if (tl == 0)drawLatexAdd(Form("%1.2f%s events w/ scat. e^{-}", h_InitT0DiffVsNttl[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
@@ -1560,6 +1565,7 @@ void pidreso_Pythia(
     h_T0VsNttl[tl]->Draw("col");
     
     if(tl == 1)  drawLatexAdd(perfLabel,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if(tl == 1)  drawLatexAdd(Form("#Deltat = %2.0f ps", tRes ),0.93,0.88-textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
     if(tl == 0)  drawLatexAdd(collisionSystem,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
     if(tl == 0 && pTHard.CompareTo("") != 0 )  drawLatexAdd(pTHard,0.93,0.88-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);    
     if (tl == 0)drawLatexAdd(Form("%1.2f%s events w/ scat. e^{-}", h_T0VsNttl[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
@@ -1580,6 +1586,7 @@ void pidreso_Pythia(
     h_T0DiffVsNttl[tl]->Draw("col");
     
     if(tl == 1)  drawLatexAdd(perfLabel,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+    if(tl == 1)  drawLatexAdd(Form("#Deltat = %2.0f ps", tRes ),0.93,0.88-textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
     if(tl == 0)  drawLatexAdd(collisionSystem,0.93,0.88,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
     if(tl == 0 && pTHard.CompareTo("") != 0 )  drawLatexAdd(pTHard,0.93,0.88-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);    
     if (tl == 0)drawLatexAdd(Form("%1.2f%s events w/ scat. e^{-}", h_T0DiffVsNttl[tl]->GetEntries()/nEvents*100,"%"),0.93, 0.16,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
@@ -1629,6 +1636,7 @@ void pidreso_Pythia(
         drawLatexAdd(perfLabel,0.93,0.91-2*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
       } else {
          drawLatexAdd(perfLabel,0.93,0.91-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+         drawLatexAdd(Form("#Deltat = %2.0f ps", tRes ),0.93,0.91-2*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
       }
       drawLatexAdd("w/o scat. e^{-}",0.16, 0.91,textSizeSinglePad,kFALSE,kFALSE,kFALSE);
     }
@@ -1677,6 +1685,7 @@ void pidreso_Pythia(
       drawLatexAdd(perfLabel,0.94,0.91-2*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
     } else {
       drawLatexAdd(perfLabel,0.94,0.91-1*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
+      drawLatexAdd(Form("#Deltat = %2.0f ps", tRes ),0.94,0.91-2*textSizeSinglePad,textSizeSinglePad,kFALSE,kFALSE,kTRUE);
     }
     drawLatexAdd("w/ scat. e^{-}",0.16, 0.91,textSizeSinglePad,kFALSE,kFALSE,kFALSE);
     legendIterT0->Draw();
@@ -1765,8 +1774,8 @@ void pidreso_Pythia(
 //   drawLatexAdd("#it{p}_{true}",0.65,0.30,textSizeLabelsRel,false,false,false);
   drawLatexAdd(perfLabel.Data(),0.14,toplegval,textSizeLabelsRel,false,false,false);
   drawLatexAdd(collisionSystem.Data(),0.14,toplegval-0.05,textSizeLabelsRel,false,false,false);
-  drawLatexAdd("AC-LGAD",0.14,toplegval-0.05*2,textSizeLabelsRel,false,false,false);
-
+  drawLatexAdd(Form("AC-LGAD, #Deltat = %2.0f ps", tRes ),0.14,toplegval-0.05*2,textSizeLabelsRel,false,false,false);
+  
   canvasEoverPRejection->Update();
   canvasEoverPRejection->Print(Form("%s/pionrejection_TOF.%s",outputDir.Data(),suffix.Data()));
   

@@ -25,6 +25,7 @@ void hitstudies(unsigned short primaryTrackSource){
   // *****************************************************************************************************
   if (! histsCreatedHITS){
     for(int il=0;il<_maxProjectionLayers;il++){
+      if (!enableLayerHist[il]) continue;
       if(!h_hits_layer_etaphi[il])h_hits_layer_etaphi[il]             = new TH2F(Form("h_hits_layer_etaphi_%s", GetProjectionNameFromIndex(layerIndexHist[il]).Data()), "", 450, -4.5 , 4.5,300, -TMath::Pi(),TMath::Pi());
       if(!h_trackProj_layer_etaphi[il])h_trackProj_layer_etaphi[il]   = new TH2F(Form("h_trackProj_layer_etaphi_%s", GetProjectionNameFromIndex(layerIndexHist[il]).Data()), "", 450, -4.5 , 4.5,300, -TMath::Pi(),TMath::Pi());
       if(!h_hitslayer_vs_tracks[il])h_hitslayer_vs_tracks[il]         = new TH2F(Form("h_hitslayer_vs_tracks_%s", GetProjectionNameFromIndex(layerIndexHist[il]).Data()), "", 100, 0 , 100,100, 0 , 100);
@@ -62,8 +63,8 @@ void hitstudies(unsigned short primaryTrackSource){
     if(verbosityHITS>1) std::cout << "layer index: \t" << histIndex << "\t" << _hits_layerID[ihit] << std::endl;
     if( histIndex<_maxProjectionLayers){
       if (GetRegionFromIndex(_hits_layerID[ihit]) != 1) 
-        h_hits_layer_xy[histIndex]->Fill(_hits_x[ihit],_hits_y[ihit]);
-      h_hits_layer_etaphi[histIndex]->Fill(hiteta,hitphi);
+        if (h_hits_layer_xy[histIndex])h_hits_layer_xy[histIndex]->Fill(_hits_x[ihit],_hits_y[ihit]);
+      if (h_hits_layer_etaphi[histIndex])h_hits_layer_etaphi[histIndex]->Fill(hiteta,hitphi);
     }
   }
   // *****************************************************************************************************
@@ -84,6 +85,7 @@ void hitstudies(unsigned short primaryTrackSource){
   // correlate hits in different layers with tracks/cluster 
   // *****************************************************************************************************
   for(int ik = 0; ik < (int)_maxProjectionLayers; ik++){
+    if (!enableLayerHist[ik]) continue;
     h_hitslayer_vs_tracks[ik]->Fill(ihitslayer[ik], itracks[GetRegionFromIndex(ik)]);
     if (IsCaloProjection(layerIndexHist[ik]) || HasTimingLayer(layerIndexHist[ik]) ){
       for(int icalo=0;icalo<_active_calo;icalo++){
@@ -107,11 +109,10 @@ void hitstudies(unsigned short primaryTrackSource){
 
     Int_t histIndex = ReturnIndexForwardLayer(_track_ProjLayer[iproj]);
     if (histIndex == -1) continue;
-    
     if( histIndex<_maxProjectionLayers){
       if (GetRegionFromIndex(_track_ProjLayer[iproj]) != 1)       
-        h_trackProj_layer_xy[histIndex]->Fill(_track_Proj_x[iproj],_track_Proj_y[iproj]);
-      h_trackProj_layer_etaphi[histIndex]->Fill(projeta,projphi);
+        if (h_trackProj_layer_xy[histIndex]) h_trackProj_layer_xy[histIndex]->Fill(_track_Proj_x[iproj],_track_Proj_y[iproj]);
+      if (h_trackProj_layer_etaphi[histIndex]) h_trackProj_layer_etaphi[histIndex]->Fill(projeta,projphi);
     }
   }
 
@@ -127,6 +128,7 @@ void hitstudiesSave(){
 
   // write histograms
   for(int il=0;il<_maxProjectionLayers;il++){
+    if (!enableLayerHist[il]) continue;    
     fileOutput->mkdir(GetProjectionNameFromIndex(layerIndexHist[il]).Data());
     fileOutput->cd(GetProjectionNameFromIndex(layerIndexHist[il]).Data());
     if (h_hits_layer_xy[il]) h_hits_layer_xy[il]->Scale(1/_nEventsTree);

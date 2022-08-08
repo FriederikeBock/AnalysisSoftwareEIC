@@ -89,12 +89,13 @@ void clustereffi(
   Double_t textSizeSinglePad        = 0.05;
   Double_t textSizeLabelsPixel      = 35;
   Double_t textSizeLabelsRel        = 58./1300;
-  Bool_t debugOutput = kFALSE;
+  Bool_t debugOutput = 1;
   
   Int_t nActiceCl     = 6;
   Int_t nMaxClPart    = 10;
   Int_t nMaxTowCl     = 30;
   Int_t region        = 2;
+  Int_t caloID        = 0;
   TString caloPlot = calo.Data();
   if (calo.CompareTo("FEMC") == 0){
     nActiceCl     = 2;
@@ -103,6 +104,7 @@ void clustereffi(
     nMaxClPart    = 5;
     nMaxTowCl     = 80;
     region        = 2;
+    caloID        = 2;
   } else if (calo.CompareTo("LFHCAL") == 0){
     nActiceCl     = 2;
     enableClus[2] = 1;
@@ -110,6 +112,7 @@ void clustereffi(
     nMaxClPart    = 5;
     nMaxTowCl     = 250;
     region        = 2;
+    caloID        = 6;
   } else if (calo.CompareTo("BECAL") == 0){
     nActiceCl     = 2;
     enableClus[2] = 1;
@@ -118,6 +121,7 @@ void clustereffi(
     nMaxTowCl     = 70;
     region        = 1;
     caloPlot      = "BEMC";
+    caloID        = 1;
   } else if (calo.CompareTo("HCALIN") == 0){
     nActiceCl     = 2;
     enableClus[2] = 1;
@@ -126,6 +130,7 @@ void clustereffi(
     nMaxTowCl     = 8;
     region        = 1;
     caloPlot      = "IHCAL";
+    caloID        = 4;
   } else if (calo.CompareTo("HCALOUT") == 0){
     nActiceCl     = 2;
     enableClus[2] = 1;
@@ -134,6 +139,7 @@ void clustereffi(
     nMaxTowCl     = 20;
     region        = 1;
     caloPlot      = "OHCAL";
+    caloID        = 5;
   } else if (calo.CompareTo("EEMC") == 0){
     nActiceCl     = 2;
     enableClus[2] = 1;
@@ -141,6 +147,7 @@ void clustereffi(
     nMaxClPart    = 5;
     nMaxTowCl     = 70;
     region        = 0;
+    caloID        = 0;
   } else if (calo.CompareTo("EHCAL") == 0){
     nActiceCl     = 2;
     enableClus[2] = 1;
@@ -148,9 +155,17 @@ void clustereffi(
     nMaxClPart    = 5;
     nMaxTowCl     = 70;
     region        = 0;
+    caloID        = 3;
   }
   for (Int_t iCl = 0; iCl < nClusProcess; iCl++) gSystem->Exec("mkdir -p "+outputDir+"/"+caloPlot+nameClus[iCl]);
 
+  Double_t nomEtaMin     = nominalEtaRegion[region][0];
+  Double_t nomEtaMax     = nominalEtaRegion[region][1];
+  if (calo.CompareTo("HCALOUT") == 0)
+    nomEtaMin     = -1.1;
+  else if (calo.CompareTo("HCALIN") == 0)
+    nomEtaMin     = -1.3;
+  
   Int_t nActiveEta            = maxNEtaBinsFull[region]+1;
 
   TH1D* h_spectra_MC_E[nPID][nEta+1]              = {{NULL}};
@@ -175,6 +190,29 @@ void clustereffi(
   TH1D* h_effi_recSE_MCE[nPID][nEta+1][nClus]     = {{{NULL}}};
   TH1D* h_TMeffi_recSE_MCE[nPID][nEta+1][nClus]     = {{{NULL}}};
   TH1D* h_TMeffiCls_recSE_MCE[nPID][nEta+1][nClus]     = {{{NULL}}};
+  
+  TH1D* hSP_spectra_MC_E[nPID][3]                   = {{NULL}};
+  TH1D* hSP_spectraTr_MC_E[nPID][3]                 = {{NULL}};
+  TH1D* hSP_spectraCl_rec_E[nPID][3][nClus]         = {{{NULL}}};
+  TH1D* hSP_spectraCl_rec_MCE[nPID][3][nClus]       = {{{NULL}}};
+  TH1D* hSP_spectraCl_recSE_E[nPID][3][nClus]       = {{{NULL}}};
+  TH1D* hSP_spectraCl_recSE_MCE[nPID][3][nClus]     = {{{NULL}}};
+  TH1D* hSP_spectraCl_matched_recSE_MCE[nPID][3][nClus]  = {{{NULL}}};
+  
+  TH1D* hSP_spectraReb_MC_E[nPID][3]                = {{NULL}};
+  TH1D* hSP_spectraTrReb_MC_E[nPID][3]              = {{NULL}};
+  TH1D* hSP_spectraClReb_rec_E[nPID][3][nClus]      = {{{NULL}}};
+  TH1D* hSP_spectraClReb_rec_MCE[nPID][3][nClus]    = {{{NULL}}};
+  TH1D* hSP_spectraClReb_recSE_E[nPID][3][nClus]    = {{{NULL}}};
+  TH1D* hSP_spectraClReb_recSE_MCE[nPID][3][nClus]  = {{{NULL}}};
+  TH1D* hSP_spectraClReb_matched_recSE_MCE[nPID][3][nClus] = {{{NULL}}};
+
+  TH1D* hSP_effi_rec_E[nPID][3][nClus]              = {{{NULL}}};
+  TH1D* hSP_effi_rec_MCE[nPID][3][nClus]            = {{{NULL}}};
+  TH1D* hSP_effi_recSE_E[nPID][3][nClus]            = {{{NULL}}};
+  TH1D* hSP_effi_recSE_MCE[nPID][3][nClus]          = {{{NULL}}};
+  TH1D* hSP_TMeffi_recSE_MCE[nPID][3][nClus]        = {{{NULL}}};
+  TH1D* hSP_TMeffiCls_recSE_MCE[nPID][3][nClus]     = {{{NULL}}};
   
   TH2F* h_trackMapMC_eta_E[nPID]                = {NULL};
   TH2F* h_trackMapTr_eta_E[nPID]                = {NULL};
@@ -233,8 +271,8 @@ void clustereffi(
   }
   
   for (Int_t iEta=0; iEta<maxEtaBinCaloDis[region]+1;iEta++){
-    Double_t etaMin = partEta[minEtaBinCaloDis[region]];
-    Double_t etaMax = partEta[maxEtaBinCaloDis[region]];
+    Double_t etaMin = nomEtaMin;
+    Double_t etaMax = nomEtaMax;
     if (iEta < maxEtaBinCaloDis[region]){
       etaMin = partEta[iEta];
       etaMax = partEta[iEta+1];
@@ -329,6 +367,101 @@ void clustereffi(
       }
     }
   }
+
+  for (Int_t iEta=0; iEta<3;iEta++){
+    Double_t etaMin = partEtaSpecCalo[caloID][iEta];
+    Double_t etaMax = partEtaSpecCalo[caloID][iEta+1];
+    if (etaMin == -1000. || etaMax == -1000. ) continue;
+    if (debugOutput)std::cout << "Special   \t"<< Form("%1.1f < #it{#eta} < %1.1f",etaMin,etaMax)  << std::endl;
+    
+    for (Int_t pid = 1; pid < nPID; pid++){
+      if (!enableParticle[pid]) continue;
+      hSP_spectra_MC_E[pid][iEta]          = (TH1D*)h_trackMapMC_eta_E[pid]->ProjectionX(Form("Special_spectraMC%s_MCE_%d",partName[pid].Data(), iEta), 
+                                                                          h_trackMapMC_eta_E[pid]->GetYaxis()->FindBin(etaMin+0.001), h_trackMapMC_eta_E[pid]->GetYaxis()->FindBin(etaMax-0.001),"e");       
+      hSP_spectraReb_MC_E[pid][iEta]       = (TH1D*)hSP_spectra_MC_E[pid][iEta]->Rebin(nP-2, Form("Special_spectraRebMC%s_MCE_%d",partName[pid].Data(), iEta),
+                                                                                          partP);
+      NormalizeByBinWidth(hSP_spectra_MC_E[pid][iEta]);
+      NormalizeByBinWidth(hSP_spectraReb_MC_E[pid][iEta]);
+      DrawGammaSetMarker(hSP_spectra_MC_E[pid][iEta], markerCaloPlotSP[caloID][iEta], 1.5*sizeCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta]);
+      DrawGammaSetMarker(hSP_spectraReb_MC_E[pid][iEta], markerCaloPlotSP[caloID][iEta], 1.5*sizeCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta]);
+      
+      hSP_spectraTr_MC_E[pid][iEta]          = (TH1D*)h_trackMapTr_eta_E[pid]->ProjectionX(Form("Special_spectraTRMC%s_MCE_%d",partName[pid].Data(), iEta), 
+                                                                          h_trackMapTr_eta_E[pid]->GetYaxis()->FindBin(etaMin+0.001), h_trackMapTr_eta_E[pid]->GetYaxis()->FindBin(etaMax-0.001),"e");       
+      hSP_spectraTrReb_MC_E[pid][iEta]       = (TH1D*)hSP_spectraTr_MC_E[pid][iEta]->Rebin(nP-2, Form("Special_spectraTRRebMC%s_MCE_%d",partName[pid].Data(), iEta),
+                                                                                          partP);
+      NormalizeByBinWidth(hSP_spectraTr_MC_E[pid][iEta]);
+      NormalizeByBinWidth(hSP_spectraTrReb_MC_E[pid][iEta]);
+      DrawGammaSetMarker(hSP_spectraTr_MC_E[pid][iEta], markerCaloPlotSP[caloID][iEta], 1.5*sizeCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta]);
+      DrawGammaSetMarker(hSP_spectraTrReb_MC_E[pid][iEta], markerCaloPlotSP[caloID][iEta], 1.5*sizeCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta]);
+      
+      for (Int_t iCl = 0; iCl < nClusProcess; iCl++){
+        if (enableRecE){
+          hSP_spectraCl_rec_E[pid][iEta][iCl]          = (TH1D*)h_clusterMapRec_eta_E[pid][iCl]->ProjectionX(Form("Special_spectraClRec%s_E_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()), 
+                                                                              h_clusterMapRec_eta_E[pid][iCl]->GetYaxis()->FindBin(etaMin+0.001), h_clusterMapRec_eta_E[pid][iCl]->GetYaxis()->FindBin(etaMax-0.001),"e");       
+          hSP_spectraClReb_rec_E[pid][iEta][iCl]       = (TH1D*)hSP_spectraCl_rec_E[pid][iEta][iCl]->Rebin(nP-2, Form("Special_spectraClRecReb%s_E_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()),
+                                                                                              partP);
+          NormalizeByBinWidth(hSP_spectraCl_rec_E[pid][iEta][iCl]);
+          NormalizeByBinWidth(hSP_spectraClReb_rec_E[pid][iEta][iCl]);
+          DrawGammaSetMarker(hSP_spectraCl_rec_E[pid][iEta][iCl], markerCaloPlotSP[caloID][iEta], 1.5*sizeCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta]);
+          DrawGammaSetMarker(hSP_spectraClReb_rec_E[pid][iEta][iCl], markerCaloPlotSP[caloID][iEta], 1.5*sizeCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta]);
+        
+          hSP_spectraCl_recSE_E[pid][iEta][iCl]          = (TH1D*)h_clusterMapSERec_eta_E[pid][iCl]->ProjectionX(Form("Special_spectraClRecSE%s_E_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()), 
+                                                                              h_clusterMapSERec_eta_E[pid][iCl]->GetYaxis()->FindBin(etaMin+0.001), h_clusterMapSERec_eta_E[pid][iCl]->GetYaxis()->FindBin(etaMax-0.001),"e");       
+          hSP_spectraClReb_recSE_E[pid][iEta][iCl]       = (TH1D*)hSP_spectraCl_recSE_E[pid][iEta][iCl]->Rebin(nP-2, Form("Special_spectraClRecSEReb%s_E_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()),
+                                                                                              partP);
+          NormalizeByBinWidth(hSP_spectraCl_recSE_E[pid][iEta][iCl]);
+          NormalizeByBinWidth(hSP_spectraClReb_recSE_E[pid][iEta][iCl]);
+          DrawGammaSetMarker(hSP_spectraCl_recSE_E[pid][iEta][iCl], markerCaloPlotSP[caloID][iEta], 1.5*sizeCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta]);
+          DrawGammaSetMarker(hSP_spectraClReb_recSE_E[pid][iEta][iCl], markerCaloPlotSP[caloID][iEta], 1.5*sizeCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta]);
+
+          hSP_effi_rec_E[pid][iEta][iCl]             = (TH1D*)hSP_spectraClReb_rec_E[pid][iEta][iCl]->Clone(Form("Special_effi%s_E_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()));
+          hSP_effi_rec_E[pid][iEta][iCl]->Divide(hSP_spectraClReb_rec_E[pid][iEta][iCl],hSP_spectraReb_MC_E[pid][iEta],1,1,"B");
+          hSP_effi_recSE_E[pid][iEta][iCl]             = (TH1D*)hSP_spectraClReb_recSE_E[pid][iEta][iCl]->Clone(Form("Special_effiSE%s_E_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()));
+          hSP_effi_recSE_E[pid][iEta][iCl]->Divide(hSP_spectraClReb_recSE_E[pid][iEta][iCl],hSP_spectraReb_MC_E[pid][iEta],1,1,"B");
+        }
+        hSP_spectraCl_rec_MCE[pid][iEta][iCl]          = (TH1D*)h_clusterMapMC_eta_E[pid][iCl]->ProjectionX(Form("Special_spectraClRec%s_MCE_%d_%s",partName[pid].Data(), iEta,
+                                                                                                                nameClus[iCl].Data()), 
+                                                                            h_clusterMapMC_eta_E[pid][iCl]->GetYaxis()->FindBin(etaMin+0.001), h_clusterMapMC_eta_E[pid][iCl]->GetYaxis()->FindBin(etaMax-0.001),"e");       
+        hSP_spectraClReb_rec_MCE[pid][iEta][iCl]       = (TH1D*)hSP_spectraCl_rec_MCE[pid][iEta][iCl]->Rebin(nP-2, Form("Special_spectraClRecReb%s_MCE_%d_%s",partName[pid].Data(), iEta, 
+                                                                                                                    nameClus[iCl].Data()), partP);
+        NormalizeByBinWidth(hSP_spectraCl_rec_MCE[pid][iEta][iCl]);
+        DrawGammaSetMarker(hSP_spectraCl_rec_MCE[pid][iEta][iCl], markerCaloPlotSP[caloID][iEta], 1.5*sizeCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta]);
+        NormalizeByBinWidth(hSP_spectraClReb_rec_MCE[pid][iEta][iCl]);
+        DrawGammaSetMarker(hSP_spectraClReb_rec_MCE[pid][iEta][iCl], markerCaloPlotSP[caloID][iEta], 1.5*sizeCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta]);
+
+        hSP_spectraCl_recSE_MCE[pid][iEta][iCl]          = (TH1D*)h_clusterMapSEMC_eta_E[pid][iCl]->ProjectionX(Form("Special_spectraClRecSE%s_MCE_%d_%s",partName[pid].Data(), iEta,
+                                                                                                                nameClus[iCl].Data()), 
+                                                                            h_clusterMapSEMC_eta_E[pid][iCl]->GetYaxis()->FindBin(etaMin+0.001), h_clusterMapSEMC_eta_E[pid][iCl]->GetYaxis()->FindBin(etaMax-0.001),"e");       
+        hSP_spectraClReb_recSE_MCE[pid][iEta][iCl]       = (TH1D*)hSP_spectraCl_recSE_MCE[pid][iEta][iCl]->Rebin(nP-2, Form("Special_spectraClRecSEReb%s_MCE_%d_%s",partName[pid].Data(), iEta, 
+                                                                                                                    nameClus[iCl].Data()), partP);
+        NormalizeByBinWidth(hSP_spectraCl_recSE_MCE[pid][iEta][iCl]);
+        NormalizeByBinWidth(hSP_spectraClReb_recSE_MCE[pid][iEta][iCl]);
+        DrawGammaSetMarker(hSP_spectraCl_recSE_MCE[pid][iEta][iCl], markerCaloPlotSP[caloID][iEta], 1.5*sizeCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta]);
+        DrawGammaSetMarker(hSP_spectraClReb_recSE_MCE[pid][iEta][iCl], markerCaloPlotSP[caloID][iEta], 1.5*sizeCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta]);
+       
+        hSP_effi_rec_MCE[pid][iEta][iCl]           = (TH1D*)hSP_spectraClReb_rec_MCE[pid][iEta][iCl]->Clone(Form("Special_effi%s_MCE_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()));
+        hSP_effi_rec_MCE[pid][iEta][iCl]->Divide(hSP_spectraClReb_rec_MCE[pid][iEta][iCl],hSP_spectraReb_MC_E[pid][iEta],1,1,"B");
+
+        hSP_effi_recSE_MCE[pid][iEta][iCl]           = (TH1D*)hSP_spectraClReb_recSE_MCE[pid][iEta][iCl]->Clone(Form("Special_effiSE%s_MCE_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()));
+        hSP_effi_recSE_MCE[pid][iEta][iCl]->Divide(hSP_spectraClReb_recSE_MCE[pid][iEta][iCl],hSP_spectraReb_MC_E[pid][iEta],1,1,"B");
+
+        if (enableTM){
+          hSP_spectraCl_matched_recSE_MCE[pid][iEta][iCl]          = (TH1D*)h_clusterMapSEMC_matched_eta_E[pid][iCl]->ProjectionX(Form("Special_spectraClRecSE_matched%s_MCE_%d_%s",partName[pid].Data(), iEta,
+                                                                                                                  nameClus[iCl].Data()), 
+                                                                              h_clusterMapSEMC_matched_eta_E[pid][iCl]->GetYaxis()->FindBin(etaMin+0.001), h_clusterMapSEMC_matched_eta_E[pid][iCl]->GetYaxis()->FindBin(etaMax-0.001),"e");       
+          hSP_spectraClReb_matched_recSE_MCE[pid][iEta][iCl]       = (TH1D*)hSP_spectraCl_matched_recSE_MCE[pid][iEta][iCl]->Rebin(nP-2, Form("spectraClRecSEReb_matched%s_MCE_%d_%s",partName[pid].Data(), iEta, 
+                                                                                                                      nameClus[iCl].Data()), partP);
+          NormalizeByBinWidth(hSP_spectraCl_matched_recSE_MCE[pid][iEta][iCl]);
+          NormalizeByBinWidth(hSP_spectraClReb_matched_recSE_MCE[pid][iEta][iCl]);
+
+          hSP_TMeffi_recSE_MCE[pid][iEta][iCl]           = (TH1D*)hSP_spectraClReb_matched_recSE_MCE[pid][iEta][iCl]->Clone(Form("Special_TMeffiSE%s_MCE_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()));
+          hSP_TMeffi_recSE_MCE[pid][iEta][iCl]->Divide(hSP_spectraClReb_matched_recSE_MCE[pid][iEta][iCl],hSP_spectraTrReb_MC_E[pid][iEta],1,1,"B");
+          hSP_TMeffiCls_recSE_MCE[pid][iEta][iCl]           = (TH1D*)hSP_spectraClReb_matched_recSE_MCE[pid][iEta][iCl]->Clone(Form("TSpecial_MeffiClsSE%s_MCE_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()));
+          hSP_TMeffiCls_recSE_MCE[pid][iEta][iCl]->Divide(hSP_spectraClReb_matched_recSE_MCE[pid][iEta][iCl],hSP_spectraClReb_recSE_MCE[pid][iEta][iCl],1,1,"B");
+        }
+      }
+    }
+  }
   
   // 1D PLOT
   TCanvas* cReso = new TCanvas("cReso","",0,0,1100,800);
@@ -357,7 +490,10 @@ void clustereffi(
   TLegend* legendEffiPID    = GetAndSetLegend2(0.12,  0.94-(3*0.85*textSizeLabelsRel), 0.5, 0.94, 0.85*textSizeLabelsRel, 2, "", 42, 0.25);
   TLegend* legendEffiCl     = GetAndSetLegend2(0.12,  0.94-(nActiceCl/2*0.85*textSizeLabelsRel), 0.5,  0.94, 0.85*textSizeLabelsRel, 2, "", 42, 0.25);
   
-  
+
+  //*******************************************************************************************************************
+  //******************* Draw fine eta bins ****************************************************************************
+  //*******************************************************************************************************************
   for (Int_t iCl = 0; iCl < nClusProcess; iCl++){
     for (Int_t pid = 1; pid < nPID; pid++){
       if (!enableParticle[pid]) continue;
@@ -374,7 +510,7 @@ void clustereffi(
           h_effi_rec_E[pid][iEta][iCl]->Draw("same,p");
           if ( h_effi_rec_E[pid][iEta][iCl]->GetMaximum() > 0){
             if (iEta == maxEtaBinCaloDis[region] )
-              legendEffiE->AddEntry(h_effi_rec_E[pid][iEta][iCl],Form("%1.1f < #it{#eta} < %1.1f",partEta[minEtaBinCaloDis[region]],partEta[maxEtaBinCaloDis[region]]),"p");
+              legendEffiE->AddEntry(h_effi_rec_E[pid][iEta][iCl],Form("%1.1f < #it{#eta} < %1.1f", nomEtaMin, nomEtaMax),"p");
             else 
               legendEffiE->AddEntry(h_effi_rec_E[pid][iEta][iCl],Form("%1.1f < #it{#eta} < %1.1f",partEta[iEta],partEta[iEta+1]),"p");
           }
@@ -422,7 +558,7 @@ void clustereffi(
         h_effi_rec_MCE[pid][iEta][iCl]->Draw("same,p");
         if ( h_effi_rec_MCE[pid][iEta][iCl]->GetMaximum() > 0){
           if (iEta == maxEtaBinCaloDis[region] )
-            legendEffiE->AddEntry(h_effi_rec_MCE[pid][iEta][iCl],Form("%1.1f < #it{#eta} < %1.1f",partEta[minEtaBinCaloDis[region]],partEta[maxEtaBinCaloDis[region]]),"p");
+            legendEffiE->AddEntry(h_effi_rec_MCE[pid][iEta][iCl],Form("%1.1f < #it{#eta} < %1.1f", nomEtaMin, nomEtaMax),"p");
           else 
             legendEffiE->AddEntry(h_effi_rec_MCE[pid][iEta][iCl],Form("%1.1f < #it{#eta} < %1.1f",partEta[iEta],partEta[iEta+1]),"p");
         }
@@ -505,8 +641,8 @@ void clustereffi(
       }
     }
     for(Int_t iEta=minEtaBinCaloDis[region]; iEta<maxEtaBinCaloDis[region]+1;iEta++){
-      Double_t etaMin = partEta[minEtaBinCaloDis[region]];
-      Double_t etaMax = partEta[maxEtaBinCaloDis[region]];
+      Double_t etaMin = nomEtaMin;
+      Double_t etaMax = nomEtaMax;
       if (iEta < maxEtaBinCaloDis[region]){
         etaMin = partEta[iEta];
         etaMax = partEta[iEta+1];
@@ -563,11 +699,148 @@ void clustereffi(
     }
   }
   
+  //*******************************************************************************************************************
+  //******************* Draw wide eta bins ****************************************************************************
+  //*******************************************************************************************************************
+  legendEffiE      = GetAndSetLegend2(0.12, 0.94-(3*0.85*textSizeLabelsRel), 0.35, 0.94,0.85*textSizeLabelsRel, 0, "", 42, 0.2);
+  for (Int_t iCl = 0; iCl < nClusProcess; iCl++){
+    for (Int_t pid = 1; pid < nPID; pid++){
+      if (!enableParticle[pid]) continue;
+      if (debugOutput)std::cout << "effi E"  << std::endl;
+      
+      if (enableRecE){
+        histoDummyEffiE->Draw();
+        DrawGammaLines(0.1, 100, 1., 1., 2, kGray+2, 7);
+        legendEffiE->Clear();
+        for(Int_t iEta=0; iEta<3;iEta++){
+          if ( !hSP_effi_rec_E[pid][iEta][iCl]) continue;
+          DrawGammaSetMarker(hSP_effi_rec_E[pid][iEta][iCl], markerCaloPlotSP[caloID][iEta], 1.5*sizeCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta]);
+          hSP_effi_rec_E[pid][iEta][iCl]->Draw("same,p");
+          legendEffiE->AddEntry(hSP_effi_rec_E[pid][iEta][iCl],Form("%1.1f < #it{#eta} < %1.1f",partEtaSpecCalo[caloID][iEta],partEtaSpecCalo[caloID][iEta+1]),"p");
+        }
+        legendEffiE->Draw();
+        drawLatexAdd(labelEnergy,0.95,0.91,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+        if (nClusProcess != 1){
+          drawLatexAdd(Form("%s in %s, %s clusters", partLabel[pid].Data(), caloPlot.Data(), nameClus[iCl].Data() ),0.95,0.91-nLinesCol*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        } else {
+           drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), caloPlot.Data()),0.95,0.91-nLinesCol*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        }
+        if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        cReso->Print(Form("%s/%s%s/Special_Effi_E_%s.%s", outputDir.Data(), caloPlot.Data(), nameClus[iCl].Data(), partName[pid].Data(), suffix.Data()));
+
+        if (debugOutput)std::cout << "special effi single entry E"  << std::endl;
+        histoDummyEffiE->Draw();
+        DrawGammaLines(0.1, 100, 1., 1., 2, kGray+2, 7);
+        for(Int_t iEta=0; iEta<3;iEta++){
+          if ( !hSP_effi_recSE_E[pid][iEta][iCl]) continue;
+          DrawGammaSetMarker(hSP_effi_recSE_E[pid][iEta][iCl], markerCaloPlotSP[caloID][iEta], 1.5*sizeCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta]);
+          hSP_effi_recSE_E[pid][iEta][iCl]->Draw("same,p");
+        }
+        legendEffiE->Draw();
+        drawLatexAdd(labelEnergy,0.95,0.91,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+        if (nClusProcess != 1){
+          drawLatexAdd(Form("%s in %s, %s clusters", partLabel[pid].Data(), caloPlot.Data(), nameClus[iCl].Data() ),0.95,0.91-nLinesCol*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        } else {
+          drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), caloPlot.Data() ),0.95,0.91-nLinesCol*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);          
+        }
+        if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        cReso->Print(Form("%s/%s%s/Special_EffiSE_E_%s.%s", outputDir.Data(), caloPlot.Data(), nameClus[iCl].Data(),  partName[pid].Data(), suffix.Data()));
+      }
+      
+      if (debugOutput)std::cout << "special effi MCE"  << std::endl;
+      histoDummyEffiMCE->Draw();
+      DrawGammaLines(0.1, 100, 1., 1., 2, kGray+2, 7);
+      legendEffiE->Clear();
+      for(Int_t iEta=0; iEta<3;iEta++){
+        if ( !hSP_effi_rec_MCE[pid][iEta][iCl]) continue;
+        DrawGammaSetMarker(hSP_effi_rec_MCE[pid][iEta][iCl], markerCaloPlotSP[caloID][iEta], 1.5*sizeCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta]);
+        hSP_effi_rec_MCE[pid][iEta][iCl]->Draw("same,p");
+        legendEffiE->AddEntry(hSP_effi_rec_MCE[pid][iEta][iCl],Form("%1.1f < #it{#eta} < %1.1f",partEtaSpecCalo[caloID][iEta],partEtaSpecCalo[caloID][iEta+1]),"p");
+      }
+      legendEffiE->Draw();
+      drawLatexAdd(labelEnergy,0.95,0.91,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+      if (nClusProcess != 1){
+        drawLatexAdd(Form("%s in %s, %s clusters", partLabel[pid].Data(), caloPlot.Data(), nameClus[iCl].Data()),0.95,0.91-nLinesCol*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      } else {
+        drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), caloPlot.Data()),0.95,0.91-nLinesCol*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      }
+      if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+
+      cReso->Print(Form("%s/%s%s/Special_Effi_MCE_%s.%s", outputDir.Data(), caloPlot.Data(), nameClus[iCl].Data(), partName[pid].Data(),  suffix.Data()));
+
+      if (debugOutput)std::cout << "special effi single entry MCE"  << std::endl;
+      histoDummyEffiMCE->Draw();
+      DrawGammaLines(0.1, 100, 1., 1., 2, kGray+2, 7);
+      for(Int_t iEta=0; iEta<3;iEta++){
+        if ( !hSP_effi_recSE_MCE[pid][iEta][iCl]) continue;
+        DrawGammaSetMarker(hSP_effi_recSE_MCE[pid][iEta][iCl], markerCaloPlotSP[caloID][iEta], 1.5*sizeCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta]);
+        hSP_effi_recSE_MCE[pid][iEta][iCl]->Draw("same,p");
+      }
+      legendEffiE->Draw();
+      drawLatexAdd(labelEnergy,0.95,0.91,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+      if (nClusProcess != 1){
+        drawLatexAdd(Form("%s in %s, %s clusters", partLabel[pid].Data(), caloPlot.Data(), nameClus[iCl].Data()),0.95,0.91-nLinesCol*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      } else {
+        drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), caloPlot.Data()),0.95,0.91-nLinesCol*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+      }
+      if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+
+      cReso->Print(Form("%s/%s%s/Special_EffiSE_MCE_%s.%s", outputDir.Data(), caloPlot.Data(), nameClus[iCl].Data(), partName[pid].Data(),   suffix.Data()));
+
+      if (enableTM){
+        if (debugOutput)std::cout << "Special TM effi single entry"  << std::endl;
+        histoDummyEffiTMMCE->Draw();
+        DrawGammaLines(0.1, 100, 1., 1., 2, kGray+2, 7);
+        for(Int_t iEta=0; iEta<3;iEta++){
+          if ( !hSP_TMeffi_recSE_MCE[pid][iEta][iCl]) continue;
+          DrawGammaSetMarker(hSP_TMeffi_recSE_MCE[pid][iEta][iCl], markerCaloPlotSP[caloID][iEta], 1.5*sizeCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta]);
+          hSP_TMeffi_recSE_MCE[pid][iEta][iCl]->Draw("same,p");
+        }
+        legendEffiE->Draw();
+        drawLatexAdd(labelEnergy,0.95,0.91,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+        if (nClusProcess != 1){
+          drawLatexAdd(Form("%s in %s, %s clusters", partLabel[pid].Data(), caloPlot.Data(), nameClus[iCl].Data()),0.95,0.91-nLinesCol*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        } else {
+           drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), caloPlot.Data()),0.95,0.91-nLinesCol*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        }
+        if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+
+        cReso->Print(Form("%s/%s%s/Special_TMEffiSE_MCE_%s.%s", outputDir.Data(), caloPlot.Data(), nameClus[iCl].Data(), partName[pid].Data(),   suffix.Data()));
+  
+        if (debugOutput)std::cout << "special TM effi cluster-only single entry"  << std::endl;
+        histoDummyEffiTMMCE->Draw();
+        DrawGammaLines(0.1, 100, 1., 1., 2, kGray+2, 7);
+        for(Int_t iEta=0; iEta<3;iEta++){
+          if ( !hSP_TMeffiCls_recSE_MCE[pid][iEta][iCl]) continue;
+          DrawGammaSetMarker(hSP_TMeffiCls_recSE_MCE[pid][iEta][iCl], markerCaloPlotSP[caloID][iEta], 1.5*sizeCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta], colorCaloPlotSP[caloID][iEta]);
+          hSP_TMeffiCls_recSE_MCE[pid][iEta][iCl]->Draw("same,p");
+        }
+        legendEffiE->Draw();
+        drawLatexAdd(labelEnergy,0.95,0.91,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        if (pTHard.CompareTo("") != 0) drawLatexAdd(pTHard,0.95,0.91-textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);    
+        if (nClusProcess != 1){
+          drawLatexAdd(Form("%s in %s, %s clusters", partLabel[pid].Data(), caloPlot.Data(), nameClus[iCl].Data()),0.95,0.91-nLinesCol*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        } else {
+           drawLatexAdd(Form("%s in %s", partLabel[pid].Data(), caloPlot.Data()),0.95,0.91-nLinesCol*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+        }
+        if (writeLabel.CompareTo("") != 0) drawLatexAdd(labelPlotCuts,0.95,0.91-(nLinesCol+1)*textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kTRUE);
+
+        cReso->Print(Form("%s/%s%s/Special_TMEffiSEClus_MCE_%s.%s", outputDir.Data(), caloPlot.Data(), nameClus[iCl].Data(), partName[pid].Data(),   suffix.Data()));
+      }
+    }
+  }
+
+  
   for (Int_t pid =1; pid < nPID; pid++){
     if (!enableParticle[pid]) continue;
     for (Int_t iEta=minEtaBinCaloDis[region]; iEta<maxEtaBinCaloDis[region];iEta++){
-      Double_t etaMin = partEta[minEtaBinCaloDis[region]];
-      Double_t etaMax = partEta[maxEtaBinCaloDis[region]];
+      Double_t etaMin = nomEtaMin;
+      Double_t etaMax = nomEtaMax;
       if (iEta < maxEtaBinCaloDis[region]){
         etaMin = partEta[iEta];
         etaMax = partEta[iEta+1];
@@ -704,6 +977,17 @@ void clustereffi(
         if (h_effi_recSE_MCE[pid][iEta][iCl]) h_effi_recSE_MCE[pid][iEta][iCl]->Write(Form("effiSE%s_MCE_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()),TObject::kOverwrite);
         if (h_TMeffi_recSE_MCE[pid][iEta][iCl]) h_TMeffi_recSE_MCE[pid][iEta][iCl]->Write(Form("TMeffiSE%s_MCE_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()),TObject::kOverwrite);
         if (h_TMeffiCls_recSE_MCE[pid][iEta][iCl]) h_TMeffiCls_recSE_MCE[pid][iEta][iCl]->Write(Form("TMeffiClsSE%s_MCE_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()),TObject::kOverwrite);
+      }
+    }
+    for (Int_t iEta=0; iEta<3;iEta++){
+      for (Int_t pid = 1; pid < 6; pid++){
+        if (!enableParticle[pid]) continue;
+        if (hSP_effi_rec_E[pid][iEta][iCl]) hSP_effi_rec_E[pid][iEta][iCl]->Write(Form("effiPaper%s_E_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()),TObject::kOverwrite);
+        if (hSP_effi_rec_MCE[pid][iEta][iCl]) hSP_effi_rec_MCE[pid][iEta][iCl]->Write(Form("effiPaper%s_MCE_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()),TObject::kOverwrite);
+        if (hSP_effi_recSE_E[pid][iEta][iCl]) hSP_effi_recSE_E[pid][iEta][iCl]->Write(Form("effiPaperSE%s_E_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()),TObject::kOverwrite);
+        if (hSP_effi_recSE_MCE[pid][iEta][iCl]) hSP_effi_recSE_MCE[pid][iEta][iCl]->Write(Form("effiPaperSE%s_MCE_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()),TObject::kOverwrite);
+        if (hSP_TMeffi_recSE_MCE[pid][iEta][iCl]) hSP_TMeffi_recSE_MCE[pid][iEta][iCl]->Write(Form("TMeffiPaperSE%s_MCE_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()),TObject::kOverwrite);
+        if (hSP_TMeffiCls_recSE_MCE[pid][iEta][iCl]) hSP_TMeffiCls_recSE_MCE[pid][iEta][iCl]->Write(Form("TMeffiPaperClsSE%s_MCE_%d_%s",partName[pid].Data(), iEta, nameClus[iCl].Data()),TObject::kOverwrite);
       }
     }
     h_cluster_NTowerMean_E[iCl]->Write(Form("h_CS_NTowerMean_%s_E", nameClus[iCl].Data()),TObject::kOverwrite);

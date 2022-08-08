@@ -1049,6 +1049,82 @@ void runclusterizer(
 
 //**************************************************************************************************************
 //**************************************************************************************************************
+// ANCHOR main function to be called in event loop
+// - run clusterizer and create new cluster list
+//**************************************************************************************************************
+//**************************************************************************************************************
+void copyClusters(
+  int clusterizerEnum,                // which clusterizer are you running
+  int caloEnum,                       // which calo are you evaluating
+  unsigned short primaryTrackSource   // which track source are you matching the cluster to
+){
+  
+  if (caloEnum != kHCALIN || caloEnum != kHCALIN ) return;
+  int nclusters = 0;
+
+  if (caloEnum == kHCALIN){
+    for (Int_t iCl = 0; iCl < _nclusters_HCALIN; iCl++){
+      clustersStrct tempstructC;
+      tempstructC.cluster_E     = _clusters_HCALIN_E[iCl];
+      tempstructC.cluster_seed  = 0;
+      tempstructC.cluster_Eta   = _clusters_HCALIN_Eta[iCl];
+      tempstructC.cluster_Phi   = _clusters_HCALIN_Phi[iCl];
+      tempstructC.cluster_NTowers  = _clusters_HCALIN_NTower[iCl];
+      tempstructC.cluster_trueID   = _clusters_HCALIN_trueID[iCl];
+      tempstructC.cluster_NtrueID  = 1;
+      if (tracksEnabled){
+        tempstructC.cluster_matchedTracks = isClusterMatched(tempstructC, caloEnum, clusterizerEnum, primaryTrackSource, true);
+        if(tempstructC.cluster_matchedTracks.size() > 0) {
+                tempstructC.cluster_isMatched = true;
+        } else {
+          tempstructC.cluster_isMatched = false;
+        }
+      } else {
+        tempstructC.cluster_isMatched = false;
+      }
+      if(verbosityCLS>1) std::cout << clusterizerEnum << "\t" << nclusters << "\tcluster with E = " << tempstructC.cluster_E << "\tEta: " << tempstructC.cluster_Eta<< "\tPhi: " << tempstructC.cluster_Phi
+                            << "\tX: " << tempstructC.cluster_X<< "\tY: " << tempstructC.cluster_Y<< "\tZ: " << tempstructC.cluster_Z<< "\tntowers: " << tempstructC.cluster_NTowers 
+                            << "\ttrueID: " << tempstructC.cluster_trueID << std::endl;
+      _clusters_calo[clusterizerEnum][caloEnum].push_back(tempstructC);
+      nclusters++;
+    }
+  } else if (caloEnum != kHCALOUT){ 
+    for (Int_t iCl = 0; iCl < _nclusters_HCALOUT; iCl++){
+      clustersStrct tempstructC;
+      tempstructC.cluster_E     = _clusters_HCALOUT_E[iCl];
+      tempstructC.cluster_seed  = 0;
+      tempstructC.cluster_Eta   = _clusters_HCALOUT_Eta[iCl];
+      tempstructC.cluster_Phi   = _clusters_HCALOUT_Phi[iCl];
+      tempstructC.cluster_NTowers  = _clusters_HCALOUT_NTower[iCl];
+      tempstructC.cluster_trueID   = _clusters_HCALOUT_trueID[iCl];
+      tempstructC.cluster_NtrueID  = 1;
+      if (tracksEnabled){
+        tempstructC.cluster_matchedTracks = isClusterMatched(tempstructC, caloEnum, clusterizerEnum, primaryTrackSource, true);
+        if(tempstructC.cluster_matchedTracks.size() > 0) {
+                tempstructC.cluster_isMatched = true;
+        } else {
+          tempstructC.cluster_isMatched = false;
+        }
+      } else {
+        tempstructC.cluster_isMatched = false;
+      }
+      if(verbosityCLS>1) std::cout << clusterizerEnum << "\t" << nclusters << "\tcluster with E = " << tempstructC.cluster_E << "\tEta: " << tempstructC.cluster_Eta<< "\tPhi: " << tempstructC.cluster_Phi
+                            << "\tX: " << tempstructC.cluster_X<< "\tY: " << tempstructC.cluster_Y<< "\tZ: " << tempstructC.cluster_Z<< "\tntowers: " << tempstructC.cluster_NTowers 
+                            << "\ttrueID: " << tempstructC.cluster_trueID << std::endl;
+      _clusters_calo[clusterizerEnum][caloEnum].push_back(tempstructC);
+      nclusters++;
+    }
+  }
+  
+  if (verbosityCLS > 3) std::cout<< "finished this event for " << str_clusterizer[clusterizerEnum].Data() << std::endl;
+  
+  std::sort(_clusters_calo[clusterizerEnum][caloEnum].begin(), _clusters_calo[clusterizerEnum][caloEnum].end(), &acompareCl);    
+
+  return; 
+}
+
+//**************************************************************************************************************
+//**************************************************************************************************************
 // store diagnostics histograms for clusterizer
 //**************************************************************************************************************
 //**************************************************************************************************************

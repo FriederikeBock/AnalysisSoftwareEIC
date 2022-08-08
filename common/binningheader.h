@@ -99,6 +99,15 @@
                                       // 12: 2.5 < eta < 3.0 
                                       // 13: 3.0 < eta < 3.5 
                                       // 14: 3.5 < eta < 4.0
+  Double_t partEtaSpecCalo[7][4]      = { {-3.8,  -3.5,   -2.0,   -1.8},       // kEEMC 
+                                          {-1.7,  -1.4,   0.9,    1.2},        // kBEMC/kBECAL
+                                          {1.3,   1.6,    3.0,    4.0},        // kFEMC
+                                          {-1000., -3.5,  -2.0,   -1000.},     // kEHCAL
+                                          {-1000.,-1000., -1000., -1000.},     // kHCALIN
+                                          {-1000.,-1.1,   1.1,    -1000.},     // kHCALOUT
+                                          {1.1,   1.6,    3.0,    4.0}         // kLFHCAL
+                                        };
+                                       
   Bool_t enablePlot[nEta+1]               = {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
                                               1, 1, 1, 1, 0, 0};
   const Int_t rebinEta_PtResol[nEta+1]    = { 4, 4, 2, 2, 2, 2, 2, 2, 2, 2, 
@@ -117,25 +126,7 @@
                                               2, 2, 2, 2, 4,  1};
   const Float_t betaResolFit[nEta+1]      = { 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
                                               0.05, 0.05, 0.05, 0.05, 0.05, 0.05};                                    
-
-//   const Int_t rebinEta_PtResol[20]   = { 4, 4, 2, 2, 2, 2, 2, 2, 2, 2, 
-//                                          2, 2, 2, 2, 2, 2, 2, 2, 4, 1};
-//   const Int_t rebinEta_EtaResol[20]   = { 8, 8, 4, 1, 1, 1, 1, 1, 1, 1,
-//                                           1, 1, 1, 1, 1, 1, 1, 4, 8,  1};
-//   const Int_t rebinEta_PhiResol[20]   = { 8, 8, 4, 1, 1, 1, 1, 1, 1, 1,
-//                                           1, 1, 1, 1, 1, 1, 1, 4, 8,  1};
-//   Float_t ptResolFit[20]    = { 0.3, 0.3, 0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
-//                                 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.3, 0.3, 0.2};                                    
-//   Float_t etaResolFit[20]   = { 0.02, 0.02, 0.02, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 
-//                                 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.02, 0.01};                                    
-//   Float_t phiResolFit[20]   = { 0.15, 0.15, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
-//                                 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15, 0.2, 0.1};                                    
-                                
-//   const Int_t rebinEta_BetaResol[20]   = { 4, 4, 2, 2, 2, 2, 2, 2, 2, 2, 
-//                                          2, 2, 2, 2, 2, 2, 2, 2, 4,  1};
-//   Float_t betaResolFit[20]    = { 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
-//                                 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05};                                    
-  
+                                              
   Color_t colorEta[nEta+1]         = {kBlue+1, kBlue-6, kViolet+2, kViolet-5, kMagenta-6, kPink-9, kRed+1,  kOrange+7, kOrange, kYellow-6, 
                                   kGreen+1, kGreen-5, kCyan+1, kCyan+3, kAzure+2, kBlack };
   Style_t markerStyleEta[nEta+1]   = {24, 25, 27, 28, 30, 42, 46, 24, 25, 27, 
@@ -186,7 +177,7 @@
   Int_t maxEtaBinTTL[3]        = {4, 9, 12};
   Int_t maxNEtaBinsTTL[3]      = {4, 5,  4};
 
-  Int_t minEtaBinFull[3]       = {0, 5,  9};
+  Int_t minEtaBinFull[3]       = {0, 5,  10};
   Int_t maxEtaBinFull[3]       = {5, 9, 14};
   Int_t maxNEtaBinsFull[3]     = {6, 5,  6};
   Int_t minEtaBinCalo[3]       = {0, 4,  9};
@@ -215,16 +206,36 @@
                                               kGreen+2 /*FEMC*/, kCyan+2 /*LFHCAL*/};
   Color_t colorCaloPlot_light[nCaloPlot]  = { kBlue-8 /*EEMC*/, kRed-8 /*BEMC*/, kYellow-8 /*iHCAL*/, kOrange-9 /*OHCAL*/,
                                               kGreen-8 /*FEMC*/, kCyan-8 /*LFHCAL*/};
-  Color_t getCaloColor(TString caloName = "", int getlight = 0){
-    if(!caloName.CompareTo("EEMC")){
-      if(getlight==0) return colorCaloPlot[0];
-      else if(getlight==1) return colorCaloPlot_light[0];
-      else return kAzure+3;
-    } else if(!caloName.CompareTo("BEMC") || !caloName.CompareTo("BECAL") || !caloName.CompareTo("BEMC SciGlass") || !caloName.CompareTo("BEMC SciGl")){
-      if(getlight==0) return colorCaloPlot[1];
-      else if(getlight==1) return colorCaloPlot_light[1];
-      else return kRed+3;
-    } else if(!caloName.CompareTo("BEMC Pb-Glass") )  return kOrange+2;
+
+  Color_t colorCaloPlotSP[7][3]           = { { kBlue-8, kBlue+2, kBlue+3 }       /*EEMC*/, 
+                                              { kRed-8, kRed+1, kRed+3 }          /*BEMC*/, 
+                                              { kGreen-8, kGreen+2, kGreen+3 }    /*FEMC*/, 
+                                              { kViolet-9, kViolet, kViolet-6 }   /*EHCAL*/, 
+                                              { kYellow-8, kYellow+2, kYellow+3 } /*iHCAL*/, 
+                                              { kOrange-9, kOrange-2, kOrange+7 } /*OHCAL*/, 
+                                              { kCyan-8, kCyan+2, kCyan+3}        /*LFHCAL*/};
+  Style_t markerCaloPlotSP[7][3]          = { { 24, 20, 24 } /*EEMC*/, 
+                                              { 46, 47, 46 }  /*BEMC*/, 
+                                              { 27, 33, 27 }  /*FEMC*/, 
+                                              { 28, 34, 28 }  /*EHCAL*/, 
+                                              { 42, 43, 42 }  /*iHCAL*/, 
+                                              { 21, 25, 21 }  /*OHCAL*/, 
+                                              { 30, 29, 30}   /*LFHCAL*/};
+  Size_t sizeCaloPlotSP[7][3]             = { { 1.5, 1.4, 1.5 } /*EEMC*/, 
+                                              { 1.4, 1.3, 1.4 }  /*BEMC*/, 
+                                              { 1.5, 1.4, 1.5 }  /*FEMC*/, 
+                                              { 1.4, 1.3, 1.4 }  /*EHCAL*/, 
+                                              { 2.0, 1.9, 2.0 }  /*iHCAL*/, 
+                                              { 1.4, 1.3, 1.4 }  /*OHCAL*/, 
+                                              { 1.9, 1.8, 1.9}   /*LFHCAL*/};
+                                              
+  //*******************************************************************
+  // get default color for calorimeters
+  //*******************************************************************                                              
+  Color_t getCaloColor(TString caloName = "", bool getlight = false){
+    if(!caloName.CompareTo("EEMC"))       return getlight ? colorCaloPlot_light[0] : colorCaloPlot[0];
+    else if(!caloName.CompareTo("BEMC") || !caloName.CompareTo("BECAL") || !caloName.CompareTo("BEMC SciGlass") || !caloName.CompareTo("BEMC SciGl"))  return getlight ? colorCaloPlot_light[1] : colorCaloPlot[1];
+    else if(!caloName.CompareTo("BEMC Pb-Glass") )  return kOrange+2;
     else if(!caloName.CompareTo("IHCAL")) return getlight ? colorCaloPlot_light[2] : colorCaloPlot[2];
     else if(!caloName.CompareTo("OHCAL") || !caloName.CompareTo("HCALOUT")) return getlight ? colorCaloPlot_light[3] : colorCaloPlot[3];
     else if(!caloName.CompareTo("FEMC")){

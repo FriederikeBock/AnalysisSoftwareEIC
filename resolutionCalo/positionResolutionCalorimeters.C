@@ -204,9 +204,11 @@ void positionResolutionCalorimeters(
   TH1F* histSigmaEEtaVsE[7][nEta]       = {{NULL}};
 
   TH3F* hist3DResoPhi[7]                  = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+  TH3F* hist3DResoPhivsEta[7]             = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
   TH2F* hist2DResoPhi[7]                  = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
   TH2F* hist2DResoPhiVsE[7]               = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
   TH1F* hist1DResoPhibins3D[7][nP][nPhi]  = {{NULL}};
+  TH1F* hist1DResoPhivsEtabins3D[7][nP][nEta]  = {{NULL}};
   TH1F* hist1DResoPhibins[7][nPhi]        = {{NULL}};
   TH1F* hist1DResoPhiEbins[7][nP]         = {{NULL}};
   TH1F* histResoPhiVsPhi[7]               = {NULL};
@@ -221,11 +223,16 @@ void positionResolutionCalorimeters(
   TH1F* histResoEPhiVsE[7][nPhi]          = {{NULL}};
   TH1F* histMeanEPhiVsE[7][nPhi]          = {{NULL}};
   TH1F* histSigmaEPhiVsE[7][nPhi]         = {{NULL}};
+  TH1F* histResoEPhiVsE_EtaBins[7][nEta]  = {{NULL}};
+  TH1F* histMeanEPhiVsE_EtaBins[7][nEta]  = {{NULL}};
+  TH1F* histSigmaEPhiVsE_EtaBins[7][nEta] = {{NULL}};
 
+  
   //========================================================================================================
   //================= Evaluate eta resolution ==============================================================
   //========================================================================================================  
   for (Int_t i = 0; i < nParticles; i++){
+//     TString tempName = Form("%s/h_CRH_EtaReso_%sE_Etahighest_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
     TString tempName = Form("%s/h_CRH_EtaReso_%sE_Eta_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
     cout << "reading: " << tempName << endl;
     hist3DResoEta[i]    = (TH3F*)inputFile->Get(tempName.Data());
@@ -383,6 +390,7 @@ void positionResolutionCalorimeters(
   //================= Evaluate phi resolution ==============================================================
   //========================================================================================================  
   for (Int_t i = 0; i < nParticles; i++){    
+//     TString tempName = Form("%s/h_CRH_PhiReso_%sE_Phihighest_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
     TString tempName = Form("%s/h_CRH_PhiReso_%sE_Phi_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
     cout << "reading: " << tempName << endl;
     hist3DResoPhi[i]    = (TH3F*)inputFile->Get(tempName.Data());
@@ -445,6 +453,59 @@ void positionResolutionCalorimeters(
             histMeanEPhiVsE[i][phibin]->SetBinError(binE, meanErr);
             histSigmaEPhiVsE[i][phibin]->SetBinContent(binE, sigma);
             histSigmaEPhiVsE[i][phibin]->SetBinError(binE, sigmaErr);  
+          }  
+        }
+      }
+    }
+    
+    tempName = Form("%s/h_CRH_PhiReso_%sE_Eta_%s_%s",caloNameRead.Data(), readNames[i].Data(), caloNameRead.Data(), clusterizerName.Data() );
+    cout << "reading: " << tempName << endl;
+    hist3DResoPhivsEta[i]    = (TH3F*)inputFile->Get(tempName.Data());
+    if (!hist3DResoPhivsEta[i]) {
+      cout << "could't find histo " << tempName << " for " << caloNameRead.Data() << endl;
+    }
+
+
+    //*****************************************************************
+    // create slices in E for phi res & evaluate
+    //*****************************************************************
+    if (hist3DResoPhivsEta[i]->GetEntries() > 10){
+      
+      for (int ebin = 0; ebin < nP; ebin++){
+        for (int etabin = 0; etabin < nEta; etabin++){
+          if (!histResoEPhiVsE_EtaBins[i][etabin])histResoEPhiVsE_EtaBins[i][etabin]  = new TH1F(Form("h_%sreso_EPhi_E_EtaBins_%i", readNames[i].Data(),etabin), "", nP, partP);
+          if (!histMeanEPhiVsE_EtaBins[i][etabin])histMeanEPhiVsE_EtaBins[i][etabin]  = new TH1F(Form("h_%sreso_EPhiMean_E_EtaBins_%i", readNames[i].Data(),etabin), "", nP, partP);
+          if (!histSigmaEPhiVsE_EtaBins[i][etabin])histSigmaEPhiVsE_EtaBins[i][etabin] = new TH1F(Form("h_%sreso_EPhiSigma_E_EtaBins_%i", readNames[i].Data(),etabin), "", nP, partP);
+
+          hist1DResoPhivsEtabins3D[i][ebin][etabin]    = (TH1F*)hist3DResoPhivsEta[i]->ProjectionZ(Form("projection_Phi_3DEta_%s%d_%d", readNames[i].Data(), ebin, etabin), 
+                                                                              hist3DResoPhivsEta[i]->GetXaxis()->FindBin(partP[ebin]), hist3DResoPhivsEta[i]->GetXaxis()->FindBin(partP[ebin+1]),
+                                                                              hist3DResoPhivsEta[i]->GetYaxis()->FindBin(partEtaCalo[etabin]),hist3DResoPhivsEta[i]->GetYaxis()->FindBin(partEtaCalo[etabin+1]),"e");
+          hist1DResoPhivsEtabins3D[i][ebin][etabin]->Rebin(rebinRes*2);
+          if (i < 2 && partP[ebin] < minEnergy[region][0]) continue; 
+          if (i > 1 && partP[ebin] < minEnergy[region][1]) continue; 
+          if ( partP[ebin] < minEnergy[region][1] && !isEMCal) continue; 
+
+          if (hist1DResoPhivsEtabins3D[i][ebin][etabin]->GetEntries() > 10 ){
+            hist1DResoPhivsEtabins3D[i][ebin][etabin]->Scale(1/hist1DResoPhivsEtabins3D[i][ebin][etabin]->GetMaximum());
+        
+            useParEnetPhi[i]        = 1;
+            useEnePhi[i][ebin]      = 1;
+          
+            Double_t mean     = FindLargestBin1DHist(hist1DResoPhivsEtabins3D[i][ebin][etabin], -0.8, 0.8);
+            Double_t meanErr  = hist1DResoPhivsEtabins3D[i][ebin][etabin]->GetMeanError();
+            Double_t sigma    = hist1DResoPhivsEtabins3D[i][ebin][etabin]->GetRMS();
+            Double_t sigmaErr = hist1DResoPhivsEtabins3D[i][ebin][etabin]->GetRMSError();
+
+            Double_t reso     = sigma/mean;
+            Double_t resoErr  = TMath::Sqrt(TMath::Power(sigmaErr/sigma,2)+TMath::Power(meanErr/mean,2));
+            
+            Int_t binE = histResoEPhiVsE_EtaBins[i][etabin]->FindBin(partP[ebin]+0.01);
+            histResoEPhiVsE_EtaBins[i][etabin]->SetBinContent(binE,  100*reso);
+            histResoEPhiVsE_EtaBins[i][etabin]->SetBinError(binE, resoErr);
+            histMeanEPhiVsE_EtaBins[i][etabin]->SetBinContent(binE, mean);
+            histMeanEPhiVsE_EtaBins[i][etabin]->SetBinError(binE, meanErr);
+            histSigmaEPhiVsE_EtaBins[i][etabin]->SetBinContent(binE, sigma);
+            histSigmaEPhiVsE_EtaBins[i][etabin]->SetBinError(binE, sigmaErr);  
           }  
         }
       }
@@ -784,6 +845,42 @@ void positionResolutionCalorimeters(
         legendEPhiMeanE->Draw();
       phivar->SaveAs(Form("%s/%sphi-width_E_%s.%s", outputDir.Data(), readNames[i].Data(), caloNameRead.Data(), suffix.Data())); 
 
+      if (hist3DResoPhivsEta[i]->GetEntries() > 10){
+        phivar->cd();
+        phivar->SetLogx();
+      
+        //************************************************************************************
+        // res Phi vs E mean different Phi
+        //************************************************************************************
+        TLegend* legendEdPhiEtaMeanE  = GetAndSetLegend2(0.17, 0.95-(maxNEtaBinsFull[region]/2*0.85*textSizeLabelsRel), 0.7, 0.95,0.85*textSizeLabelsPixel, 2, "", 43, 0.15);
+        
+          histMeanPhiVsE[i]->Draw("PE");
+          legendEdPhiEtaMeanE->AddEntry(histMeanPhiVsE[i], Form("%1.1f < #eta < %1.1f", nominalEtaRegion[region][0],nominalEtaRegion[region][1]),"p");
+          
+          for (int etabin = minEtaBinFull[region]; etabin < maxEtaBinFull[region]+1; etabin++){
+            if (!useEta[i][etabin]) continue;
+            DrawGammaSetMarker(histMeanEPhiVsE_EtaBins[i][etabin], markerStyleEta[etabin], 0.5*markerSizeEta[etabin], colorEta[etabin], colorEta[etabin]);    
+            histMeanEPhiVsE_EtaBins[i][etabin]->Draw("PE,same");
+            legendEdPhiEtaMeanE->AddEntry(histMeanEPhiVsE_EtaBins[i][etabin], Form("%1.1f < #eta < %1.1f", partEtaCalo[etabin],partEtaCalo[etabin+1] ),"p");
+          }
+          legendEdPhiEtaMeanE->Draw();
+          drawLatexAdd(Form("%s in %s", labelPart[i].Data(),detLabel.Data()),0.16,0.14,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+          drawLatexAdd(perfLabel,0.16,0.14+textSizeLabelsRel,textSizeLabelsRel,kFALSE,kFALSE,kFALSE);
+        phivar->SaveAs(Form("%s/%sphi_etaBins-mean_E_%s.%s", outputDir.Data(), readNames[i].Data(), caloNameRead.Data(), suffix.Data())); 
+
+        phivar->cd();
+        phivar->SetLogx();
+        
+          histSigmaPhiVsE[i]->Draw("PE");
+
+          for (int etabin = minEtaBinFull[region]; etabin < maxEtaBinFull[region]+1; etabin++){
+            if (!useEta[i][etabin]) continue;
+            DrawGammaSetMarker(histSigmaEPhiVsE_EtaBins[i][etabin], markerStyleEta[etabin], 0.5*markerSizeEta[etabin], colorEta[etabin], colorEta[etabin]);    
+            histSigmaEPhiVsE_EtaBins[i][etabin]->Draw("PE,same");
+          }
+          legendEdPhiEtaMeanE->Draw();
+        phivar->SaveAs(Form("%s/%sphi_etaBins-width_E_%s.%s", outputDir.Data(), readNames[i].Data(), caloNameRead.Data(), suffix.Data())); 
+      }
     }
 
     // ====================================================================================//

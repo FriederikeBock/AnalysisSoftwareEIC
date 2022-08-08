@@ -23,10 +23,14 @@ int verbosityBASE = 0;
 bool _useAlternateForProjections = false;
 float _nEventsTree;
 // TOF resolution
-double sigmat             = 25e-3; // ns
+ double sigmat             = 25e-3; // ns default ECCE
+// double sigmat             = 30e-3; // ns
+// double sigmat             = 35e-3; // ns
+// double sigmat             = 40e-3; // ns
+// double sigmat             = 50e-3; // ns
 // random number generator
 TRandom3 r3;
-
+bool isZeroField      = false;
 
 enum calotype {
   kFHCAL          = 0,
@@ -199,6 +203,22 @@ float* _clusters_FEMC_Phi         = new float[_maxNclusters];
 int* _clusters_FEMC_NTower        = new int[_maxNclusters];
 int* _clusters_FEMC_trueID        = new int[_maxNclusters];
 
+// clusters
+int _nclusters_HCALOUT;
+float* _clusters_HCALOUT_E           = new float[_maxNclusters];
+float* _clusters_HCALOUT_Eta         = new float[_maxNclusters];
+float* _clusters_HCALOUT_Phi         = new float[_maxNclusters];
+int* _clusters_HCALOUT_NTower        = new int[_maxNclusters];
+int* _clusters_HCALOUT_trueID        = new int[_maxNclusters];
+
+// clusters
+int _nclusters_HCALIN;
+float* _clusters_HCALIN_E           = new float[_maxNclusters];
+float* _clusters_HCALIN_Eta         = new float[_maxNclusters];
+float* _clusters_HCALIN_Phi         = new float[_maxNclusters];
+int* _clusters_HCALIN_NTower        = new int[_maxNclusters];
+int* _clusters_HCALIN_trueID        = new int[_maxNclusters];
+
 // vertex
 float _vertex_x;
 float _vertex_y;
@@ -220,6 +240,10 @@ float* _track_x                  = new float[_maxNTracks];
 float* _track_y                  = new float[_maxNTracks];
 float* _track_z                  = new float[_maxNTracks];
 short* _track_charge             = new short[_maxNTracks];
+float* _track_dca2D              = new float[_maxNTracks];
+float* _track_dca                = new float[_maxNTracks];
+float* _track_chi2               = new float[_maxNTracks];
+float* _track_ndf                = new float[_maxNTracks];
 unsigned short* _track_source             = new unsigned short[_maxNTracks];
 
 std::array<std::vector<int>, _maxNTracks> _track_RefProjID;
@@ -351,6 +375,10 @@ void SetBranchAddressesTree(TTree* inputTree){
       inputTree->SetBranchAddress("tracks_trueID",        _track_trueID);
       inputTree->SetBranchAddress("tracks_source",        _track_source);
       inputTree->SetBranchAddress("tracks_charge",        _track_charge);
+      inputTree->SetBranchAddress("tracks_dca",           _track_dca);
+      inputTree->SetBranchAddress("tracks_dca_2d",        _track_dca2D);
+      inputTree->SetBranchAddress("tracks_ndf",           _track_ndf);
+      inputTree->SetBranchAddress("tracks_chi2",          _track_chi2);
       
       inputTree->SetBranchAddress("track_pion_LL",	  _track_pion_LL);
       inputTree->SetBranchAddress("track_kaon_LL",	  _track_kaon_LL);
@@ -513,6 +541,26 @@ void SetBranchAddressesTree(TTree* inputTree){
         inputTree->SetBranchAddress("cluster_FEMC_trueID",            _clusters_FEMC_trueID);
       }
     }
+    if (caloEnabled[kHCALOUT]){
+      if (inputTree->GetBranchStatus("cluster_HCALOUT_N") ){
+        inputTree->SetBranchAddress("cluster_HCALOUT_N",                 &_nclusters_FEMC);
+        inputTree->SetBranchAddress("cluster_HCALOUT_E",                 _clusters_FEMC_E);
+        inputTree->SetBranchAddress("cluster_HCALOUT_Eta",              _clusters_FEMC_Eta);
+        inputTree->SetBranchAddress("cluster_HCALOUT_Phi",              _clusters_FEMC_Phi);
+        inputTree->SetBranchAddress("cluster_HCALOUT_NTower",              _clusters_FEMC_NTower);
+        inputTree->SetBranchAddress("cluster_HCALOUT_trueID",            _clusters_FEMC_trueID);
+      }
+    }
+    if (caloEnabled[kHCALIN]){
+      if (inputTree->GetBranchStatus("cluster_HCALIN_N") ){
+        inputTree->SetBranchAddress("cluster_HCALIN_N",                 &_nclusters_FEMC);
+        inputTree->SetBranchAddress("cluster_HCALIN_E",                 _clusters_FEMC_E);
+        inputTree->SetBranchAddress("cluster_HCALIN_Eta",              _clusters_FEMC_Eta);
+        inputTree->SetBranchAddress("cluster_HCALIN_Phi",              _clusters_FEMC_Phi);
+        inputTree->SetBranchAddress("cluster_HCALIN_NTower",            _clusters_FEMC_NTower);
+        inputTree->SetBranchAddress("cluster_HCALIN_trueID",            _clusters_FEMC_trueID);
+      }
+    }
     // vertex
 
     if (inputTree->GetBranchStatus("vertex_x") ){
@@ -582,13 +630,22 @@ TString ReturnDateStr(){
 
 bool _do_TimingStudies        = false;
 bool _is_ALLSILICON           = false;
-const int _maxProjectionLayers    = 32;
-Int_t layerIndexHist[32]  =  { 0, 1, 2, 3, 4, 7,        // TTLs
+const int _maxProjectionLayers    = 36;
+Int_t layerIndexHist[36]  =  { 0, 1, 2, 3, 4, 7, 8,        // TTLs
                                  50, 51, 52, 53, 54,      // FST
-                                 100, 101, 102, 103,      // EFST
+                                 113, 114, 115, 116,      // EFST
                                  155, 156, 157, 150, 151, // SVTX & BARR
                                  110, 111, 112, 120, 130,  // mu RWell 
-                                 6, 60, 61, 62, 63, 66, 67 // calo's 
+                                 6, 60, 61, 62, 63, 66, 67, // calo's 
+                                 35, 36, 37 // cherenkov PID
+};
+Int_t enableLayerHist[36]  =  { 1, 0, 0, 1, 0, 1, 0,        // TTLs
+                                 1, 1, 1, 1, 1,      // FST
+                                 1, 1, 1, 1,      // EFST
+                                 1, 1, 1, 1, 1, // SVTX & BARR
+                                 1, 1, 1, 0, 0,  // mu RWell 
+                                 1, 1, 1, 1, 1, 1, 1, // calo's 
+                                 1, 1, 1 // cherenkov PID
 };
 
 //__________________________________________________________________________________________________________
@@ -644,6 +701,13 @@ TString GetProjectionNameFromIndex(int projindex)
     case 103:    return "EFST_3";
     case 104:    return "EFST_4";
     case 105:    return "EFST_5";
+    // EST
+    case 113:    return "EST_0";
+    case 114:    return "EST_1";
+    case 115:    return "EST_2";
+    case 116:    return "EST_3";
+    case 117:    return "EST_4";
+    case 118:    return "EST_5";
     // new BARREL tracker
     case 150:    return "BARR_0"; 
     case 151:    return "BARR_1"; 
@@ -690,6 +754,10 @@ TString GetProjectionNameFromIndex(int projindex)
     case 145:  return "LFHCAL_5";
     case 146:  return "LFHCAL_6";
     case 147:  return "LFHCAL_7";
+    
+    case 35: return "hpDIRC";
+    case 36: return "mRICH";
+    case 37: return "dRICH";
     
     default:   return "NOTHING";
   }
@@ -806,6 +874,11 @@ Int_t GetRegionFromIndex(int projindex)
     case 146:  return 2; // "LFHCAL_6";
     case 147:  return 2; // "LFHCAL_7";
     
+    // cherenkov PID
+    case 35: return 1;    // hpDIRC
+    case 36: return 0;    // mRICH
+    case 37: return 2;    // dRICH
+    
     default:   return 0;
   }
 }
@@ -863,6 +936,8 @@ Bool_t HasFirstTwoLayers(Int_t layerID){
       case 51:  // FST_1
       case 100: // EFST_0
       case 101: // EFST_1
+      case 113: // EST_0
+      case 114: // EST_1
       case 154: // SVTX_0
       case 155: // SVTX_1
       case 156: // SVTX_2
@@ -934,6 +1009,14 @@ Bool_t IsTrackerLayer(Int_t layerID){
       case 104:
       case 105:
       case 106:
+      // EFST
+      case 113:
+      case 114:
+      case 115:
+      case 116:
+      case 117:
+      case 118:
+      case 119:
       // RWELL
       case 110:
       case 111:
@@ -1196,6 +1279,14 @@ void prepareMCMatchInfo(){
   trackID_ScatteredElectron = -1;
   for(Int_t itrk=0; itrk<_nTracks; itrk++){
     if (verbosityBASE > 2) std::cout << "current track: " << itrk <<std::endl;
+    if (verbosityBASE > 5){
+      TVector3 recpartvec(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
+      TVector3 mcpartvec(_mcpart_px[(int)_track_trueID[itrk]],_mcpart_py[(int)_track_trueID[itrk]],_mcpart_pz[(int)_track_trueID[itrk]]);
+      float receta = recpartvec.Eta();
+      
+      float trueeta = mcpartvec.Eta();
+      std::cout << "\tTRKTRUEID " << (int)_track_trueID[itrk] << "\tPDG: " << _mcpart_PDG[(int)_track_trueID[itrk]] << "\tpT: " <<   TMath::Sqrt(TMath::Power(_track_px[itrk],2)+TMath::Power(_track_py[itrk],2)) << "\tEta " << receta << "\t track source\t" << _track_source[itrk] << " MC: "<< (int)_track_trueID[itrk] << " ndf: " << _track_ndf[itrk] << " chi2: " << _track_chi2[itrk]<< std::endl;
+    }
     unsigned short trackSource = _track_source[itrk];
     TVector3 trackVecP(_track_px[itrk],_track_py[itrk],_track_pz[itrk]);
     if (_track_trueID[itrk] >= 0 && trackSource == 0){
@@ -1210,18 +1301,20 @@ void prepareMCMatchInfo(){
     for(Int_t iproj=nCurrProj; iproj<_nProjections; iproj++){
       if (itrk != _track_ProjTrackID[iproj])
         continue;
-      if (_track_Proj_t[iproj] < 0 )
-        continue;
+//       if (_track_Proj_t[iproj] < 0 )
+// //         continue;
       double projectionR = TMath::Sqrt(_track_Proj_x[iproj]*_track_Proj_x[iproj]+_track_Proj_y[iproj]*_track_Proj_y[iproj]);      
       double hit3d = TMath::Sqrt(_track_Proj_true_x[iproj]*_track_Proj_true_x[iproj]+_track_Proj_true_y[iproj]*_track_Proj_true_y[iproj]+_track_Proj_true_z[iproj]*_track_Proj_true_z[iproj]);      
-      if(TMath::Abs(_track_Proj_true_t[iproj])< 2.e-20){
-        if (verbosityBASE > 5) std::cout << iproj << "\t projection layer: "<< _track_ProjLayer[iproj] << "\t t: " << _track_Proj_t[iproj] 
-                                            << "\t x: " << _track_Proj_x[iproj] << "\t y: " << _track_Proj_y[iproj] << "\t z: " << _track_Proj_z[iproj] << "\t r: " << projectionR << std::endl;
+      if(TMath::Abs(_track_Proj_true_t[iproj]) == 0. || _track_Proj_true_t[iproj] == -10000.){
+//         if (verbosityBASE > 5) std::cout << "failed: " << iproj << "\t projection layer: "<< _track_ProjLayer[iproj] << "\t t: " << _track_Proj_t[iproj] 
+//                                          << "\t x: " << _track_Proj_x[iproj] << "\t y: " << _track_Proj_y[iproj] << "\t z: " << _track_Proj_z[iproj] << "\t r: " 
+//                                          << projectionR << "\t true x " << _track_Proj_true_x[iproj] << "\t true y " << _track_Proj_true_y[iproj] << "\t true z " << _track_Proj_true_z[iproj]<< "\t true t " << _track_Proj_true_t[iproj] <<  std::endl;
 
         continue;
       }
       if (verbosityBASE > 2) std::cout << iproj << "\t projection layer: "<< _track_ProjLayer[iproj] << "\t t: " << _track_Proj_t[iproj] 
-                                            << "\t x: " << _track_Proj_x[iproj] << "\t y: " << _track_Proj_y[iproj] << "\t z: " << _track_Proj_z[iproj] << "\t r: " << projectionR << std::endl;
+                                       << "\t x: " << _track_Proj_x[iproj] << "\t y: " << _track_Proj_y[iproj] << "\t z: " << _track_Proj_z[iproj] << "\t r: " 
+                                       << projectionR << "\t true x " << _track_Proj_true_x[iproj] << "\t true y " << _track_Proj_true_y[iproj] << "\t true z " << _track_Proj_true_z[iproj]<< "\t true t " << _track_Proj_true_t[iproj] <<  std::endl;
       if (HasTimingLayer(_track_ProjLayer[iproj])){
         _track_Proj_Clas[iproj] = 2;      
       }
@@ -1248,8 +1341,10 @@ void prepareMCMatchInfo(){
       if (IsFarForwardProjection(_track_ProjLayer[iproj])){
         _track_Proj_Clas[iproj] = 6;
       }
+      if (verbosityBASE > 2) std::cout << iproj << "\t projection layer: "<< _track_ProjLayer[iproj] << "\t class: " << _track_Proj_Clas[iproj] << std::endl;
       if (_track_Proj_Clas[iproj] < 5){
         if (IsTrackerLayer(_track_ProjLayer[iproj]) && _track_Proj_true_t[iproj] != 0 && hit3d > 0.1){
+          
           _track_nTrL[itrk]++;
         }
         if (HasTimingLayer(_track_ProjLayer[iproj]) && _track_Proj_true_t[iproj] != 0 && hit3d > 0.1){

@@ -83,6 +83,9 @@ void treeProcessing(
     else if (addOutputName.Contains("PbGlasTF1"))
       settingCalibBECAL = kPbGlasTF1;
       
+    if (addOutputName.Contains("ZeroField"))
+      isZeroField       = true;
+    
     // load tree
     TChain *const tt_event = new TChain("event_tree");
     if (inFile.EndsWith(".root")) {                     // are we loading a single root tree?
@@ -243,8 +246,10 @@ void treeProcessing(
         // do calo-calo matching
         for (int cal = 0; cal < maxcalo; cal++){
           if(do_reclus && nTowers[cal] > 0 && caloEnabled[cal]){
+            if(verbosity>1) std::cout << "start with cluster matching for calo " << cal << std::endl;
             for (int algo = 0; algo < _active_algo; algo++){
               MatchClustersWithOtherCalos( cal, algo );
+              if(verbosity>1) std::cout << "done with cluster matching for algo " << algo << std::endl;
             }
           }
         }
@@ -260,7 +265,7 @@ void treeProcessing(
         // }
         if(tracksEnabled) hitstudies(primaryTrackSource);
 
-        // if (tracksEnabled) tofpidhistos();
+        if (tracksEnabled) tofpidhistos();
         
                 // ANCHOR Track loop variables:
         // float* _track_ID[itrk]
@@ -343,22 +348,22 @@ void treeProcessing(
           }
         }
 
-        // apply calibration if desired
-        if(kV1<_active_algo){
-          // TODO: Should kV1 in the calibration actually be _active_algo?
-          for(Int_t iclus=0; iclus<(Int_t)_clusters_calo[kV1][fwdCaloID].size(); iclus++){
-            (_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_trueID = GetCorrectMCArrayEntry((_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_trueID);
-            if(_doClusterECalibration){
-              (_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_E/=getCalibrationValue((_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_E, fwdCaloID, kV1, (_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_trueID);
-            }
-          }
-          for(Int_t iclus=0; iclus<(Int_t)_clusters_calo[kV1][kFEMC].size(); iclus++){
-            (_clusters_calo[kV1][kFEMC].at(iclus)).cluster_trueID = GetCorrectMCArrayEntry((_clusters_calo[kV1][kFEMC].at(iclus)).cluster_trueID);
-            if(_doClusterECalibration){
-              (_clusters_calo[kV1][kFEMC].at(iclus)).cluster_E/=getCalibrationValue((_clusters_calo[kV1][kFEMC].at(iclus)).cluster_E, kFEMC, kV1,(_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_trueID);
-            }
-          }
-        }
+//         // apply calibration if desired
+//         if(kV1<_active_algo){
+//           // TODO: Should kV1 in the calibration actually be _active_algo?
+//           for(Int_t iclus=0; iclus<(Int_t)_clusters_calo[kV1][fwdCaloID].size(); iclus++){
+//             (_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_trueID = GetCorrectMCArrayEntry((_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_trueID);
+//             if(_doClusterECalibration){
+//               (_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_E/=getCalibrationValue((_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_E, fwdCaloID, kV1, (_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_trueID);
+//             }
+//           }
+//           for(Int_t iclus=0; iclus<(Int_t)_clusters_calo[kV1][kFEMC].size(); iclus++){
+//             (_clusters_calo[kV1][kFEMC].at(iclus)).cluster_trueID = GetCorrectMCArrayEntry((_clusters_calo[kV1][kFEMC].at(iclus)).cluster_trueID);
+//             if(_doClusterECalibration){
+//               (_clusters_calo[kV1][kFEMC].at(iclus)).cluster_E/=getCalibrationValue((_clusters_calo[kV1][kFEMC].at(iclus)).cluster_E, kFEMC, kV1,(_clusters_calo[kV1][fwdCaloID].at(iclus)).cluster_trueID);
+//             }
+//           }
+//         }
 
         if(do_reclus && kMA<_active_algo && _do_jetfinding){
           // ANCHOR FEMC cluster loop variables:
@@ -620,10 +625,10 @@ void treeProcessing(
       std::cout << "running trackingefficiencyhistosSave" << std::endl;
       trackingefficiencyhistosSave();
     }
-    // if(tracksEnabled){
-    //   std::cout << "running tofpidhistosSave" << std::endl;
-    //   tofpidhistosSave();
-    // }
+    if(tracksEnabled){
+      std::cout << "running tofpidhistosSave" << std::endl;
+      tofpidhistosSave();
+    }
     if(tracksEnabled) {
       std::cout << "running trackingresolutionhistosSave" << std::endl;
       trackingresolutionhistosSave();

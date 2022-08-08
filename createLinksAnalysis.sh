@@ -11,6 +11,7 @@ mkdir resolutionCalo/
 mkdir clusterProperties/
 mkdir clusterstudies/
 mkdir pi0_reco/
+mkdir TOFStudies/
 mkdir common/
 mkdir visualizationGeomAndClusters/
 ln -s $EICANA/trackingresolution/*.C trackingresolution/
@@ -26,8 +27,11 @@ ln -s $EICANA/clusterProperties/*.C clusterProperties/
 ln -s $EICANA/clusterProperties/*.sh clusterProperties/
 ln -s $EICANA/clusterstudies/*.C clusterstudies/
 ln -s $EICANA/clusterstudies/*.sh clusterstudies/
+ln -s $EICANA/TOFStudies/*.C TOFStudies/
+#ln -s $EICANA/TOFStudies/*.sh TOFStudies/
 ln -s $EICANA/visualizationGeomAndClusters/*.C visualizationGeomAndClusters/
 ln -s $EICANA/visualizationGeomAndClusters/*.sh visualizationGeomAndClusters/
 ln -s $EICANA/resolutionCalo/*.C resolutionCalo/
+ln -s $EICANA/resolutionCalo/*.sh resolutionCalo/
 ln -s $EICANA/common/*.h common/
 ln -s $EICANA/*.sh .

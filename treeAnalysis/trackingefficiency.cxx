@@ -35,14 +35,18 @@ TH2F*  h_particle_MC_E[nPart_TRKEFF];
 // **********************************************************************************************
 TH1D* hNEvents                                = new TH1D("nEvents","",1,0.5,1.5);
 TH1D* hNTracks[nTrackSources]                                           = {nullptr};
-TH2F* h_tracks_reso_pT[nTrackSources][nResoSt][nEta+1][nPart_TRKEFF+1] = {{{{nullptr}}}};
-TH2F* h_tracks_reso_p[nTrackSources][nResoSt][nEta+1][nPart_TRKEFF+1]  = {{{{nullptr}}}};
-TH2F* h_tracks_resoEta_pT[nTrackSources][nResoSt][nEta+1]              = {{{nullptr}}};
-TH2F* h_tracks_resoPhi_pT[nTrackSources][nResoSt][nEta+1]              = {{{nullptr}}};
-TH2F* h_tracksTrue_Eta_pT[nTrackSources][nPart_TRKEFF+1][nCuts]        = {{{nullptr}}};
-TH2F* h_tracksRec_Eta_pT[nTrackSources][nPart_TRKEFF+1][nCuts]         = {{{nullptr}}};
-TH2F* h_tracksTrue_Eta_p[nTrackSources][nPart_TRKEFF+1][nCuts]         = {{{nullptr}}};
-TH2F* h_tracksRec_Eta_p[nTrackSources][nPart_TRKEFF+1][nCuts]          = {{{nullptr}}};
+TH3F* h_tracks_reso_pT[nTrackSources][nPart_TRKEFF+1]                   = {{nullptr}};
+TH3F* h_tracks_reso_p[nTrackSources][nPart_TRKEFF+1]                    = {{nullptr}};
+TH3F* h_tracks_resoEta_pT[nTrackSources]                                = {nullptr};
+TH3F* h_tracks_resoPhi_pT[nTrackSources]                                = {nullptr};
+TH3F* h_tracks_dca2d_pT[nTrackSources]                                  = {nullptr};
+TH3F* h_tracks_dca2d_p[nTrackSources]                                   = {nullptr};
+TH3F* h_tracks_chi2_p[nTrackSources]                                   = {nullptr};
+TH3F* h_tracks_ndf_p[nTrackSources]                                   = {nullptr};
+TH2F* h_tracksTrue_Eta_pT[nTrackSources][nPart_TRKEFF+1]                = {{nullptr}};
+TH2F* h_tracksRec_Eta_pT[nTrackSources][nPart_TRKEFF+1]                 = {{nullptr}};
+TH2F* h_tracksTrue_Eta_p[nTrackSources][nPart_TRKEFF+1]                 = {{nullptr}};
+TH2F* h_tracksRec_Eta_p[nTrackSources][nPart_TRKEFF+1]                  = {{nullptr}};
 Bool_t initResoHist                                     = kFALSE;
 
 // **********************************************************************************************
@@ -173,41 +177,86 @@ void trackingresolution(){
   // **************** initializing hists ***********************************
   // =======================================================================
   if (!initResoHist){
+    Double_t binningReso [251];
+    for (Int_t kt = 0; kt < 250; kt++){
+      binningReso[kt] = -0.5 + kt*(0.5-(-0.5))/250;  
+      if (kt == 249)
+          binningReso[kt+1] = 0.5;
+    }
+//     for (Int_t kt = 0; kt < 250+1; kt++) std::cout << binningReso[kt] <<","; 
+//     std::cout << std::endl;
+      
+    Double_t binningEtaC [81];
+    for (Int_t kt = 0; kt < 80; kt++){
+      binningEtaC[kt] = -4. + kt*(4.-(-4.))/80;  
+      if (kt == 79)
+          binningEtaC[kt+1] = 4;
+        
+    }
+//     for (Int_t kt = 0; kt < 80+1; kt++) std::cout << binningEtaC[kt] <<",";
+//     std::cout << std::endl;
+    Double_t minDCA = -500;
+    Double_t maxDCA = 500;
+    Double_t binningdca2D [1001];
+    for (Int_t kt = 0; kt < 1000; kt++){
+      binningdca2D[kt] = minDCA + kt*(maxDCA-minDCA)/1000;  
+      if (kt == 1000-1)
+          binningdca2D[kt+1] = maxDCA;   
+    }
+    Double_t minNDF = 0;
+    Double_t maxNDF = 20;
+    Double_t binningNDF [21];
+    for (Int_t kt = 0; kt < 20; kt++){
+      binningNDF[kt] = minNDF + kt*(maxNDF-minNDF)/20;  
+      if (kt == 20-1)
+          binningNDF[kt+1] = maxNDF;   
+    }
+//     for (Int_t kt = 0; kt < 20+1; kt++) std::cout << binningNDF[kt] <<",";
+//     std::cout << std::endl;
+
+    Double_t minChi2 = 0;
+    Double_t maxChi2 = 50;
+    Double_t binningChi2 [101];
+    for (Int_t kt = 0; kt < 100; kt++){
+      binningChi2[kt] = minChi2 + kt*(maxChi2-minChi2)/100;  
+      if (kt == 100-1)
+          binningChi2[kt+1] = maxChi2;   
+    }
+//     for (Int_t kt = 0; kt < 100+1; kt++) std::cout << binningChi2[kt] <<",";
+//     std::cout << std::endl;
+
     for (unsigned int iTrkSource = 0; iTrkSource < nTrackSources; iTrkSource++) {
       for (Int_t ipart = 0; ipart < nPart_TRKEFF+1; ipart++){
-        for (Int_t k = 0; k < nCuts; k++){
-//           std::cout << ipart << "\t" << str_TRKEFF_mcparticles[ipart].Data() << "\t" << k << "\t" << nameCuts[k].Data()  << "\t"
-//                     << Form("h_tracks_%s_%s_True_Eta_pT", str_TRKEFF_mcparticles[ipart].Data(), nameCuts[k].Data()) ;
-
-          h_tracksTrue_Eta_pT[iTrkSource][ipart][k]         = new TH2F(Form("h_tracks_%u_%s_%s_True_Eta_pT", iTrkSource, str_TRKEFF_mcparticles[ipart].Data(), nameCuts[k].Data() ), "; #it{p}_{T,MC} (GeV/c); #eta_{MC}", 200, 0, 20, 200, -4, 4.);
-          h_tracksRec_Eta_pT[iTrkSource][ipart][k]          = new TH2F(Form("h_tracks_%u_%s_%s_Rec_Eta_pT", iTrkSource, str_TRKEFF_mcparticles[ipart].Data(), nameCuts[k].Data() ), "; #it{p}_{T,rec} (GeV/c); #eta_{rec}", 200, 0, 20, 200, -4, 4.);
-          h_tracksTrue_Eta_p[iTrkSource][ipart][k]          = new TH2F(Form("h_tracks_%u_%s_%s_True_Eta_p", iTrkSource, str_TRKEFF_mcparticles[ipart].Data(), nameCuts[k].Data() ), "; #it{p}_{MC} (GeV/c); #eta_{MC}", nBinsP, binningP,  200, -4, 4.);
-          h_tracksRec_Eta_p[iTrkSource][ipart][k]           = new TH2F(Form("h_tracks_%u_%s_%s_Rec_Eta_p", iTrkSource, str_TRKEFF_mcparticles[ipart].Data(), nameCuts[k].Data() ), "; #it{p}_{rc} (GeV/c); #eta_{rec}", nBinsP, binningP, 200, -4, 4.);
-//           std::cout << h_tracksTrue_Eta_pT[ipart][k]->GetName() << "\t" << h_tracksRec_Eta_pT[ipart][k]->GetName()  << "\t" << h_tracksTrue_Eta_p[ipart][k]->GetName() << "\t" << h_tracksRec_Eta_p[ipart][k]->GetName()<< std::endl;
-        }
+        h_tracksTrue_Eta_pT[iTrkSource][ipart]         = new TH2F(Form("h_tracks_%u_%s_True_Eta_pT", iTrkSource, str_TRKEFF_mcparticles[ipart].Data() ), 
+                                                                      "; #it{p}_{T,MC} (GeV/c); #eta_{MC}", 200, 0, 20, 200, -4, 4.);
+        h_tracksRec_Eta_pT[iTrkSource][ipart]          = new TH2F(Form("h_tracks_%u_%s_Rec_Eta_pT", iTrkSource, str_TRKEFF_mcparticles[ipart].Data() ), 
+                                                                      "; #it{p}_{T,rec} (GeV/c); #eta_{rec}", 200, 0, 20, 200, -4, 4.);
+        h_tracksTrue_Eta_p[iTrkSource][ipart]          = new TH2F(Form("h_tracks_%u_%s_True_Eta_p", iTrkSource, str_TRKEFF_mcparticles[ipart].Data() ), 
+                                                                      "; #it{p}_{MC} (GeV/c); #eta_{MC}", nBinsP, binningP,  200, -4, 4.);
+        h_tracksRec_Eta_p[iTrkSource][ipart]           = new TH2F(Form("h_tracks_%u_%s_Rec_Eta_p", iTrkSource, str_TRKEFF_mcparticles[ipart].Data() ), 
+                                                                       "; #it{p}_{rc} (GeV/c); #eta_{rec}", nBinsP, binningP, 200, -4, 4.);
       }
-      for (Int_t et = 0; et<nEta+1; et++){
-        Double_t etaMin = partEta[0];
-        Double_t etaMax = partEta[nEta];
-        if (et < nEta){
-          etaMin = partEta[et];
-          etaMax = partEta[et+1];
-        }
-
-        for (Int_t i = 0; i< nResoSt; i++){
-          for (Int_t ipart = 0; ipart < nPart_TRKEFF+1; ipart++){
-            h_tracks_reso_pT[iTrkSource][i][et][ipart]     = new TH2F(Form("h_tracks_reso_pT_%u_%s_%s_%d", iTrkSource, nameResoAdd[i].Data(), str_TRKEFF_mcparticles[ipart].Data(),et),
-                                                  Form("%1.1f < #eta < %1.1f; #it{p}_{T,MC} (GeV/c); (#it{p}_{T,rec}-#it{p}_{T,MC})/#it{p}_{T,MC}",etaMin, etaMax),
-                                                  200, 0, 20, 250, -0.5, 0.5);
-            h_tracks_reso_p[iTrkSource][i][et][ipart]         = new TH2F(Form("h_tracks_reso_p_%u_%s_%s_%d", iTrkSource, nameResoAdd[i].Data(), str_TRKEFF_mcparticles[ipart].Data(),et),
-                                                    Form("%1.1f < #eta < %1.1f; #it{p}_{MC} (GeV/c); (#it{p}_{rec}-#it{p}_{MC})/#it{p}_{MC}", etaMin, etaMax),
-                                                    nBinsP, binningP, 250, -0.5, 0.5);
-          }
-          h_tracks_resoEta_pT[iTrkSource][i][et]     = new TH2F(Form("h_tracks_reso_Eta_pT_%u_%s_%d", iTrkSource, nameResoAdd[i].Data(),et), Form("%1.1f < #eta < %1.1f; #it{p}_{T,MC} (GeV/c); (#eta_{rec}-#eta_{MC})/#eta_{MC}",
-                                                                                          etaMin, etaMax), 200, 0, 20, 500, -0.1, 0.1);
-          h_tracks_resoPhi_pT[iTrkSource][i][et]     = new TH2F(Form("h_tracks_reso_Phi_pT_%u_%s_%d", iTrkSource, nameResoAdd[i].Data(),et), Form("%1.1f < #eta < %1.1f; #it{p}_{T,MC} (GeV/c); (#phi_{rec}-#phi_{MC})/#phi_{MC}",
-                                                                                          etaMin, etaMax), 200, 0, 20, 500, -0.5, 0.5);
-        }
+      for (Int_t ipart = 0; ipart < nPart_TRKEFF+1; ipart++){
+        h_tracks_reso_pT[iTrkSource][ipart]   = new TH3F(Form("h_tracks_reso_pT_%u_%s", iTrkSource, str_TRKEFF_mcparticles[ipart].Data()),
+                                                          "; #it{p}_{T,MC} (GeV/c); (#it{p}_{T,rec}-#it{p}_{T,MC})/#it{p}_{T,MC}; #eta",
+                                                          200, 0, 20, 250, -0.5, 0.5, 80, -4, 4);
+        h_tracks_reso_p[iTrkSource][ipart]    = new TH3F(Form("h_tracks_reso_p_%u_%s", iTrkSource, str_TRKEFF_mcparticles[ipart].Data()),
+                                                          "; #it{p}_{MC} (GeV/c); (#it{p}_{rec}-#it{p}_{MC})/#it{p}_{MC}; #eta",
+                                                          nBinsP, binningP, 250, binningReso, 80, binningEtaC);
+      }
+      h_tracks_resoEta_pT[iTrkSource]         = new TH3F(Form("h_tracks_reso_Eta_pT_%u", iTrkSource), "; #it{p}_{T,MC} (GeV/c); (#eta_{rec}-#eta_{MC})/#eta_{MC}; #eta", 
+                                                         200, 0, 20, 500, -0.1, 0.1, 80, -4, 4);
+      h_tracks_resoPhi_pT[iTrkSource]         = new TH3F(Form("h_tracks_reso_Phi_pT_%u", iTrkSource), "; #it{p}_{T,MC} (GeV/c); (#phi_{rec}-#phi_{MC})/#phi_{MC}; #eta",
+                                                         200, 0, 20, 500, -0.5, 0.5, 80, -4, 4);
+      if (iTrkSource == 0 || iTrkSource == 4 ){
+        h_tracks_dca2d_pT[iTrkSource]           = new TH3F(Form("h_tracks_dca_pT_%u", iTrkSource), "; #it{p}_{T,MC} (GeV/c); dca_{2D} (#mum); #eta", 
+                                                          200, 0, 20, 1000, minDCA, maxDCA, 80, -4, 4);
+        h_tracks_dca2d_p[iTrkSource]            = new TH3F(Form("h_tracks_dca_p_%u", iTrkSource), "; #it{p}_{MC} (GeV/c); dca_{2D} (#mum); #eta",
+                                                          nBinsP, binningP, 1000, binningdca2D, 80, binningEtaC);
+        h_tracks_ndf_p[iTrkSource]              = new TH3F(Form("h_tracks_ndf_p_%u", iTrkSource), "; #it{p}_{MC} (GeV/c); ndf; #eta",
+                                                          nBinsP, binningP, 20, binningNDF, 80, binningEtaC);
+        h_tracks_chi2_p[iTrkSource]             = new TH3F(Form("h_tracks_chi2_p_%u", iTrkSource), "; #it{p}_{MC} (GeV/c); #chi^{2}; #eta",
+                                                          nBinsP, binningP, 100, binningChi2, 80, binningEtaC);
       }
       hNTracks[iTrkSource] = new TH1D(TString::Format("nTracks_%u", iTrkSource),"",200,-0.5,199.5);
     }
@@ -258,135 +307,32 @@ void trackingresolution(){
     Bool_t hasTL      = _track_hasTTL[itrk];
     Bool_t hasFTrL    = _track_hasIL[itrk];
     Bool_t hasTrL     = _track_hasOL[itrk];
-    Int_t nTrL        = 0;
+    Int_t nTrL        = _track_nTrL[itrk];
     Int_t nTL         = _track_nTTL[itrk];
-    Int_t nTrT        = 0;
+    Int_t nTrT        = _track_nTrL[itrk]-_track_nTTL[itrk];
 
-    for(Int_t iproj=nCurrProj; iproj<_nProjections; iproj++){
-//       hasFTrL   = (hasFTrL || HasFirstTwoLayers(_track_ProjLayer[iproj]));
-//       hasTrL    = (hasTrL || IsTrackerLayer(_track_ProjLayer[iproj]));
-      if (IsTrackerLayer(_track_ProjLayer[iproj])) nTrL++;
-      nCurrProj = iproj;
-    }
-    nTrT = nTrL + nTL;
     if (verbosityTRKEFF > 2) std::cout << "\t summary: TL " << hasTL  << "\t TL hits "<< nTL << "\t tr " << hasTrL << "\t tr silicon " << hasFTrL << "\t tr hits " << nTrL << "\t tot: " << nTrT << std::endl;
-
+    if (verbosityTRKEFF > 2) std::cout << "\t summary: chi2 " << _track_chi2[itrk] << "\t ndf " << _track_ndf[itrk]<< std::endl;
 
     // determine eta bin
-    Int_t et = 0;
-    while (partEta[et+1] < trueeta && et < nEta) et++;
+    h_tracks_reso_pT[trackSource][parIdx]->Fill(truept,(pt-truept)/truept,trueeta);
+    h_tracks_reso_p[trackSource][parIdx]->Fill(truepmom,(pmom-truepmom)/truepmom,trueeta);
+    h_tracks_resoEta_pT[trackSource]->Fill(truept,(receta-trueeta),trueeta);
+    h_tracks_resoPhi_pT[trackSource]->Fill(truept,(recphi-truephi),trueeta);
 
-
-    h_tracks_reso_pT[trackSource][0][et][parIdx]->Fill(truept,(pt-truept)/truept);
-    h_tracks_reso_p[trackSource][0][et][parIdx]->Fill(truepmom,(pmom-truepmom)/truepmom);
-    h_tracks_resoEta_pT[trackSource][0][et]->Fill(truept,(receta-trueeta));
-    h_tracks_resoPhi_pT[trackSource][0][et]->Fill(truept,(recphi-truephi));
-    if (nTL > 0){
-      h_tracks_reso_pT[trackSource][2][et][parIdx]->Fill(truept,(pt-truept)/truept);
-      h_tracks_reso_p[trackSource][2][et][parIdx]->Fill(truepmom,(pmom-truepmom)/truepmom);
-      h_tracks_resoEta_pT[trackSource][2][et]->Fill(truept,(receta-trueeta));
-      h_tracks_resoPhi_pT[trackSource][2][et]->Fill(truept,(recphi-truephi));
-    } else {
-      h_tracks_reso_pT[trackSource][1][et][parIdx]->Fill(truept,(pt-truept)/truept);
-      h_tracks_reso_p[trackSource][1][et][parIdx]->Fill(truepmom,(pmom-truepmom)/truepmom);
-      h_tracks_resoEta_pT[trackSource][1][et]->Fill(truept,(receta-trueeta));
-      h_tracks_resoPhi_pT[trackSource][1][et]->Fill(truept,(recphi-truephi));
-    }
-//     if (nTrL >= 2){
-    if (hasTrL){
-      h_tracks_reso_pT[trackSource][3][et][parIdx]->Fill(truept,(pt-truept)/truept);
-      h_tracks_reso_p[trackSource][3][et][parIdx]->Fill(truepmom,(pmom-truepmom)/truepmom);
-      h_tracks_resoEta_pT[trackSource][3][et]->Fill(truept,(receta-trueeta));
-      h_tracks_resoPhi_pT[trackSource][3][et]->Fill(truept,(recphi-truephi));
-    }
-//     if (nTrL >= 3){
-    if (hasFTrL){
-      h_tracks_reso_pT[trackSource][4][et][parIdx]->Fill(truept,(pt-truept)/truept);
-      h_tracks_reso_p[trackSource][4][et][parIdx]->Fill(truepmom,(pmom-truepmom)/truepmom);
-      h_tracks_resoEta_pT[trackSource][4][et]->Fill(truept,(receta-trueeta));
-      h_tracks_resoPhi_pT[trackSource][4][et]->Fill(truept,(recphi-truephi));
-    }
+    // dca distributions
+    Double_t dca2Dmum = _track_dca2D[itrk]*1e4;
+//     std::cout << dca2Dmum << std::endl;
+    if (h_tracks_dca2d_pT[trackSource]) h_tracks_dca2d_pT[trackSource]->Fill(truept,dca2Dmum,trueeta);
+    if (h_tracks_dca2d_p[trackSource]) h_tracks_dca2d_p[trackSource]->Fill(truepmom,dca2Dmum,trueeta);
+    if (h_tracks_ndf_p[trackSource]) h_tracks_ndf_p[trackSource]->Fill(truepmom,_track_ndf[itrk],trueeta);
+    if (h_tracks_chi2_p[trackSource]) h_tracks_chi2_p[trackSource]->Fill(truepmom,_track_chi2[itrk],trueeta);
 
     // all tracks "N"
-    h_tracksTrue_Eta_pT[trackSource][parIdx][0]->Fill(truept, trueeta);
-    h_tracksRec_Eta_pT[trackSource][parIdx][0]->Fill(pt, receta);
-    h_tracksTrue_Eta_p[trackSource][parIdx][0]->Fill(truepmom, trueeta);
-    h_tracksRec_Eta_p[trackSource][parIdx][0]->Fill(pmom, receta);
-    // at least 3 layers
-    if (hasTrL){
-      h_tracksTrue_Eta_pT[trackSource][parIdx][1]->Fill(truept, trueeta);
-      h_tracksRec_Eta_pT[trackSource][parIdx][1]->Fill(pt, receta);
-      h_tracksTrue_Eta_p[trackSource][parIdx][1]->Fill(truepmom, trueeta);
-      h_tracksRec_Eta_p[trackSource][parIdx][1]->Fill(pmom, receta);
-      // at least 3 layers & inner most tracking layer fw
-      if (hasFTrL){
-        h_tracksTrue_Eta_pT[trackSource][parIdx][2]->Fill(truept, trueeta);
-        h_tracksRec_Eta_pT[trackSource][parIdx][2]->Fill(pt, receta);
-        h_tracksTrue_Eta_p[trackSource][parIdx][2]->Fill(truepmom, trueeta);
-        h_tracksRec_Eta_p[trackSource][parIdx][2]->Fill(pmom, receta);
-      }
-    }
-    // only tracker layers
-    if (nTL < 1){
-      h_tracksTrue_Eta_pT[trackSource][parIdx][3]->Fill(truept, trueeta);
-      h_tracksRec_Eta_pT[trackSource][parIdx][3]->Fill(pt, receta);
-      h_tracksTrue_Eta_p[trackSource][parIdx][3]->Fill(truepmom, trueeta);
-      h_tracksRec_Eta_p[trackSource][parIdx][3]->Fill(pmom, receta);
-      // only tracker layers & inner most tracking layer fw
-      if (hasFTrL){
-        h_tracksTrue_Eta_pT[trackSource][parIdx][4]->Fill(truept, trueeta);
-        h_tracksRec_Eta_pT[trackSource][parIdx][4]->Fill(pt, receta);
-        h_tracksTrue_Eta_p[trackSource][parIdx][4]->Fill(truepmom, trueeta);
-        h_tracksRec_Eta_p[trackSource][parIdx][4]->Fill(pmom, receta);
-      }
-    }
-//     // timing layer hit before ECal but not after
-//     if (hasTL && !hasTLAE){
-//       h_tracksTrue_Eta_pT[trackSource][parIdx][5]->Fill(truept, trueeta);
-//       h_tracksRec_Eta_pT[trackSource][parIdx][5]->Fill(pt, receta);
-//       h_tracksTrue_Eta_p[trackSource][parIdx][5]->Fill(truepmom, trueeta);
-//       h_tracksRec_Eta_p[trackSource][parIdx][5]->Fill(pmom, receta);
-//       // timing layer hit before ECal but not after & inner most tracking layer fw
-//       if (hasFTrL){
-//         h_tracksTrue_Eta_pT[trackSource][parIdx][6]->Fill(truept, trueeta);
-//         h_tracksRec_Eta_pT[trackSource][parIdx][6]->Fill(pt, receta);
-//         h_tracksTrue_Eta_p[trackSource][parIdx][6]->Fill(truepmom, trueeta);
-//         h_tracksRec_Eta_p[trackSource][parIdx][6]->Fill(pmom, receta);
-//       }
-//     }
-//     // timing layer hit after ECal
-//     if (hasTLAE){
-//       h_tracksTrue_Eta_pT[trackSource][parIdx][7]->Fill(truept, trueeta);
-//       h_tracksRec_Eta_pT[trackSource][parIdx][7]->Fill(pt, receta);
-//       h_tracksTrue_Eta_p[trackSource][parIdx][7]->Fill(truepmom, trueeta);
-//       h_tracksRec_Eta_p[trackSource][parIdx][7]->Fill(pmom, receta);
-//       // timing layer hit after ECal & inner most tracking layer fw
-//       if (hasFTrL){
-//         h_tracksTrue_Eta_pT[trackSource][parIdx][8]->Fill(truept, trueeta);
-//         h_tracksRec_Eta_pT[trackSource][parIdx][8]->Fill(pt, receta);
-//         h_tracksTrue_Eta_p[trackSource][parIdx][8]->Fill(truepmom, trueeta);
-//         h_tracksRec_Eta_p[trackSource][parIdx][8]->Fill(pmom, receta);
-//       }
-//     }
-
-    if (nTL > 0){
-      h_tracksTrue_Eta_pT[trackSource][parIdx][9]->Fill(truept, trueeta);
-      h_tracksRec_Eta_pT[trackSource][parIdx][9]->Fill(pt, receta);
-      h_tracksTrue_Eta_p[trackSource][parIdx][9]->Fill(truepmom, trueeta);
-      h_tracksRec_Eta_p[trackSource][parIdx][9]->Fill(pmom, receta);
-    }
-    if (hasTrL){
-      h_tracksTrue_Eta_pT[trackSource][parIdx][10]->Fill(truept, trueeta);
-      h_tracksRec_Eta_pT[trackSource][parIdx][10]->Fill(pt, receta);
-      h_tracksTrue_Eta_p[trackSource][parIdx][10]->Fill(truepmom, trueeta);
-      h_tracksRec_Eta_p[trackSource][parIdx][10]->Fill(pmom, receta);
-    }
-    if (hasFTrL){
-      h_tracksTrue_Eta_pT[trackSource][parIdx][11]->Fill(truept, trueeta);
-      h_tracksRec_Eta_pT[trackSource][parIdx][11]->Fill(pt, receta);
-      h_tracksTrue_Eta_p[trackSource][parIdx][11]->Fill(truepmom, trueeta);
-      h_tracksRec_Eta_p[trackSource][parIdx][11]->Fill(pmom, receta);
-    }
+    h_tracksTrue_Eta_pT[trackSource][parIdx]->Fill(truept, trueeta);
+    h_tracksRec_Eta_pT[trackSource][parIdx]->Fill(pt, receta);
+    h_tracksTrue_Eta_p[trackSource][parIdx]->Fill(truepmom, trueeta);
+    h_tracksRec_Eta_p[trackSource][parIdx]->Fill(pmom, receta);
   }
 }
 
@@ -456,32 +402,32 @@ void trackingefficiencyhistosSave(){
   for (unsigned int i = 0; i < nTrackSources; i++) {
     if(h_chargedpart_rec_pT[i]) h_chargedpart_rec_pT[i]->Write();
     if(h_chargedpart_rec_truepT[i]) h_chargedpart_rec_truepT[i]->Write();
-    if(h_chargedpart_MC_pT && h_chargedpart_rec_pT[i] && h_chargedpart_rec_truepT[i]) {
-      std::string name = "h_chargedpart_eff_pT_" + std::to_string(i);
-      TH2F*  h_chargedpart_eff_pT = (TH2F*)h_chargedpart_rec_pT[i]->Clone(name.c_str());
-      h_chargedpart_eff_pT->Divide(h_chargedpart_MC_pT);
-      h_chargedpart_eff_pT->Write(name.c_str(), TObject::kOverwrite);
-      name = "h_chargedpart_eff_truepT_" + std::to_string(i);
-      TH2F*  h_chargedpart_eff_truepT = (TH2F*)h_chargedpart_rec_truepT[i]->Clone(name.c_str());
-      h_chargedpart_eff_truepT->Divide(h_chargedpart_MC_pT);
-      h_chargedpart_eff_truepT->Write(name.c_str(), TObject::kOverwrite);
-    }
+//     if(h_chargedpart_MC_pT && h_chargedpart_rec_pT[i] && h_chargedpart_rec_truepT[i]) {
+//       std::string name = "h_chargedpart_eff_pT_" + std::to_string(i);
+//       TH2F*  h_chargedpart_eff_pT = (TH2F*)h_chargedpart_rec_pT[i]->Clone(name.c_str());
+//       h_chargedpart_eff_pT->Divide(h_chargedpart_MC_pT);
+//       h_chargedpart_eff_pT->Write(name.c_str(), TObject::kOverwrite);
+//       name = "h_chargedpart_eff_truepT_" + std::to_string(i);
+//       TH2F*  h_chargedpart_eff_truepT = (TH2F*)h_chargedpart_rec_truepT[i]->Clone(name.c_str());
+//       h_chargedpart_eff_truepT->Divide(h_chargedpart_MC_pT);
+//       h_chargedpart_eff_truepT->Write(name.c_str(), TObject::kOverwrite);
+//     }
   }
   if(h_chargedpart_MC_p) h_chargedpart_MC_p->Write();
   for (unsigned int i = 0; i < nTrackSources; i++) {
     if(h_chargedpart_rec_p[i]) h_chargedpart_rec_p[i]->Write();
     if(h_chargedpart_rec_truep[i]) h_chargedpart_rec_truep[i]->Write();
     if(h_chargedpart_rec_trueE[i]) h_chargedpart_rec_trueE[i]->Write();
-    if(h_chargedpart_MC_p && h_chargedpart_rec_p[i] && h_chargedpart_rec_truep[i]) {
-      std::string name = "h_chargedpart_eff_p_" + std::to_string(i);
-      TH2F*  h_chargedpart_eff_p = (TH2F*)h_chargedpart_rec_p[i]->Clone(name.c_str());
-      h_chargedpart_eff_p->Divide(h_chargedpart_MC_p);
-      h_chargedpart_eff_p->Write(name.c_str(),TObject::kOverwrite);
-      name = "h_chargedpart_eff_truep_" + std::to_string(i);
-      TH2F*  h_chargedpart_eff_truep = (TH2F*)h_chargedpart_rec_truep[i]->Clone(name.c_str());
-      h_chargedpart_eff_truep->Divide(h_chargedpart_MC_p);
-      h_chargedpart_eff_truep->Write(name.c_str(),TObject::kOverwrite);
-    }
+//     if(h_chargedpart_MC_p && h_chargedpart_rec_p[i] && h_chargedpart_rec_truep[i]) {
+//       std::string name = "h_chargedpart_eff_p_" + std::to_string(i);
+//       TH2F*  h_chargedpart_eff_p = (TH2F*)h_chargedpart_rec_p[i]->Clone(name.c_str());
+//       h_chargedpart_eff_p->Divide(h_chargedpart_MC_p);
+//       h_chargedpart_eff_p->Write(name.c_str(),TObject::kOverwrite);
+//       name = "h_chargedpart_eff_truep_" + std::to_string(i);
+//       TH2F*  h_chargedpart_eff_truep = (TH2F*)h_chargedpart_rec_truep[i]->Clone(name.c_str());
+//       h_chargedpart_eff_truep->Divide(h_chargedpart_MC_p);
+//       h_chargedpart_eff_truep->Write(name.c_str(),TObject::kOverwrite);
+//     }
   }
   if(h_chargedpart_MC_E) h_chargedpart_MC_E->Write();
   TH2F*  h_particle_eff_pT[nTrackSources][nPart_TRKEFF] = {{nullptr}};
@@ -493,32 +439,32 @@ void trackingefficiencyhistosSave(){
     for (unsigned int i = 0; i < nTrackSources; i++) {
       if(h_particle_rec_pT[i][ipart]) h_particle_rec_pT[i][ipart]->Write();
       if(h_particle_rec_truepT[i][ipart]) h_particle_rec_truepT[i][ipart]->Write();
-      if(h_particle_MC_pT[ipart] && h_particle_rec_pT[i][ipart] && h_particle_rec_truepT[ipart]) {
-        std::string name = std::string("h_") + str_TRKEFF_mcparticles[ipart].Data() + "_eff_pT" + std::to_string(i);
-        h_particle_eff_pT[i][ipart] = (TH2F*)h_particle_rec_pT[i][ipart]->Clone(name.c_str());
-        h_particle_eff_pT[i][ipart]->Divide(h_particle_MC_pT[ipart]);
-        h_particle_eff_pT[i][ipart]->Write(name.c_str(), TObject::kOverwrite);
-        name = std::string("h_") + str_TRKEFF_mcparticles[ipart].Data() + "eff_truepT" + std::to_string(i);
-        h_particle_eff_truepT[i][ipart] = (TH2F*)h_particle_rec_truepT[i][ipart]->Clone(name.c_str());
-        h_particle_eff_truepT[i][ipart]->Divide(h_particle_MC_pT[ipart]);
-        h_particle_eff_truepT[i][ipart]->Write(name.c_str(), TObject::kOverwrite);
-      }
+//       if(h_particle_MC_pT[ipart] && h_particle_rec_pT[i][ipart] && h_particle_rec_truepT[ipart]) {
+//         std::string name = std::string("h_") + str_TRKEFF_mcparticles[ipart].Data() + "_eff_pT" + std::to_string(i);
+//         h_particle_eff_pT[i][ipart] = (TH2F*)h_particle_rec_pT[i][ipart]->Clone(name.c_str());
+//         h_particle_eff_pT[i][ipart]->Divide(h_particle_MC_pT[ipart]);
+//         h_particle_eff_pT[i][ipart]->Write(name.c_str(), TObject::kOverwrite);
+//         name = std::string("h_") + str_TRKEFF_mcparticles[ipart].Data() + "eff_truepT" + std::to_string(i);
+//         h_particle_eff_truepT[i][ipart] = (TH2F*)h_particle_rec_truepT[i][ipart]->Clone(name.c_str());
+//         h_particle_eff_truepT[i][ipart]->Divide(h_particle_MC_pT[ipart]);
+//         h_particle_eff_truepT[i][ipart]->Write(name.c_str(), TObject::kOverwrite);
+//       }
     }
     if(h_particle_MC_p[ipart]) h_particle_MC_p[ipart]->Write();
     for (unsigned int i = 0; i < nTrackSources; i++) {
       if(h_particle_rec_p[i][ipart]) h_particle_rec_p[i][ipart]->Write();
       if(h_particle_rec_truep[i][ipart]) h_particle_rec_truep[i][ipart]->Write();
       if(h_particle_rec_trueE[i][ipart]) h_particle_rec_trueE[i][ipart]->Write();
-      if(h_particle_MC_p[ipart] && h_particle_rec_p[i][ipart] && h_particle_rec_truep[i][ipart]) {
-        std::string name = std::string("h_") + str_TRKEFF_mcparticles[ipart].Data() + "_eff_p" + std::to_string(i);
-        h_particle_eff_p[i][ipart] = (TH2F*)h_particle_rec_p[i][ipart]->Clone(name.c_str());
-        h_particle_eff_p[i][ipart]->Divide(h_particle_MC_p[ipart]);
-        h_particle_eff_p[i][ipart]->Write(name.c_str(), TObject::kOverwrite);
-        name = std::string("h_") + str_TRKEFF_mcparticles[ipart].Data() + "_eff_truep" + std::to_string(i);
-        h_particle_eff_truep[i][ipart] = (TH2F*)h_particle_rec_truep[i][ipart]->Clone(name.c_str());
-        h_particle_eff_truep[i][ipart]->Divide(h_particle_MC_p[ipart]);
-        h_particle_eff_truep[i][ipart]->Write(name.c_str(), TObject::kOverwrite);
-      }
+//       if(h_particle_MC_p[ipart] && h_particle_rec_p[i][ipart] && h_particle_rec_truep[i][ipart]) {
+//         std::string name = std::string("h_") + str_TRKEFF_mcparticles[ipart].Data() + "_eff_p" + std::to_string(i);
+//         h_particle_eff_p[i][ipart] = (TH2F*)h_particle_rec_p[i][ipart]->Clone(name.c_str());
+//         h_particle_eff_p[i][ipart]->Divide(h_particle_MC_p[ipart]);
+//         h_particle_eff_p[i][ipart]->Write(name.c_str(), TObject::kOverwrite);
+//         name = std::string("h_") + str_TRKEFF_mcparticles[ipart].Data() + "_eff_truep" + std::to_string(i);
+//         h_particle_eff_truep[i][ipart] = (TH2F*)h_particle_rec_truep[i][ipart]->Clone(name.c_str());
+//         h_particle_eff_truep[i][ipart]->Divide(h_particle_MC_p[ipart]);
+//         h_particle_eff_truep[i][ipart]->Write(name.c_str(), TObject::kOverwrite);
+//       }
     }
     if(h_particle_MC_E[ipart]) h_particle_MC_E[ipart]->Write();
 
@@ -539,50 +485,26 @@ void trackingresolutionhistosSave(){
   // ***********************************************************************************************
   for (unsigned int iTrkSource = 0; iTrkSource < nTrackSources; iTrkSource++) {
     for (Int_t id = 0; id < nPart_TRKEFF; id++){
-      for (Int_t k = 0; k < nCuts; k++){
-        if (id == 1){
-          if(h_tracksTrue_Eta_pT[iTrkSource][nPart_TRKEFF][k]) h_tracksTrue_Eta_pT[iTrkSource][nPart_TRKEFF][k]->Sumw2();
-          if(h_tracksRec_Eta_pT[iTrkSource][nPart_TRKEFF][k]) h_tracksRec_Eta_pT[iTrkSource][nPart_TRKEFF][k]->Sumw2();
-          if(h_tracksTrue_Eta_p[iTrkSource][nPart_TRKEFF][k]) h_tracksTrue_Eta_p[iTrkSource][nPart_TRKEFF][k]->Sumw2();
-          if(h_tracksRec_Eta_p[iTrkSource][nPart_TRKEFF][k]) h_tracksRec_Eta_p[iTrkSource][nPart_TRKEFF][k]->Sumw2();
-        }
-//         if (k == 0) std::cout << id << "\t" << h_tracksTrue_Eta_pT[nPart_TRKEFF][k]->GetEntries() << "\t" << h_tracksTrue_Eta_pT[id][k]->GetEntries() << std::endl;
-        if(h_tracksTrue_Eta_pT[iTrkSource][nPart_TRKEFF][k]) h_tracksTrue_Eta_pT[iTrkSource][nPart_TRKEFF][k]->Add(h_tracksTrue_Eta_pT[iTrkSource][id][k]);
-        if(h_tracksRec_Eta_pT[iTrkSource][nPart_TRKEFF][k]) h_tracksRec_Eta_pT[iTrkSource][nPart_TRKEFF][k]->Add(h_tracksRec_Eta_pT[iTrkSource][id][k]);
-        if(h_tracksTrue_Eta_p[iTrkSource][nPart_TRKEFF][k]) h_tracksTrue_Eta_p[iTrkSource][nPart_TRKEFF][k]->Add(h_tracksTrue_Eta_p[iTrkSource][id][k]);
-        if(h_tracksRec_Eta_p[iTrkSource][nPart_TRKEFF][k]) h_tracksRec_Eta_p[iTrkSource][nPart_TRKEFF][k]->Add(h_tracksRec_Eta_p[iTrkSource][id][k]);
+      if (id == 1){
+        if(h_tracksTrue_Eta_pT[iTrkSource][nPart_TRKEFF]) h_tracksTrue_Eta_pT[iTrkSource][nPart_TRKEFF]->Sumw2();
+        if(h_tracksRec_Eta_pT[iTrkSource][nPart_TRKEFF]) h_tracksRec_Eta_pT[iTrkSource][nPart_TRKEFF]->Sumw2();
+        if(h_tracksTrue_Eta_p[iTrkSource][nPart_TRKEFF]) h_tracksTrue_Eta_p[iTrkSource][nPart_TRKEFF]->Sumw2();
+        if(h_tracksRec_Eta_p[iTrkSource][nPart_TRKEFF]) h_tracksRec_Eta_p[iTrkSource][nPart_TRKEFF]->Sumw2();
       }
-      for (Int_t i = 0; i < nResoSt; i++){
-        for (Int_t et = 0; et < nEta; et++){
-          if (id == 0 && et == 0){
-            if(h_tracks_reso_pT[iTrkSource][i][et][nPart_TRKEFF]) h_tracks_reso_pT[iTrkSource][i][et][nPart_TRKEFF]->Sumw2();
-            if(h_tracks_reso_pT[iTrkSource][i][nEta][nPart_TRKEFF]) h_tracks_reso_pT[iTrkSource][i][nEta][nPart_TRKEFF]->Sumw2();
-            if(h_tracks_reso_pT[iTrkSource][i][nEta][id]) h_tracks_reso_pT[iTrkSource][i][nEta][id]->Sumw2();
-            if(h_tracks_reso_p[iTrkSource][i][et][nPart_TRKEFF]) h_tracks_reso_p[iTrkSource][i][et][nPart_TRKEFF]->Sumw2();
-            if(h_tracks_reso_p[iTrkSource][i][nEta][nPart_TRKEFF]) h_tracks_reso_p[iTrkSource][i][nEta][nPart_TRKEFF]->Sumw2();
-            if(h_tracks_reso_p[iTrkSource][i][nEta][id]) h_tracks_reso_p[iTrkSource][i][nEta][id]->Sumw2();
-          }
-          if(h_tracks_reso_pT[iTrkSource][i][et][id]){
-            if(h_tracks_reso_pT[iTrkSource][i][et][nPart_TRKEFF]) h_tracks_reso_pT[iTrkSource][i][et][nPart_TRKEFF]->Add(h_tracks_reso_pT[iTrkSource][i][et][id]);
-            if(h_tracks_reso_pT[iTrkSource][i][nEta][nPart_TRKEFF]) h_tracks_reso_pT[iTrkSource][i][nEta][nPart_TRKEFF]->Add(h_tracks_reso_pT[iTrkSource][i][et][id]);
-            if(h_tracks_reso_pT[iTrkSource][i][nEta][id]) h_tracks_reso_pT[iTrkSource][i][nEta][id]->Add(h_tracks_reso_pT[iTrkSource][i][et][id]);
-          }
-          if(h_tracks_reso_p[iTrkSource][i][et][id]){
-            if(h_tracks_reso_p[iTrkSource][i][et][nPart_TRKEFF]) h_tracks_reso_p[iTrkSource][i][et][nPart_TRKEFF]->Add(h_tracks_reso_p[iTrkSource][i][et][id]);
-            if(h_tracks_reso_p[iTrkSource][i][nEta][nPart_TRKEFF]) h_tracks_reso_p[iTrkSource][i][nEta][nPart_TRKEFF]->Add(h_tracks_reso_p[iTrkSource][i][et][id]);
-            if(h_tracks_reso_p[iTrkSource][i][nEta][id]) h_tracks_reso_p[iTrkSource][i][nEta][id]->Add(h_tracks_reso_p[iTrkSource][i][et][id]);
-          }
-        }
+//         if (k == 0) std::cout << id << "\t" << h_tracksTrue_Eta_pT[nPart_TRKEFF]->GetEntries() << "\t" << h_tracksTrue_Eta_pT[id]->GetEntries() << std::endl;
+      if(h_tracksTrue_Eta_pT[iTrkSource][nPart_TRKEFF]) h_tracksTrue_Eta_pT[iTrkSource][nPart_TRKEFF]->Add(h_tracksTrue_Eta_pT[iTrkSource][id]);
+      if(h_tracksRec_Eta_pT[iTrkSource][nPart_TRKEFF]) h_tracksRec_Eta_pT[iTrkSource][nPart_TRKEFF]->Add(h_tracksRec_Eta_pT[iTrkSource][id]);
+      if(h_tracksTrue_Eta_p[iTrkSource][nPart_TRKEFF]) h_tracksTrue_Eta_p[iTrkSource][nPart_TRKEFF]->Add(h_tracksTrue_Eta_p[iTrkSource][id]);
+      if(h_tracksRec_Eta_p[iTrkSource][nPart_TRKEFF]) h_tracksRec_Eta_p[iTrkSource][nPart_TRKEFF]->Add(h_tracksRec_Eta_p[iTrkSource][id]);
+      if (id == 0 ){
+        if(h_tracks_reso_pT[iTrkSource][nPart_TRKEFF]) h_tracks_reso_pT[iTrkSource][nPart_TRKEFF]->Sumw2();
+        if(h_tracks_reso_p[iTrkSource][nPart_TRKEFF]) h_tracks_reso_p[iTrkSource][nPart_TRKEFF]->Sumw2();
       }
-    }
-    for (Int_t i = 0; i < nResoSt; i++){
-      for (Int_t et = 0; et < nEta; et++){
-        if (et == 0){
-          if(h_tracks_resoEta_pT[iTrkSource][i][nEta]) h_tracks_resoEta_pT[iTrkSource][i][nEta]->Sumw2();
-          if(h_tracks_resoPhi_pT[iTrkSource][i][nEta]) h_tracks_resoPhi_pT[iTrkSource][i][nEta]->Sumw2();
-        }
-        if(h_tracks_resoEta_pT[iTrkSource][i][nEta]) h_tracks_resoEta_pT[iTrkSource][i][nEta]->Add(h_tracks_resoEta_pT[iTrkSource][i][et]);
-        if(h_tracks_resoPhi_pT[iTrkSource][i][nEta]) h_tracks_resoPhi_pT[iTrkSource][i][nEta]->Add(h_tracks_resoPhi_pT[iTrkSource][i][et]);
+      if(h_tracks_reso_pT[iTrkSource][id]){
+        if(h_tracks_reso_pT[iTrkSource][nPart_TRKEFF]) h_tracks_reso_pT[iTrkSource][nPart_TRKEFF]->Add(h_tracks_reso_pT[iTrkSource][id]);
+      }
+      if(h_tracks_reso_p[iTrkSource][id]){
+        if(h_tracks_reso_p[iTrkSource][nPart_TRKEFF]) h_tracks_reso_p[iTrkSource][nPart_TRKEFF]->Add(h_tracks_reso_p[iTrkSource][id]);
       }
     }
   }
@@ -594,24 +516,22 @@ void trackingresolutionhistosSave(){
     fileOutput->mkdir(Form("TrackSource_%d", iTrkSource));
     fileOutput->cd(Form("TrackSource_%d", iTrkSource));
     if(hNTracks[iTrkSource])hNTracks[iTrkSource]->Write();
-    for (Int_t et = 0; et < nEta+1; et++){
-      for (Int_t i = 0; i< nResoSt; i++){
-        for (Int_t id = 0; id < nPart_TRKEFF+1 ; id++) {
-          if(h_tracks_reso_pT[iTrkSource][i][et][id]) h_tracks_reso_pT[iTrkSource][i][et][id]->Write();
-          if(h_tracks_reso_p[iTrkSource][i][et][id]) h_tracks_reso_p[iTrkSource][i][et][id]->Write();
-        }
-        if (h_tracks_resoEta_pT[iTrkSource][i][et]) h_tracks_resoEta_pT[iTrkSource][i][et]->Write();
-        if (h_tracks_resoPhi_pT[iTrkSource][i][et]) h_tracks_resoPhi_pT[iTrkSource][i][et]->Write();
-      }
+    for (Int_t id = 0; id < nPart_TRKEFF+1 ; id++) {
+      if(h_tracks_reso_pT[iTrkSource][id]) h_tracks_reso_pT[iTrkSource][id]->Write();
+      if(h_tracks_reso_p[iTrkSource][id]) h_tracks_reso_p[iTrkSource][id]->Write();
     }
+    if (h_tracks_resoEta_pT[iTrkSource]) h_tracks_resoEta_pT[iTrkSource]->Write();
+    if (h_tracks_resoPhi_pT[iTrkSource]) h_tracks_resoPhi_pT[iTrkSource]->Write();
+    if (h_tracks_dca2d_pT[iTrkSource]) h_tracks_dca2d_pT[iTrkSource]->Write();
+    if (h_tracks_dca2d_p[iTrkSource]) h_tracks_dca2d_p[iTrkSource]->Write();
+    if (h_tracks_ndf_p[iTrkSource]) h_tracks_ndf_p[iTrkSource]->Write();
+    if (h_tracks_chi2_p[iTrkSource]) h_tracks_chi2_p[iTrkSource]->Write();
 
     for (Int_t id = 0; id < nPart_TRKEFF+1; id++){
-      for (Int_t k = 0; k < nCuts; k++){
-        if(h_tracksTrue_Eta_pT[iTrkSource][id][k]) h_tracksTrue_Eta_pT[iTrkSource][id][k]->Write();
-        if(h_tracksRec_Eta_pT[iTrkSource][id][k]) h_tracksRec_Eta_pT[iTrkSource][id][k]->Write();
-        if(h_tracksTrue_Eta_p[iTrkSource][id][k]) h_tracksTrue_Eta_p[iTrkSource][id][k]->Write();
-        if(h_tracksRec_Eta_p[iTrkSource][id][k]) h_tracksRec_Eta_p[iTrkSource][id][k]->Write();
-      }
+      if(h_tracksTrue_Eta_pT[iTrkSource][id]) h_tracksTrue_Eta_pT[iTrkSource][id]->Write();
+      if(h_tracksRec_Eta_pT[iTrkSource][id]) h_tracksRec_Eta_pT[iTrkSource][id]->Write();
+      if(h_tracksTrue_Eta_p[iTrkSource][id]) h_tracksTrue_Eta_p[iTrkSource][id]->Write();
+      if(h_tracksRec_Eta_p[iTrkSource][id]) h_tracksRec_Eta_p[iTrkSource][id]->Write();
     }
   }
 

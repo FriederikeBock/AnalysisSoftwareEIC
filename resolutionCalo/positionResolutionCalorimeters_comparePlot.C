@@ -159,7 +159,7 @@ void positionResolutionCalorimeters_comparePlot(
   // histo2DECalEtaReso->GetYaxis()->SetNdivisions(505);
   histo2DECalEtaReso->GetYaxis()->SetNoExponent(kTRUE);
   histo2DECalEtaReso->GetXaxis()->SetTickLength(0.05);
-  histo2DECalEtaReso->GetYaxis()->SetTickLength(0.026);
+  histo2DECalEtaReso->GetYaxis()->SetTickLength(0.023);
   histo2DECalEtaReso->SetMaximum(20);
   histo2DECalEtaReso->DrawCopy();
 
@@ -179,22 +179,24 @@ void positionResolutionCalorimeters_comparePlot(
   legendPtResMLeft2->AddEntry(graph_EtaReso_E[2][1],Form("%s (e)", labels[2].Data()),"p");
   legendPtResMLeft2->Draw();
   
-  drawLatexAdd("#it{#bf{ECCE}} simulation",0.14,0.86,textsizeLabelsECals,kFALSE,kFALSE,false);
-  drawLatexAdd(Form("single particles"),0.14,0.78,textsizeLabelsECals,kFALSE,kFALSE,false);
-  drawLatexAdd(Form("a)"),0.14,0.08,textsizeLabelsECals,kFALSE,kFALSE,false);
-
+  drawLatexAdd("#it{#bf{ECCE}} simulation",0.135,0.88,textsizeLabelsECals,kFALSE,kFALSE,false);
+  drawLatexAdd(Form("single particles"),0.135,0.81,textsizeLabelsECals,kFALSE,kFALSE,false);
+  drawLatexAdd(Form("a)"),0.135,0.06,textsizeLabelsECals,kFALSE,kFALSE,false);
+  histo2DECalEtaReso->Draw("same,axis"); 
+  
   //*******************************************************************
   // HCals
   //*******************************************************************
   padPhiReso->cd();
   padPhiReso->SetLogx();
 
-  TH2F * histo2DHCalEtaReso            = new TH2F("histo2DHCalEtaReso","histo2DHCalEtaReso",1000,0.21, 55,1000,0,0.38);//, 100.1, 160.9);//125.1, 155.9);
+  TH2F * histo2DHCalEtaReso            = new TH2F("histo2DHCalEtaReso","histo2DHCalEtaReso",1000,0.21, 55,1000,0,0.21);//, 100.1, 160.9);//125.1, 155.9);
   SetStyleHistoTH2ForGraphs(histo2DHCalEtaReso, "#it{E} (GeV)","#sigma(#varphi^{rec} - #varphi^{MC})", 0.85*textsizeLabelsHCal, textsizeLabelsHCal, 0.85*textsizeLabelsHCal,
                             textsizeLabelsHCal, 0.9, 0.8,512,505);
   histo2DHCalEtaReso->GetXaxis()->SetMoreLogLabels(kTRUE);
   histo2DHCalEtaReso->GetYaxis()->SetNoExponent(kTRUE);
-  histo2DHCalEtaReso->GetXaxis()->SetTickLength(0.05);
+  histo2DHCalEtaReso->GetXaxis()->SetTickLength(0.047);
+  histo2DHCalEtaReso->GetYaxis()->SetTickLength(0.025);
   histo2DHCalEtaReso->GetXaxis()->SetNoExponent();
   histo2DHCalEtaReso->SetMaximum(20);
   histo2DHCalEtaReso->DrawCopy();
@@ -207,8 +209,9 @@ void positionResolutionCalorimeters_comparePlot(
     DrawGammaSetMarkerTGraph(graph_PhiReso_E[iSet][2], getCaloMarker(labels[iSet],false), markerSizeSet[iSet], getCaloColor(labels[iSet],false), getCaloColor(labels[iSet],false));
     graph_PhiReso_E[iSet][2]->Draw("same,pe");
   }
-  drawLatexAdd(Form("b)"),0.14,0.19,textsizeLabelsHCal,kFALSE,kFALSE,false);
-
+  drawLatexAdd(Form("b)"),0.135,0.92,textsizeLabelsHCal,kFALSE,kFALSE,false);
+  histo2DHCalEtaReso->Draw("same,axis"); 
+  
   canvasCombinedReso->Update();
   canvasCombinedReso->Print(Form("%s/PositionResolution_Paper.%s",outputDir.Data(),suffix.Data()));
 

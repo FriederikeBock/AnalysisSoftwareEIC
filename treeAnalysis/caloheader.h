@@ -1,6 +1,8 @@
 #ifndef CALOHEADER_H
 #define CALOHEADER_H
 
+int verbosityBaseCalo = 0;
+
 // ANCHOR basic struct for towers in clusterizer
 struct towersStrct{
   towersStrct(): tower_E(0), tower_iEta(-1), tower_iPhi(-1), tower_iL(-1), tower_trueID(-10000) {}
@@ -378,7 +380,7 @@ float CorrectEtaPositionCalo (int caloID, float etarec){
     case kEHCAL:
       return etarec+0.03;
     case kLFHCAL:
-      return etarec-0.04;
+      return etarec;
     default:
       return etarec;
   }
@@ -566,22 +568,25 @@ float * CalculateM02andWeightedPosition(std::vector<towersStrct> cluster_towers,
     
     vecTwr = {0.,0.,0.};
     //calculation of weights and weighted position vector
+    int Nweighted = 0;
     for(int cellI=0; cellI<(int)cluster_towers.size(); cellI++){
         w_i.push_back(TMath::Max( (float)0, (float) (w_0 + TMath::Log(cluster_towers.at(cellI).tower_E/cluster_E_calc) )));
         w_tot += w_i.at(cellI);
-        vecTwrTmp = TowerPositionVectorFromIndicesGeometry(cluster_towers.at(cellI).tower_iEta,cluster_towers.at(cellI).tower_iPhi, cluster_towers.at(cellI).tower_iL, caloSelect);
-//         std::cout << caloSelect << "\t" << vecTwrTmp.X() << "\t" << vecTwrTmp.Y() << "\t" << vecTwrTmp.Z() << std::endl;
-        vecTwr += w_i.at(cellI)*vecTwrTmp;
+        if(w_i.at(cellI)>0){
+          Nweighted++;
+          vecTwrTmp = TowerPositionVectorFromIndicesGeometry(cluster_towers.at(cellI).tower_iEta,cluster_towers.at(cellI).tower_iPhi, cluster_towers.at(cellI).tower_iL, caloSelect);
+          if (verbosityBaseCalo && caloSelect == kLFHCAL)std::cout << "indices: " << "\t" << cluster_towers.at(cellI).tower_iEta<<"\t" << cluster_towers.at(cellI).tower_iPhi<< "\t" << cluster_towers.at(cellI).tower_iL << "\t E: \t"<< cluster_towers.at(cellI).tower_E << "\t weight:\t" << w_i.at(cellI) <<"\t abs position: \t\t\t" << vecTwrTmp.X() << "\t" << vecTwrTmp.Y() << "\t" << vecTwrTmp.Z() << std::endl;
+          vecTwr += w_i.at(cellI)*vecTwrTmp;
+        }
         if(cellI==0 && ReturnFwdCalorimeterPosition(caloSelect))zHC=vecTwrTmp.Z();
     }
     // correct Eta position for average shift in calo 
     returnVariables[2]= CorrectEtaPositionCalo(caloSelect, vecTwr.Eta());
     returnVariables[3]= vecTwr.Phi(); //(vecTwr.Phi()<0 ? vecTwr.Phi()+TMath::Pi() : vecTwr.Phi()-TMath::Pi());
-//     std::cout << "X: "<< vecTwr.X() << "\t" << " Y: "<< vecTwr.Y() << "\t" << " Z: "<< vecTwr.Z() << "\t zHC: " <<  zHC << std::endl;
     if(IsForwardCalorimeter(caloSelect)){
-      vecTwr*=abs(1/((int)cluster_towers.size()*w_tot)); // wtot/Ntowers?
-      // vecTwr*=abs(zHC/vecTwr.Z()); // wtot/Ntowers?
+      vecTwr*=1./w_tot;
     }
+    if (verbosityBaseCalo && caloSelect == kLFHCAL) std::cout << "Cluster: X: "<< vecTwr.X() << "\t" << " Y: "<< vecTwr.Y() << "\t" << " Z: "<< vecTwr.Z() << "\t zHC: " <<  zHC << std::endl;
     returnVariables[4]=vecTwr.X();
     returnVariables[5]=vecTwr.Y();
     returnVariables[6]=vecTwr.Z();

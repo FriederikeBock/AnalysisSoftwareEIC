@@ -345,10 +345,7 @@ Color_t colorPart[7]              = {807, kBlue+1, kRed+2, kGreen+2, kViolet+2, 
       if(iSet==0)legendExamBin->Draw();
       dummyHistoEReso->Draw("same,axis");
     }
-      canvasEResoPaperPlot->SaveAs(Form("%s/EReso_PaperPlot_ECals.%s",outputDir.Data(), suffix.Data()));
-
-
-
+    canvasEResoPaperPlot->SaveAs(Form("%s/EReso_PaperPlot_ECals.%s",outputDir.Data(), suffix.Data()));
 
 
     Double_t arrayBoundariesEffEtaHCalX1_4[4];
